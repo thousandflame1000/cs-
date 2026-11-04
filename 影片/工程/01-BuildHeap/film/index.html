@@ -42,9 +42,9 @@ K.warm([CY, CO, AM, LEAF, INK]);
 K.hud.show = false;
 const SIZE = { hero: 132, mid: 64, small: 30 };   // 三級字號：英雄字 / 畫面中字 / 標註
 K.caption.set(TIMING.lines, {
-  y: 1452, size: 54, maxW: W * .88, hookSize: 96, hookY: 1150, hookMaxW: W * .9, shade: .5,
+  y: 1452, size: 54, maxW: W * .88, hookSize: 118, hookY: 1170, hookMaxW: W * .9, shade: .5,
   colors: { 插入: CO, 最底層: CO, 'lg n': CO, 一半: CO, 'n lg n': CO, 多數: CO,
-    由下往上: CY, 不用動: CY, '1 層': CY, 減半: CY, '1 個': CY, 方向: CY, 最近: CY, '105 萬': CY, '18 倍': CY,
+    由下往上: CY, 不用動: CY, '1 層': CY, 減半: CY, '1 個': CY, 方向: CY, 最近: CY, '比 n 還少': CY, '18 倍': CY,
     越少: AM, n: AM, 'O(n)': AM },
 });
 
@@ -86,11 +86,11 @@ const depth = (k) => Math.floor(Math.log2(k));
 /** 節點：有體積的發光球 + 數字 */
 function node(c, x, y, r, col, a, txt, lit = 0) {
   if (a <= .003) return;
-  K.orb(c, x, y, r, { color: col, a: a * (.55 + .45 * lit), atmo: .5, spec: .55, rim: .7 });
+  K.orb(c, x, y, r, { color: col, a: a * (.8 + .2 * lit), atmo: .6, spec: .7, rim: .9 });
   if (lit > .02) K.core(c, x, y - r * .05, r * .16, .35 * lit * a, col);
   if (txt != null) { c.save(); c.globalAlpha *= a; label(c, String(txt), x, y + 1, { w: 600, size: r * .82, color: '#ffffff', a: .55 + .45 * lit }); c.restore(); }
 }
-function edge(c, p, q, col, a) { if (a > .003) K.glowLine(c, [p, q], { w: 1.6, color: col, a: a * .5 }); }
+function edge(c, p, q, col, a) { if (a > .003) K.glowLine(c, [p, q], { w: 2, color: col, a: a * .62 }); }
 /** 位置交換的時間軌：events = [{t, a, b, d}]，回傳 slotOf(id) 的浮點插值 */
 function swapTrack(init, events) {
   return (t) => {
@@ -119,7 +119,7 @@ function arrow(c, x0, y0, x1, y1, col, a, w = 3) {
 
 // ═════════ 貫穿物：光之金字塔（4095 個光點，第 k 點的爸爸是 k>>1）
 const PR = 12, PN = (1 << PR) - 1;
-const PY = { top: 380, bot: 1010, hw: 470 };
+const PY = { top: 330, bot: 1060, hw: 500 };
 const PYR = Array.from({ length: PN + 1 }, (_, k) => {
   if (!k) return null; const r = depth(k), j = k - (1 << r), hw = PY.hw * Math.pow(r / (PR - 1), .9);
   const R = M.rng(k * 7 + 3);
@@ -156,7 +156,7 @@ const BH_STREAKS = Array.from({ length: 46 }, (_, i) => { const r = i < 30 ? 10 
 
 // ═════════ 場景 0：冷開場（金字塔聚合 → 珊瑚往上爬 → 青往下沉）
 function sOpen(c, t) {
-  const form = prog(t, -.9, o1.start + 1.4), out = 1 - prog(t, T.start - .1, T.start + .5, E.inCubic);
+  const form = prog(t, -.9, o1.start + 1.4), out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic);
   K.spotlight(c, CX, 120, Math.PI / 2, .55, 1100, .1 * form * out, INK);
   pyramid(c, t, form, out, K.mix(CY, INK, .35 + .4 * prog(t, o2.start, o2.start + .6)), .4 * prog(t, o2.start, o2.start + .6));
   c.save(); c.globalAlpha *= out;
@@ -170,12 +170,13 @@ function sOpen(c, t) {
 const TITLE = K.text(over, 'O(n)', { x: 0, y: 560, size: 300, align: 'c', ls: '0', lh: 1 }); TITLE.style.fontFamily = 'Plex'; TITLE.style.fontWeight = 700; K.glowTitle(TITLE, { color: CY, strength: 1.1 });
 const EN = K.text(over, 'BUILD-HEAP  IN  LINEAR  TIME', { x: 0, y: 500, size: 26, align: 'c', ls: '.32em' }); EN.style.color = K.I(.6);
 const BHT = K.text(over, 'Build-Heap', { x: 0, y: 420, size: 72, align: 'c', ls: '.04em' }); BHT.style.fontFamily = 'Plex'; BHT.style.fontWeight = 600; BHT.style.color = INK;
-const Q = K.text(over, '每個節點都可能沉 lg n 層|為什麼加起來不是 [n lg n#ff6a5c]', { x: 0, y: 980, size: 50, align: 'c', lh: 1.45 }); Q.style.fontWeight = 500;
+const Q = K.text(over, '為什麼不是 [n lg n#ff6a5c]', { x: 0, y: 1000, size: 54, align: 'c', lh: 1.45 }); Q.style.fontWeight = 500;
 const RING = K.sample((x, w, h) => { x.lineWidth = 2.5; for (let r = 1; r <= 4; r++) { x.beginPath(); x.ellipse(w / 2, h / 2, 120 + r * 95, 40 + r * 34, 0, 0, TAU); x.stroke(); } }, { w: 1100, h: 420, step: 7 });
 function sTitle(c, t) {
   const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35));
   if (a <= 0) return;
-  K.particles(c, RING, CX, 700, prog(t, T.start - .3, T.start + 1.1), { spread: 800, size: 1.5, color: 'accent', a: a * .7, t });
+  c.save(); c.translate(CX, 700); c.rotate(.05 * Math.sin((t - T.start) * .9)); c.scale(1 + .03 * (t - T.start), 1 + .03 * (t - T.start));
+  K.particles(c, RING, 0, 0, prog(t, T.start - .1, T.start + 1.1), { spread: 800, size: 1.5, color: 'accent', a: a * .7, t }); c.restore();
   K.core(c, CX, 700, 10, a * (.6 + .4 * Math.sin(t * 3)), CY);
   K.ghost(c, 'HEAP', CX, 780, 330, .035 * a, 700);
 }
@@ -314,7 +315,7 @@ function sBuild(c, t) {
     if (a > 0) label(c, s, 100, g.top + (3 - h) * g.dy, { a: .85 * a, color: h === 0 ? LEAF : CY, size: 30, w: 600 });
   }
 }
-hero('0+4+4+3 = [11#5be7ff] ＜ 15', B.b6.start + 1.9, B.b6.end + .1, { y: 250, size: SIZE.mid });
+hero('0+4+4+3 = [11#5be7ff] ＜ 15', B.b6.start + 1.65, L.c1.start - .1, { y: 250, size: SIZE.mid });
 
 // ═════════ 場景 4：量杯（琥珀）
 const C = { c1: L.c1, c2: L.c2, c3: L.c3, c4: L.c4, c5: L.c5, c6: L.c6, c7: L.c7 };
@@ -328,7 +329,7 @@ const levelAt = (t) => { let s = 0; for (const p of POURS) s += p.v * E.inOutQua
 const yOf = (f) => lerp(CUP.bot, CUP.line, f);
 const AMB = ['#ffc14d', '#ffb347', '#ffa63d', '#ff9a3a', '#ff8f38'];
 function sCup(c, t) {
-  const g = prog(t, C.c1.start + .2, C.c1.start + 1.2, E.outCubic), lv = levelAt(t), glowEnd = prog(t, C.c7.start, C.c7.start + .5);
+  const g = prog(t, C.c1.start - .05, C.c1.start + .7, E.outCubic), lv = levelAt(t), glowEnd = prog(t, C.c7.start, C.c7.start + .5);
   const { x0, x1, top, line, bot } = CUP, w = x1 - x0;
   // 杯後光
   K.halo(c, CX, (top + bot) / 2, 700, .12 * g, AM);
@@ -341,7 +342,7 @@ function sCup(c, t) {
     c.fillStyle = gr; c.fillRect(x0 + 6, yB, w - 12, yA - yB);
     if (p.i < 4) { c.strokeStyle = K.rgba('#fff2d0', .35); c.lineWidth = 1; c.beginPath(); c.moveTo(x0 + 6, yB); c.lineTo(x1 - 6, yB); c.stroke(); }
     // 右側標籤：目前這層亮，其他淡
-    if (p.lab) { const cur = t < (POURS[p.i + 1]?.t0 ?? 1e9) ? 1 : .35; const la = prog(t, p.t0 + .3, p.t0 + .7) * (1 - prog(t, C.c6.start, C.c6.start + .3)); if (la > 0) { label(c, p.lab, x1 + 70, (yA + yB) / 2, { align: 'left', a: la * cur * .9, color: AM, w: 600, size: 32 }); K.glowLine(c, [[x1 + 10, (yA + yB) / 2], [x1 + 58, (yA + yB) / 2]], { w: 1.2, color: AM, a: .5 * la * cur }); } }
+    if (p.lab) { const cur = 1 - prog(t, POURS[p.i + 1]?.t0 ?? 1e9, (POURS[p.i + 1]?.t0 ?? 1e9) + .4); const la = prog(t, p.t0 + .3, p.t0 + .7) * (1 - prog(t, C.c6.start, C.c6.start + .3)); if (la > 0) { label(c, p.lab, x1 + 70, (yA + yB) / 2, { align: 'left', a: la * cur * .9, color: AM, w: 600, size: 32 }); K.glowLine(c, [[x1 + 10, (yA + yB) / 2], [x1 + 58, (yA + yB) / 2]], { w: 1.2, color: AM, a: .5 * la * cur }); } }
     acc += f;
   }
   // 液面
@@ -361,7 +362,7 @@ function sCup(c, t) {
   c.fillStyle = gl; c.fillRect(x0, top, w, bot - top);
   K.glowLine(c, [[x0 - 18, top - 6], [x0, top + 10], [x0, bot - 26], [x0 + 26, bot], [x1 - 26, bot], [x1, bot - 26], [x1, top + 10], [x1 + 18, top - 6]], { w: 2.2, color: K.mix(INK, AM, .25), a: .9 });
   c.fillStyle = K.I(.14); c.fillRect(x0 + 22, top + 40, 10, bot - top - 120);   // 高光條
-  for (let i = 1; i < 16; i++) { const y = yOf(i / 16), big = i % 4 === 0; c.strokeStyle = K.I(big ? .45 : .2); c.lineWidth = 1.2; c.beginPath(); c.moveTo(x0, y); c.lineTo(x0 + (big ? 34 : 18), y); c.stroke(); if (big) label(c, ({ 4: 'n/4', 8: 'n/2', 12: '3n/4' })[i], x0 - 22, y, { align: 'right', a: .38, size: 22 }); }
+  for (let i = 1; i < 16; i++) { const y = yOf(i / 16), big = i % 4 === 0; c.strokeStyle = K.I(big ? .45 : .2); c.lineWidth = 1.2; c.beginPath(); c.moveTo(x0, y); c.lineTo(x0 + (big ? 34 : 18), y); c.stroke();  }
   // n 的刻度線
   const nl = .6 + .4 * Math.sin(t * 3);
   K.glowLine(c, [[x0 - 40, line], [x1 + 40, line]], { w: 2.4, color: AM, a: .95 });
@@ -376,8 +377,8 @@ function sCup(c, t) {
     const wv = []; for (let i = 0; i <= 30; i++) { const x = lerp(-rr, rr, i / 30); wv.push([x, sy + Math.sin(i * .6 + t * 4) * 4]); } K.glowLine(cc, wv, { w: 3, color: '#fff0c8', a: .95 });
     K.glowLine(cc, [[-rr, -rr * .32], [rr, -rr * .32]], { w: 3, color: AM, a: 1 }); label(cc, 'n', -rr * .62, -rr * .32 - 30, { color: AM, w: 700, size: 40 });
     K.glowLine(cc, [[rr * .35, -rr * .32 + 8], [rr * .35, sy - 8]], { w: 1.6, color: INK, a: .8 });
-    label(cc, '永遠差一點', rr * .35, (sy - rr * .32) / 2 - 2, { size: 26, a: .9, color: INK, w: 600 });
-  }, { label: '放大示意', color: AM, labelPos: 'below' });
+    label(cc, '有限項總和 ＜ n', rr * .35, (sy - rr * .32) / 2 - 2, { size: 26, a: .9, color: INK, w: 600 });
+  }, { label: '放大示意', color: INK, labelPos: 'below' });
 }
 hero('= n/4', C.c2.start + .9, C.c2.end, { y: 220, size: SIZE.mid, color: AM });
 hero('= n/4', C.c3.start + .9, C.c3.end, { y: 220, size: SIZE.mid, color: AM });
@@ -390,7 +391,7 @@ K.flash(C.c7.start + .25, .12, .5); K.shake(C.c7.start + .25, 7, .25);
 const D = { d1: L.d1, d2: L.d2, d3: L.d3 };
 const GT = { cx: 585, w: 700, top: 360, dy: 112 }, GB = { cx: 585, w: 700, top: 830, dy: 112 };
 function sRecap(c, t) {
-  const a = prog(t, D.d1.start + .1, D.d1.start + .7);
+  const a = prog(t, D.d1.start - .05, D.d1.start + .4);
   const focusTop = prog(t, D.d2.start, D.d2.start + .4) * (1 - prog(t, D.d3.start, D.d3.start + .4));
   const focusBot = prog(t, D.d3.start, D.d3.start + .4);
   const aT = a * (1 - .6 * focusBot), aB = a * (1 - .6 * focusTop);
@@ -400,6 +401,9 @@ function sRecap(c, t) {
   }
   label(c, '插入', 112, GT.top + 1.5 * GT.dy, { color: CO, a: .9 * aT, size: 34, w: 600 });
   label(c, '由下往上', 112, GB.top + 1.5 * GB.dy, { color: CY, a: .9 * aB, size: 30, w: 600 });
+  const sT = prog(t, D.d2.start + 1.2, D.d2.start + 1.7), sB = prog(t, D.d3.start + 1.4, D.d3.start + 1.9);
+  if (sT > 0) label(c, '最壞 34 步', GT.cx, GT.top + 3 * GT.dy + 66, { color: CO, a: sT * (1 - .5 * focusBot), size: 52, w: 700 });
+  if (sB > 0) label(c, '最壞 11 步', GB.cx, GB.top + 3 * GB.dy + 66, { color: CY, a: sB, size: 52, w: 700 });
   // 上：8 個葉子都爬到根（長路）
   for (let j = 0; j < 8; j++) {
     const st = D.d2.start + .2 + j * .09, p = prog(t, st, st + .9), f = 1 - prog(t, D.d3.start + .2, D.d3.start + .6);
@@ -422,10 +426,10 @@ function sEnd(c, t) {
   for (const s of BH_STREAKS) if (s.len > 0) { const t0 = s.t - o2.start + L.d4.start + .9, lt = t < t0 + 2.4 ? t - t0 : (t - t0) % 2.4; streak(c, downPath(s.k, Math.min(s.len, s.k < 64 ? 6 : 1), s.k), lt / s.d, CY, dim * (t < Ecard.start ? 1 : .8), .6, 2.4); }
   K.core(c, CX, PY.top, 8, dim * .9, CY);
 }
-const CNT = K.text(over, '', { x: 0, y: 1060, size: 112, align: 'c', ls: '.02em', lh: 1 }); CNT.style.fontFamily = 'Plex'; CNT.style.fontWeight = 700; K.glowTitle(CNT, { color: CY, strength: .8 });
-const CNT2 = K.text(over, '', { x: 0, y: 1205, size: 38, align: 'c', ls: '.04em' }); CNT2.style.fontFamily = 'Plex';
-const FORM = K.text(over, '<考試這樣寫>|Σ ⌈n/2ʰ⁺¹⌉ · O(h)|= [O(n)]', { x: 0, y: 640, size: 76, align: 'c', lh: 1.5, ls: '.02em' }); FORM.style.fontFamily = 'Plex'; FORM.style.fontWeight = 600;
-const FSUB = K.text(over, '因為 Σ h/2ʰ 收斂到 2', { x: 0, y: 1060, size: 36, align: 'c', ls: '.08em' }); FSUB.style.color = K.I(.55);
+const CNT = K.text(over, '', { x: 0, y: 1095, size: 112, align: 'c', ls: '.02em', lh: 1 }); CNT.style.fontFamily = 'Plex'; CNT.style.fontWeight = 700; K.glowTitle(CNT, { color: CY, strength: .8 });
+const CNT2 = K.text(over, '', { x: 0, y: 1240, size: 38, align: 'c', ls: '.04em', w: 500 }); CNT2.style.fontFamily = 'Plex';
+const FORM = K.text(over, '<考試這樣寫>|Σ ⌈n/2ʰ⁺¹⌉ · O(h)|<h = 0 … ⌊lg n⌋>|= [O(n)]', { x: 0, y: 600, size: 92, align: 'c', lh: 1.4, ls: '.01em' }); FORM.style.fontFamily = 'Plex'; FORM.style.fontWeight = 600;
+const FSUB = K.text(over, '因為 Σ h/2ʰ 收斂到 2', { x: 0, y: 1190, size: 36, align: 'c', ls: '.08em' }); FSUB.style.color = K.I(.55);
 function endDom(t) {
   const d4 = L.d4, show = t > d4.start - .2 && t < Ecard.start + .2;
   CNT.style.visibility = show ? 'visible' : 'hidden'; CNT2.style.visibility = show ? 'visible' : 'hidden';
@@ -436,8 +440,8 @@ function endDom(t) {
     CNT2.innerHTML = `<span style="color:${K.rgba(CO, .95)};text-decoration:line-through">插入 18,874,370</span>　<span style="color:${K.I(.65)}">n = 1,048,575</span>`;
     CNT2.style.opacity = prog(t, d4.start + 1.4, d4.start + 1.9) * out; void k;
   }
-  FORM.reveal(t, Ecard.start + .1, { mode: 'rise', dur: .7, stagger: .025 }); FORM.hide(t, DUR + 1);
-  FSUB.reveal(t, Ecard.start + 1.2, { mode: 'ink', dur: .4, stagger: .03 }); FSUB.hide(t, DUR + 1);
+  FORM.reveal(t, Ecard.start + .1, { mode: 'rise', dur: .6, stagger: .055 }); FORM.hide(t, DUR + 1);
+  FSUB.reveal(t, Ecard.start + 2.0, { mode: 'ink', dur: .4, stagger: .03 }); FSUB.hide(t, DUR + 1);
 }
 
 // ═════════ 場景排程
@@ -446,8 +450,8 @@ K.scenes([
   { id: 'title', start: T.start, end: L.a1.start, draw: sTitle, in: { type: 'cut' } },
   { id: 'ins', start: L.a1.start, end: L.b1.start, draw: sInsert, color: CO, in: { type: 'iris', dur: .7, x: CX, y: 700 } },
   { id: 'bh', start: L.b1.start, end: L.c1.start, draw: sBuild, color: CY, in: { type: 'cut' } },   // 共享元素：樹壓成陣列再長回來
-  { id: 'cup', start: L.c1.start, end: L.d1.start, draw: sCup, color: AM, in: { type: 'iris', dur: .8, x: CX, y: 860 } },
-  { id: 'recap', start: L.d1.start, end: L.d4.start, draw: sRecap, color: CY, in: { type: 'iris', dur: .8, x: CX, y: 760 } },
+  { id: 'cup', start: L.c1.start, end: L.d1.start, draw: sCup, color: AM, in: { type: 'iris', dur: .55, x: CX, y: 860 } },
+  { id: 'recap', start: L.d1.start, end: L.d4.start, draw: sRecap, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 760 } },
   { id: 'end', start: L.d4.start, end: DUR, draw: sEnd, color: CY, in: { type: 'push', dur: .7, x: CX, y: 700 } },
 ]);
 // drawScenes 只畫「目前所在」的場景；open/title 有重疊時需要兩個都畫
@@ -459,7 +463,7 @@ function drawAll(t) {
 // ── 鏡頭（景別變化）
 K.camKeys([
   [0, 1, CX, 960], [o2.start, 1, CX, 960], [o2.start + 1.2, 1.06, CX, 900, E.inOutQuart], [T.start, 1, CX, 960, E.outExpo],
-  [L.a1.start, 1, CX, 960], [A.a2.start, 1, CX, 960], [A.a3.start + .1, 1.1, 650, 800, E.inOutQuart], [A.a4.start, 1.1, 650, 800], [A.a4.start + .5, 1, CX, 960, E.inOutQuart],
+  [L.a1.start, 1, CX, 960], [A.a2.start, 1, CX, 960], [A.a3.start + .1, 1.1, 650, 800, E.inOutQuart], [A.a4.start, 1.1, 650, 800], [A.a4.start + 1.1, 1, CX, 960, E.inOutQuart],
   [A.a5.start, 1, CX, 960], [A.a5.start + .6, 1.04, CX, 1000, E.inOutQuart], [A.a6.start + .1, 1.04, CX, 1000], [A.a6.start + .6, .98, CX, 950, E.inOutQuart],
   [L.b1.start, 1, CX, 960], [B.b3.start, 1, CX, 960], [B.b3.start + .6, 1.1, CX, 1080, E.inOutQuart], [B.b4.start, 1.1, CX, 1080], [B.b4.start + .5, 1, CX, 960, E.inOutQuart],
   [B.b6.start, 1, CX, 960], [B.b6.start + .4, 1.06, CX, 880, E.inOutQuart], [B.b6.end, 1.06, CX, 880], [L.c1.start, 1, CX, 960, E.inOutQuart],
@@ -479,13 +483,13 @@ K.amb.keys([
   [L.d4.start, { haze: .14, stars: .3, dust: .5, bokeh: .3 }],
   [DUR, { haze: .14, stars: .3, dust: .5, bokeh: .3 }],
 ]);
-K.flash(T.start, .2, .6); K.flare(T.start + .05, CX, 640, .85, 1.6);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 640, .85, 1.6);
 K.flash(L.c1.start, .08, .4); K.flash(L.d4.start + .2, .1, .5);
 
 // ── 章節角標（極小，左上安全區內）
 const CHAP = K.text(over, '', { x: 64, y: 300, size: 22, ls: '.3em' }); CHAP.style.color = K.I(.42);
 const CHAPS = [[L.a1.start, '資料結構 · 堆積  /  01 插入'], [L.b1.start, '資料結構 · 堆積  /  02 由下往上'], [L.c1.start, '資料結構 · 堆積  /  03 算帳'], [L.d1.start, '資料結構 · 堆積  /  04 差在哪'], [L.d4.start, '']];
-function chap(t) { let s = ''; for (const [t0, v] of CHAPS) if (t >= t0) s = v; if (CHAP.textContent !== s) CHAP.textContent = s; CHAP.style.opacity = s ? .9 : 0; }
+function chap(t) { let s = ''; for (const [t0, v] of CHAPS) if (t >= t0) s = v; if (CHAP.textContent !== s) CHAP.textContent = s; let t0 = 0; for (const [tt] of CHAPS) if (t >= tt) t0 = tt; CHAP.style.opacity = s ? .9 * (1 - prog(t, t0 + 1.8, t0 + 2.4)) : 0; }
 
 function render(t) {
   K.begin(t);

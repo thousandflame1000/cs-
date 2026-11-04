@@ -1,5 +1,5 @@
 window.TIMING = {
- "total": 85.329,
+ "total": 85.137,
  "lines": [
   {
    "id": "o1",
@@ -244,19 +244,19 @@ window.TIMING = {
   {
    "id": "c6",
    "start": 59.998,
-   "end": 62.729,
-   "text": "加到無限也碰不到 [n]",
+   "end": 62.537,
+   "text": "怎麼加都不超過 [n]",
    "cap": true,
    "card": false,
-   "n": 9,
+   "n": 8,
    "scene": false,
    "hook": false,
    "font": "sans"
   },
   {
    "id": "c7",
-   "start": 63.029,
-   "end": 65.567,
+   "start": 62.837,
+   "end": 65.375,
    "text": "所以總成本是 [O(n)]",
    "cap": true,
    "card": false,
@@ -267,8 +267,8 @@ window.TIMING = {
   },
   {
    "id": "d1",
-   "start": 66.067,
-   "end": 68.221,
+   "start": 65.875,
+   "end": 68.029,
    "text": "差別只在[方向]",
    "cap": true,
    "card": false,
@@ -279,8 +279,8 @@ window.TIMING = {
   },
   {
    "id": "d2",
-   "start": 68.521,
-   "end": 71.444,
+   "start": 68.329,
+   "end": 71.252,
    "text": "插入讓[多數]節點走最遠",
    "cap": true,
    "card": false,
@@ -291,8 +291,8 @@ window.TIMING = {
   },
   {
    "id": "d3",
-   "start": 71.744,
-   "end": 75.629,
+   "start": 71.552,
+   "end": 75.437,
    "text": "Build-Heap 讓它們走[最近]",
    "cap": true,
    "card": false,
@@ -303,20 +303,20 @@ window.TIMING = {
   },
   {
    "id": "d4",
-   "start": 75.929,
-   "end": 79.329,
-   "text": "100 萬個數字，不到 [105 萬]次",
+   "start": 75.737,
+   "end": 79.137,
+   "text": "交換次數甚至[比 n 還少]",
    "cap": true,
    "card": false,
-   "n": 14,
+   "n": 10,
    "scene": false,
    "hook": false,
    "font": "sans"
   },
   {
    "id": "E",
-   "start": 79.629,
-   "end": 83.829,
+   "start": 79.437,
+   "end": 83.637,
    "text": "考試這樣寫",
    "cap": false,
    "card": true,
