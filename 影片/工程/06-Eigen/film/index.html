@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>特徵向量</title>
+<!--
+  資工所衝刺 · 短影音 06：特徵向量——只有兩個方向不轉
+  視覺系統：一整圈 48 支發光箭頭（海膽）放在格子平面上，矩陣 A = [2 1; 1 2] 作用時大部分箭頭被轉歪（越歪越偏珊瑚），
+  只有沿 (1,1) 與 (1,−1) 的兩支留在原本的直線上（青、琥珀發亮）；圓被拉成橢圓，半軸 3 和 1。
+  語義色：青＝λ=3 的方向、琥珀＝λ=1 的方向、珊瑚＝被轉歪的程度。貫穿物：箭頭海膽（開頭、結尾）。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+const TAU = Math.PI * 2;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', CO = '#ff6a5c', AM = '#ffc14d';
+const K = Kit({ W, H, stage, duration: DUR, seed: 61, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: AM } });
+K.warm([CY, CO, AM, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 轉歪: CO, 不轉: CY, 平行四邊形: CY, 轉了方向: CO, '3 倍': CY, '1': AM, λ: CY, 特徵向量: CY, 特徵值: AM, '0': AM, '3': CY, '(1, 1)': CY, '(1, −1)': AM, 橢圓: CY },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E;
+
+// ═════════ 平面：原點、單位長、A 的漸進作用
+const O = [CX, 840], UN = 125;
+const Am = [[2, 1], [1, 2]];
+const Ak = (k) => [[lerp(1, 2, k), lerp(0, 1, k)], [lerp(0, 1, k), lerp(1, 2, k)]];
+const ap = (m, [x, y]) => [m[0][0] * x + m[0][1] * y, m[1][0] * x + m[1][1] * y];
+const scr = ([x, y], o = O, u = UN) => [o[0] + x * u, o[1] - y * u];
+function plane(c, t, k, a, o = O, u = UN) {
+  if (a <= .003) return; const m = Ak(k);
+  c.save(); c.globalAlpha *= a;
+  for (let i = -8; i <= 8; i++) {
+    const major = i === 0;
+    c.strokeStyle = K.rgba(major ? INK : CY, major ? .35 : .1); c.lineWidth = major ? 1.6 : 1;
+    c.beginPath(); let p = scr(ap(m, [i, -8]), o, u), q = scr(ap(m, [i, 8]), o, u); c.moveTo(...p); c.lineTo(...q);
+    p = scr(ap(m, [-8, i]), o, u); q = scr(ap(m, [8, i]), o, u); c.moveTo(...p); c.lineTo(...q); c.stroke();
+  }
+  c.restore();
+}
+function arrow(c, from, to, col, a, w = 3) {
+  if (a <= .003) return; const ang = Math.atan2(to[1] - from[1], to[0] - from[0]), len = Math.hypot(to[0] - from[0], to[1] - from[1]), s = Math.min(18, len * .3);
+  K.glowLine(c, [from, to], { w, color: col, a });
+  if (len > 6) K.glowLine(c, [[to[0] - Math.cos(ang - .45) * s, to[1] - Math.sin(ang - .45) * s], to, [to[0] - Math.cos(ang + .45) * s, to[1] - Math.sin(ang + .45) * s]], { w, color: col, a });
+}
+/** 海膽：n 支單位箭頭在 A 的作用下（k 0..1）；o.eig 讓特徵方向發亮、o.dimOthers 退暗 */
+const NA = 48;
+function urchin(c, t, k, a, o = {}) {
+  if (a <= .003) return; const m = Ak(k), org = o.org || O, u = o.u || UN;
+  c.save(); c.globalAlpha *= a;
+  for (let i = 0; i < NA; i++) {
+    const th = (i + .5) / NA * TAU, v = [Math.cos(th), Math.sin(th)], w = ap(m, v);
+    const turn = Math.abs(Math.atan2(v[0] * w[1] - v[1] * w[0], v[0] * w[0] + v[1] * w[1]));   // 被轉了多少
+    const heat = clamp(turn / .35), col = K.mix(INK, CO, heat * clamp(k * 3));
+    arrow(c, org, scr(w, org, u), col, (o.dimOthers ? 1 - .7 * o.dimOthers : 1) * (.45 + .4 * heat), 1.8);
+  }
+  for (const [v, col, on] of [[[Math.SQRT1_2, Math.SQRT1_2], CY, o.eig1 ?? 0], [[-Math.SQRT1_2, -Math.SQRT1_2], CY, o.eig1 ?? 0], [[Math.SQRT1_2, -Math.SQRT1_2], AM, o.eig2 ?? 0], [[-Math.SQRT1_2, Math.SQRT1_2], AM, o.eig2 ?? 0]]) {
+    if (on <= .003) continue; const w = ap(m, v), p = scr(w, org, u); arrow(c, org, p, col, on, 4); K.core(c, ...p, 6, on, col);
+  }
+  if (o.ellipse) { const pts = []; for (let i = 0; i <= 96; i++) { const th = i / 96 * TAU; pts.push(scr(ap(m, [Math.cos(th), Math.sin(th)]), org, u)); } K.glowLine(c, pts, { w: 2.4, color: CY, a: o.ellipse }); }
+  K.core(c, ...org, 5, .9, INK);
+  c.restore();
+}
+function eigLine(c, v, col, a, o = O, u = UN) {
+  if (a <= .003) return; c.save(); c.setLineDash([10, 10]); c.strokeStyle = K.rgba(col, .6 * a); c.lineWidth = 2;
+  c.beginPath(); c.moveTo(...scr([-v[0] * 6, -v[1] * 6], o, u)); c.lineTo(...scr([v[0] * 6, v[1] * 6], o, u)); c.stroke(); c.restore();
+}
+function matrix(c, x, y, cells, size, a = 1, col = INK, cwk = 1.15) {
+  if (a <= .003) return; const cw = size * cwk, ch = size * 1.25, w = cw * 2, h = ch * 2;
+  c.save(); c.globalAlpha *= a; c.strokeStyle = K.rgba(col, .85); c.lineWidth = 3;
+  for (const s of [-1, 1]) { const xx = x + s * (w / 2 + 10); c.beginPath(); c.moveTo(xx - s * 14, y - h / 2); c.lineTo(xx, y - h / 2); c.lineTo(xx, y + h / 2); c.lineTo(xx - s * 14, y + h / 2); c.stroke(); }
+  cells.forEach((row, i) => row.forEach((v, j) => S.label(c, v, x + (j - .5) * cw, y + (i - .5) * ch, { size, w: 600, color: col, a: 1 })));
+  c.restore();
+}
+
+// ═════════ 場景 0：冷開場——海膽被 A 一拉，幾乎全部轉歪，只有兩支不轉
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  const k = E.inOutCubic(prog(t, o1.start + .5, o1.start + 2.0));
+  K.spotlight(c, CX, 120, Math.PI / 2, .6, 1000, .08 * out, INK);
+  plane(c, t, k, .5 * out * prog(t, -.6, o1.start + .6), [CX, 700], 96);
+  const eig = prog(t, o2.start, o2.start + .6);
+  urchin(c, t, k, out * prog(t, -.6, o1.start + .5), { org: [CX, 700], u: 96, eig1: eig, eig2: eig, dimOthers: .6 * eig });
+}
+
+// ═════════ 場景 1：片名卡
+const title = S.titleCard(T, { kick: 'EIGENVECTOR', big: '特徵向量', size: 190, y: 600, en: 'THE  DIRECTIONS  THAT  DON\'T  TURN', q: 'Av = λv 到底在說什麼', qGap: 330, color: CY });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= .3; urchin(c, t, 1, a, { org: [CX, 1250], u: 60, eig1: 1, eig2: 1, dimOthers: .8 }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CY);
+}
+
+// ═════════ 場景 2：A 作用在平面上
+const A = { a1: L.a1, a2: L.a2, a3: L.a3, a4: L.a4 };
+function sPlane(c, t) {
+  const k = E.inOutCubic(prog(t, A.a2.start, A.a2.start + 1.6));
+  K.ghost(c, 'Ax', CX, 1340, 260, .03, 700);
+  const k2 = E.inOutCubic(prog(t, A.a4.start, A.a4.start + 1.4)), kP = t < A.a4.start ? k * (1 - E.inOutCubic(prog(t, A.a3.start, A.a3.start + .6))) : k2;
+  plane(c, t, kP, prog(t, A.a1.start - .1, A.a1.start + .6));
+  matrix(c, CX, 330, [['2', '1'], ['1', '2']], 64, prog(t, A.a1.start + .1, A.a1.start + .6) * (1 - prog(t, A.a3.start, A.a3.start + .4)), CY);
+  S.label(c, 'A =', CX - 150, 330, { align: 'right', size: 56, w: 700, a: prog(t, A.a1.start + .1, A.a1.start + .6) * (1 - prog(t, A.a3.start, A.a3.start + .4)) });
+  // a2：單位方格變平行四邊形
+  const sq = [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]].map((p) => scr(ap(Ak(k), p)));
+  c.save(); c.globalAlpha *= prog(t, A.a1.start + .4, A.a1.start + .9) * (1 - prog(t, A.a3.start, A.a3.start + .4));
+  c.fillStyle = K.rgba(CY, .16); c.beginPath(); sq.forEach((p, i) => (i ? c.lineTo(...p) : c.moveTo(...p))); c.fill(); K.glowLine(c, sq, { w: 2.4, color: CY, a: 1 });
+  arrow(c, O, scr(ap(Ak(k), [1, 0])), CY, 1, 3); arrow(c, O, scr(ap(Ak(k), [0, 1])), AM, 1, 3);
+  c.restore();
+  // a3–a4：一圈箭頭（先畫原狀，再一起被拉）
+  const ua = prog(t, A.a3.start + .1, A.a3.start + .6);
+  if (ua > 0) urchin(c, t, Math.max(.0001, k2), ua);
+}
+S.hero('det = 3', A.a2.start + 1.4, A.a2.end, { y: 220, color: CY, size: 104 });
+
+// ═════════ 場景 3：沿 (1,1) 拉長 3 倍、沿 (1,−1) 不變
+const B = { b1: L.b1, b2: L.b2, b3: L.b3, b4: L.b4, b5: L.b5, b6: L.b6 };
+function sEig(c, t) {
+  K.ghost(c, 'λ', CX, 1300, 360, .04, 700);
+  plane(c, t, 1, .7);
+  const e1 = prog(t, B.b1.start + .1, B.b1.start + .6), e2 = prog(t, B.b3.start + .1, B.b3.start + .6);
+  eigLine(c, [Math.SQRT1_2, Math.SQRT1_2], CY, e1); eigLine(c, [Math.SQRT1_2, -Math.SQRT1_2], AM, e2);
+  urchin(c, t, 1, .5, { dimOthers: .7 });
+  // b1–b2：(1,1) 從長度 √2 拉到 3√2（畫原向量 → 被拉長）
+  const s1 = E.inOutCubic(prog(t, B.b2.start + .1, B.b2.start + 1.0)), v1 = [1, 1];
+  if (e1 > 0) { const p0 = scr(v1), p1 = scr([lerp(1, 3, s1), lerp(1, 3, s1)]); arrow(c, O, p1, CY, e1, 4.4); K.core(c, ...p1, 7, e1, CY); if (s1 > 0) S.label(c, '(3, 3)', p1[0] + 24, p1[1] - 10, { align: 'left', size: 34, w: 700, color: CY, a: s1 }); else S.label(c, '(1, 1)', p0[0] + 20, p0[1] - 10, { align: 'left', size: 34, w: 700, color: CY, a: e1 }); }
+  // b3–b4：(1,−1) 不變
+  const s2 = prog(t, B.b4.start + .1, B.b4.start + .8);
+  if (e2 > 0) { const p = scr([1, -1]); arrow(c, O, p, AM, e2, 4.4); K.core(c, ...p, 7, e2, AM); S.label(c, '(1, −1)', p[0] + 20, p[1] + 16, { align: 'left', size: 34, w: 700, color: AM, a: e2 }); if (s2 > 0) S.label(c, '× 1', p[0] + 20, p[1] + 58, { align: 'left', size: 32, color: AM, a: .8 * s2 }); }
+}
+S.hero('× 3', B.b2.start + .8, B.b2.end, { y: 220, color: CY, size: 120 });
+S.hero('Av = λv', B.b5.start + .2, B.b6.end + .1, { y: 220, color: INK, size: 130 });
+
+// ═════════ 場景 4：怎麼算
+const Cc = { c1: L.c1, c2: L.c2, c3: L.c3, c4: L.c4, c5: L.c5 };
+function sCalc(c, t) {
+  K.ghost(c, 'det', CX, 1320, 300, .03, 700);
+  const a1 = prog(t, Cc.c1.start - .1, Cc.c1.start + .5);
+  matrix(c, 470, 560, [['2 − λ', '1'], ['1', '2 − λ']], 46, a1, INK, 2.9);
+  S.label(c, 'A − λI =', 90, 560, { align: 'left', size: 40, w: 600, a: a1 * .8 });
+  // c2：det → 0
+  const a2 = prog(t, Cc.c2.start + .1, Cc.c2.start + .6);
+  if (a2 > 0) { S.label(c, 'det( A − λI ) = 0', CX, 760, { size: 60, w: 700, color: AM, a: a2 }); }
+  const a3 = prog(t, Cc.c3.start + .1, Cc.c3.start + .6);
+  if (a3 > 0) { S.math(c, [['(2 − λ)', 0], ['2', 1], [' − 1 = 0', 0]], CX, 900, 64, { a: a3 }); }
+  const a4 = prog(t, Cc.c4.start + .1, Cc.c4.start + .6);
+  if (a4 > 0) { S.label(c, 'λ = 3', CX - 180, 1040, { size: 72, w: 700, color: CY, a: a4 }); S.label(c, 'λ = 1', CX + 180, 1040, { size: 72, w: 700, color: AM, a: prog(t, Cc.c4.start + .4, Cc.c4.start + .9) }); }
+  const a5 = prog(t, Cc.c5.start + .1, Cc.c5.start + .6);
+  if (a5 > 0) { S.label(c, 'v = (1, 1)', CX - 180, 1150, { size: 44, w: 600, color: CY, a: a5 }); S.label(c, 'v = (1, −1)', CX + 180, 1150, { size: 44, w: 600, color: AM, a: prog(t, Cc.c5.start + .4, Cc.c5.start + .9) }); }
+  // 右側：小海膽持續呼吸，提醒畫面在講同一件事
+  c.save(); c.globalAlpha *= .35 * a1; urchin(c, t, .5 + .5 * Math.sin(t * .8) ** 2, 1, { org: [900, 400], u: 36, eig1: 1, eig2: 1, dimOthers: .7 }); c.restore();
+}
+
+// ═════════ 場景 5：圓被拉成橢圓 + 考試寫法
+const D = { d1: L.d1, d2: L.d2, d3: L.d3 };
+function sEllipse(c, t) {
+  const endDim = 1 - .88 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  K.ghost(c, 'AXES', CX, 1340, 240, .03, 700);
+  const k = E.inOutCubic(prog(t, D.d1.start + .1, D.d1.start + 1.4));
+  plane(c, t, k, .55);
+  // 單位圓 → 橢圓
+  const circ = []; for (let i = 0; i <= 96; i++) { const th = i / 96 * TAU; circ.push(scr([Math.cos(th), Math.sin(th)])); }
+  K.glowLine(c, circ, { w: 1.6, color: INK, a: .35 * (1 - k) });
+  const ax = prog(t, D.d2.start + .1, D.d2.start + .7);
+  urchin(c, t, k, .9, { ellipse: k, eig1: ax, eig2: ax, dimOthers: .6 * ax });
+  eigLine(c, [Math.SQRT1_2, Math.SQRT1_2], CY, ax); eigLine(c, [Math.SQRT1_2, -Math.SQRT1_2], AM, ax);
+  const lb = prog(t, D.d3.start + .1, D.d3.start + .6);
+  if (lb > 0) { const p = scr(ap(Am, [Math.SQRT1_2, Math.SQRT1_2])), q = scr(ap(Am, [Math.SQRT1_2, -Math.SQRT1_2])); S.label(c, '3', p[0] + 26, p[1] - 6, { size: 56, w: 700, color: CY, a: lb }); S.label(c, '1', q[0] + 24, q[1] + 18, { size: 56, w: 700, color: AM, a: lb }); }
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 540, { size: 32, a: .6, ls: '6px' });
+  const rows = [['det(A − λI) = 0  →  λ', AM, 54], ['(A − λI)v = 0  →  v', CY, 54], ['驗算：λ₁ + λ₂ = trace = 4', INK, 44], ['　　　λ₁ · λ₂ = det = 3', INK, 44], ['特徵向量：被 A 作用後方向不變', CY, 40]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 670 + i * 118 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+// ═════════ 場景排程
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: L.a1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'plane', start: L.a1.start, end: L.b1.start, draw: sPlane, color: CY, in: { type: 'iris', dur: .55, x: O[0], y: O[1] } },
+  { id: 'eig', start: L.b1.start, end: L.c1.start, draw: sEig, color: CY, in: { type: 'cut' } },
+  { id: 'calc', start: L.c1.start, end: L.d1.start, draw: sCalc, color: AM, in: { type: 'iris', dur: .55, x: CX, y: 700 } },
+  { id: 'ellipse', start: L.d1.start, end: DUR, draw: (c, t) => { sEllipse(c, t); sExam(c, t); }, color: CY, in: { type: 'iris', dur: .55, x: O[0], y: O[1] } },
+]);
+function drawAll(t) { if (t < L.a1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+
+// ── 鏡頭
+K.camKeys([
+  [0, 1.05, CX, 760], [T.start, 1, CX, 960, E.outExpo],
+  [L.a1.start, 1, CX, 860], [L.b1.start, 1, CX, 860],
+  [B.b2.start, 1, CX, 860], [B.b2.start + .9, .9, CX, 780, E.inOutQuart], [B.b4.end, .9, CX, 820], [L.c1.start, 1, CX, 900, E.inOutQuart],
+  [L.d1.start, 1, CX, 860], [D.d1.start + 1.4, .92, CX, 840, E.inOutQuart], [DUR, .95, CX, 860],
+]);
+K.amb.keys([
+  [0, { haze: .1, stars: .14, dust: .25 }],
+  [o1.start + 1, { haze: .16, stars: .24, dust: .45, bokeh: .15 }],
+  [T.start, { haze: .2, warm: .06, stars: .3, dust: .5, bokeh: .3 }],
+  [L.a1.start, { haze: .15, stars: .18, dust: .45, bokeh: .2 }],
+  [L.c1.start, { haze: .15, warm: .12, stars: .16, dust: .45, bokeh: .2 }],
+  [L.d1.start, { haze: .17, stars: .22, dust: .45, bokeh: .25 }],
+  [DUR, { haze: .17, stars: .25, dust: .45, bokeh: .25 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B.b2.start + .9, .06, .3);
+S.chapters([[L.a1.start, '線性代數 · 特徵值  /  01 矩陣拉平面'], [L.b1.start, '線性代數 · 特徵值  /  02 不轉的方向'], [L.c1.start, '線性代數 · 特徵值  /  03 怎麼算'], [L.d1.start, '線性代數 · 特徵值  /  04 橢圓'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .6, sfx: 'whoosh', gain: -10 },
+    { t: o2.start + .1, sfx: 'chime', gain: -9 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: L.a1.start, sfx: 'whoosh', gain: -11 },
+    { t: A.a2.start + .2, sfx: 'swish', gain: -12 },
+    { t: A.a4.start + .2, sfx: 'swish', gain: -12 },
+    { t: L.b1.start + .2, sfx: 'pop', gain: -12 },
+    { t: B.b2.start + .9, sfx: 'thump', gain: -7 },
+    { t: B.b3.start + .2, sfx: 'pop', gain: -12 },
+    { t: B.b5.start + .2, sfx: 'chime', gain: -10 },
+    { t: L.c1.start, sfx: 'whoosh', gain: -11 },
+    { t: Cc.c4.start + .2, sfx: 'thump', gain: -8 },
+    { t: L.d1.start, sfx: 'reverse', align: 'end', gain: -10 },
+    { t: D.d3.start + .2, sfx: 'chime', gain: -10 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

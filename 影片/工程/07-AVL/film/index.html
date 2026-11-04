@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>AVL 旋轉</title>
+<!--
+  資工所衝刺 · 短影音 07：AVL 旋轉——四種失衡只有一招
+  視覺系統：發光節點樹；歪掉的鏈是珊瑚色，扶正後是青色；平衡係數小字貼在節點旁（±2 時變珊瑚）。
+  核心畫面：三節點重組——x < y < z 裡把中間的 y 拉上來，T0–T3 四棵子樹（半透明三角形）依中序掛回去，
+  下方的中序條在重組前後完全不變。貫穿物：1～7 的鏈變成完美平衡樹（開頭、結尾）。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+const TAU = Math.PI * 2;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', CO = '#ff6a5c', AM = '#ffc14d', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 71, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: CO } });
+K.warm([CY, CO, AM, VI, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { '6': CO, '2': CY, '1': CY, 平衡係數: AM, 檢查: AM, '−2': CO, 提上來: CY, 歪的: CO, 一直線: AM, 正: CY, 一招: CY, '中間的 y': CY, 掛回去: AM, 不變: CY, 一次: CY, 'O(lg n)': CO },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E;
+
+// ═════════ 共用：佈局插值、畫樹、平衡係數
+/** 兩個佈局 {key: [x, y]} 之間插值（每個節點錯峰一點） */
+function lay(A, B, k, st = .08) { const o = {}, keys = Object.keys(B); keys.forEach((key, i) => { const a = A[key] || B[key], kk = E.inOutCubic(clamp((k - i * st / keys.length) / (1 - st + 1e-6))); o[key] = [lerp(a[0], B[key][0], kk), lerp(a[1], B[key][1], kk) - Math.sin(Math.PI * kk) * 30]; }); return o; }
+/** 畫樹：pos 佈局、edges [[父, 子]]、o: {col(key), r, a, bf: {key: 值}, bfA, lit(key)} */
+function tree(c, pos, edges, o = {}) {
+  const r = o.r ?? 40, A = o.a ?? 1; if (A <= .003) return;
+  c.save(); c.globalAlpha *= A;
+  for (const [p, q] of edges) if (pos[p] && pos[q]) S.edge(c, [pos[p][0], pos[p][1] + r * .8], [pos[q][0], pos[q][1] - r * .8], o.ecol ? o.ecol(p, q) : (o.col ? o.col(q) : CY), o.ea ?? 1, 2.4);
+  for (const key of Object.keys(pos)) {
+    const [x, y] = pos[key], col = o.col ? o.col(key) : CY;
+    S.node(c, x, y, r, col, 1, o.labels === false ? null : key, o.lit ? o.lit(key) : 0);
+    if (o.bf && o.bf[key] != null && (o.bfA ?? 1) > 0) { const v = o.bf[key], bad = Math.abs(v) >= 2; S.label(c, (v > 0 ? '+' : '') + v, x + r + 14, y - r + 4, { align: 'left', size: bad ? 34 : 26, w: 700, color: bad ? CO : AM, a: (o.bfA ?? 1) * (bad ? 1 : .8) }); if (bad) K.sprC(c, CO, x, y, r * 3, .3 * (o.bfA ?? 1), 'soft'); }
+  }
+  c.restore();
+}
+function rotArrow(c, x, y, r, a0, a1, col, a) { if (a <= .003) return; const pts = []; for (let i = 0; i <= 30; i++) { const th = lerp(a0, a1, i / 30); pts.push([x + Math.cos(th) * r, y + Math.sin(th) * r]); } K.glowLine(c, pts, { w: 3, color: col, a }); const e = pts[30], b = pts[28], ang = Math.atan2(e[1] - b[1], e[0] - b[0]); K.glowLine(c, [[e[0] - Math.cos(ang - .5) * 18, e[1] - Math.sin(ang - .5) * 18], e, [e[0] - Math.cos(ang + .5) * 18, e[1] - Math.sin(ang + .5) * 18]], { w: 3, color: col, a }); }
+
+// 1～7：鏈 vs 完美平衡
+const CHAIN = Object.fromEntries([1, 2, 3, 4, 5, 6, 7].map((v, i) => [v, [210 + i * 110, 360 + i * 115]]));
+const BAL = { 4: [540, 420], 2: [330, 600], 6: [750, 600], 1: [225, 780], 3: [435, 780], 5: [645, 780], 7: [855, 780] };
+const E_CHAIN = [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7]], E_BAL = [[4, 2], [4, 6], [2, 1], [2, 3], [6, 5], [6, 7]];
+
+// ═════════ 場景 0：冷開場——一條歪到底的鏈，啪一聲扶正成平衡樹
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  const k = prog(t, o2.start + .1, o2.start + 1.3);
+  K.spotlight(c, CX, 90, Math.PI / 2, .6, 1100, .08 * out, INK);
+  const grow = (i) => prog(t, o1.start - .2 + i * .22, o1.start + .2 + i * .22);
+  const pos = lay(CHAIN, BAL, k, .3);
+  const vis = Object.fromEntries(Object.entries(pos).filter(([key]) => grow(+key - 1) > 0));
+  c.save(); c.globalAlpha *= out;
+  tree(c, vis, k < .5 ? E_CHAIN : E_BAL, { col: () => K.mix(CO, CY, k), r: 38, ea: Math.abs(k - .5) * 2, lit: (key) => (k > .9 ? .4 : 0) });
+  // 高度刻度：左側的高度條從 6 收成 2
+  const hy0 = 360, hy1 = lerp(360 + 6 * 115, 780, E.inOutCubic(k));
+  K.glowLine(c, [[110, hy0], [110, hy1]], { w: 3, color: K.mix(CO, CY, k), a: prog(t, o1.start + 1, o1.start + 1.5) });
+  c.restore();
+}
+K.flash(o2.start + .9, .08, .3);
+
+// ═════════ 場景 1：片名卡
+const title = S.titleCard(T, { kick: 'AVL TREE', big: 'AVL 旋轉', size: 190, y: 600, en: 'BALANCE  BY  ROTATION', q: '四種失衡，其實只有一招', qGap: 330, color: CY });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= .35 * a; const sc = Object.fromEntries(Object.entries(BAL).map(([k, [x, y]]) => [k, [CX + (x - CX) * .7, 1130 + (y - 420) * .7]])); tree(c, sc, E_BAL, { r: 26, labels: false }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CY);
+}
+
+// ═════════ 場景 2：平衡係數 + 插入後往上檢查
+const A = { a1: L.a1, a2: L.a2, a3: L.a3 };
+const BAL8 = Object.assign({}, BAL, { 8: [925, 960] });
+function sRule(c, t) {
+  K.ghost(c, 'BALANCE', CX, 1320, 210, .03, 700);
+  const ins = prog(t, A.a3.start + .1, A.a3.start + .7, E.outBack);
+  const pos = Object.assign({}, BAL); if (ins > 0) pos[8] = [925, lerp(700, 960, ins)];
+  const bfA = prog(t, A.a2.start + .1, A.a2.start + .6);
+  const path = [8, 7, 6, 4], chk = (key) => { const i = path.indexOf(+key); return i < 1 ? 0 : prog(t, A.a3.start + .7 + (i - 1) * .4, A.a3.start + 1.0 + (i - 1) * .4); };
+  const bf = { 1: 0, 2: 0, 3: 0, 4: chk(4) > .5 ? -1 : 0, 5: 0, 6: chk(6) > .5 ? -1 : 0, 7: chk(7) > .5 ? -1 : 0 }; if (ins > 0) bf[8] = 0;
+  tree(c, pos, ins > 0 ? E_BAL.concat([[7, 8]]) : E_BAL, { a: prog(t, A.a1.start - .1, A.a1.start + .5), bf, bfA, lit: (key) => chk(key) + (+key === 8 ? ins : 0) });
+  // a1：左右子樹高度的比較條（根 4 的左右各高 1）
+  const hb = prog(t, A.a1.start + .4, A.a1.start + .9) * (1 - prog(t, A.a2.start, A.a2.start + .4));
+  if (hb > 0) { for (const [x, col] of [[330, CY], [750, CY]]) { c.save(); c.globalAlpha *= hb; c.strokeStyle = K.rgba(col, .5); c.setLineDash([6, 6]); c.lineWidth = 2; K.roundRect(c, x - 170, 540, 340, 300, 30); c.stroke(); c.restore(); } S.label(c, '高 1', 330, 880, { size: 32, w: 700, color: CY, a: hb }); S.label(c, '高 1', 750, 880, { size: 32, w: 700, color: CY, a: hb }); }
+  // a3：沿路往上的檢查光
+  const up = prog(t, A.a3.start + .7, A.a3.start + 2.0);
+  if (up > 0 && up < 1) S.streak(c, path.map((k) => pos[k]), up, AM, 1, .5, 3);
+}
+S.hero('bf = h左 − h右', A.a2.start + .3, A.a2.end, { y: 230, color: AM, size: S.SIZE.mid });
+
+// ═════════ 場景 3：RR——左旋
+const B = { b1: L.b1, b2: L.b2, b3: L.b3, b4: L.b4 };
+const RR0 = { 1: [380, 560], 2: [540, 740], 3: [700, 920] }, RR1 = { 2: [540, 560], 1: [380, 740], 3: [700, 740] };
+function sRR(c, t) {
+  K.ghost(c, 'RR', CX, 1320, 300, .03, 700);
+  const g = (i) => prog(t, B.b1.start - .1 + i * .4, B.b1.start + .3 + i * .4, E.outBack);
+  const k = prog(t, B.b3.start + .3, B.b3.start + 1.3);
+  const pos = lay(RR0, RR1, k, .2);
+  const vis = Object.fromEntries(Object.entries(pos).filter(([key]) => g(+key - 1) > 0).map(([key, [x, y]]) => [key, [x, y - (1 - g(+key - 1)) * 120]]));
+  const bad = prog(t, B.b2.start + .1, B.b2.start + .5) * (1 - prog(t, B.b3.start + .3, B.b3.start + .8));
+  const bf = k < .5 ? { 1: bad > .5 ? -2 : 0, 2: bad > .5 ? -1 : 0, 3: 0 } : { 2: 0, 1: 0, 3: 0 };
+  tree(c, vis, k < .5 ? [[1, 2], [2, 3]] : [[2, 1], [2, 3]], { col: () => (k > .5 ? CY : K.mix(CY, CO, bad)), bf, bfA: prog(t, B.b2.start, B.b2.start + .4), ea: Math.abs(k - .5) * 2, lit: (key) => (+key === 2 ? prog(t, B.b3.start, B.b3.start + .4) : 0) });
+  rotArrow(c, 540, 650, 210, -2.4, -.5, CY, prog(t, B.b3.start, B.b3.start + .3) * (1 - prog(t, B.b3.start + 1.2, B.b3.start + 1.5)));
+  // b4：高度條
+  const hb = prog(t, B.b4.start + .1, B.b4.start + .6);
+  if (hb > 0) { K.glowLine(c, [[200, 560], [200, 740]], { w: 3, color: CY, a: hb }); S.label(c, '高 1', 200, 790, { size: 32, w: 700, color: CY, a: hb }); }
+}
+S.hero('左旋', B.b3.start + .5, B.b3.end, { y: 230, color: CY, size: 120 });
+
+// ═════════ 場景 4：LR——轉一次不夠，要兩次
+const Cc = { c1: L.c1, c2: L.c2, c3: L.c3, c4: L.c4 };
+const LR0 = { 3: [640, 560], 1: [420, 740], 2: [540, 920] };
+const LRbad = { 1: [420, 560], 3: [640, 740], 2: [540, 920] };
+const LRline = { 3: [640, 560], 2: [500, 740], 1: [360, 920] };
+const LR2 = { 2: [540, 560], 1: [380, 740], 3: [700, 740] };
+function sLR(c, t) {
+  K.ghost(c, 'LR', CX, 1320, 300, .03, 700);
+  const g = (key) => ({ 3: prog(t, Cc.c1.start - .1, Cc.c1.start + .3, E.outBack), 1: prog(t, Cc.c1.start + .4, Cc.c1.start + .8, E.outBack), 2: prog(t, Cc.c1.start + .8, Cc.c1.start + 1.2, E.outBack) })[key];
+  // c2：試一次右旋 → 還是歪的 → 退回
+  const try1 = prog(t, Cc.c2.start + .1, Cc.c2.start + .9) * (1 - prog(t, Cc.c2.start + 1.7, Cc.c2.start + 2.3));
+  const s1 = prog(t, Cc.c3.start + .2, Cc.c3.start + 1.1), s2 = prog(t, Cc.c4.start + .1, Cc.c4.start + 1.0);
+  let pos, edges;
+  if (s2 > 0) { pos = lay(LRline, LR2, s2, .2); edges = s2 < .5 ? [[3, 2], [2, 1]] : [[2, 1], [2, 3]]; }
+  else if (s1 > 0) { pos = lay(LR0, LRline, s1, .2); edges = s1 < .5 ? [[3, 1], [1, 2]] : [[3, 2], [2, 1]]; }
+  else { pos = lay(LR0, LRbad, try1, .2); edges = try1 < .5 ? [[3, 1], [1, 2]] : [[1, 3], [3, 2]]; }
+  const vis = Object.fromEntries(Object.entries(pos).map(([key, [x, y]]) => [key, [x, y - (1 - g(key)) * 120]]));
+  const done = s2 > .6, wrong = try1 > .6 && s1 <= 0;
+  const bf = done ? { 1: 0, 2: 0, 3: 0 } : wrong ? { 1: -2, 3: 1, 2: 0 } : s1 > .6 ? { 3: 2, 2: 1, 1: 0 } : { 3: 2, 1: -1, 2: 0 };
+  const k = s1 > 0 ? (s2 > 0 ? s2 : .3) : 0;
+  const ea = s2 > 0 ? Math.abs(s2 - .5) * 2 : s1 > 0 ? Math.abs(s1 - .5) * 2 : Math.abs(try1 - .5) * 2;
+  tree(c, vis, edges, { col: () => (done ? CY : wrong ? CO : K.mix(CO, AM, k)), bf, bfA: prog(t, Cc.c1.start + 1.2, Cc.c1.start + 1.6), ea });
+  if (wrong) S.label(c, '✗', 860, 600, { size: 90, w: 700, color: CO, a: prog(t, Cc.c2.start + .8, Cc.c2.start + 1.0) });
+  rotArrow(c, 450, 820, 150, 2.2, .3, AM, prog(t, Cc.c3.start, Cc.c3.start + .3) * (1 - prog(t, Cc.c3.start + 1.1, Cc.c3.start + 1.4)));
+  rotArrow(c, 600, 650, 200, -.6, -2.6, CY, prog(t, Cc.c4.start, Cc.c4.start + .3) * (1 - prog(t, Cc.c4.start + 1.0, Cc.c4.start + 1.3)));
+}
+S.hero('先左旋', Cc.c3.start + .5, Cc.c3.end, { y: 230, color: AM, size: 110 });
+S.hero('再右旋', Cc.c4.start + .4, Cc.c4.end, { y: 230, color: CY, size: 110 });
+K.shake(Cc.c2.start + .9, 7, .25);
+
+// ═════════ 場景 5：一招——三節點重組
+const D = { d1: L.d1, d2: L.d2, d3: L.d3, d4: L.d4, d5: L.d5 };
+const TN0 = { z: [660, 520], x: [420, 690], y: [560, 860] }, TN1 = { y: [540, 520], x: [340, 690], z: [740, 690] };
+const SUB0 = { T0: [310, 860], T1: [470, 1030], T2: [650, 1030], T3: [800, 690] }, SUB1 = { T0: [250, 860], T1: [430, 860], T2: [650, 860], T3: [830, 860] };
+const SUBCOL = { T0: VI, T1: AM, T2: CO, T3: '#7fd3ff' };
+function subtree(c, x, y, name, a, col) { if (a <= .003) return; c.save(); c.globalAlpha *= a; c.beginPath(); c.moveTo(x, y - 36); c.lineTo(x + 62, y + 80); c.lineTo(x - 62, y + 80); c.closePath(); const g = c.createLinearGradient(0, y - 36, 0, y + 80); g.addColorStop(0, K.rgba(col, .45)); g.addColorStop(1, K.rgba(col, .08)); c.fillStyle = g; c.fill(); c.strokeStyle = K.rgba(col, .85); c.lineWidth = 2; c.stroke(); S.label(c, name, x, y + 44, { size: 30, w: 700, color: '#ffffff', a: .9 }); c.restore(); }
+function sTri(c, t) {
+  const endDim = 1 - .9 * prog(t, L.e1.start - .3, L.e1.start + .3);
+  c.save(); c.globalAlpha *= endDim;
+  K.ghost(c, 'x < y < z', CX, 1330, 150, .03, 700);
+  const k = prog(t, D.d3.start + .2, D.d3.start + 1.3), ks = prog(t, D.d4.start + .1, D.d4.start + 1.2);
+  const pos = lay(TN0, TN1, k, .15), sp = {}; for (const key of Object.keys(SUB0)) { const kk = E.inOutCubic(k); sp[key] = [lerp(SUB0[key][0], SUB1[key][0], kk), lerp(SUB0[key][1], SUB1[key][1], kk)]; }
+  const lab = prog(t, D.d2.start + .1, D.d2.start + .6);
+  // 子樹接線
+  const par0 = { T0: 'x', T1: 'y', T2: 'y', T3: 'z' }, par1 = { T0: 'x', T1: 'x', T2: 'z', T3: 'z' };
+  const subA = prog(t, D.d1.start + .2, D.d1.start + .8);
+  for (const key of Object.keys(sp)) { const p = pos[(k < .5 ? par0 : par1)[key]]; S.edge(c, [p[0], p[1] + 32], [sp[key][0], sp[key][1] - 34], SUBCOL[key], subA * Math.abs(k - .5) * 2, 1.8); const pulse = M.hit(t, [D.d4.start + .2 + ['T0', 'T1', 'T2', 'T3'].indexOf(key) * .25], .25); subtree(c, ...sp[key], key, subA, SUBCOL[key]); if (pulse > .01) K.sprC(c, SUBCOL[key], sp[key][0], sp[key][1] + 30, 120, .5 * pulse, 'soft'); }
+  tree(c, pos, k < .5 ? [['z', 'x'], ['x', 'y']] : [['y', 'x'], ['y', 'z']], { col: (key) => (key === 'y' ? CY : INK), r: 42, ea: Math.abs(k - .5) * 2, lit: (key) => (key === 'y' ? prog(t, D.d3.start, D.d3.start + .4) : 0) });
+  // 三個節點的大小標籤
+  if (lab > 0) { S.label(c, 'x ＜ y ＜ z', CX, 380, { size: 50, w: 700, color: INK, a: lab }); }
+  // d5：下方中序條，重組前後一樣
+  const io = prog(t, D.d5.start + .1, D.d5.start + .7);
+  if (io > 0) { const seq = ['T0', 'x', 'T1', 'y', 'T2', 'z', 'T3'], y = 1150; seq.forEach((s, i) => { const x = 180 + i * 120, col = SUBCOL[s] || (s === 'y' ? CY : INK); c.save(); c.globalAlpha *= io; K.roundRect(c, x - 50, y - 34, 100, 68, 14); c.fillStyle = K.rgba(col, .18); c.fill(); c.strokeStyle = K.rgba(col, .8); c.lineWidth = 2; c.stroke(); S.label(c, s, x, y + 2, { size: 32, w: 700, color: '#ffffff', a: .95 }); c.restore(); const src = sp[s] || pos[s]; if (src) { c.save(); c.setLineDash([4, 6]); c.strokeStyle = K.rgba(col, .35 * io); c.lineWidth = 1.4; c.beginPath(); c.moveTo(src[0], src[1] + (sp[s] ? 80 : 40)); c.lineTo(x, y - 36); c.stroke(); c.restore(); } }); }
+  c.restore();
+}
+
+// ═════════ 場景 6：插入 vs 刪除 + 考試寫法
+const Ee = { e1: L.e1, e2: L.e2 };
+const PATH = Array.from({ length: 6 }, (_, i) => [CX + (i % 2 ? 90 : -90), 1120 - i * 120]);
+function sSum(c, t) {
+  const endDim = 1 - .9 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  // e1：一次旋轉後整條路徑恢復
+  const a1 = prog(t, Ee.e1.start - .1, Ee.e1.start + .5);
+  for (let i = 0; i < PATH.length; i++) { const hot = i === 1 ? prog(t, Ee.e1.start + .6, Ee.e1.start + 1.0) : 0; if (i) S.edge(c, PATH[i - 1], PATH[i], CY, a1, 2); S.node(c, ...PATH[i], 30, hot ? CY : '#8fb4d8', a1, null, hot); }
+  if (a1 > 0) rotArrow(c, PATH[1][0], PATH[1][1], 70, -2.5, .2, CY, prog(t, Ee.e1.start + .6, Ee.e1.start + 1.0) * (1 - prog(t, Ee.e2.start, Ee.e2.start + .3)));
+  // e2：刪除時失衡往上傳，每層都可能轉
+  for (let i = 1; i < PATH.length; i++) { const p = prog(t, Ee.e2.start + .3 + (i - 1) * .35, Ee.e2.start + .7 + (i - 1) * .35); if (p > 0) { rotArrow(c, PATH[i][0], PATH[i][1], 66, -2.5, .2, CO, p * (1 - prog(t, Ec.start - .3, Ec.start))); K.core(c, ...PATH[i], 5, p, CO); } }
+  c.restore();
+}
+S.hero('≤ 1 次', Ee.e1.start + .5, Ee.e1.end, { y: 230, color: CY, size: 120 });
+S.hero('O(lg n)', Ee.e2.start + .6, Ee.e2.end + .1, { y: 230, color: CO, size: 120 });
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['LL → 右旋　RR → 左旋', CY, 52], ['LR → 先左後右　RL → 先右後左', AM, 46], ['插入：最多一次（單或雙）旋轉', CY, 44], ['刪除：最多 O(lg n) 次', CO, 44], ['N(h) = N(h−1) + N(h−2) + 1 → h ≈ 1.44 lg n', INK, 34]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 118 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+// ═════════ 場景排程
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: L.a1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'rule', start: L.a1.start, end: L.b1.start, draw: sRule, color: CY, in: { type: 'iris', dur: .55, x: 540, y: 420 } },
+  { id: 'rr', start: L.b1.start, end: L.c1.start, draw: sRR, color: CY, in: { type: 'iris', dur: .55, x: 380, y: 560 } },
+  { id: 'lr', start: L.c1.start, end: L.d1.start, draw: sLR, color: AM, in: { type: 'iris', dur: .55, x: 640, y: 560 } },
+  { id: 'tri', start: L.d1.start, end: L.e1.start, draw: sTri, color: CY, in: { type: 'iris', dur: .55, x: 660, y: 520 } },
+  { id: 'sum', start: L.e1.start, end: DUR, draw: (c, t) => { sSum(c, t); sExam(c, t); }, color: CY, in: { type: 'push', dur: .6, x: CX, y: 800 } },
+]);
+function drawAll(t) { if (t < L.a1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+
+// ── 鏡頭
+K.camKeys([
+  [0, 1, CX, 960], [T.start, 1, CX, 960],
+  [L.a1.start, 1, CX, 880], [A.a3.start, 1, CX, 880], [A.a3.start + .6, 1.12, 700, 820, E.inOutQuart], [A.a3.end, 1.12, 700, 820], [L.b1.start, 1, CX, 880, E.inOutQuart],
+  [B.b2.start, 1, CX, 880], [B.b2.start + .5, 1.15, CX, 800, E.inOutQuart], [B.b4.end, 1.15, CX, 800], [L.c1.start, 1, CX, 880, E.inOutQuart],
+  [L.d1.start, 1, CX, 880], [L.e1.start, 1, CX, 900], [DUR, 1.03, CX, 900],
+]);
+K.amb.keys([
+  [0, { haze: .12, stars: .14, dust: .25 }],
+  [o1.start + 1, { haze: .17, warm: .05, stars: .24, dust: .45, bokeh: .15 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3 }],
+  [L.a1.start, { haze: .16, stars: .18, dust: .45, bokeh: .2 }],
+  [L.c1.start, { haze: .15, warm: .1, stars: .16, dust: .45, bokeh: .2 }],
+  [L.d1.start, { haze: .17, stars: .22, dust: .45, bokeh: .25, grid: .25 }],
+  [DUR, { haze: .17, stars: .25, dust: .45, bokeh: .25 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+S.chapters([[L.a1.start, '資料結構 · 平衡樹  /  01 平衡係數'], [L.b1.start, '資料結構 · 平衡樹  /  02 單旋轉'], [L.c1.start, '資料結構 · 平衡樹  /  03 雙旋轉'], [L.d1.start, '資料結構 · 平衡樹  /  04 只有一招'], [L.e1.start, '資料結構 · 平衡樹  /  05 插入 vs 刪除'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    ...[0, 1, 2, 3, 4, 5, 6].map((i) => ({ t: o1.start - .1 + i * .22, sfx: 'tick', gain: -16 })),
+    { t: o2.start + .3, sfx: 'whoosh', gain: -9 },
+    { t: o2.start + .9, sfx: 'thump', gain: -8 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: L.a1.start, sfx: 'whoosh', gain: -11 },
+    { t: A.a3.start + .5, sfx: 'pop', gain: -12 },
+    { t: L.b1.start, sfx: 'whoosh', gain: -11 },
+    { t: B.b2.start + .3, sfx: 'glitch', gain: -12 },
+    { t: B.b3.start + .5, sfx: 'swish', gain: -10 },
+    { t: L.c1.start, sfx: 'whoosh', gain: -11 },
+    { t: Cc.c2.start + .9, sfx: 'glitch', gain: -11 },
+    { t: Cc.c3.start + .5, sfx: 'swish', gain: -11 },
+    { t: Cc.c4.start + .5, sfx: 'swish', gain: -10 },
+    { t: Cc.c4.start + 1.0, sfx: 'chime', gain: -11 },
+    { t: L.d1.start, sfx: 'whoosh', gain: -11 },
+    { t: D.d3.start + .6, sfx: 'swish', gain: -10 },
+    { t: D.d5.start + .4, sfx: 'chime', gain: -10 },
+    { t: L.e1.start, sfx: 'reverse', align: 'end', gain: -10 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
