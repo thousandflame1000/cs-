@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>歐幾里得演算法</title>
+<!--
+  資工所衝刺 · 短影音 15：歐幾里得演算法——把長方形切成正方形
+  記憶宮殿：離散館 · 第 5 間。地板上一塊 1071 × 462 的發光地磚；每切一刀就切下最大的正方形（第一輪紫、第二輪琥珀、
+  第三輪青），最後剛好切滿的 21 就是 gcd。後半倒著代回去得到 Bézout 係數；最後是 21 × 13 的 Fibonacci 地磚與黃金螺線（最壞情況）。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', VI = '#b48cff', AM = '#ffc14d', CY = '#5be7ff', CO = '#ff6a5c', GD = '#ffd27a';
+const K = Kit({ W, H, stage, duration: DUR, seed: 151, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: VI, accent2: AM } });
+K.warm([VI, AM, CY, CO, GD, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .45, fogNear: 10, fogFar: 28 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { '3': AM, 正方形: VI, '147': AM, '21': CY, 一路傳下去: VI, 'a − qb': AM, Bézout: AM, '7': CY, Fibonacci: GD, 一塊: CO, 'O(log n)': CY },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+
+// ═════════ 1071 × 462 地磚：x 寬 462、y 長 1071
+const U = 6 / 1071, X0 = -231 * U, Y0 = -3;
+const R = (x, y, w, h) => ({ x: X0 + x * U, y: Y0 + y * U, w: w * U, h: h * U });
+const SQ = [];
+[0, 462].forEach((y) => SQ.push({ ...R(0, y, 462, 462), lv: 0, n: 462 }));
+[0, 147, 294].forEach((x) => SQ.push({ ...R(x, 924, 147, 147), lv: 1, n: 147 }));
+for (let k = 0; k < 7; k++) SQ.push({ ...R(441, 924 + k * 21, 21, 21), lv: 2, n: 21 });
+const LV = [VI, AM, CY];
+// 切下的時刻
+const CUT = [L.a3.start + .3, L.a3.start + 1.0, L.a4.start + .3, L.a4.start + .7, L.a4.start + 1.1, ...Array.from({ length: 7 }, (_, k) => L.a5.start + .2 + k * .14)];
+function slab(c, q, z, col, a, o = {}) {
+  if (a <= .003) return; const g = o.gap ?? .012, x0 = q.x + g, y0 = q.y + g, x1 = q.x + q.w - g, y1 = q.y + q.h - g;
+  const top = [[x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z]];
+  V.poly(c, [[x0, y0, 0], [x1, y0, 0], [x1, y0, z], [x0, y0, z]], K.rgba(col, .25 * a), null, 1);
+  V.poly(c, top, K.rgba(col, (o.fill ?? .35) * a), K.rgba(K.mix(col, '#ffffff', .4), .9 * a), 1);
+  if (o.label) V.label(c, o.label, [(x0 + x1) / 2, (y0 + y1) / 2, z + .02], { size: o.ls ?? .3, w: 700, color: '#ffffff', a, minPx: 14, maxPx: 80 });
+}
+function board(c, t, o = {}) {
+  const A = o.a ?? 1; if (A <= .003) return;
+  const all = R(0, 0, 462, 1071);
+  V.poly(c, [[all.x, all.y, .005], [all.x + all.w, all.y, .005], [all.x + all.w, all.y + all.h, .005], [all.x, all.y + all.h, .005]], K.rgba('#9fb3d6', .08 * A), K.rgba('#9fb3d6', .6 * A), 1);
+  SQ.forEach((q, i) => {
+    const p = o.all ? 1 : prog(t, CUT[i], CUT[i] + .45, E.outBack); if (p <= 0) return;
+    const glow = o.glowLv != null && q.lv === o.glowLv ? 1 : 0;
+    slab(c, q, .02 + .1 * clamp(p) * (1 + q.lv * .3), LV[q.lv], A * clamp(p * 1.4), { fill: .3 + .25 * glow, label: q.lv < 2 ? String(q.n) : null, ls: q.lv === 0 ? .55 : .3, gap: q.lv === 2 ? .006 : .012 });
+  });
+  // 刀光：每次切的那條線
+  CUT.slice(0, 5).forEach((t0, i) => { const k = prog(t, t0 - .25, t0) * (1 - prog(t, t0, t0 + .3)); if (k <= 0 || o.all) return; const q = SQ[i]; const horiz = q.lv === 0; const a = horiz ? [[q.x - .2, q.y + q.h, .1], [q.x + q.w + .2, q.y + q.h, .1]] : [[q.x + q.w, q.y - .1, .1], [q.x + q.w, q.y + q.h + .1, .1]]; V.line(c, a[0], a[1], { color: '#ffffff', a: k, w: 3 }); });
+}
+// Fibonacci 21 × 13
+const FS = .2, FX = (x) => (x - 10.5) * FS, FY = (y) => (y - 6.5) * FS - .3;
+const FIB = [[0, 0, 13, VI], [13, 5, 8, AM], [16, 0, 5, CY], [13, 0, 3, GD], [13, 3, 2, VI], [15, 4, 1, AM], [15, 3, 1, CY]];
+const ARC = [[13, 0, 13, 90, 180], [13, 5, 8, 90, 0], [16, 5, 5, 0, -90], [16, 3, 3, -90, -180], [15, 3, 2, 180, 90], [15, 4, 1, 90, 0], [15, 4, 1, 0, -90]];
+function fib(c, t, t0, a = 1) {
+  FIB.forEach(([x, y, s, col], i) => { const p = prog(t, t0 + i * .35, t0 + .4 + i * .35, E.outBack); if (p <= 0) return; slab(c, { x: FX(x), y: FY(y), w: s * FS, h: s * FS }, .02 + .08 * clamp(p), col, a * clamp(p), { label: s >= 2 ? String(s) : null, ls: Math.min(.5, s * .06 + .1), gap: .01 }); });
+  const sp = prog(t, t0 + 1.0, t0 + 3.2);
+  if (sp > 0) { const pts = []; ARC.forEach(([cx, cy, r, a0, a1]) => { for (let k = 0; k <= 16; k++) { const ang = (a0 + (a1 - a0) * k / 16) * Math.PI / 180; pts.push([FX(cx + Math.cos(ang) * r), FY(cy + Math.sin(ang) * r), .2]); } }); V.path(c, pts, { color: GD, w: 3.4, a, p: sp }); }
+}
+
+// ═════════ 鏡頭
+const camAll = { pos: [0, -7.6, 7.4], tgt: [0, .2, 0], fov: 44 };
+V.camKeys([
+  [0, { pos: [2.4, -6.6, 6.6], tgt: [0, .4, 0], fov: 44 }], [T.start, { pos: [-1.2, -7.8, 7.6], tgt: [0, .2, 0], fov: 44 }],
+  [A1.start, camAll], [L.a3.end, camAll], [L.a4.start + .2, { pos: [.6, -1.4, 4.4], tgt: [0, 2.3, 0], fov: 44 }], [L.a4.end, { pos: [.7, -1.2, 4.2], tgt: [0, 2.4, 0], fov: 44 }],
+  [L.a5.start + .2, { pos: [1.8, .6, 2.2], tgt: [1.1, 2.6, 0], fov: 44 }], [L.a5.end, { pos: [1.9, .7, 2.1], tgt: [1.1, 2.6, 0], fov: 44 }],
+  [B1.start + .5, camAll], [C1.start + .5, Object.assign({}, camAll, { pos: [-1.6, -7.4, 7.2] })], [L.c4.end, Object.assign({}, camAll, { pos: [-2.0, -7.2, 7.0] })],
+  [D1.start + .5, { pos: [0, -7.6, 7.6], tgt: [0, -.2, 0], fov: 44 }], [Ec.start, { pos: [.6, -8.4, 8.2], tgt: [0, -.2, 0], fov: 44 }], [DUR, { pos: [1, -8.8, 8.4], tgt: [0, -.2, 0], fov: 44 }],
+]);
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: VI, a: .7 * a, major: 3 });
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.5, o1.start + .4);
+  room(c);
+  const save = CUT.slice(); const t0 = o1.start + .4; [0, 1].forEach((i) => (CUT[i] = t0 + i * .35)); [2, 3, 4].forEach((i) => (CUT[i] = t0 + .9 + (i - 2) * .25)); for (let k = 0; k < 7; k++) CUT[5 + k] = o2.start + .2 + k * .08;
+  board(c, t, { glowLv: t > o2.start + .6 ? 2 : null });
+  CUT.splice(0, CUT.length, ...save);
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '離散數學 · 數論', big: '輾轉相除', size: 190, y: 600, en: 'THE  EUCLIDEAN  ALGORITHM', q: '為什麼一直取餘數就會找到答案', qGap: 330, color: VI });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .3; room(c); board(c, t, { all: true }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), VI);
+}
+function sCut(c, t) {
+  room(c);
+  board(c, t, { a: prog(t, A1.start - .1, A1.start + .5) });
+  const dims = prog(t, A1.start + .3, A1.start + .8) * (1 - prog(t, L.a3.start, L.a3.start + .3));
+  if (dims > 0) { V.label(c, '462', [0, Y0 - .45, .05], { size: .45, w: 700, color: INK, a: dims, minPx: 24, maxPx: 80 }); V.label(c, '1071', [X0 - .55, 0, .05], { size: .45, w: 700, color: INK, a: dims, minPx: 24, maxPx: 80 }); }
+  const g = prog(t, L.a5.start + 1.3, L.a5.start + 1.8);
+  if (g > 0) V.glow(c, [X0 + 451.5 * U, Y0 + 997.5 * U, .3], 1.0, .6 * g, CY);
+}
+S.hero('gcd = 21', L.a5.start + 1.0, L.a5.end + .1, { y: 200, color: CY, size: 120, slam: true });
+function sWhy(c, t) {
+  room(c); board(c, t, { all: true, a: .55 });
+  // d 的小格：所有地磚都能用 21 × 21 鋪滿（畫細格線）
+  const gl = prog(t, B1.start + .4, B1.start + 1.6);
+  if (gl > 0) { const all = R(0, 0, 462, 1071); for (let k = 1; k < 22; k++) V.line(c, [all.x + k * 21 * U, all.y, .03], [all.x + k * 21 * U, all.y + all.h * gl, .03], { color: CY, a: .25 * gl, w: 1, plain: true }); for (let k = 1; k < 51; k++) { const y = all.y + k * 21 * U; if (y > all.y + all.h * gl) break; V.line(c, [all.x, y, .03], [all.x + all.w, y, .03], { color: CY, a: .25 * gl, w: 1, plain: true }); } }
+}
+S.hero('d ∣ a, d ∣ b ⇒ d ∣ a − qb', L.b2.start + .2, L.b2.end + .1, { y: 210, color: AM, size: S.SIZE.mid });
+function sBez(c, t) {
+  room(c); board(c, t, { all: true, a: .2 });
+  const lines = [['1071 = 2·462 + 147', VI, C1.start + .3], ['462 = 3·147 + 21', AM, C1.start + .8], ['21 = 462 − 3·147', CY, L.c2.start + .2], ['= 462 − 3·(1071 − 2·462)', INK, L.c3.start + .2], ['= 7·462 − 3·1071', CY, L.c4.start + .2]];
+  lines.forEach(([s, col, t0], i) => { const k = prog(t, t0, t0 + .5); if (k > 0) S.label(c, s, CX, 560 + i * 120 + (1 - k) * 16, { size: i < 2 ? 46 : 54, w: 700, color: col, a: k }); });
+  const back = prog(t, L.c3.start + .2, L.c3.start + 1.0);
+  if (back > 0) { const pts = [[880, 800], [960, 740], [960, 680]]; K.grow(c, pts, back, { w: 3, color: CO }); }
+}
+S.hero('x = −3，y = 7', L.c4.start + .6, L.c4.end + .1, { y: 210, color: CY, size: 104 });
+function sFib(c, t) {
+  const endDim = 1 - .85 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  room(c); fib(c, t, D1.start + .3);
+  const st = prog(t, L.d2.start + .3, L.d2.start + .8);
+  if (st > 0) V.label(c, '21 → 13 → 8 → 5 → 3 → 2 → 1', [0, -2.4, .3], { size: .3, w: 700, color: GD, a: st, minPx: 20, maxPx: 70 });
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['gcd(a, b) = gcd(b, a mod b)', VI, 50], ['理由：d | a 且 d | b ⇔ d | b 且 d | (a − qb)', INK, 32], ['Bézout：存在整數 x, y 使 ax + by = gcd(a, b)', AM, 36], ['例：7·462 − 3·1071 = 21', CY, 44], ['Lamé：除法次數 ≤ 5 × 較小數的位數', GD, 38]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 112 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'cut', start: A1.start, end: B1.start, draw: sCut, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'why', start: B1.start, end: C1.start, draw: sWhy, color: CY, in: { type: 'cut' } },
+  { id: 'bez', start: C1.start, end: D1.start, draw: sBez, color: AM, in: { type: 'cut' } },
+  { id: 'fib', start: D1.start, end: DUR, draw: (c, t) => { sFib(c, t); sExam(c, t); }, color: GD, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .12, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .17, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .16, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [D1.start, { haze: .17, warm: .08, stars: .24, dust: .45, bokeh: .25, cam: .2 }],
+  [DUR, { haze: .17, warm: .08, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+S.chapters([[A1.start, '記憶宮殿 · 離散館 · 第 5 間  /  01 切正方形'], [B1.start, '記憶宮殿 · 離散館 · 第 5 間  /  02 為什麼對'], [C1.start, '記憶宮殿 · 離散館 · 第 5 間  /  03 Bézout'], [D1.start, '記憶宮殿 · 離散館 · 第 5 間  /  04 最壞情況'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .4, sfx: 'swish', gain: -12 }, { t: o1.start + 1.3, sfx: 'swish', gain: -13 },
+    { t: o2.start + .6, sfx: 'chime', gain: -10 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start, sfx: 'whoosh', gain: -11 },
+    ...CUT.slice(0, 5).map((t0) => ({ t: t0, sfx: 'swish', gain: -12 })),
+    { t: L.a5.start + 1.0, sfx: 'impact', gain: -6 },
+    { t: B1.start, sfx: 'whoosh', gain: -11 },
+    { t: C1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.c3.start + .4, sfx: 'reverse', align: 'end', gain: -11 },
+    { t: L.c4.start + .6, sfx: 'chime', gain: -10 },
+    { t: D1.start, sfx: 'whoosh', gain: -11 },
+    ...FIB.map((_, i) => ({ t: D1.start + .4 + i * .35, sfx: 'pop', gain: -15 })),
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

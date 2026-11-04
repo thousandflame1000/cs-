@@ -1,0 +1,31 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "1071 和 462 的最大公因數", "hook": true},
+  {"id": "o2", "text": "切 [3] 次就找到：21", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "歐幾里得演算法", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "gcd(a, b) = gcd(b, a mod b)", "scene": true},
+  {"id": "a2", "text": "把 1071 × 462 的地磚切成[正方形]"},
+  {"id": "a3", "text": "切掉 2 塊 462，剩 [147]"},
+  {"id": "a4", "text": "再切 3 塊 147，剩 [21]"},
+  {"id": "a5", "text": "21 剛好切滿：gcd = [21]", "pause": 0.2},
+
+  {"id": "b1", "text": "為什麼對？公因數會[一路傳下去]", "scene": true},
+  {"id": "b2", "text": "d 整除 a 和 b，就整除 [a − qb]", "pause": 0.2},
+
+  {"id": "c1", "text": "倒著代回去：[Bézout]", "scene": true},
+  {"id": "c2", "text": "21 = 462 − 3·147"},
+  {"id": "c3", "text": "= 462 − 3·(1071 − 2·462)"},
+  {"id": "c4", "text": "= [7]·462 − [3]·1071", "pause": 0.2},
+
+  {"id": "d1", "text": "最慢的情況：相鄰 [Fibonacci] 數", "scene": true},
+  {"id": "d2", "text": "每一步只切得掉[一塊]"},
+  {"id": "d3", "text": "但步數仍是 [O(log n)]", "hold": 2.8},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
