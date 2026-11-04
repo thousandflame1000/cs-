@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>消去法與解的結構</title>
+<!--
+  資工所衝刺 · 短影音 16：消去法與解的結構——三個平面的交點
+  記憶宮殿：線代館 · 第 3 間。三個方程式＝三片半透明平面（青、琥珀、粉）。列運算時其中一片平面「繞著交點轉」，交點 (1,2,3) 不動；
+  第二個系統三片交成一條線（解 = 特解 + 零空間），第三個系統兩兩相交成三條平行線、沒有共同點。最後三件展品並排：點、線、三稜柱。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', BL = '#7aa8ff', CY = '#5be7ff', AM = '#ffc14d', PK = '#ff9ad5', CO = '#ff6a5c';
+const PCOL = [CY, AM, PK];
+const K = Kit({ W, H, stage, duration: DUR, seed: 161, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: BL, accent2: CY } });
+K.warm([BL, CY, AM, PK, CO, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .47, fogNear: 10, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 平面: BL, 交點: INK, 繞著交點轉: AM, 簡單: CY, '(1, 2, 3)': INK, 線: INK, '0 = 0': CY, 自由變數: AM, 零空間: CY, '0 = 1': CO, 沒有共同點: CO, 無限多: AM, 無解: CO },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+
+// ═════════ R³ → 世界：以 (1,2,3) 為中心
+const SC = .72, CEN = [1, 2, 3], WC = [0, .4, 3.0];
+const Wp = (p, sc = SC, wc = WC, cen = CEN) => [wc[0] + (p[0] - cen[0]) * sc, wc[1] + (p[1] - cen[1]) * sc, wc[2] + (p[2] - cen[2]) * sc];
+const sub = (a, b) => a.map((v, i) => v - b[i]), add = (a, b) => a.map((v, i) => v + b[i]), mul = (a, k) => a.map((v) => v * k), dot = (a, b) => a.reduce((s, v, i) => s + v * b[i], 0);
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const nrm = (a) => mul(a, 1 / Math.hypot(...a));
+/** 畫平面 n·x = d：以 ref 點在平面上的投影為中心、半邊長 hl（R³ 單位） */
+function plane(c, n, d, col, a, o = {}) {
+  if (a <= .003 || Math.hypot(...n) < 1e-6) return;
+  const nn = nrm(n), ref = o.ref ?? CEN, cen = sub(ref, mul(nn, (dot(n, ref) - d) / Math.hypot(...n)));
+  const u = nrm(cross(nn, Math.abs(nn[2]) < .9 ? [0, 0, 1] : [1, 0, 0])), v = cross(nn, u), hl = o.hl ?? 2.6;
+  const corner = (s1, s2) => (o.wp ?? Wp)(add(cen, add(mul(u, s1 * hl), mul(v, s2 * hl))));
+  V.poly(c, [corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)], K.rgba(col, .12 * a), K.rgba(col, .7 * a), 1);
+  for (let k = -2; k <= 2; k++) { V.line(c, corner(k / 3, -1), corner(k / 3, 1), { color: col, a: .14 * a, w: 1, plain: true }); V.line(c, corner(-1, k / 3), corner(1, k / 3), { color: col, a: .14 * a, w: 1, plain: true }); }
+}
+// 系統一：唯一解，三次列運算
+const SYS1 = [[[1, 1, 1], 6], [[1, 2, 3], 14], [[1, 4, 9], 36]];
+const STEPS1 = [[1, [[0, 1, 2], 8], L.a2.start + .2], [2, [[0, 3, 8], 30], L.a2.start + 1.2], [2, [[0, 0, 2], 6], L.a3.start + .3]];
+function rowsAt(sys, steps, t) {
+  const rows = sys.map(([n, d]) => [n.slice(), d]); let anim = -1;
+  for (const [i, [n2, d2], t0] of steps) { const k = E.inOutCubic(prog(t, t0, t0 + .9)); if (k <= 0) continue; rows[i] = [rows[i][0].map((v, j) => lerp(v, n2[j], k)), lerp(rows[i][1], d2, k)]; if (k < 1) anim = i; }
+  return { rows, anim };
+}
+const fmt = (n, d) => { const t = ['x', 'y', 'z'].map((s, i) => [Math.round(n[i] * 10) / 10, s]).filter(([v]) => Math.abs(v) > .05).map(([v, s], i) => (v < 0 ? ' − ' : i ? ' + ' : '') + (Math.abs(v) === 1 ? '' : Math.abs(v)) + s).join(''); return (t || '0') + ' = ' + Math.round(d * 10) / 10; };
+function eqPanel(c, rows, a = 1, hi = -1) { rows.forEach(([n, d], i) => S.label(c, fmt(n, d), CX, 300 + i * 66, { size: 48, w: 700, color: PCOL[i], a: a * (hi >= 0 && hi !== i ? .55 : 1) })); }
+
+// ═════════ 鏡頭
+const TG = [0, .4, 2.8];
+// 無解那段：鏡頭最後對準交線方向 (1, −2, 1)，三片平面從正面看會圍成一個三角形（三稜柱的截面）
+const ALONG = V.orbit(Math.atan2(1, 2) * 180 / Math.PI, 9.6 * Math.sqrt(5 / 6) , 9.6 / Math.sqrt(6), TG, 44);
+V.camKeys([
+  [0, V.orbit(-46, 9.6, 5.0, TG, 44)], [T.start, V.orbit(-14, 10.2, 5.8, TG, 44)],
+  [A1.start, V.orbit(-26, 9.8, 5.4, TG, 44)], [L.a4.end, V.orbit(8, 9.8, 5.6, TG, 44)],
+  [B1.start + .5, V.orbit(-40, 9.6, 5.4, TG, 44)], [L.b4.start + .1, V.orbit(-52, 9.8, 5.2, TG, 44)], [L.b4.start + 1.0, V.orbit(-58, 10.4, 5.6, [0, .4, 1.9], 44)], [L.b4.end, V.orbit(-64, 10.6, 5.6, [0, .4, 1.9], 44)],
+  [C1.start + .5, V.orbit(-20, 9.8, 5.2, TG, 44)], [L.c3.start + .2, V.orbit(10, 9.8, 4.6, TG, 44)], [L.c3.start + 1.6, ALONG], [D1.start, ALONG],
+  [D1.start + .5, { pos: [0, -10.4, 3.4], tgt: [0, .6, 2.9], fov: 44 }], [DUR, { pos: [.5, -10.9, 3.6], tgt: [0, .6, 2.9], fov: 44 }],
+]);
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: BL, a: .7 * a, major: 3 });
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.5, o1.start + .3);
+  room(c);
+  SYS1.forEach(([n, d], i) => plane(c, n, d, PCOL[i], prog(t, o1.start + i * .4, o1.start + .5 + i * .4)));
+  const pt = prog(t, o2.start, o2.start + .5);
+  if (pt > 0) { V.core(c, Wp(CEN), .12, pt, '#ffffff'); V.glow(c, Wp(CEN), 1.2, .6 * pt, '#ffffff'); }
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '線性代數 · Ax = b', big: '消去法', size: 200, y: 600, en: 'ELIMINATION  &  SOLUTION  SETS', q: '一個解、無限多解、還是無解', qGap: 330, color: BL });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .3; room(c); SYS1.forEach(([n, d], i) => plane(c, n, d, PCOL[i], 1)); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), BL);
+}
+function sUnique(c, t) {
+  room(c);
+  const { rows, anim } = rowsAt(SYS1, STEPS1, t);
+  rows.forEach(([n, d], i) => plane(c, n, d, PCOL[i], prog(t, A1.start - .1 + i * .2, A1.start + .4 + i * .2) * (anim >= 0 && anim !== i ? .55 : 1)));
+  V.core(c, Wp(CEN), .12, 1, '#ffffff'); V.glow(c, Wp(CEN), 1.0, .5, '#ffffff');
+  eqPanel(c, rows, prog(t, A1.start + .2, A1.start + .7), anim);
+  const bs = prog(t, L.a4.start + .3, L.a4.start + .8);
+  if (bs > 0) V.label(c, '(1, 2, 3)', add(Wp(CEN), [.4, 0, .45]), { size: .34, w: 700, color: '#ffffff', a: bs, align: 'left', minPx: 26, maxPx: 80 });
+}
+// 系統二：交成一條線
+const SYS2 = [[[1, 1, 1], 6], [[1, 2, 3], 14], [[2, 3, 4], 20]];
+const STEPS2 = [[1, [[0, 1, 2], 8], L.b2.start + .1], [2, [[0, 1, 2], 8], L.b2.start + .9], [2, [[0, 0, 0], 0], L.b2.start + 1.7]];
+const DIRN = [1, -2, 1], XP = [-2, 8, 0];
+function sLine(c, t) {
+  room(c);
+  const { rows, anim } = rowsAt(SYS2, STEPS2, t);
+  rows.forEach(([n, d], i) => plane(c, n, d, PCOL[i], prog(t, B1.start - .1 + i * .2, B1.start + .4 + i * .2) * (anim >= 0 && anim !== i ? .55 : 1) * clamp(Math.hypot(...n) * 1.5)));
+  const la = prog(t, B1.start + .4, B1.start + 1.0);
+  V.line(c, Wp(add(CEN, mul(DIRN, -2.6))), Wp(add(CEN, mul(DIRN, 2.6))), { color: '#ffffff', a: la, w: 3.4 });
+  eqPanel(c, rows, prog(t, B1.start + .2, B1.start + .7), anim);
+  // b3：沿線滑動的點（z 可以亂選）
+  const fr = prog(t, L.b3.start + .2, L.b3.end);
+  if (fr > 0) { const s = Math.sin((t - L.b3.start) * 2.2) * 1.4; V.core(c, Wp(add(CEN, mul(DIRN, s))), .1, fr, AM); V.label(c, 'z = ' + (3 + s).toFixed(1), add(Wp(add(CEN, mul(DIRN, s))), [.35, 0, .35]), { size: .26, w: 700, color: AM, a: fr, align: 'left', minPx: 20, maxPx: 60 }); }
+  // b4：零空間（過原點的平行線）+ 特解
+  const ns = prog(t, L.b4.start + .2, L.b4.start + .8);
+  if (ns > 0) { const O = [0, 0, 0]; V.line(c, Wp(add(O, mul(DIRN, -1.2))), Wp(add(O, mul(DIRN, 1.6))), { color: CY, a: ns, w: 2.6 }); V.core(c, Wp(O), .08, ns, CY); V.label(c, '零空間', add(Wp(O), [.2, 0, -.42]), { size: .26, w: 700, color: CY, a: ns, minPx: 20, maxPx: 60 }); V.arrow(c, Wp(O), Wp(CEN), { color: AM, a: ns * .8, w: 2.4, head: 16 }); V.label(c, '特解', add(Wp(mul(CEN, .5)), [-.4, 0, .2]), { size: .26, w: 700, color: AM, a: ns, minPx: 20, maxPx: 60 }); }
+}
+S.hero('x = xₚ + t(1, −2, 1)', L.b4.start + .6, L.b4.end + .1, { y: 540, color: CY, size: S.SIZE.mid });
+// 系統三：無解（三稜柱）
+const SYS3 = [[[1, 1, 1], 6], [[1, 2, 3], 14], [[2, 3, 4], 21]];
+const STEPS3 = [[1, [[0, 1, 2], 8], L.c2.start + .1], [2, [[0, 1, 2], 9], L.c2.start + .7], [2, [[0, 0, 0], 1], L.c2.start + 1.3]];
+function lineOf(n1, d1, n2, d2) { const dir = cross(n1, n2); const A = [n1, n2, dir]; const b = [d1, d2, dot(dir, CEN)]; const det = (m) => m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]); const D = det(A); const col = (k) => A.map((r, i) => r.map((v, j) => (j === k ? b[i] : v))); return { p: [det(col(0)) / D, det(col(1)) / D, det(col(2)) / D], dir: nrm(dir) }; }
+function sNone(c, t) {
+  room(c);
+  const { rows, anim } = rowsAt(SYS3, STEPS3, t), back = prog(t, L.c3.start - .1, L.c3.start + .6, E.inOutCubic);
+  const show = (i) => prog(t, C1.start - .1 + i * .2, C1.start + .4 + i * .2) * (anim >= 0 && anim !== i ? .55 : 1);
+  rows.forEach(([n, d], i) => { if (Math.hypot(...n) > .05) plane(c, n, d, PCOL[i], show(i) * clamp(Math.hypot(...n) * 1.5) * (1 - back)); });
+  SYS3.forEach(([n, d], i) => plane(c, n, d, PCOL[i], back, { hl: 3 }));
+  eqPanel(c, rows.map((r, i) => (back > .5 ? SYS3[i] : r)), prog(t, C1.start + .2, C1.start + .7) * (1 - .9 * prog(t, L.c3.start + 1.2, L.c3.start + 1.8)), anim);
+  // c3：三條兩兩交線（平行），三稜柱
+  const pr = prog(t, L.c3.start + .2, L.c3.start + .9);
+  if (pr > 0) { const P = SYS3; for (const [i, j] of [[0, 1], [0, 2], [1, 2]]) { const { p, dir } = lineOf(P[i][0], P[i][1], P[j][0], P[j][1]); V.line(c, Wp(add(p, mul(dir, -3.4))), Wp(add(p, mul(dir, 3.4))), { color: CO, a: pr, w: 4 }); V.core(c, Wp(p), .07, pr, CO); } }
+}
+S.hero('0 = 1 ✗', L.c2.start + 1.9, L.c2.end + .1, { y: 560, color: CO, size: 120, slam: true });
+// d 章：三件展品
+function sSum(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4);
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const ex = [[4.5, SYS1, '唯一解', 'r = n'], [2.85, SYS2, '無限多解', 'r < n，且相容'], [1.2, SYS3, '無解', 'r(A) < r[A|b]']];
+  ex.forEach(([z, sys, lab, rk], k) => {
+    const a = prog(t, D1.start + .2 + k * .4, D1.start + .7 + k * .4); if (a <= 0) return;
+    const wp = (p) => Wp(p, .26, [-.75, .6, z]);
+    sys.forEach(([n, d], i) => plane(c, n, d, PCOL[i], a * .85, { wp, hl: 2.4 }));
+    if (k === 0) { V.core(c, wp(CEN), .08, a, '#ffffff'); V.glow(c, wp(CEN), .5, .5 * a, '#ffffff'); }
+    if (k === 1) V.line(c, wp(add(CEN, mul(DIRN, -2))), wp(add(CEN, mul(DIRN, 2))), { color: '#ffffff', a, w: 2.6 });
+    V.label(c, lab, [.55, .6, z + .14], { size: .36, w: 700, color: k === 2 ? CO : k === 1 ? AM : INK, a, align: 'left', minPx: 24, maxPx: 80 });
+    V.label(c, rk, [.55, .6, z - .3], { size: .24, a: .75 * a, align: 'left', minPx: 18, maxPx: 56 });
+  });
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['r(A) = r[A|b] = n → 唯一解', CY, 46], ['r(A) = r[A|b] < n → 無限多（n − r 個自由變數）', AM, 34], ['r(A) < r[A|b] → 無解（出現 0 = 非零）', CO, 38], ['x = xₚ + xₙ（特解 + 零空間）', INK, 44], ['列運算不改變解集合', BL, 40]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 112 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'unique', start: A1.start, end: B1.start, draw: sUnique, color: BL, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'line', start: B1.start, end: C1.start, draw: sLine, color: BL, in: { type: 'cut' } },
+  { id: 'none', start: C1.start, end: D1.start, draw: sNone, color: CO, in: { type: 'cut' } },
+  { id: 'sum', start: D1.start, end: DUR, draw: (c, t) => { sSum(c, t); sExam(c, t); }, color: BL, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .12, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .17, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .16, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .17, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .08, .3);
+S.chapters([[A1.start, '記憶宮殿 · 線代館 · 第 3 間  /  01 交於一點'], [B1.start, '記憶宮殿 · 線代館 · 第 3 間  /  02 交成一線'], [C1.start, '記憶宮殿 · 線代館 · 第 3 間  /  03 無解'], [D1.start, '記憶宮殿 · 線代館 · 第 3 間  /  04 看秩'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    ...[0, 1, 2].map((i) => ({ t: o1.start + .2 + i * .4, sfx: 'swish', gain: -14 })),
+    { t: o2.start + .2, sfx: 'chime', gain: -10 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start, sfx: 'whoosh', gain: -11 },
+    ...STEPS1.map(([, , t0]) => ({ t: t0 + .1, sfx: 'swish', gain: -12 })),
+    { t: L.a4.start + .3, sfx: 'chime', gain: -10 },
+    { t: B1.start, sfx: 'whoosh', gain: -11 },
+    ...STEPS2.map(([, , t0]) => ({ t: t0 + .1, sfx: 'swish', gain: -12 })),
+    { t: L.b4.start + .3, sfx: 'chime', gain: -10 },
+    { t: C1.start, sfx: 'whoosh', gain: -11 },
+    ...STEPS3.map(([, , t0]) => ({ t: t0 + .1, sfx: 'swish', gain: -12 })),
+    { t: L.c2.start + 1.9, sfx: 'glitch', gain: -8 },
+    { t: D1.start, sfx: 'whoosh', gain: -11 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
