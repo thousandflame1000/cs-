@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>投影與最小平方</title>
+<!--
+  資工所衝刺 · 短影音 12：投影與最小平方——無解時，最好的答案是 b 的影子
+  記憶宮殿：線代館 · 第 2 間。房間裡有一面立著的資料看板（三個點與最佳直線），以及一個 3D 的 R³：
+  A 的兩行 (1,1,1)、(0,1,2) 張出藍色平面，b = (6,0,0) 懸在平面外；一道垂直平面的光把 b 投成影子 p = (5,2,−1)，
+  誤差 e = (1,−2,1) 是那道光本身。語義色：藍＝平面、琥珀＝b、青＝p、珊瑚＝e。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', BL = '#7aa8ff', AM = '#ffc14d', CY = '#5be7ff', CO = '#ff6a5c';
+const K = Kit({ W, H, stage, duration: DUR, seed: 121, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: BL, accent2: AM } });
+K.warm([BL, AM, CY, CO, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .43, fogNear: 10, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 影子: CY, 無解: CO, 平面: BL, 最近: CY, 投影: CY, 垂直: CO, 'AᵀA x* = Aᵀb': AM, '5 − 3t': CY, 鉛直線: CO, '6': CO },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+
+// ═════════ R³：A 的兩行、b、p、e
+const SC = .42, ORG = [0, 1.5, 1.2];
+const R3 = ([x, y, z]) => [ORG[0] + x * SC, ORG[1] + y * SC, ORG[2] + z * SC];
+const a1 = [1, 1, 1], a2 = [0, 1, 2], bV = [6, 0, 0], pV = [5, 2, -1];
+const comb = (u, v) => [u * a1[0] + v * a2[0], u * a1[1] + v * a2[1], u * a1[2] + v * a2[2]];
+function axes(c, a) { if (a <= .003) return; for (const [d, lab] of [[[1, 0, 0], 'x₁'], [[0, 1, 0], 'x₂'], [[0, 0, 1], 'x₃']]) { V.line(c, R3(d.map((v) => -v * 3)), R3(d.map((v) => v * 7)), { color: INK, a: .22 * a, w: 1.2, plain: true }); V.label(c, lab, R3(d.map((v) => v * 7.4)), { size: .22, a: .55 * a, minPx: 16, maxPx: 44 }); } }
+function plane(c, a, glow = 0) {
+  if (a <= .003) return;
+  const U = [-1, 6], Vv = [-3, 2];
+  V.poly(c, [R3(comb(U[0], Vv[0])), R3(comb(U[1], Vv[0])), R3(comb(U[1], Vv[1])), R3(comb(U[0], Vv[1]))], K.rgba(BL, (.1 + .08 * glow) * a), K.rgba(BL, .6 * a), 1);
+  for (let u = -1; u <= 6; u++) V.line(c, R3(comb(u, Vv[0])), R3(comb(u, Vv[1])), { color: BL, a: .16 * a, w: 1, plain: true });
+  for (let v = -4; v <= 2; v++) V.line(c, R3(comb(U[0], v)), R3(comb(U[1], v)), { color: BL, a: .16 * a, w: 1, plain: true });
+}
+function vec(c, from, to, col, a, lab, lo = {}) { if (a <= .003) return; V.arrow(c, R3(from), R3(to), { color: col, a, w: lo.w ?? 4, head: 20 }); V.core(c, R3(to), .06, a, col); if (lab) V.label(c, lab, R3(to.map((v, i) => v + (lo.off?.[i] ?? 0))), { size: .3, w: 700, color: col, a, minPx: 22, maxPx: 70 }); }
+function rightAngle(c, a) {
+  if (a <= .003) return; const k = .5, n = [1, -2, 1].map((v) => v / Math.sqrt(6)), d = a1.map((v) => v / Math.sqrt(3));
+  const p0 = pV, q1 = pV.map((v, i) => v + n[i] * k), q2 = pV.map((v, i) => v + n[i] * k + d[i] * k), q3 = pV.map((v, i) => v + d[i] * k);
+  V.path(c, [R3(q1), R3(q2), R3(q3)], { color: INK, w: 1.8, a }); void p0;
+}
+// 光束：沿法向量從 b 打到平面
+function beam(c, a) { if (a <= .003) return; const n = [1, -2, 1]; const top = bV.map((v, i) => v + n[i] * 1.2); V.path(c, [R3(top), R3(pV)], { color: '#ffe9b8', w: 10, a: .18 * a }); V.glow(c, R3(pV), .6, .7 * a, CY); }
+
+// ═════════ 資料看板（立在房間左前方）：t 軸水平、值垂直
+const BD = { x0: -1.9, y: -1.6, z0: .35, sx: 1.2, sz: .3 };
+const bp = (tt, v) => [BD.x0 + tt * BD.sx, BD.y, BD.z0 + v * BD.sz];
+const PTS = [[0, 6], [1, 0], [2, 0]];
+function board(c, t, a, o = {}) {
+  if (a <= .003) return;
+  V.poly(c, [bp(-.4, -1.2), bp(2.5, -1.2), bp(2.5, 7.2), bp(-.4, 7.2)], K.rgba('#0c1626', .7 * a), K.rgba(BL, .5 * a), 1);
+  V.line(c, bp(-.3, 0), bp(2.4, 0), { color: INK, a: .45 * a, w: 1.4, plain: true });
+  for (let k = 0; k <= 2; k++) V.label(c, String(k), [bp(k, 0)[0], BD.y - .02, BD.z0 - .28], { size: .18, a: .6 * a, minPx: 14, maxPx: 40 });
+  if (o.line) { const L0 = (tt) => 5 - 3 * tt; V.path(c, [bp(-.3, L0(-.3)), bp(2.35, L0(2.35))], { color: CY, w: 3.6, a: a * o.line, p: o.line }); }
+  if (o.err) PTS.forEach(([tt, v], i) => { const pv = 5 - 3 * tt, k = prog(o.errT ?? 1, i * .2, i * .2 + .6); if (k > 0) V.path(c, [bp(tt, pv), bp(tt, lerp(pv, v, k))], { color: CO, w: 3, a: a * o.err }); });
+  PTS.forEach(([tt, v], i) => { const k = o.pts ? o.pts(i) : 1; if (k <= 0) return; V.pillar(c, [...bp(tt, v).slice(0, 2), bp(tt, v)[2] - .09], .18, .18, AM, a * k, { fill: .7 }); V.label(c, `(${tt}, ${v})`, [bp(tt, v)[0] + .35, BD.y, bp(tt, v)[2] + .25], { size: .17, w: 600, color: AM, a: a * k * .9, minPx: 14, maxPx: 44 }); });
+}
+
+// ═════════ 鏡頭
+const camBoard = { pos: [-.5, -9.6, 2.1], tgt: [-.5, -1.6, 1.3], fov: 44 };
+const camR3 = { pos: [5.5, -5.6, 3.6], tgt: [.9, 1.5, 1.0], fov: 46 };
+const camPerp = { pos: [3.6, -3.4, 1.6], tgt: [2.2, 1.9, .8], fov: 46 };
+V.camKeys([
+  [0, { pos: [6.6, -6.2, 3.2], tgt: [1.0, 1.5, 1.0], fov: 46 }], [T.start, { pos: [4.6, -7.4, 4.2], tgt: [1.0, 1.5, 1.0], fov: 46 }],
+  [A1.start, camBoard], [L.a3.end, Object.assign({}, camBoard, { pos: [-.2, -9.7, 2.2] })],
+  [B1.start + .6, camR3], [L.b4.end, Object.assign({}, camR3, { pos: [6.2, -4.6, 3.8] })],
+  [C1.start + .5, camPerp], [L.c2.end, Object.assign({}, camPerp, { pos: [3.0, -3.6, 1.4] })], [L.c4.end, Object.assign({}, camR3, { pos: [5.8, -5.2, 4.2] })],
+  [D1.start + .6, camBoard], [L.d4.end, Object.assign({}, camBoard, { pos: [-.3, -9.8, 2.2] })],
+  [Ec.start, { pos: [2.2, -9.4, 4.0], tgt: [0, .4, 1.4], fov: 46 }], [DUR, { pos: [2.6, -9.8, 4.2], tgt: [0, .4, 1.4], fov: 46 }],
+]);
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: BL, a: .8 * a, major: 3 });
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.5, o1.start + .5);
+  room(c); axes(c, .7); plane(c, 1, .5 * prog(t, o2.start, o2.start + .5));
+  vec(c, [0, 0, 0], bV, AM, 1);
+  const sh = prog(t, o2.start, o2.start + .8);
+  beam(c, sh); vec(c, [0, 0, 0], pV, CY, sh);
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '線性代數 · 正交', big: '最小平方', size: 190, y: 600, en: 'PROJECTION  &  LEAST  SQUARES', q: '無解的時候，最好的答案在哪', qGap: 330, color: BL });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .3; room(c); plane(c, 1); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), BL);
+}
+function sData(c, t) {
+  room(c);
+  board(c, t, prog(t, A1.start - .1, A1.start + .5), { pts: (i) => prog(t, A1.start + .3 + i * .3, A1.start + .7 + i * .3) });
+  // a2–a3：試幾條線，都穿不過三點
+  const tries = [[6, -6], [4, -2], [3, -1.5]], tr = prog(t, L.a2.start + .2, L.a3.end - .2);
+  if (tr > 0 && tr < 1) { const i = Math.min(2, Math.floor(tr * 3)), f = tr * 3 - i, [C0, D0] = tries[i]; V.path(c, [bp(-.3, C0 + D0 * -.3), bp(2.35, C0 + D0 * 2.35)], { color: '#9fb3d6', w: 2.4, a: Math.sin(Math.PI * f) }); }
+  const x = prog(t, L.a3.start + .6, L.a3.start + 1.0) * (1 - prog(t, B1.start - .2, B1.start));
+  if (x > 0) V.label(c, '✗', [.6, BD.y - .1, 2.4], { size: .8, w: 700, color: CO, a: x, minPx: 50, maxPx: 160 });
+}
+function sSpace(c, t) {
+  room(c); axes(c, 1);
+  const pa = prog(t, L.b2.start + .1, L.b2.start + .8);
+  vec(c, [0, 0, 0], a1, BL, prog(t, B1.start + .3, B1.start + .8), 'a₁', { off: [.3, 0, .3] });
+  vec(c, [0, 0, 0], a2, BL, prog(t, B1.start + .6, B1.start + 1.1), 'a₂', { off: [0, .2, .4] });
+  plane(c, pa);
+  vec(c, [0, 0, 0], bV, AM, prog(t, L.b3.start + .1, L.b3.start + .6), 'b', { off: [.4, 0, .3] });
+  // b4：在平面上找最近的點——幾顆候選點連到 b，越近越亮
+  const nr = prog(t, L.b4.start + .2, L.b4.start + 1.2);
+  if (nr > 0) for (const [u, v] of [[3, 1], [6, -2], [4, -2], [5, -1.5]]) { const q = comb(u, v), d = Math.hypot(...q.map((x, i) => x - bV[i])); V.path(c, [R3(bV), R3(q)], { color: '#9fb3d6', w: 1.6, a: nr * clamp(1.6 - d * .25) }); V.core(c, R3(q), .04, nr, '#9fb3d6'); }
+}
+function sProj(c, t) {
+  room(c); axes(c, .8); plane(c, 1, .3);
+  vec(c, [0, 0, 0], bV, AM, 1, 'b', { off: [.4, 0, .3] });
+  const pp = prog(t, C1.start + .2, C1.start + 1.0);
+  beam(c, pp); vec(c, [0, 0, 0], pV, CY, pp, 'p', { off: [-.2, .2, -.5] });
+  const ee = prog(t, L.c2.start + .1, L.c2.start + .7);
+  vec(c, pV, bV, CO, ee, 'e', { off: [-.4, -.6, .4] });
+  rightAngle(c, prog(t, L.c2.start + .6, L.c2.start + 1.0));
+  // c3：e 與兩行都垂直
+  const dots = prog(t, L.c3.start + .2, L.c3.start + .7);
+  if (dots > 0) { vec(c, [0, 0, 0], a1, BL, dots, null); vec(c, [0, 0, 0], a2, BL, dots, null); V.label(c, 'a₁ᵀe = 0　a₂ᵀe = 0', R3([2, 3.2, 2.6]), { size: .26, w: 700, color: CO, a: dots, minPx: 20, maxPx: 64 }); }
+}
+S.hero('e ⊥ 平面', L.c2.start + .6, L.c2.end, { y: 210, color: CO, size: 110 });
+S.hero('AᵀA x* = Aᵀb', L.c4.start + .2, L.c4.end + .1, { y: 210, color: AM, size: 104, slam: true });
+function sFit(c, t) {
+  const endDim = 1 - .85 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  board(c, t, 1, { line: prog(t, L.d2.start + .1, L.d2.start + .9), err: prog(t, L.d3.start, L.d3.start + .3), errT: (t - L.d3.start - .2) / 1.0 });
+  const sq = prog(t, L.d4.start + .2, L.d4.start + .7);
+  if (sq > 0) PTS.forEach(([tt, v], i) => { const e = v - (5 - 3 * tt), s2 = Math.abs(e) * BD.sz, x = bp(tt, 0)[0], z0 = BD.z0 + (5 - 3 * tt) * BD.sz; V.poly(c, [[x, BD.y - .02, z0], [x + s2, BD.y - .02, z0], [x + s2, BD.y - .02, z0 + e * BD.sz], [x, BD.y - .02, z0 + e * BD.sz]], K.rgba(CO, .25 * sq), K.rgba(CO, .8 * sq), 1); });
+  c.restore();
+}
+S.hero('x* = (5, −3)', D1.start + .3, L.d1.end, { y: 210, color: CY, size: 104 });
+S.hero('1 + 4 + 1 = 6', L.d4.start + .5, L.d4.end + .1, { y: 210, color: CO, size: 104 });
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['AᵀA x* = Aᵀb', AM, 60], ['p = A x*，e = b − p ⊥ C(A)', CO, 44], ['P = A(AᵀA)⁻¹Aᵀ，P² = P', BL, 44], ['最佳直線：最小化 |e|²', CY, 44], ['例：(0,6)(1,0)(2,0) → 5 − 3t，|e|² = 6', INK, 34]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 112 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'data', start: A1.start, end: B1.start, draw: sData, color: BL, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'space', start: B1.start, end: C1.start, draw: sSpace, color: BL, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'proj', start: C1.start, end: D1.start, draw: sProj, color: CY, in: { type: 'cut' } },
+  { id: 'fit', start: D1.start, end: DUR, draw: (c, t) => { sFit(c, t); sExam(c, t); }, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .12, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .17, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .16, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .17, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(C1.start, .08, .3);
+S.chapters([[A1.start, '記憶宮殿 · 線代館 · 第 2 間  /  01 三個點'], [B1.start, '記憶宮殿 · 線代館 · 第 2 間  /  02 Ax = b'], [C1.start, '記憶宮殿 · 線代館 · 第 2 間  /  03 投影'], [D1.start, '記憶宮殿 · 線代館 · 第 2 間  /  04 最佳直線'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .3, sfx: 'swish', gain: -13 },
+    { t: o2.start + .2, sfx: 'chime', gain: -10 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start, sfx: 'whoosh', gain: -11 },
+    ...[0, 1, 2].map((i) => ({ t: A1.start + .4 + i * .3, sfx: 'pop', gain: -14 })),
+    { t: L.a3.start + .6, sfx: 'glitch', gain: -11 },
+    { t: B1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.b2.start + .3, sfx: 'swish', gain: -12 },
+    { t: C1.start, sfx: 'whoosh', gain: -11 },
+    { t: C1.start + .5, sfx: 'chime', gain: -10 },
+    { t: L.c4.start + .2, sfx: 'impact', gain: -6 },
+    { t: D1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.d2.start + .4, sfx: 'swish', gain: -12 },
+    { t: L.d4.start + .5, sfx: 'thump', gain: -8 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

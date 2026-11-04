@@ -1,0 +1,32 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "Ax = b 無解的時候", "hook": true},
+  {"id": "o2", "text": "最好的答案是 b 的[影子]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "投影與最小平方", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "三個點：(0, 6)、(1, 0)、(2, 0)", "scene": true},
+  {"id": "a2", "text": "想找一條線 C + Dt 穿過它們"},
+  {"id": "a3", "text": "三個方程式、兩個未知數：[無解]", "pause": 0.2},
+
+  {"id": "b1", "text": "把它寫成 Ax = b", "scene": true},
+  {"id": "b2", "text": "A 的兩行張出一個[平面]"},
+  {"id": "b3", "text": "b 不在平面上，所以無解"},
+  {"id": "b4", "text": "退一步：找平面上[最近]的點", "pause": 0.2},
+
+  {"id": "c1", "text": "最近的點 p，就是 b 的[投影]", "scene": true},
+  {"id": "c2", "text": "誤差 e = b − p [垂直]平面"},
+  {"id": "c3", "text": "垂直，所以 Aᵀe = 0"},
+  {"id": "c4", "text": "得到 [AᵀA x* = Aᵀb]", "pause": 0.2},
+
+  {"id": "d1", "text": "代入：x* = (5, −3)", "scene": true},
+  {"id": "d2", "text": "最佳直線 [5 − 3t]"},
+  {"id": "d3", "text": "誤差 (1, −2, 1)：三條[鉛直線]"},
+  {"id": "d4", "text": "平方和 [6]，沒有別條線更小", "hold": 2.8},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
