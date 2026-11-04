@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>排容原理</title>
+<!--
+  資工所衝刺 · 短影音 11：排容原理——每一塊剛好算一次
+  記憶宮殿：離散館 · 第 2 間。地板上三個發光圓圈（2、3、5 的倍數），七個區域各放一疊籌碼：籌碼高度＝這塊被算了幾次。
+  加三圈 → 重疊處疊高；減兩兩重疊 → 正中間被減光；加回三重 → 每疊都剛好一枚。
+  後半：24 張排列卡片（4 頂帽子），剔掉有人拿到自己帽子的，剩 9 張；最後 10 根長條收斂到 1/e 的光面。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', VI = '#b48cff', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', PK = '#ff9ad5';
+const K = Kit({ W, H, stage, duration: DUR, seed: 111, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: VI, accent2: CY } });
+K.warm([VI, CY, AM, CO, PK, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .43, fogNear: 10, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { '37%': VI, 算了兩次: CO, 減光了: CO, '74': CY, 剛好算一次: CY, 自己的: CO, '9': VI, '1/e': VI, 不會: CY },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, C1 = L.c1, D1 = L.d1;
+
+// ═════════ 三圈與七區
+const CIR = { 1: { c: [-.95, -.55], r: 1.5, col: CY, name: '2 的倍數', n: 50 }, 2: { c: [.95, -.55], r: 1.5, col: AM, name: '3 的倍數', n: 33 }, 4: { c: [0, 1.05], r: 1.5, col: PK, name: '5 的倍數', n: 20 } };
+const REG = { 1: [-1.75, -.95], 2: [1.75, -.95], 4: [0, 2.05], 3: [0, -1.2], 5: [-1.0, .6], 6: [1.0, .6], 7: [0, .05] };
+const OPS = [[L.a2.start + .2, 1, 1], [L.a2.start + .7, 2, 1], [L.a2.start + 1.2, 4, 1], [L.a4.start + .2, 3, -1], [L.a4.start + .7, 5, -1], [L.a4.start + 1.2, 6, -1], [L.a6.start + .2, 7, 1]];
+const OPCOL = { 1: CY, 2: AM, 4: PK, 7: INK };
+function circles(c, t, a = 1, hi = {}) {
+  for (const [m, C] of Object.entries(CIR)) {
+    const pts = []; for (let i = 0; i <= 64; i++) { const th = i / 64 * Math.PI * 2; pts.push([C.c[0] + Math.cos(th) * C.r, C.c[1] + Math.sin(th) * C.r, .02]); }
+    V.poly(c, pts, K.rgba(C.col, .07 * a + .1 * (hi[m] || 0)), null, 1);
+    V.path(c, pts, { color: C.col, w: 2.4, a: a * (.7 + .3 * (hi[m] || 0)) });
+    const ang = m === '1' ? 3.6 : m === '2' ? 5.8 : 1.57, lp = [C.c[0] + Math.cos(ang) * (C.r + .55), C.c[1] + Math.sin(ang) * (C.r + .55), .05];
+    V.label(c, C.name, lp, { size: .26, w: 700, color: C.col, a: a * .9, minPx: 20, maxPx: 60 });
+  }
+}
+/** 第 r 區在時間 t 的籌碼（含正在動的那一枚） */
+function chips(r, t) {
+  const st = []; let anim = null;
+  for (const [t0, m, sg] of OPS) {
+    if ((r & m) !== m || t < t0) continue;
+    const p = prog(t, t0, t0 + .5);
+    if (sg > 0) { st.push({ col: OPCOL[m] || INK, p }); anim = null; }
+    else { const top = st.pop(); if (p < 1) anim = { col: top.col, p, k: st.length }; else anim = null; }
+  }
+  return { st, anim };
+}
+function stacks(c, t, a = 1, o = {}) {
+  for (const r of [1, 2, 4, 3, 5, 6, 7]) {
+    const [x, y] = REG[r], { st, anim } = chips(r, t), hot = o.hot?.(r) ?? 0;
+    st.forEach((ch, k) => { const z = .05 + k * .16, drop = (1 - E.outBack(ch.p)) * .8; V.pillar(c, [x, y, z + drop], .42, .12, ch.col, a * clamp(ch.p * 2), { fill: .65 }); });
+    if (anim) { const z = .05 + anim.k * .16 + anim.p * 1.2; V.pillar(c, [x, y, z], .42, .12, anim.col, a * (1 - anim.p), { fill: .65 }); }
+    if (hot > .01) V.glow(c, [x, y, .3 + st.length * .16], 1.0, .6 * hot, o.hotCol ?? CO);
+    if (o.counts) V.label(c, String(st.length), [x, y - .3, .05], { size: .22, w: 700, color: st.length === 1 ? CY : st.length === 0 ? CO : AM, a: a * o.counts, minPx: 18, maxPx: 54 });
+  }
+}
+
+// ═════════ 24 張排列卡片
+const PERMS = []; (function gen(a, used) { if (a.length === 4) { PERMS.push(a.join('')); return; } for (let v = 1; v <= 4; v++) if (!used.has(v)) { used.add(v); gen(a.concat(v), used); used.delete(v); } })([], new Set());
+const isDer = (p) => [...p].every((ch, i) => +ch !== i + 1);
+const tileXY = (i) => [-1.65 + (i % 4) * 1.1, -1.3 + Math.floor(i / 4) * .78];
+function tiles(c, t, a = 1) {
+  const hiAi = (i) => prog(t, L.c2.start + .2 + i * .45, L.c2.start + .6 + i * .45);
+  const drop = prog(t, L.c3.start + .3, L.c3.start + 1.6);
+  PERMS.forEach((p, i) => {
+    const [x, y] = tileXY(i), der = isDer(p);
+    let bad = 0; for (let k = 0; k < 4; k++) if (+p[k] === k + 1) bad = Math.max(bad, hiAi(k));
+    const col = der ? (drop > .5 ? VI : '#9fb3d6') : K.mix('#9fb3d6', CO, bad);
+    const fall = der ? 0 : drop, al = a * (1 - .85 * fall);
+    V.pillar(c, [x, y, .02 - fall * .3], .95, .08, col, al, { fill: .45 + .25 * (der && drop > .5 ? 1 : bad) });
+    V.label(c, p, [x, y, .22 - fall * .3], { size: .3, w: 700, color: '#ffffff', a: al, minPx: 16, maxPx: 60, ls: '2px' });
+    if (der && drop > .5) V.glow(c, [x, y, .2], .8, .35 * prog(t, L.c3.start + 1.0, L.c3.start + 1.6), VI);
+  });
+}
+// 1/e 的長條
+const PN = [0, .5, .3333, .375, .3667, .3681, .3679, .3679, .3679, .3679], BH = 6.0;
+function bars(c, t, t0, a = 1) {
+  const plane = prog(t, t0 - .2, t0 + .4), yv = 1 / Math.E * BH;
+  if (plane > 0) { V.poly(c, [[-2.7, -.6, yv], [2.7, -.6, yv], [2.7, .6, yv], [-2.7, .6, yv]], K.rgba(VI, .12 * a * plane), K.rgba(VI, .7 * a * plane), 1); V.label(c, '1/e ≈ 0.368', [2.6, -.6, yv + .4], { size: .26, w: 700, color: VI, a: a * plane, align: 'right', minPx: 20, maxPx: 60 }); }
+  PN.forEach((v, i) => { const x = -2.25 + i * .5, p = E.outBack(prog(t, t0 + i * .18, t0 + .5 + i * .18)); if (p <= 0) return; V.pillar(c, [x, 0, 0], .34, Math.max(.02, v * BH * p), i < 3 ? AM : VI, a, { fill: .55 }); V.label(c, String(i + 1), [x, -.5, .02], { size: .22, a: a * .7, minPx: 16, maxPx: 44 }); });
+}
+
+// ═════════ 鏡頭
+const camVenn = { pos: [0, -8.9, 8.6], tgt: [0, .35, .2], fov: 44 };
+V.camKeys([
+  [0, { pos: [0, -12.4, 3.4], tgt: [0, 0, 1.3], fov: 44 }], [T.start, { pos: [1.0, -12.8, 3.9], tgt: [0, 0, 1.4], fov: 44 }],
+  [A1.start, camVenn], [L.a3.start, Object.assign({}, camVenn, { pos: [-1.0, -8.6, 8.2] })], [L.a5.start + .3, { pos: [0, -6.0, 5.8], tgt: [0, .1, .4], fov: 44 }],
+  [L.a6.end, { pos: [0, -6.2, 6.0], tgt: [0, .1, .4], fov: 44 }], [L.a7.start + .8, Object.assign({}, camVenn, { pos: [1.0, -8.8, 7.6] })],
+  [C1.start + .4, { pos: [0, -7.0, 9.6], tgt: [0, .7, 0], fov: 46 }], [L.c4.end, { pos: [.5, -7.2, 9.4], tgt: [0, .7, 0], fov: 46 }],
+  [D1.start + .5, { pos: [0, -12.4, 3.4], tgt: [0, 0, 1.3], fov: 44 }], [Ec.start, { pos: [0, -13.2, 3.8], tgt: [0, 0, 1.4], fov: 44 }], [DUR, { pos: [.5, -13.6, 4.0], tgt: [0, 0, 1.4], fov: 44 }],
+]);
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: VI, a: .8 * a, major: 3, cy: .5 });
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.5, o1.start + .4);
+  room(c); bars(c, t, o1.start + .2);
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '離散數學 · 計數', big: '排容原理', size: 190, y: 600, en: 'INCLUSION – EXCLUSION', q: '為什麼要加了又減、減了又加', qGap: 330, color: VI });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .35; room(c); circles(c, t, 1); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), VI);
+}
+function sVenn(c, t) {
+  room(c);
+  const hi = { 1: M.hit(t, [OPS[0][0]], .3), 2: M.hit(t, [OPS[1][0]], .3), 4: M.hit(t, [OPS[2][0]], .3) };
+  circles(c, t, prog(t, A1.start - .1, A1.start + .5), hi);
+  const dbl = prog(t, L.a3.start + .2, L.a3.start + .6) * (1 - prog(t, L.a4.start, L.a4.start + .3)), mid = prog(t, L.a5.start + .2, L.a5.start + .6) * (1 - prog(t, L.a6.start + .1, L.a6.start + .4)), all = prog(t, L.a7.start + .2, L.a7.start + .7);
+  stacks(c, t, 1, { hot: (r) => (r === 3 || r === 5 || r === 6 || r === 7 ? dbl : 0) + (r === 7 ? mid : 0) + all, hotCol: all > 0 ? CY : CO, counts: prog(t, L.a3.start, L.a3.start + .4) });
+  // 每一步的數字
+  for (const [t0, m, sg] of OPS) { const k = prog(t, t0, t0 + .3) * (1 - prog(t, t0 + 1.2, t0 + 1.6)); if (k <= 0) continue; const n = { 1: 50, 2: 33, 4: 20, 3: 16, 5: 10, 6: 6, 7: 3 }[m]; const [x, y] = REG[m]; V.label(c, (sg > 0 ? '+' : '−') + n, [x, y, 1.4], { size: .4, w: 700, color: sg > 0 ? (OPCOL[m] || INK) : CO, a: k, minPx: 30, maxPx: 90 }); }
+}
+S.hero('74', L.a6.start + .6, L.a6.end + .1, { y: 210, color: CY, size: 150, slam: true });
+function sHats(c, t) {
+  room(c);
+  tiles(c, t, prog(t, C1.start - .1, C1.start + .6));
+  const lab = prog(t, L.c2.start + .1, L.c2.start + .4) * (1 - prog(t, L.c3.start, L.c3.start + .3));
+  if (lab > 0) for (let k = 0; k < 4; k++) { const p = prog(t, L.c2.start + .2 + k * .45, L.c2.start + .6 + k * .45); if (p > 0) V.label(c, `A${'₁₂₃₄'[k]}`, [-1.65 + k * 1.1, -2.1, .05], { size: .34, w: 700, color: CO, a: lab * p, minPx: 24, maxPx: 80 }); }
+}
+S.hero('24 − 24 + 12 − 4 + 1', L.c3.start + .3, L.c3.end, { y: 220, size: S.SIZE.mid, color: INK });
+S.hero('9', L.c4.start + .2, L.c4.end + .1, { y: 200, color: VI, size: 160, slam: true });
+function sE(c, t) {
+  const endDim = 1 - .85 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  room(c); bars(c, t, D1.start + .3);
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['|A∪B∪C| = Σ|A| − Σ|A∩B| + |A∩B∩C|', VI, 42], ['1～100 被 2、3、5 整除：74 個', CY, 44], ['Dₙ = n! Σ (−1)ᵏ / k!  ≈  n!/e', AM, 48], ['D₁…D₆ = 0, 1, 2, 9, 44, 265', INK, 42], ['Dₙ = (n − 1)(Dₙ₋₁ + Dₙ₋₂)', INK, 42]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 112 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'venn', start: A1.start, end: C1.start, draw: sVenn, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'hats', start: C1.start, end: D1.start, draw: sHats, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'e', start: D1.start, end: DUR, draw: (c, t) => { sE(c, t); sExam(c, t); }, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .12, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .17, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .16, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .17, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+S.chapters([[A1.start, '記憶宮殿 · 離散館 · 第 2 間  /  01 三個圈'], [C1.start, '記憶宮殿 · 離散館 · 第 2 間  /  02 錯排'], [D1.start, '記憶宮殿 · 離散館 · 第 2 間  /  03 1/e'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    ...PN.map((_, i) => ({ t: o1.start + .4 + i * .18, sfx: 'tick', gain: -18 })),
+    { t: o2.start + .3, sfx: 'chime', gain: -10 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start, sfx: 'whoosh', gain: -11 },
+    ...OPS.map(([t0, m, sg]) => ({ t: t0 + .1, sfx: sg > 0 ? 'pop' : 'swish', gain: -13 })),
+    { t: L.a6.start + .6, sfx: 'impact', gain: -6 },
+    { t: L.a7.start + .3, sfx: 'chime', gain: -10 },
+    { t: C1.start, sfx: 'whoosh', gain: -11 },
+    ...[0, 1, 2, 3].map((k) => ({ t: L.c2.start + .3 + k * .45, sfx: 'tick', gain: -14 })),
+    { t: L.c3.start + .6, sfx: 'swish', gain: -11 },
+    { t: L.c4.start + .2, sfx: 'thump', gain: -7 },
+    { t: D1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.d2.start + .3, sfx: 'chime', gain: -10 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
