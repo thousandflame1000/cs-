@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>Catalan 鏡射法</title>
+<!--
+  資工所衝刺 · 短影音 13：Catalan 鏡射法——壞路照一面鏡子
+  記憶宮殿：離散館 · 第 3 間。地板是 4×4 的格子，從 (0,0) 走到 (4,4)；對角線上方立著一面半透明的「鏡牆」y = x + 1。
+  壞路第一次碰到鏡牆後，剩下的路翻到鏡子另一邊，終點變成 (3,5)：壞路和到 (3,5) 的路一對一。
+  語義色：紫＝離散館、青＝好路、珊瑚＝壞路與鏡像、琥珀＝計數。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', VI = '#b48cff', CY = '#5be7ff', CO = '#ff6a5c', AM = '#ffc14d';
+const K = Kit({ W, H, stage, duration: DUR, seed: 131, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: VI, accent2: CY } });
+K.warm([VI, CY, CO, AM, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .44, fogNear: 10, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { '14': CY, '70': AM, 上方: CO, 牆: CO, 碰牆: CO, 鏡射: CO, '(3,5)': CO, 一對一: AM, '56': CO, 同一串數: VI },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+
+// ═════════ 格子世界：格點 (i, j) → 地板座標
+const G = .9, OX = -1.8, OY = -1.8;
+const P = (i, j, z = .04) => [OX + i * G, OY + j * G, z];
+// 所有 70 條路（R/U 序列）
+const ALL = [];
+(function gen(s, r, u) { if (r === 4 && u === 4) { ALL.push(s); return; } if (r < 4) gen(s + 'R', r + 1, u); if (u < 4) gen(s + 'U', r, u + 1); })('', 0, 0);
+const pts = (s, x0 = 0, y0 = 0) => { const out = [[x0, y0]]; for (const ch of s) { const [x, y] = out[out.length - 1]; out.push(ch === 'R' ? [x + 1, y] : [x, y + 1]); } return out; };
+const isGood = (s) => pts(s).every(([x, y]) => y <= x);
+const ALL_P = ALL.map((s) => ({ s, p: pts(s), good: isGood(s) }));
+function drawPath(c, ps, col, a, lo = {}) { if (a <= .003) return; V.path(c, ps.map(([i, j], k) => P(i, j, (lo.z ?? .04) + (lo.lift ? k * lo.lift : 0))), { color: col, w: lo.w ?? 2.4, a, p: lo.p ?? 1 }); }
+function grid(c, a = 1, n = 5) {
+  if (a <= .003) return;
+  for (let i = 0; i <= n; i++) { V.line(c, P(i, 0, .01), P(i, n, .01), { color: VI, a: .25 * a, w: 1.2, plain: true }); V.line(c, P(0, i, .01), P(n, i, .01), { color: VI, a: .25 * a, w: 1.2, plain: true }); }
+  for (let i = 0; i <= 4; i++) for (let j = 0; j <= 5; j++) V.core(c, P(i, j, .03), .025, .45 * a, INK);
+  V.line(c, P(0, 0, .02), P(4, 4, .02), { color: INK, a: .45 * a, w: 1.6 });
+  V.label(c, '(0,0)', P(-.35, -.35, .05), { size: .24, a: .7 * a, minPx: 16, maxPx: 50 });
+  V.label(c, '(4,4)', P(4.35, 4.35, .05), { size: .24, w: 700, color: CY, a: .9 * a, minPx: 16, maxPx: 50 });
+}
+/** 鏡牆：沿 y = x + 1，從 (-1, 0) 到 (4, 5) */
+function wall(c, a = 1, hot = 0) {
+  if (a <= .003) return; const h = 1.3;
+  const q = [P(-.4, .6, 0), P(4, 5, 0), P(4, 5, h), P(-.4, .6, h)];
+  V.poly(c, q, K.rgba(CO, (.08 + .12 * hot) * a), K.rgba(CO, .7 * a), 1);
+  for (let k = 1; k < 6; k++) { const f = k / 6; V.line(c, P(lerp(-.4, 4, f), lerp(.6, 5, f), 0), P(lerp(-.4, 4, f), lerp(.6, 5, f), h), { color: '#ffd0c8', a: .12 * a, w: 1, plain: true }); }
+  V.label(c, 'y = x + 1', P(4.1, 5.1, h + .25), { size: .26, w: 700, color: CO, a: a, minPx: 18, maxPx: 60 });
+}
+// 示範壞路：RUUURRUR，第一次碰牆在 (1,2)（第 3 步）
+const BAD = 'RUUURRUR', BAD_P = pts(BAD), TOUCH = 3;
+const refl = ([x, y]) => [y - 1, x + 1];
+function badPath(c, t, o = {}) {
+  const head = BAD_P.slice(0, TOUCH + 1), tail = BAD_P.slice(TOUCH), k = o.flip ?? 0;
+  drawPath(c, head, CO, o.a ?? 1, { w: 3.6, p: o.p ?? 1 });
+  if ((o.p ?? 1) < 1) return;
+  const tailK = tail.map(([x, y]) => { const [rx, ry] = refl([x, y]); return [lerp(x, rx, k), lerp(y, ry, k)]; });
+  // 翻面時往上拱一下（像在鏡子前轉身）
+  V.path(c, tailK.map(([i, j], n) => P(i, j, .04 + Math.sin(Math.PI * k) * .6 * (n / (tailK.length - 1)))), { color: k > .5 ? CO : '#ff9a7a', w: 3.6, a: o.a ?? 1, p: o.tp ?? 1 });
+  if (k < .99 && k > 0) drawPath(c, tail, '#ff9a7a', .25 * (o.a ?? 1), { w: 2 });
+  if (o.touch) V.glow(c, P(...BAD_P[TOUCH], .1), .7, .7 * o.touch, CO);
+  const end = tailK[tailK.length - 1]; V.core(c, P(end[0], end[1], .08), .08, o.a ?? 1, k > .5 ? CO : CY);
+}
+
+// ═════════ 鏡頭
+const camGrid = { pos: [1.6, -6.2, 6.2], tgt: [.1, .2, .4], fov: 46 };
+V.camKeys([
+  [0, { pos: [-3.6, -5.6, 5.2], tgt: [.1, .3, .5], fov: 46 }], [T.start, { pos: [-1.8, -6.8, 6.2], tgt: [.1, .3, .5], fov: 46 }],
+  [A1.start, camGrid], [L.a4.start + .3, { pos: [3.2, -4.8, 3.6], tgt: [.2, .9, .6], fov: 46 }], [L.a4.end, { pos: [3.4, -4.6, 3.6], tgt: [.2, .9, .6], fov: 46 }],
+  [B1.start + .4, camGrid], [L.b2.start + .3, { pos: [3.0, -6.0, 5.6], tgt: [.2, .9, .5], fov: 46 }], [L.b3.end, { pos: [2.6, -6.2, 5.8], tgt: [.2, .9, .5], fov: 46 }], [L.b5.end, camGrid],
+  [C1.start + .4, { pos: [0, -7.2, 6.6], tgt: [.1, .5, .6], fov: 46 }], [D1.start + .5, { pos: [0, -8.8, 4.0], tgt: [0, .6, 1.5], fov: 46 }], [Ec.start, { pos: [0, -8.6, 5.2], tgt: [0, .5, 1.2], fov: 46 }], [DUR, { pos: [.6, -9, 5.4], tgt: [0, .5, 1.2], fov: 46 }],
+]);
+const room = (c, a = 1) => V.floor(c, { n: 10, step: .9, color: VI, a: .7 * a, major: 5 });
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.5, o1.start + .4);
+  room(c); grid(c, 1, 4);
+  const cut = prog(t, o2.start, o2.start + .7);
+  ALL_P.forEach((q, i) => { const k = prog(t, o1.start + i * .025, o1.start + .5 + i * .025); if (k <= 0) return; drawPath(c, q.p, q.good ? CY : (cut > 0 ? CO : VI), (q.good ? .3 + .4 * cut : .25 * (1 - .8 * cut)) * k, { w: q.good ? 2.2 : 1.6, z: .04 + (i % 7) * .012 }); });
+  wall(c, cut);
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '離散數學 · 計數', big: 'Catalan', size: 200, y: 600, en: 'THE  REFLECTION  TRICK', q: '壞路為什麼能照鏡子', qGap: 330, color: VI });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .3; room(c); grid(c, 1, 4); wall(c, 1); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), VI);
+}
+function sCount(c, t) {
+  room(c); grid(c, prog(t, A1.start - .1, A1.start + .5), 4);
+  // a1：示範一條路慢慢走
+  const ex = 'RRURUURU', walk = prog(t, A1.start + .4, A1.start + 2.2);
+  drawPath(c, pts(ex), CY, 1 - prog(t, L.a2.start, L.a2.start + .3), { w: 3.4, p: walk });
+  // a2：70 條路全部亮
+  const all = prog(t, L.a2.start, L.a2.start + 1.6);
+  ALL_P.forEach((q, i) => { const k = prog(all, i / 90, i / 90 + .3); if (k > 0) drawPath(c, q.p, q.good || t < L.a3.start ? (t < L.a3.start ? VI : CY) : CO, (.22 + (q.good && t > L.a3.start ? .25 : 0)) * k * (t > L.a3.start && !q.good ? .7 : 1), { w: 1.8, z: .04 + (i % 7) * .012 }); });
+  // a3：對角線上方變暗紅
+  const up = prog(t, L.a3.start + .2, L.a3.start + .7);
+  if (up > 0) V.poly(c, [P(0, 0, .015), P(4, 4, .015), P(0, 4, .015)], K.rgba(CO, .1 * up), null, 1);
+  wall(c, prog(t, L.a4.start + .2, L.a4.start + .8));
+}
+S.hero('70', L.a2.start + .8, L.a2.end, { y: 210, color: AM, size: 150 });
+function sMirror(c, t) {
+  room(c); grid(c, 1, 5); wall(c, 1, .6 * M.hit(t, [L.b1.start + 1.0], .4));
+  const p1 = prog(t, B1.start + .2, B1.start + 1.0), flip = E.inOutCubic(prog(t, L.b2.start + .4, L.b2.start + 1.6));
+  badPath(c, t, { p: p1, flip, touch: prog(t, B1.start + .9, B1.start + 1.3) });
+  const end = prog(t, L.b3.start + .2, L.b3.start + .6);
+  if (end > 0) { V.ring(c, P(3, 5, .03), .3, { color: CO, a: end, w: 2.4 }); V.label(c, '(3,5)', P(3, 5.45, .1), { size: .28, w: 700, color: CO, a: end, minPx: 20, maxPx: 60 }); }
+  // b4–b5：所有 56 條到 (3,5) 的路淡淡浮現
+  const many = prog(t, L.b4.start + .3, L.b5.end);
+  if (many > 0) { let n = 0; (function gen(s, r, u) { if (r === 3 && u === 5) { const k = prog(many, n / 70, n / 70 + .2); if (k > 0) drawPath(c, pts(s), CO, .18 * k, { w: 1.4, z: .05 + (n % 5) * .01 }); n++; return; } if (r < 3) gen(s + 'R', r + 1, u); if (u < 5) gen(s + 'U', r, u + 1); })('', 0, 0); }
+}
+S.hero('56', L.b5.start + .4, L.b5.end + .1, { y: 210, color: CO, size: 150, slam: true });
+const CAT = [1, 1, 2, 5, 14, 42, 132];
+function sResult(c, t) {
+  room(c); grid(c, .6, 4);
+  const good = prog(t, C1.start + .2, C1.start + 1.2);
+  ALL_P.filter((q) => q.good).forEach((q, i) => drawPath(c, q.p, CY, (.3 + .3 * good) * prog(good, i / 20, i / 20 + .3), { w: 2.4, z: .05 + i * .012 }));
+  // c4：Catalan 數列浮在空中
+  const sq = prog(t, L.c4.start, L.c4.start + 1.4);
+  CAT.forEach((v, i) => { const k = prog(sq, i / 9, i / 9 + .3); if (k > 0) V.label(c, String(v), [-2.4 + i * .8, 1.2, 2.4 + (i === 4 ? .2 : 0)], { size: i === 4 ? .6 : .42, w: 700, color: i === 4 ? CY : VI, a: k, minPx: 24, maxPx: 120 }); });
+}
+S.hero('70 − 56 = 14', C1.start + .6, L.c1.end, { y: 210, color: CY, size: 110 });
+S.hero('C(2n,n) / (n+1)', L.c3.start + .2, L.c3.end, { y: 210, color: VI, size: S.SIZE.mid + 10 });
+// d 章：三件同樣是 14 的東西擺在房間裡（記憶宮殿的三個角落）
+function sFamily(c, t) {
+  const endDim = 1 - .85 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const a1 = prog(t, D1.start + .2, D1.start + .7), a2 = prog(t, D1.start + .8, D1.start + 1.3), a3 = prog(t, D1.start + 1.4, D1.start + 1.9);
+  // 括號
+  V.label(c, '(()())', [-1.6, .4, 1.6], { size: .5, w: 700, color: AM, a: a1, minPx: 30, maxPx: 110 });
+  V.label(c, '括號', [-1.6, .4, .9], { size: .26, a: .8 * a1, minPx: 18, maxPx: 50 });
+  // 二元樹
+  if (a2 > 0) { const nodes = [[0, 2.1], [-.45, 1.5], [.45, 1.5], [.2, .95]]; for (const [i, j] of [[0, 1], [0, 2], [2, 3]]) V.line(c, [nodes[i][0], .6, nodes[i][1]], [nodes[j][0], .6, nodes[j][1]], { color: CY, a: a2, w: 2.4 }); nodes.forEach(([x, z]) => V.orb(c, [x, .6, z], .14, { color: CY, a: a2 })); V.label(c, '二元樹', [0, .6, .5], { size: .26, a: .8 * a2, minPx: 18, maxPx: 50 }); }
+  // 六邊形三角剖分
+  if (a3 > 0) { const hx = Array.from({ length: 6 }, (_, k) => [1.6 + Math.cos(k / 6 * Math.PI * 2) * .5, .4, 1.5 + Math.sin(k / 6 * Math.PI * 2) * .5]); V.path(c, hx.concat([hx[0]]), { color: VI, w: 2.4, a: a3 }); for (const k of [2, 3, 4]) V.line(c, hx[0], hx[k], { color: VI, a: .7 * a3, w: 1.8 }); V.label(c, '三角剖分', [1.6, .4, .75], { size: .26, a: .8 * a3, minPx: 18, maxPx: 50 }); }
+  const same = prog(t, L.d2.start + .2, L.d2.start + .7);
+  if (same > 0) for (const x of [-1.6, 0, 1.6]) V.label(c, '14', [x, .4, 2.7], { size: .5, w: 700, color: CY, a: same, minPx: 30, maxPx: 110 });
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['Cₙ = C(2n,n) − C(2n,n+1)', VI, 52], ['    = C(2n,n) / (n+1)', VI, 52], ['壞路 ↔ 到 (n−1, n+1) 的路（第一次碰牆後鏡射）', CO, 32], ['Cₙ₊₁ = Σ Cᵢ Cₙ₋ᵢ', AM, 46], ['1, 1, 2, 5, 14, 42, 132, 429', CY, 42]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 112 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'count', start: A1.start, end: B1.start, draw: sCount, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'mirror', start: B1.start, end: C1.start, draw: sMirror, color: CO, in: { type: 'cut' } },
+  { id: 'result', start: C1.start, end: D1.start, draw: sResult, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'family', start: D1.start, end: DUR, draw: (c, t) => { sFamily(c, t); sExam(c, t); }, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .12, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .17, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .16, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .17, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .08, .3);
+S.chapters([[A1.start, '記憶宮殿 · 離散館 · 第 3 間  /  01 70 條路'], [B1.start, '記憶宮殿 · 離散館 · 第 3 間  /  02 鏡牆'], [C1.start, '記憶宮殿 · 離散館 · 第 3 間  /  03 公式'], [D1.start, '記憶宮殿 · 離散館 · 第 3 間  /  04 同一串數'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .3, sfx: 'swish', gain: -13 },
+    { t: o2.start + .2, sfx: 'glitch', gain: -11 },
+    { t: o2.start + .7, sfx: 'chime', gain: -10 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.a2.start + .3, sfx: 'swish', gain: -12 },
+    { t: L.a4.start + .4, sfx: 'thump', gain: -9 },
+    { t: B1.start, sfx: 'whoosh', gain: -11 },
+    { t: B1.start + 1.0, sfx: 'impact', gain: -8 },
+    { t: L.b2.start + .5, sfx: 'reverse', align: 'end', gain: -10 },
+    { t: L.b3.start + .3, sfx: 'chime', gain: -10 },
+    { t: L.b5.start + .4, sfx: 'impact', gain: -6 },
+    { t: C1.start, sfx: 'whoosh', gain: -11 },
+    { t: C1.start + .6, sfx: 'chime', gain: -9 },
+    { t: D1.start, sfx: 'whoosh', gain: -11 },
+    ...[0, 1, 2].map((k) => ({ t: D1.start + .3 + k * .6, sfx: 'pop', gain: -13 })),
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
