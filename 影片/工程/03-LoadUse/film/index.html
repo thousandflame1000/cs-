@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>Load-Use 危障</title>
+<!--
+  資工所衝刺 · 短影音 03：Load-Use 危障——資料不能送回過去
+  視覺系統：直式畫面裡「時間往下流」：每一列是一個週期，每一欄是一條指令，五個階段一格一格往下長。
+  forwarding＝往下指的光箭頭（往未來送）；lw 接 add 時箭頭得往上指（送回過去）→ 斷掉 → 插泡泡。
+  語義色：青＝來得及／forwarding、珊瑚＝lw 與「回到過去」、琥珀＝泡泡（stall）。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+const TAU = Math.PI * 2;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', CO = '#ff6a5c', AM = '#ffc14d';
+const K = Kit({ W, H, stage, duration: DUR, seed: 31, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: CO } });
+K.warm([CY, CO, AM, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 送回過去: CO, 週期: CY, 'EX 結束': CY, 'EX 開頭': CY, 來得及: CY, forwarding: CY, 'MEM 結束': CO, 上: CO, 做不到: CO,
+    泡泡: AM, 延一拍: AM, '1 個週期': AM, lw: CO, 'Rs 或 Rt': CO, '0': AM, 不更新: AM, 換順序: CY, '0 stall': CY },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E;
+
+// ═════════ 時空格：第 k 個週期在 y，欄是指令
+const Y0 = 470, DYC = 116, BW = 210, BH = 92;
+const rowY = (k) => Y0 + (k - 1) * DYC;
+const STG = ['IF', 'ID', 'EX', 'MEM', 'WB'];
+const STG_COL = { IF: '#8fb4d8', ID: '#8fb4d8', EX: CY, MEM: '#7fd3ff', WB: '#8fb4d8' };
+/** 指令的每一階段在第幾週期：issue = IF 的週期；bub = EX 前插入的泡泡數（可為小數，做滑動） */
+const stageCycle = (issue, bub, si) => issue + si + (si >= 2 ? bub : 0);
+function block(c, x, y, txt, col, a, o = {}) {
+  if (a <= .003) return; const w = o.w ?? BW, h = o.h ?? BH;
+  c.save(); c.globalAlpha *= a;
+  K.roundRect(c, x - w / 2, y - h / 2, w, h, 14);
+  const g = c.createLinearGradient(0, y - h / 2, 0, y + h / 2); g.addColorStop(0, K.rgba(col, .34 + .25 * (o.lit || 0))); g.addColorStop(1, K.rgba(col, .1)); c.fillStyle = g; c.fill();
+  c.strokeStyle = K.rgba(K.mix(col, '#ffffff', .3), .75 + .25 * (o.lit || 0)); c.lineWidth = 2; c.stroke();
+  c.fillStyle = K.rgba(K.mix(col, '#ffffff', .6), .85); c.fillRect(x - w / 2 + 14, y - h / 2 + 2, w - 28, 1.5);   // 上緣高光
+  S.label(c, txt, x, y + 2, { size: 36, w: 700, color: '#ffffff', a: .92 });
+  c.restore();
+  if (o.lit) K.sprC(c, col, x, y, w * .7, .25 * o.lit, 'soft');
+}
+/** 畫一條指令：o = {x, issue, bub, name, col, reveal(si)→0..1, lit(si), dim} */
+function instr(c, t, o) {
+  const a = o.a ?? 1; if (a <= .003) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, o.name, o.x, Y0 - DYC * .9, { size: 30, w: 600, color: o.col ?? INK, a: .95 * (o.nameA ?? 1) });
+  for (let si = 0; si < 5; si++) {
+    const p = o.reveal ? o.reveal(si) : 1; if (p <= 0) continue;
+    const y = rowY(stageCycle(o.issue, o.bub || 0, si)), k = E.outCubic(p);
+    block(c, o.x, y - (1 - k) * 30, STG[si], o.stageCol?.(si) ?? STG_COL[STG[si]], k, { lit: o.lit ? o.lit(si) : 0 });
+  }
+  c.restore();
+}
+/** 左側時間軸：週期刻度 + 往下的箭頭 */
+function timeAxis(c, t, n, a) {
+  if (a <= .003) return; const x = 86;
+  c.save(); c.globalAlpha *= a;
+  K.glowLine(c, [[x, rowY(1) - DYC / 2], [x, rowY(n) + DYC / 2 + 30]], { w: 2, color: INK, a: .5 });
+  S.arrow(c, x, rowY(n) + DYC / 2, x, rowY(n) + DYC / 2 + 46, INK, .6, 2);
+  for (let k = 1; k <= n; k++) { S.label(c, String(k), x - 30, rowY(k), { size: 28, a: .55, w: 600 }); K.glowLine(c, [[x - 8, rowY(k) - DYC / 2], [x + 8, rowY(k) - DYC / 2]], { w: 1.5, color: INK, a: .4 }); }
+  S.label(c, '時間', x, rowY(n) + DYC / 2 + 78, { size: 26, a: .6 });
+  c.restore();
+}
+/** 週期分隔線（淡） */
+function grid(c, n, a) { if (a <= .003) return; c.save(); c.strokeStyle = K.I(.05 * a); c.lineWidth = 1; c.beginPath(); for (let k = 1; k <= n + 1; k++) { const y = rowY(k) - DYC / 2; c.moveTo(130, y); c.lineTo(980, y); } c.stroke(); c.restore(); }
+/** 資料點：某階段的結束（下緣） */
+const prodPt = (x, issue, bub, si) => [x, rowY(stageCycle(issue, bub, si)) + BH / 2];
+const needPt = (x, issue, bub, si) => [x, rowY(stageCycle(issue, bub, si)) - BH / 2];
+/** 轉送箭頭：從 p 到 q，k 進度；ok＝往下（未來），否則往上（過去） */
+function fwd(c, p, q, k, col, a = 1) {
+  if (k <= 0 || a <= .003) return;
+  const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2 - (q[1] < p[1] ? 0 : 0), bend = 60;
+  const pts = []; for (let i = 0; i <= 24; i++) { const u = i / 24 * k; const x = (1 - u) * (1 - u) * p[0] + 2 * (1 - u) * u * (mx) + u * u * q[0], y = (1 - u) * (1 - u) * p[1] + 2 * (1 - u) * u * (my + (q[1] >= p[1] ? -bend : bend) * 0) + u * u * q[1]; pts.push([x, y]); }
+  K.glowLine(c, pts, { w: 4, color: col, a });
+  const e = pts[pts.length - 1], b = pts[pts.length - 2], ang = Math.atan2(e[1] - b[1], e[0] - b[0]), s = 22;
+  if (k > .3) K.glowLine(c, [[e[0] - Math.cos(ang - .5) * s, e[1] - Math.sin(ang - .5) * s], e, [e[0] - Math.cos(ang + .5) * s, e[1] - Math.sin(ang + .5) * s]], { w: 4, color: col, a });
+  K.core(c, ...e, 4, a * (k < 1 ? 1 : .6), col);
+}
+
+// ═════════ 場景 0：冷開場——一條往下流的時間之河，一支珊瑚箭頭想往上逆流，碎掉
+const FLOW = Array.from({ length: 220 }, (_, i) => ({ x: CX + (M.hash(i, 1) - .5) * 520, s: M.hash(i, 2), v: .6 + M.hash(i, 3) * .8 }));
+function river(c, t, a, col = CY) {
+  if (a <= .003) return;
+  c.save(); c.globalAlpha *= a;
+  const g = c.createLinearGradient(CX - 300, 0, CX + 300, 0); g.addColorStop(0, K.rgba(col, 0)); g.addColorStop(.5, K.rgba(col, .07)); g.addColorStop(1, K.rgba(col, 0)); c.fillStyle = g; c.fillRect(CX - 300, 200, 600, 1000);
+  for (const f of FLOW) { const y = 200 + M.fract(f.s + t * .18 * f.v) * 1000; const fade = Math.sin(Math.PI * (y - 200) / 1000); c.fillStyle = K.rgba(K.mix(col, INK, .4), .5 * fade); c.fillRect(f.x, y, 1.6, 6 + 10 * f.v); }
+  for (let k = 0; k < 9; k++) { const y = 230 + k * 115; K.glowLine(c, [[CX - 330, y], [CX - 300, y]], { w: 1.5, color: INK, a: .35 }); }
+  c.restore();
+}
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  const on = prog(t, -.6, o1.start + .9);
+  river(c, t, on * out);
+  // 往下的青箭頭：forwarding 正常
+  const pD = prog(t, o1.start + .2, o1.start + 1.3, E.inOutCubic);
+  c.save(); c.globalAlpha *= out * (1 - .7 * prog(t, o2.start - .2, o2.start + .3));
+  fwd(c, [CX - 120, 380], [CX - 120, 760], pD, CY);
+  c.restore();
+  // 往上的珊瑚箭頭：想回到過去 → 斷裂
+  const pU = prog(t, o2.start, o2.start + .9, E.inOutCubic), brk = prog(t, o2.start + .95, o2.start + 1.5);
+  if (pU > 0) {
+    c.save(); c.globalAlpha *= out;
+    if (brk <= 0) fwd(c, [CX + 120, 980], [CX + 120, 560], pU, CO);
+    else { for (let i = 0; i < 6; i++) { const y0 = lerp(980, 560, i / 6), y1 = lerp(980, 560, (i + .8) / 6), dx = (M.hash(i, 5) - .5) * 90 * brk, dy = (M.hash(i, 6) - .3) * 70 * brk; K.glowLine(c, [[CX + 120 + dx, y0 + dy], [CX + 120 + dx * 1.2, y1 + dy]], { w: 4, color: CO, a: 1 - .6 * brk }); } }
+    c.restore();
+  }
+  if (brk > 0 && brk < 1) K.core(c, CX + 120, 560, 10 * (1 - brk), out, CO);
+}
+K.shake(o2.start + .95, 10, .3); K.flash(o2.start + .95, .08, .3);
+
+// ═════════ 場景 1：片名卡
+const title = S.titleCard(T, { kick: '管線危障', big: 'Load-Use', size: 190, y: 600, en: "YOU  CAN'T  FORWARD  INTO  THE  PAST", q: '為什麼 lw 後面要等一拍', qGap: 330, color: CO });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  river(c, t, a * .6, CO);
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CO);
+}
+
+// ═════════ 場景 2：5 級管線 + add 接 add
+const A = { a1: L.a1, a2: L.a2, a3: L.a3 }, B = { b1: L.b1, b2: L.b2, b3: L.b3, b4: L.b4, b5: L.b5 };
+const XL = 380, XR = 740;
+function sAdd(c, t) {
+  const ax = prog(t, A.a2.start, A.a2.start + .6);
+  // 時鐘掃描線：a2 起一拍一格往下走
+  const clock = 1 + Math.max(0, (t - A.a2.start - .3) / .45);
+  timeAxis(c, t, 7, ax); grid(c, 7, ax);
+  K.halo(c, CX, 800, 700, .07, CY); K.ghost(c, 'PIPELINE', CX, 1310, 190, .03, 700);
+  const showR = (issue) => (si) => t < A.a2.start ? (issue === 1 ? prog(t, A.a1.start + .15 + si * .2, A.a1.start + .55 + si * .2) : 0) : prog(clock, stageCycle(issue, 0, si) - .1, stageCycle(issue, 0, si) + .5);
+  const nameB = t < B.b1.start ? 'add $1, $2, $3' : 'add $1, $2, $3';
+  const lit = (who) => (si) => (who === 0 && si === 2 ? prog(t, B.b2.start, B.b2.start + .4) : 0) + (who === 1 && si === 2 ? prog(t, B.b3.start, B.b3.start + .4) : 0);
+  instr(c, t, { x: XL, issue: 1, name: nameB, reveal: showR(1), lit: lit(0) });
+  instr(c, t, { x: XR, issue: 2, name: 'add $4, $1, $5', reveal: (si) => (t < A.a3.start - .1 ? 0 : showR(2)(si)), lit: lit(1), nameA: prog(t, A.a3.start, A.a3.start + .4) });
+  if (t > A.a2.start && t < B.b1.start + .5) { const y = rowY(Math.min(clock, 7.4)) - DYC / 2; K.glowLine(c, [[130, y], [980, y]], { w: 1.4, color: CY, a: .5 * (1 - prog(t, B.b1.start, B.b1.start + .5)) }); }
+  // b2：EX 結束的資料點；b3：下一拍 EX 開頭；b4：往下的轉送箭頭
+  const P = prodPt(XL, 1, 0, 2), Q = needPt(XR, 2, 0, 2);
+  const pp = prog(t, B.b2.start + .3, B.b2.start + .7); if (pp > 0) { K.core(c, ...P, 7, pp, CY); S.label(c, '結果算好', P[0] - BW / 2 - 18, P[1], { align: 'right', size: 26, a: .75 * pp * (1 - prog(t, B.b4.start, B.b4.start + .4)) }); }
+  const qq = prog(t, B.b3.start + .3, B.b3.start + .7); if (qq > 0) { K.core(c, ...Q, 7, qq, CY); S.label(c, '需要它', Q[0] + BW / 2 + 16, Q[1], { align: 'left', size: 26, a: .75 * qq * (1 - prog(t, B.b4.start, B.b4.start + .4)) }); }
+  fwd(c, P, Q, prog(t, B.b4.start + .2, B.b4.start + 1.0, E.inOutCubic), CY);
+  // b5：EX/MEM 管線暫存器的轉送路徑標記
+  const fb = prog(t, B.b5.start + .2, B.b5.start + .7); if (fb > 0) S.label(c, 'EX/MEM → ALU', (P[0] + Q[0]) / 2, (P[1] + Q[1]) / 2 + 52, { size: 28, color: CY, a: .9 * fb, w: 600 });
+}
+S.hero('✓', B.b4.start + .9, B.b5.end, { y: 220, color: CY, size: 140 });
+
+// ═════════ 場景 3：lw 接 add——箭頭往上，斷掉
+const Cc = { c1: L.c1, c2: L.c2, c3: L.c3, c4: L.c4, c5: L.c5 };
+function sLw(c, t) {
+  timeAxis(c, t, 7, 1); grid(c, 7, 1);
+  K.halo(c, CX, 800, 700, .08, CO); K.ghost(c, 'LOAD', CX, 1310, 200, .03, 700);
+  const rv = (issue) => (si) => prog(t, Cc.c1.start - .1 + (issue - 1) * .25 + si * .12, Cc.c1.start + .35 + (issue - 1) * .25 + si * .12);
+  const lit = (who) => (si) => (who === 0 && si === 3 ? prog(t, Cc.c2.start, Cc.c2.start + .4) : 0) + (who === 1 && si === 2 ? prog(t, Cc.c3.start, Cc.c3.start + .4) : 0);
+  instr(c, t, { x: XL, issue: 1, name: 'lw $1, 0($2)', col: CO, reveal: rv(1), lit: lit(0), stageCol: (si) => si === 3 ? CO : STG_COL[STG[si]] });
+  instr(c, t, { x: XR, issue: 2, name: 'add $4, $1, $5', reveal: rv(2), lit: lit(1) });
+  const P = prodPt(XL, 1, 0, 3), Q = needPt(XR, 2, 0, 2);
+  const pp = prog(t, Cc.c2.start + .3, Cc.c2.start + .7); if (pp > 0) K.core(c, ...P, 7, pp, CO);
+  const qq = prog(t, Cc.c3.start + .3, Cc.c3.start + .7); if (qq > 0) K.core(c, ...Q, 7, qq, CY);
+  // 同一列的兩個點：對準線
+  const al = prog(t, Cc.c3.start + .7, Cc.c3.start + 1.2) * (1 - prog(t, Cc.c5.end, Cc.c5.end + .3)); if (al > 0) { c.save(); c.setLineDash([6, 8]); c.strokeStyle = K.I(.35 * al); c.lineWidth = 1.5; c.beginPath(); c.moveTo(150, P[1]); c.lineTo(960, P[1]); c.moveTo(150, Q[1]); c.lineTo(960, Q[1]); c.stroke(); c.restore(); S.label(c, '第 4 拍結束', 940, P[1] + 22, { align: 'right', size: 24, a: .6 * al }); S.label(c, '第 4 拍開頭', 940, Q[1] - 22, { align: 'right', size: 24, a: .6 * al }); }
+  // c4：往上的箭頭；c5：斷掉
+  const up = prog(t, Cc.c4.start + .2, Cc.c4.start + 1.1, E.inOutCubic), brk = prog(t, Cc.c5.start + .1, Cc.c5.start + .7);
+  if (up > 0 && brk <= 0) fwd(c, P, Q, up, CO);
+  if (brk > 0) { const n = 7; for (let i = 0; i < n; i++) { const u0 = i / n, u1 = (i + .75) / n; const x0 = lerp(P[0], Q[0], u0), y0 = lerp(P[1], Q[1], u0), x1 = lerp(P[0], Q[0], u1), y1 = lerp(P[1], Q[1], u1); const dx = (M.hash(i, 4) - .5) * 70 * brk, dy = (M.hash(i, 8) - .2) * 80 * brk; K.glowLine(c, [[x0 + dx, y0 + dy], [x1 + dx, y1 + dy]], { w: 4, color: CO, a: 1 - .5 * brk }); } }
+}
+S.hero('↑ 過去', Cc.c4.start + .9, Cc.c4.end, { y: 220, color: CO, size: 120 });
+S.hero('✗', Cc.c5.start + .1, Cc.c5.end + .2, { y: 210, color: CO, size: 150, slam: true });
+K.shake(Cc.c5.start + .1, 11, .3); K.flash(Cc.c5.start + .1, .1, .3);
+
+// ═════════ 場景 4：插泡泡
+const D = { d1: L.d1, d2: L.d2, d3: L.d3, d4: L.d4 };
+function sBubble(c, t) {
+  timeAxis(c, t, 8, 1); grid(c, 8, 1);
+  K.halo(c, CX, 820, 700, .08, AM); K.ghost(c, 'STALL', CX, 1310, 200, .03, 700);
+  const bub = E.inOutCubic(prog(t, D.d2.start + .1, D.d2.start + 1.1));
+  instr(c, t, { x: XL, issue: 1, name: 'lw $1, 0($2)', col: CO, stageCol: (si) => si === 3 ? CO : STG_COL[STG[si]], lit: (si) => si === 3 ? .5 : 0 });
+  instr(c, t, { x: XR, issue: 2, bub, name: 'add $4, $1, $5', lit: (si) => si === 2 ? .6 * prog(t, D.d3.start, D.d3.start + .4) : 0 });
+  // 泡泡：一顆琥珀色的空心球，從 ID 和 EX 之間冒出來
+  const bp = prog(t, D.d1.start + .2, D.d1.start + .9, E.outBack);
+  if (bp > 0) { const y = rowY(4), r = 46 * bp; K.halo(c, XR, y, r * 3, .25, AM); c.save(); c.strokeStyle = K.rgba(AM, .95); c.lineWidth = 3; c.beginPath(); c.arc(XR, y, r, 0, TAU); c.stroke(); const g = c.createRadialGradient(XR - r * .35, y - r * .4, 1, XR, y, r); g.addColorStop(0, K.rgba('#ffffff', .5)); g.addColorStop(.3, K.rgba(AM, .12)); g.addColorStop(1, K.rgba(AM, .04)); c.fillStyle = g; c.fill(); c.restore(); S.label(c, 'bubble', XR + r + 18, y, { align: 'left', size: 26, color: AM, a: .85 * bp }); }
+  const P = prodPt(XL, 1, 0, 3), Q = needPt(XR, 2, bub, 2);
+  const ok = prog(t, D.d3.start + .2, D.d3.start + 1.0, E.inOutCubic);
+  if (ok > 0) { fwd(c, P, Q, ok, CY); S.label(c, 'MEM/WB → ALU', (P[0] + Q[0]) / 2 + 40, (P[1] + Q[1]) / 2 + 46, { size: 28, color: CY, a: .9 * prog(t, D.d3.start + .8, D.d3.start + 1.2), w: 600 }); }
+  // d4：總週期 7 → 8
+  const cost = prog(t, D.d4.start + .2, D.d4.start + .7);
+  if (cost > 0) { const y = rowY(8) + DYC / 2 + 20; K.glowLine(c, [[XR - BW / 2, y], [XR + BW / 2, y]], { w: 2.4, color: AM, a: cost }); }
+}
+S.hero('+1 cycle', D.d4.start + .3, D.d4.end + .2, { y: 200, color: AM, size: 110 });
+
+// ═════════ 場景 5：硬體偵測（兩個管線暫存器 + 比較器）
+const Ee = { e1: L.e1, e2: L.e2, e3: L.e3, e4: L.e4, e5: L.e5 };
+function regCard(c, x, y, w, h, title, rows, col, a, hiRow = -1, hi = 0) {
+  if (a <= .003) return; c.save(); c.globalAlpha *= a;
+  K.roundRect(c, x, y, w, h, 18); c.fillStyle = K.rgba('#0c1626', .85); c.fill(); c.strokeStyle = K.rgba(col, .8); c.lineWidth = 2; c.stroke();
+  c.fillStyle = K.rgba(col, .9); c.fillRect(x, y + 20, 5, 34);
+  S.label(c, title, x + 28, y + 38, { align: 'left', size: 34, w: 700, color: col });
+  rows.forEach(([k, v], i) => { const yy = y + 100 + i * 66, on = i === hiRow ? hi : 0; if (on > 0) { K.roundRect(c, x + 14, yy - 28, w - 28, 56, 10); c.fillStyle = K.rgba(col, .18 * on); c.fill(); } S.label(c, k, x + 32, yy, { align: 'left', size: 32, a: .75 }); S.label(c, v, x + w - 32, yy, { align: 'right', size: 36, w: 700, color: on > .5 ? col : INK, a: .95 }); });
+  c.restore();
+}
+function sDetect(c, t) {
+  K.halo(c, CX, 820, 760, .08, CO); K.ghost(c, 'HAZARD', CX, 1330, 190, .03, 700);
+  const a1 = prog(t, Ee.e1.start - .1, Ee.e1.start + .5);
+  const hMem = prog(t, Ee.e2.start + .2, Ee.e2.start + .6), hRt = prog(t, Ee.e3.start + .2, Ee.e3.start + .6);
+  regCard(c, 110, 420, 400, 330, 'ID/EX', [['MemRead', '1'], ['Rt', '$1'], ['（lw）', '']], CO, a1, hRt > 0 ? 1 : 0, hRt > 0 ? hRt : hMem);
+  regCard(c, 570, 420, 400, 330, 'IF/ID', [['Rs', '$1'], ['Rt', '$5'], ['（add）', '']], CY, prog(t, Ee.e1.start + .1, Ee.e1.start + .7), 0, hRt);
+  // 比較器：兩個 $1 之間連線、中間一顆等號亮核
+  if (hRt > 0) { const yA = 420 + 100 + 66, yB = 420 + 100; K.glowLine(c, [[510, yA], [540, yA], [540, yB], [570, yB]], { w: 3, color: AM, a: hRt }); K.core(c, 540, (yA + yB) / 2, 7, hRt, AM); S.label(c, '＝', 540, (yA + yB) / 2 - 40, { size: 40, w: 700, color: AM, a: hRt }); }
+  // e4：控制訊號清 0；e5：PC、IF/ID 鎖住
+  const z = prog(t, Ee.e4.start + .2, Ee.e4.start + .7);
+  if (z > 0) { c.save(); c.globalAlpha *= z; const y = 870; K.roundRect(c, 210, y, 660, 120, 18); c.fillStyle = K.rgba(AM, .1); c.fill(); c.strokeStyle = K.rgba(AM, .8); c.lineWidth = 2; c.stroke(); S.label(c, '控制訊號', 300, y + 60, { align: 'left', size: 34, a: .85 }); S.label(c, K.num(t, Ee.e4.start + .3, Ee.e4.start + 1.0, 101101, 0, (v) => (v > 1 ? '1 0 1 1 0 1' : '0 0 0 0 0 0')), 830, y + 60, { align: 'right', size: 40, w: 700, color: AM }); c.restore(); }
+  const lk = prog(t, Ee.e5.start + .2, Ee.e5.start + .7);
+  if (lk > 0) { ['PC', 'IF/ID'].forEach((s, i) => { const x = 330 + i * 420, y = 1100; c.save(); c.globalAlpha *= lk; K.roundRect(c, x - 130, y - 50, 260, 100, 16); c.fillStyle = K.rgba(INK, .06); c.fill(); c.strokeStyle = K.rgba(AM, .7); c.lineWidth = 2; c.stroke(); S.label(c, s, x - 20, y, { size: 36, w: 700, a: .9 }); c.strokeStyle = K.rgba(AM, .95); c.lineWidth = 3.5; c.beginPath(); c.arc(x + 80, y - 8, 14, Math.PI, 0); c.stroke(); c.fillStyle = K.rgba(AM, .95); c.fillRect(x + 62, y - 8, 36, 28); c.restore(); }); }
+}
+
+// ═════════ 場景 6：換順序——中間塞一條不相關的指令
+const F = { f1: L.f1, f2: L.f2, f3: L.f3 };
+const X3 = [250, 540, 830];
+function sSched(c, t) {
+  const endDim = 1 - .92 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  timeAxis(c, t, 7, 1); grid(c, 7, 1);
+  K.halo(c, CX, 820, 700, .08, CY);
+  const ins = E.inOutCubic(prog(t, F.f2.start + .1, F.f2.start + 1.1));
+  // 原本 add 在第 2 欄，被擠到第 3 欄、晚一拍出發
+  const addX = lerp(X3[1], X3[2], ins), addIssue = 2 + ins;
+  instr(c, t, { x: X3[0], issue: 1, name: 'lw $1, 0($2)', col: CO, stageCol: (si) => si === 3 ? CO : STG_COL[STG[si]], reveal: (si) => prog(t, F.f1.start - .1 + si * .1, F.f1.start + .3 + si * .1) });
+  instr(c, t, { x: addX, issue: addIssue, name: 'add $4, $1, $5', reveal: (si) => prog(t, F.f1.start + .1 + si * .1, F.f1.start + .5 + si * .1) });
+  instr(c, t, { x: X3[1], issue: 2, name: 'sub $6, $7, $8', col: '#a8c4e0', a: ins, reveal: (si) => prog(t, F.f2.start + .5 + si * .1, F.f2.start + .9 + si * .1), stageCol: () => '#6f86a3' });
+  const P = prodPt(X3[0], 1, 0, 3), Q = needPt(addX, addIssue, 0, 2);
+  fwd(c, P, Q, prog(t, F.f3.start + .1, F.f3.start + .9, E.inOutCubic), CY);
+  c.restore();
+}
+S.hero('0 stall', F.f3.start + .7, F.f3.end + .1, { y: 190, color: CY, size: 110 });
+
+// ═════════ 片尾：考試這樣寫
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫　·　5 級管線＋forwarding', CX, 560, { size: 32, a: .6, ls: '4px' });
+  const rows = [['ALU → 緊接下一條', '0 stall', CY, Ec.start + .4], ['lw → 緊接下一條', '1 stall', CO, Ec.start + 1.0], ['lw → 隔一條', '0 stall', CY, Ec.start + 1.6]];
+  rows.forEach(([k, v, col, t0], i) => { const p = E.outCubic(prog(t, t0, t0 + .5)); if (p <= 0) return; const y = 700 + i * 130 + (1 - p) * 20; c.save(); c.globalAlpha *= p; S.label(c, k, 150, y, { align: 'left', size: 50, w: 600, a: .95 }); S.label(c, v, 930, y, { align: 'right', size: 56, w: 700, color: col }); c.restore(); });
+  const q = prog(t, Ec.start + 2.4, Ec.start + 2.9);
+  S.label(c, '偵測：ID/EX.MemRead ∧ ID/EX.Rt ∈ {IF/ID.Rs, IF/ID.Rt}', CX, 1110, { size: 30, a: .75 * q });
+  S.label(c, '處理：控制訊號清 0、PC 與 IF/ID 不更新', CX, 1170, { size: 30, a: .75 * q });
+  c.restore();
+}
+
+// ═════════ 場景排程
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: L.a1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'add', start: L.a1.start, end: L.c1.start, draw: sAdd, color: CY, in: { type: 'iris', dur: .55, x: XL, y: rowY(1) } },
+  { id: 'lw', start: L.c1.start, end: L.d1.start, draw: sLw, color: CO, in: { type: 'cut' } },
+  { id: 'bubble', start: L.d1.start, end: L.e1.start, draw: sBubble, color: AM, in: { type: 'cut' } },
+  { id: 'detect', start: L.e1.start, end: L.f1.start, draw: sDetect, color: CO, in: { type: 'iris', dur: .55, x: CX, y: 600 } },
+  { id: 'sched', start: L.f1.start, end: DUR, draw: (c, t) => { sSched(c, t); sExam(c, t); }, color: CY, in: { type: 'iris', dur: .55, x: X3[0], y: rowY(1) } },
+]);
+function drawAll(t) { if (t < L.a1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.flash(L.c1.start, .1, .3); K.flash(L.d1.start, .08, .3);
+
+// ── 鏡頭
+K.camKeys([
+  [0, 1, CX, 960], [T.start, 1, CX, 960],
+  [L.a1.start, 1.25, CX, 760], [A.a3.end, 1.25, CX, 760], [B.b1.start + .4, 1, CX, 900, E.inOutQuart],
+  [B.b2.start, 1, CX, 900], [B.b2.start + .6, 1.3, 560, 760, E.inOutQuart], [B.b4.end, 1.3, 560, 760], [B.b5.start + .5, 1, CX, 900, E.inOutQuart],
+  [L.c1.start, 1, CX, 900], [Cc.c2.start, 1, CX, 900], [Cc.c2.start + .6, 1.15, 560, 800, E.inOutQuart], [Cc.c5.end, 1.15, 560, 800], [L.d1.start, 1, CX, 940, E.inOutQuart],
+  [D.d3.start, 1, CX, 940], [D.d3.start + .6, 1.2, 560, 900, E.inOutQuart], [D.d4.start + .3, 1, CX, 900, E.inOutQuart],
+  [L.e1.start, 1, CX, 900], [L.f1.start, 1, CX, 900], [Ec.start, 1, CX, 960, E.inOutQuart], [DUR, 1.03, CX, 950],
+]);
+K.amb.keys([
+  [0, { haze: .05, stars: .12, dust: .25 }],
+  [o1.start + 1, { haze: .12, stars: .2, dust: .45, bokeh: .15 }],
+  [T.start, { haze: .16, warm: .05, stars: .28, dust: .5, bokeh: .3 }],
+  [L.a1.start, { haze: .1, stars: .18, dust: .45, bokeh: .2, grid: .35 }],
+  [L.c1.start, { haze: .08, warm: .08, stars: .16, dust: .45, bokeh: .2, grid: .3 }],
+  [L.d1.start, { haze: .06, warm: .16, stars: .12, dust: .5, bokeh: .25, grid: .3 }],
+  [L.e1.start, { haze: .1, warm: .06, stars: .18, dust: .45, bokeh: .2 }],
+  [DUR, { haze: .12, stars: .25, dust: .45, bokeh: .25 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+S.chapters([[L.a1.start, '計算機組織 · 管線  /  01 時間往下流'], [L.c1.start, '計算機組織 · 管線  /  02 lw 接 add'], [L.d1.start, '計算機組織 · 管線  /  03 插泡泡'], [L.e1.start, '計算機組織 · 管線  /  04 硬體偵測'], [L.f1.start, '計算機組織 · 管線  /  05 換順序'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .3, sfx: 'swish', gain: -12 },
+    { t: o2.start + .95, sfx: 'glitch', gain: -8 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: L.a1.start, sfx: 'whoosh', gain: -11 },
+    ...[0, 1, 2, 3, 4, 5].map((k) => ({ t: L.a2.start + .3 + k * .45, sfx: 'tick', gain: -17 })),
+    { t: B.b4.start + .6, sfx: 'swish', gain: -12 },
+    { t: B.b4.start + .9, sfx: 'chime', gain: -12 },
+    { t: L.c1.start, sfx: 'thump', gain: -9 },
+    { t: Cc.c4.start + .5, sfx: 'riser', align: 'end', gain: -14 },
+    { t: Cc.c5.start + .1, sfx: 'glitch', gain: -6 },
+    { t: L.d1.start + .4, sfx: 'pop', gain: -10 },
+    { t: D.d3.start + .6, sfx: 'chime', gain: -11 },
+    { t: L.e1.start, sfx: 'whoosh', gain: -11 },
+    { t: Ee.e3.start + .3, sfx: 'click', gain: -12 },
+    { t: Ee.e4.start + .5, sfx: 'tick', gain: -12 },
+    { t: Ee.e5.start + .4, sfx: 'click', gain: -12 },
+    { t: L.f1.start, sfx: 'whoosh', gain: -11 },
+    { t: F.f3.start + .7, sfx: 'chime', gain: -10 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

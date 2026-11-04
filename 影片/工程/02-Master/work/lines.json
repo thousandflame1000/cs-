@@ -1,0 +1,45 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "同一個公式，只改一個數字", "hook": true},
+  {"id": "o2", "text": "答案從 [n lg n] 變成 [n²]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "Master 定理", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "T(n) = aT(n/b) + f(n)", "scene": true},
+  {"id": "a2", "text": "一個問題拆成 [a] 個"},
+  {"id": "a3", "text": "每個縮小成 [n/b]"},
+  {"id": "a4", "text": "f(n) 是這一層的[額外工作]"},
+  {"id": "a5", "text": "光條長度 = [成本]"},
+
+  {"id": "b1", "text": "合併排序：2T(n/2) + n", "scene": true},
+  {"id": "b2", "text": "根要合併兩半，花 [n]"},
+  {"id": "b3", "text": "下一層兩個 n/2，還是 [n]"},
+  {"id": "b4", "text": "每層都是 n，共 [lg n] 層"},
+  {"id": "b5", "text": "疊起來是一個[長方形]"},
+  {"id": "b6", "text": "總成本 [n lg n]", "pause": 0.2},
+
+  {"id": "c1", "text": "改成 4T(n/2) + n", "scene": true},
+  {"id": "c2", "text": "拆成 4 個，每層[翻倍]"},
+  {"id": "c3", "text": "n、2n、4n，越往下越寬"},
+  {"id": "c4", "text": "最底下有 [n²] 片葉子"},
+  {"id": "c5", "text": "成本全在[葉子]：Θ(n²)", "pause": 0.2},
+
+  {"id": "d1", "text": "再改成 2T(n/2) + n²", "scene": true},
+  {"id": "d2", "text": "子問題變小，成本[減半]"},
+  {"id": "d3", "text": "n²、n²/2、n²/4，越來越窄"},
+  {"id": "d4", "text": "根一層就佔了[一半以上]"},
+  {"id": "d5", "text": "成本全在[根]：Θ(n²)"},
+  {"id": "d6", "text": "前提：下層 ≤ [c 倍]這層", "pause": 0.2},
+
+  {"id": "e1", "text": "三種形狀，只看一個倍率", "scene": true},
+  {"id": "e2", "text": "每往下一層 × [a / bᵈ]"},
+  {"id": "e3", "text": "大於 1：[葉子]主導"},
+  {"id": "e4", "text": "等於 1：[每層]一樣多"},
+  {"id": "e5", "text": "小於 1：[根]主導", "hold": 2.6},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

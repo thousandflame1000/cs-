@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>Master 定理</title>
+<!--
+  資工所衝刺 · 短影音 02：Master 定理——成本藏在哪一層
+  視覺系統：近黑藍底；每個子問題畫成一條光條，長度 = 它的成本，同一層的光條排成一列。
+  語義色：青＝每層一樣（case 2）、珊瑚＝葉子主導（case 1）、琥珀＝根主導（case 3）。
+  貫穿物：成本光條堆疊出來的「形狀」——長方形、往下變寬、往下變窄。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  /* 數學符號後備（DejaVu Sans 子集） */
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+const TAU = Math.PI * 2;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', CO = '#ff6a5c', AM = '#ffc14d';
+const K = Kit({ W, H, stage, duration: DUR, seed: 23, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: CO } });
+K.warm([CY, CO, AM, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 'n lg n': CY, 'n²': CO, 長方形: CY, 'lg n': CY, 翻倍: CO, 葉子: CO, 減半: AM, 根: AM, 一半以上: AM, 'c 倍': AM, 每層: CY, n: CY },
+});
+const L0 = L, o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E;
+
+// ═════════ 成本光條堆疊：每個子問題一條光，長度 = f(子問題大小)
+// spec: {a, b, d, levels, w0}；第 j 層 a^j 條、每條長 w0 / b^(d·j)
+function rows(spec) {
+  const out = [];
+  for (let j = 0; j < spec.levels; j++) {
+    const n = Math.pow(spec.a, j), s = spec.w0 / Math.pow(spec.b, spec.d * j);
+    const gap = n === 1 ? 0 : Math.min(14, Math.max(1.2, s * .28), 140 / (n - 1));
+    out.push({ n, s, gap, R: n * s + (n - 1) * gap });
+  }
+  return out;
+}
+const TOP = 470, DY = 150, TH = 16;
+const segX = (row, i, cx) => cx - row.R / 2 + i * (row.s + row.gap) + row.s / 2;
+/** 畫堆疊：o = {cx, top, dy, col, a, reveal(j)→0..1, glowRow(j)→0..1, sx(j) 水平縮放, labels(j)→字串, la} */
+function stack(c, t, spec, o) {
+  const R = rows(spec), cx = o.cx ?? CX, top = o.top ?? TOP, dy = o.dy ?? DY, th = o.th ?? TH, col = o.col, A = o.a ?? 1;
+  if (A <= .003) return;
+  c.save(); c.globalAlpha *= A;
+  for (let j = 0; j < R.length; j++) {
+    const p = o.reveal(j); if (p <= 0) continue;
+    const row = R[j], y = top + j * dy, k = E.outCubic(p), sx = o.sx ? o.sx(j) : 1;
+    const par = j ? R[j - 1] : null;
+    // 這一層的光帶（整層成本）
+    const gw = o.glowRow ? o.glowRow(j) : 0;
+    if (gw > 0) { const w = row.R * sx + Math.min(60, row.R * sx * .5); const g = c.createLinearGradient(0, y - th * 3, 0, y + th * 3); g.addColorStop(0, K.rgba(col, 0)); g.addColorStop(.5, K.rgba(col, .22 * gw)); g.addColorStop(1, K.rgba(col, 0)); c.fillStyle = g; c.fillRect(cx - w / 2, y - th * 3, w, th * 6); }
+    // 連線（子問題不多時）
+    if (par && row.n <= 64) {
+      c.strokeStyle = K.rgba(col, .28 * k); c.lineWidth = 1.2; c.beginPath();
+      for (let i = 0; i < row.n; i++) { const px = cx + (segX(par, Math.floor(i / spec.a), 0)) * (o.sx ? o.sx(j - 1) : 1), x = cx + segX(row, i, 0) * sx; c.moveTo(px, y - dy + th / 2 + 2); c.lineTo(lerp(px, x, k), lerp(y - dy + th / 2 + 2, y - th / 2 - 2, k)); }
+      c.stroke();
+    }
+    // 光條
+    const hi = K.mix(col, '#ffffff', .55);
+    for (let i = 0; i < row.n; i++) {
+      const x1 = cx + segX(row, i, 0) * sx, x0 = par ? cx + segX(par, Math.floor(i / spec.a), 0) * (o.sx ? o.sx(j - 1) : 1) : x1;
+      const x = lerp(x0, x1, k), yy = lerp(y - (j ? dy : 0), y, k), len = Math.max(.8, row.s * sx * (j ? k : E.outCubic(p)));
+      const g = c.createLinearGradient(0, yy - th / 2, 0, yy + th / 2); g.addColorStop(0, K.rgba(hi, .95)); g.addColorStop(.5, K.rgba(col, .9)); g.addColorStop(1, K.rgba(K.mix(col, BG, .5), .9));
+      c.fillStyle = g;
+      if (len > 6) { K.roundRect(c, x - len / 2, yy - th / 2, len, th, Math.min(th / 2, len / 2)); c.fill(); } else c.fillRect(x - len / 2, yy - th / 2, len, th);
+    }
+    if (row.n <= 8) for (let i = 0; i < row.n; i++) { const x = cx + segX(row, i, 0) * sx; K.sprC(c, col, x, y, 14 + th, .35 * k); }
+    // 這層的成本標籤
+    if (o.labels) { const s = o.labels(j), la = (o.la ? o.la(j) : 1) * clamp(p * 2 - 1); if (s && la > 0) S.label(c, s, cx, y - th - 22, { color: col, a: .9 * la, size: o.lsize ?? 30, w: 600 }); }
+  }
+  c.restore();
+}
+const SPEC2 = { a: 2, b: 2, d: 1, levels: 6, w0: 760 };   // 合併排序 2T(n/2)+n
+const SPEC1 = { a: 4, b: 2, d: 1, levels: 5, w0: 110 };   // 4T(n/2)+n
+const SPEC3 = { a: 2, b: 2, d: 2, levels: 6, w0: 760 };   // 2T(n/2)+n²
+const R2 = rows(SPEC2), R1 = rows(SPEC1), R3 = rows(SPEC3);
+
+// ═════════ 場景 0：冷開場——長方形長出來，再一變，往下炸寬
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  const m = E.inOutCubic(prog(t, o2.start - .1, o2.start + 1.3));
+  K.spotlight(c, CX, 90, Math.PI / 2, .5, 1100, .1 * out, INK);
+  const rv = (j) => prog(t, -.2 + j * .32, .5 + j * .32);
+  // 長方形（青）淡出、往下炸寬的（珊瑚）從同一個寬度長出去
+  stack(c, t, SPEC2, { a: out * (1 - m), col: CY, reveal: rv, glowRow: () => .6, top: 380, dy: 125 });
+  stack(c, t, SPEC1, { a: out * m, col: CO, reveal: (j) => Math.min(rv(j), 1), glowRow: () => .7, sx: (j) => lerp(R2[Math.min(j, 5)].R / R1[j].R, 1, m), top: 380, dy: 125 });
+  K.core(c, CX, 380, 7, out, m > .5 ? CO : CY);
+}
+
+// ═════════ 場景 1：片名卡
+const title = S.titleCard(T, { big: 'Master 定理', size: 170, y: 600, en: 'WHERE  DOES  THE  COST  LIVE', q: '成本到底藏在哪一層', qGap: 330, color: CY });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  // 三個形狀的剪影：往下變寬／長方形／往下變窄
+  const sh = [[230, CO, 1], [540, CY, 0], [850, AM, -1]];
+  for (const [x, col, k] of sh) {
+    c.save(); c.globalAlpha *= a * .5 * prog(t, T.start + .2, T.start + 1);
+    for (let j = 0; j < 6; j++) { const w = 150 * (k > 0 ? (.25 + j * .17) : k < 0 ? (1.1 - j * .17) : .7); const y = 1240 + j * 34; c.fillStyle = K.rgba(col, .7); c.fillRect(x - w / 2, y, w, 12); }
+    c.restore();
+  }
+  K.core(c, CX, 690, 9, a * (.6 + .4 * Math.sin(t * 3)), CY);
+  K.ghost(c, 'T(n)', CX, 760, 300, .035 * a, 700);
+}
+
+// ═════════ 場景 2：遞迴樹（介紹 + 合併排序）
+const A = { a1: L.a1, a2: L.a2, a3: L.a3, a4: L.a4, a5: L.a5 }, B = { b1: L.b1, b2: L.b2, b3: L.b3, b4: L.b4, b5: L.b5, b6: L.b6 };
+const LAB2 = ['n', 'n/2 + n/2 = n', 'n', 'n', 'n', 'n'];
+function sMerge(c, t) {
+  const rv = (j) => j === 0 ? prog(t, A.a1.start + .3, A.a1.start + 1.1) : j === 1 ? prog(t, A.a2.start + .2, A.a2.start + 1.0) : prog(t, B.b4.start + .1 + (j - 2) * .35, B.b4.start + .7 + (j - 2) * .35);
+  const glow = (j) => j === 0 ? prog(t, B.b2.start, B.b2.start + .4) : j === 1 ? prog(t, B.b3.start, B.b3.start + .4) : prog(t, B.b4.start + .3 + (j - 2) * .35, B.b4.start + .8 + (j - 2) * .35);
+  const lab = (j) => (t > B.b2.start ? (j === 1 && t < B.b4.start ? LAB2[1] : LAB2[j]) : null);
+  const la = (j) => j === 0 ? prog(t, B.b2.start + .2, B.b2.start + .6) : j === 1 ? prog(t, B.b3.start + .3, B.b3.start + .7) : prog(t, B.b4.start + .6 + (j - 2) * .35, B.b4.start + 1 + (j - 2) * .35);
+  K.halo(c, CX, 800, 760, .08, CY); K.ghost(c, 'MERGE', CX, 1300, 220, .03 * prog(t, B.b1.start, B.b1.start + 1), 700);
+  stack(c, t, SPEC2, { col: CY, reveal: rv, glowRow: glow, labels: lab, la });
+  // 介紹段的標註：a、n/b、f(n)、長度 = 成本
+  const r0 = R2[0], r1 = R2[1], y0 = TOP, y1 = TOP + DY;
+  const aA = prog(t, A.a2.start + .8, A.a2.start + 1.2) * (1 - prog(t, A.a3.start, A.a3.start + .3));
+  if (aA > 0) S.label(c, 'a = 2 個', CX, y1 + 52, { a: aA * .8, size: 30, color: CY, w: 600 });
+  const nb = prog(t, A.a3.start + .2, A.a3.start + .6) * (1 - prog(t, A.a4.start, A.a4.start + .3));
+  if (nb > 0) for (let i = 0; i < 2; i++) S.label(c, 'n/b', CX + segX(r1, i, 0), y1 + 44, { a: nb * .85, size: 30, color: INK, w: 600 });
+  const fn = prog(t, A.a4.start + .1, A.a4.start + .5) * (1 - prog(t, A.a5.end, A.a5.end + .3));
+  if (fn > 0) { S.label(c, 'f(n)', CX, y0 - 44, { a: fn, size: 34, color: CY, w: 700 }); K.core(c, CX, y0, 6 + 2 * Math.sin(t * 5), fn, CY); }
+  const ru = prog(t, A.a5.start + .1, A.a5.start + .7) * (1 - prog(t, B.b1.start, B.b1.start + .3));
+  if (ru > 0) { const x0 = CX - r0.R / 2, x1 = x0 + r0.R * E.outCubic(ru); K.ruler(c, x0, y0 + 38, x1, y0 + 38, 20, { color: K.rgba(INK, .5), len: 6, major: 5 }); S.label(c, '長度 = 成本', CX, y0 + 84, { a: ru * .8, size: 28 }); }
+  // b4：左側「lg n 層」括號
+  const br = prog(t, B.b4.start + .5, B.b4.start + 2.2) * (1 - prog(t, L.c1.start - .3, L.c1.start));
+  if (br > 0) { const x = 70, ya = TOP, yb = TOP + (5 * DY) * E.outCubic(br); K.glowLine(c, [[x + 14, ya], [x, ya], [x, yb], [x + 14, yb]], { w: 2, color: CY, a: .9 * br }); S.label(c, 'lg n', x + 8, yb + 40, { a: br * .9, color: CY, size: 30, w: 700 }); }
+  // b5：外框描出長方形
+  const fr = prog(t, B.b5.start + .1, B.b5.start + 1.2);
+  if (fr > 0) { const w = R2[0].R + 50, x0 = CX - w / 2, y0 = TOP - 40, h = 5 * DY + 80; const pts = [[x0, y0], [x0 + w, y0], [x0 + w, y0 + h], [x0, y0 + h], [x0, y0]]; K.grow(c, pts, fr, { w: 2.4, color: CY }); }
+}
+S.hero('n lg n', B.b6.start + .3, B.b6.end + .2, { y: 225, color: CY, slam: true });
+K.flash(B.b6.start + .3, .08, .4);
+
+// ═════════ 場景 3：4T(n/2)+n——往下炸寬（葉子主導）
+const Cc = { c1: L.c1, c2: L.c2, c3: L.c3, c4: L.c4, c5: L.c5 };
+const LAB1 = ['n', '2n', '4n', '8n', '16n'];
+function sLeaf(c, t) {
+  const rv = (j) => j === 0 ? prog(t, Cc.c1.start - .1, Cc.c1.start + .6) : j === 1 ? prog(t, Cc.c2.start + .1, Cc.c2.start + .8) : prog(t, Cc.c3.start + (j - 2) * .5, Cc.c3.start + .7 + (j - 2) * .5);
+  const glow = (j) => .5 + .5 * prog(t, Cc.c3.start + (j - 2) * .5, Cc.c3.start + .7 + (j - 2) * .5) * (j >= 2) + (j === 4 ? .5 * prog(t, Cc.c4.start, Cc.c4.start + .5) : 0);
+  K.halo(c, CX, 900, 900, .08, CO); K.ghost(c, 'LEAVES', CX, 1300, 220, .03, 700);
+  stack(c, t, SPEC1, { col: CO, reveal: rv, glowRow: glow, lsize: 46, labels: (j) => LAB1[j], la: (j) => 1 - .65 * prog(t, Cc.c4.start, Cc.c4.start + .4) * (j < 4) });
+  // c4：最底層的葉子點亮成粒子
+  const lf = prog(t, Cc.c4.start + .1, Cc.c4.start + .9);
+  if (lf > 0) { const row = R1[4], y = TOP + 4 * DY; for (let i = 0; i < row.n; i += 2) { const x = CX + segX(row, i, 0); K.sprC(c, CO, x, y + 30 + 10 * Math.sin(i * 1.7 + t * 3), 5, lf * .8 * (.6 + .4 * M.hash(i, 3))); } }
+}
+S.hero('× 2', Cc.c2.start + .5, Cc.c2.end, { y: 225, color: CO });
+S.hero('n² 片葉子', Cc.c4.start + .3, Cc.c4.end, { y: 225, color: CO, size: 110 });
+S.hero('Θ(n²)', Cc.c5.start + .4, Cc.c5.end + .2, { y: 225, color: CO, slam: true });
+K.shake(Cc.c5.start + .4, 8, .25);
+
+// ═════════ 場景 4：2T(n/2)+n²——往下變窄（根主導）
+const D = { d1: L.d1, d2: L.d2, d3: L.d3, d4: L.d4, d5: L.d5, d6: L.d6 };
+const LAB3 = ['n²', 'n²/2', 'n²/4', 'n²/8', '', ''];
+function sRoot(c, t) {
+  const rv = (j) => j === 0 ? prog(t, D.d1.start - .1, D.d1.start + .6) : j === 1 ? prog(t, D.d2.start + .1, D.d2.start + .8) : prog(t, D.d3.start + (j - 2) * .4, D.d3.start + .7 + (j - 2) * .4);
+  const rootHot = prog(t, D.d4.start, D.d4.start + .5) * (1 - prog(t, D.d6.start, D.d6.start + .4));
+  K.halo(c, CX, 700, 900, .08 + .06 * rootHot, AM); K.ghost(c, 'ROOT', CX, 1300, 220, .03, 700);
+  stack(c, t, SPEC3, { col: AM, reveal: rv, glowRow: (j) => j === 0 ? .6 + .4 * rootHot : .5 * (1 - .6 * rootHot), labels: (j) => LAB3[j], la: (j) => j === 0 ? 1 : 1 - .6 * rootHot });
+  if (rootHot > 0) { K.spotlight(c, CX, 120, Math.PI / 2, .45, 420, .18 * rootHot, AM); K.core(c, CX, TOP, 9, rootHot, AM); }
+  // d6：regularity——下一層 ≤ c·這一層（兩條光並排比長度）
+  const rg = prog(t, D.d6.start + .2, D.d6.start + .8);
+  if (rg > 0) { const y = TOP + 6 * DY - 40, wA = R3[0].R * .9, wB = R3[1].R * .9; c.save(); c.globalAlpha *= rg; c.fillStyle = K.rgba(AM, .85); c.fillRect(CX - wA / 2, y - 8, wA, 16); c.fillStyle = K.rgba(AM, .55); c.fillRect(CX - wB / 2, y + 30, wB, 16); S.label(c, '這一層', CX - wA / 2 - 16, y, { align: 'right', size: 26, a: .8 }); S.label(c, '下一層', CX - wB / 2 - 16, y + 38, { align: 'right', size: 26, a: .8 }); c.restore(); }
+}
+S.hero('× ½', D.d2.start + .5, D.d2.end, { y: 225, color: AM });
+S.hero('≥ 50%', D.d4.start + .4, D.d4.end, { y: 225, color: AM });
+S.hero('Θ(n²)', D.d5.start + .4, D.d5.end + .1, { y: 225, color: AM, slam: true });
+S.hero('a·f(n/b) ≤ c·f(n)', D.d6.start + .4, D.d6.end + .2, { y: 235, size: S.SIZE.mid, color: AM });
+K.shake(D.d5.start + .4, 8, .25);
+
+// ═════════ 場景 5：三種形狀並排，只看倍率
+const Ee = { e1: L.e1, e2: L.e2, e3: L.e3, e4: L.e4, e5: L.e5 };
+const MINI = [[210, { a: 4, b: 2, d: 1, levels: 4, w0: 30 }, CO, '> 1', Ee.e3], [540, { a: 2, b: 2, d: 1, levels: 5, w0: 240 }, CY, '= 1', Ee.e4], [870, { a: 2, b: 2, d: 2, levels: 5, w0: 280 }, AM, '< 1', Ee.e5]];
+function sSum(c, t) {
+  const endDim = 1 - .88 * prog(t, Ec.start - .2, Ec.start + .5), labDim = 1 - prog(t, Ec.start - .2, Ec.start + .3);
+  MINI.forEach(([x, spec, col, lab, ln], i) => {
+    const rv = (j) => prog(t, Ee.e1.start - .1 + i * .15 + j * .1, Ee.e1.start + .35 + i * .15 + j * .1);
+    const focus = prog(t, ln.start, ln.start + .4) * (1 - prog(t, ln.end, ln.end + .4));
+    const anyFocus = [Ee.e3, Ee.e4, Ee.e5].some((l) => t >= l.start && t < l.end + .4);
+    stack(c, t, spec, { cx: x, top: 620, dy: 92, th: 11, col, a: endDim * (anyFocus ? .35 + .65 * focus : 1), reveal: rv, glowRow: () => .3 + .7 * focus });
+    S.label(c, lab, x, 1130, { color: col, a: labDim * prog(t, ln.start, ln.start + .4), size: 52, w: 700 });
+  });
+}
+S.hero('a / bᵈ', Ee.e2.start + .3, Ee.e5.end, { y: 300, color: INK, size: 120 });
+
+// ═════════ 片尾：考試這樣寫（canvas 畫上下標）
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫　·　f(n) = Θ(nᵈ)', CX, 600, { size: 32, a: .6, ls: '4px' });
+  const rows3 = [
+    [[['a ＞ bᵈ', 0, CO], ['  →  Θ(n', 0], ['log', 1], ['b', 2], [' a', 1], [')', 0]], Ec.start + .4],
+    [[['a ＝ bᵈ', 0, CY], ['  →  Θ(n', 0], ['d', 1], [' lg n)', 0]], Ec.start + 1.1],
+    [[['a ＜ bᵈ', 0, AM], ['  →  Θ(n', 0], ['d', 1], [')', 0]], Ec.start + 1.8],
+  ];
+  rows3.forEach(([parts, t0], i) => { const k = E.outCubic(prog(t, t0, t0 + .5)); if (k > 0) { c.save(); c.globalAlpha *= k; S.math(c, parts, CX, 760 + i * 150 + (1 - k) * 24, 72, { w: 600 }); c.restore(); } });
+  S.label(c, '案例 3 另需 a·f(n/b) ≤ c·f(n)，c ＜ 1', CX, 1230, { size: 30, a: .5 * prog(t, Ec.start + 2.6, Ec.start + 3) });
+  c.restore();
+}
+
+// ═════════ 場景排程
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: L.a1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'merge', start: L.a1.start, end: L.c1.start, draw: sMerge, color: CY, in: { type: 'iris', dur: .55, x: CX, y: TOP } },
+  { id: 'leaf', start: L.c1.start, end: L.d1.start, draw: sLeaf, color: CO, in: { type: 'cut' } },   // 硬切 + 閃白（鏡頭同時從全景跳到根的特寫）
+  { id: 'root', start: L.d1.start, end: L.e1.start, draw: sRoot, color: AM, in: { type: 'iris', dur: .55, x: CX, y: TOP } },
+  { id: 'sum', start: L.e1.start, end: DUR, draw: (c, t) => { sSum(c, t); sExam(c, t); }, color: CY, in: { type: 'push', dur: .6, x: CX, y: 800 } },
+]);
+function drawAll(t) { if (t < L.a1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+
+// ── 鏡頭
+K.camKeys([
+  [0, 1, CX, 960], [o2.start, 1, CX, 960], [o2.start + 1.3, .72, CX, 900, E.inOutQuart], [T.start, 1, CX, 960, E.outExpo],
+  [L.a1.start, 1.25, CX, 640], [A.a5.end, 1.25, CX, 640], [B.b1.start + .3, 1, CX, 960, E.inOutQuart],
+  [B.b5.start, 1, CX, 960], [B.b5.start + .8, .94, CX, 930, E.inOutQuart], [L.c1.start - .01, .94, CX, 930],
+  [L.c1.start, 2.0, CX, 560], [Cc.c2.end, 1.8, CX, 600], [Cc.c3.start + 2.2, .58, CX, 860, E.inOutQuart], [Cc.c5.end, .58, CX, 860], [L.d1.start, 1, CX, 960, E.inOutQuart],
+  [D.d4.start, 1, CX, 960], [D.d4.start + .6, 1.3, CX, 640, E.inOutQuart], [D.d4.end, 1.3, CX, 640], [D.d5.start + .4, 1, CX, 960, E.inOutQuart],
+  [L.e1.start, 1, CX, 960], [DUR, 1.03, CX, 950],
+]);
+K.amb.keys([
+  [0, { haze: .05, stars: .12, dust: .25 }],
+  [o1.start + 1, { haze: .12, stars: .22, dust: .45, bokeh: .15 }],
+  [T.start, { haze: .16, stars: .3, dust: .5, bokeh: .3 }],
+  [L.a1.start, { haze: .1, stars: .2, dust: .45, bokeh: .2, grid: .4 }],
+  [L.c1.start, { haze: .08, warm: .06, stars: .18, dust: .45, bokeh: .2 }],
+  [L.d1.start, { haze: .06, warm: .16, stars: .12, dust: .5, bokeh: .25 }],
+  [L.e1.start, { haze: .12, stars: .22, dust: .45, bokeh: .2 }],
+  [DUR, { haze: .12, stars: .25, dust: .45, bokeh: .25 }],
+]);
+K.flash(T.start, .1, .35); K.flash(L.c1.start, .14, .3); K.flare(T.start + .05, CX, 680, .85, 1.6);
+S.chapters([[L.a1.start, '演算法 · 遞迴式  /  01 遞迴樹'], [L.c1.start, '演算法 · 遞迴式  /  02 葉子主導'], [L.d1.start, '演算法 · 遞迴式  /  03 根主導'], [L.e1.start, '演算法 · 遞迴式  /  04 一個倍率'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .2, sfx: 'swish', gain: -12 },
+    { t: o2.start + .1, sfx: 'whoosh', gain: -9 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: L.a1.start, sfx: 'whoosh', gain: -11 },
+    { t: A.a2.start + .3, sfx: 'pop', gain: -14 },
+    ...[0, 1, 2, 3].map((j) => ({ t: B.b4.start + .2 + j * .35, sfx: 'tick', gain: -16 })),
+    { t: B.b5.start + .2, sfx: 'chime', gain: -12 },
+    { t: B.b6.start + .3, sfx: 'thump', gain: -6 },
+    { t: L.c1.start, sfx: 'whoosh', gain: -10 },
+    ...[0, 1, 2].map((j) => ({ t: Cc.c3.start + .1 + j * .5, sfx: 'tick', gain: -15 })),
+    { t: Cc.c4.start + .2, sfx: 'chime', gain: -11 },
+    { t: Cc.c5.start + .4, sfx: 'impact', gain: -6 },
+    { t: L.d1.start, sfx: 'whoosh', gain: -10 },
+    { t: D.d4.start + .3, sfx: 'swish', gain: -12 },
+    { t: D.d5.start + .4, sfx: 'impact', gain: -6 },
+    { t: L.e1.start, sfx: 'reverse', align: 'end', gain: -10 },
+    ...[Ee.e3, Ee.e4, Ee.e5].map((l) => ({ t: l.start + .1, sfx: 'pop', gain: -13 })),
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

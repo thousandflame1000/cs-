@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>鴿籠原理</title>
+<!--
+  資工所衝刺 · 短影音 05：鴿籠原理——籠子要自己設計
+  視覺系統：鴿子＝發光的球，籠子＝發光的格子；第二段把 1～20 依「奇數部分」疊成 10 座塔（每層 ×2），
+  第三段拉遠成 100 座塔的天際線：塔頂剛好是 101～200。
+  語義色：青＝第一隻、琥珀＝第二隻（擠在一起）、珊瑚＝第三隻／整除。貫穿物：100 座塔的天際線（開頭與結尾）。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+const TAU = Math.PI * 2;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', CO = '#ff6a5c', AM = '#ffc14d';
+const K = Kit({ W, H, stage, duration: DUR, seed: 53, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: AM } });
+K.warm([CY, CO, AM, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 整除: CO, 同月: AM, '12': CY, 擠: AM, '3': CO, 籠子: CY, '11': AM, 塔: CY, 兩倍: CY, '10': CY, 同一座塔: AM, '100': CY, '101': AM, 塔頂: AM, '101～200': AM },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E;
+const COLN = [CY, AM, CO];
+
+// ═════════ 貫穿物：100 座塔的天際線（第 m 座塔：m, 2m, 4m, … ≤ 200）
+const TOW = Array.from({ length: 100 }, (_, i) => { const m = 2 * i + 1, vals = []; for (let v = m; v <= 200; v *= 2) vals.push(v); return { m, vals }; });
+const SKY = { x0: 64, x1: 1016, base: 1190, dy: 92 };
+const skyX = (i) => lerp(SKY.x0, SKY.x1, i / 99);
+function skyline(c, t, a, o = {}) {
+  if (a <= .003) return; c.save(); c.globalAlpha *= a;
+  const bw = (SKY.x1 - SKY.x0) / 99 * .72;
+  TOW.forEach(({ vals }, i) => {
+    const x = skyX(i), g = o.grow ? o.grow(i) : 1; if (g <= 0) return;
+    const n = vals.length, top = SKY.base - (n - 1) * SKY.dy * g - 14;
+    // 塔身：由下往上漸亮的光柱
+    const gr = c.createLinearGradient(0, SKY.base + 10, 0, top); gr.addColorStop(0, K.rgba(CY, .12)); gr.addColorStop(1, K.rgba(CY, .5 + .2 * (o.glow ?? 0))); c.fillStyle = gr; c.fillRect(x - bw / 2, top, bw, SKY.base + 10 - top);
+    for (let k = 0; k < n; k++) { const y = SKY.base - k * SKY.dy * g, isTop = k === n - 1, hot = isTop ? (o.tops ?? 0) : 0; c.fillStyle = hot > .01 ? K.rgba(K.mix(CY, AM, hot), 1) : K.rgba(K.mix(CY, '#ffffff', .3), .9); c.fillRect(x - bw / 2 - 1, y - 2.5, bw + 2, 5); if (hot > .01) K.sprC(c, AM, x, y, 18, .7 * hot); }
+  });
+  // 地面倒影
+  const rf = c.createLinearGradient(0, SKY.base + 12, 0, SKY.base + 90); rf.addColorStop(0, K.rgba(CY, .12)); rf.addColorStop(1, K.rgba(CY, 0)); c.fillStyle = rf; c.fillRect(SKY.x0 - 10, SKY.base + 12, SKY.x1 - SKY.x0 + 20, 80);
+  c.restore();
+}
+
+// ═════════ 場景 0：冷開場——101 顆火花落進 100 座塔，有一座塔接到兩顆
+const DROPS = Array.from({ length: 101 }, (_, i) => ({ tw: i < 100 ? i : 37, t: o1.start + .3 + M.hash(i, 3) * 2.0 + (i === 100 ? .15 : 0), lv: TOW[i < 100 ? i : 37].vals.length - 1 }));
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  K.spotlight(c, CX, 80, Math.PI / 2, .8, 1200, .07 * out, INK);
+  skyline(c, t, out * prog(t, -.6, o1.start + .8), { grow: (i) => prog(t, -.6 + i * .006, o1.start + .6 + i * .006) });
+  c.save(); c.globalAlpha *= out;
+  const hitT = DROPS[100].t + .55;
+  for (const d of DROPS) {
+    const p = prog(t, d.t, d.t + .55, E.inQuad); if (p <= 0) continue;
+    const x = skyX(d.tw), y1 = SKY.base - d.lv * SKY.dy, y = lerp(180, y1, p);
+    if (p < 1) { K.glowLine(c, [[x, y - 60], [x, y]], { w: 1.6, color: d.tw === 37 ? AM : CY, a: .7 }); K.core(c, x, y, 3, 1, d.tw === 37 ? AM : CY); }
+  }
+  if (t > hitT) { const k = 1 - prog(t, hitT, hitT + 1.2); const x = skyX(37); K.core(c, x, SKY.base - DROPS[37].lv * SKY.dy, 10 * (.6 + .4 * k), 1, CO); K.sprC(c, CO, x, SKY.base - DROPS[37].lv * SKY.dy, 140 * k, .5 * k, 'soft'); }
+  c.restore();
+}
+K.flash(DROPS[100].t + .55, .1, .3); K.shake(DROPS[100].t + .55, 8, .25);
+
+// ═════════ 場景 1：片名卡
+const title = S.titleCard(T, { kick: 'PIGEONHOLE', big: '鴿籠原理', size: 190, y: 600, en: 'MORE  PIGEONS  THAN  HOLES', q: '為什麼「一定」會撞在一起', qGap: 330, color: AM });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  skyline(c, t, a * .35);
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), AM);
+}
+
+// ═════════ 場景 2：12 個籠子（月份）
+const A = { a1: L.a1, a2: L.a2, a3: L.a3, a4: L.a4, a5: L.a5 };
+const BOX = (m) => [230 + (m % 3) * 310, 540 + Math.floor(m / 3) * 200];   // m = 0..11
+const BW = 270, BH = 160;
+// 鴿子：前 12 隻各進一格（最壞情況），第 13 隻擠進 7 月；a4 再來 12 隻（各格第 2 隻），第 25 隻讓 7 月變 3 隻
+const BIRDS = [];
+for (let m = 0; m < 12; m++) BIRDS.push({ m, s: 0, t: A.a1.start + .2 + m * .11 });
+BIRDS.push({ m: 6, s: 1, t: A.a3.start + .3, hot: 1 });
+for (let m = 0; m < 12; m++) if (m !== 6) BIRDS.push({ m, s: 1, t: A.a4.start + .2 + m * .07 });
+BIRDS.push({ m: 6, s: 2, t: A.a4.start + 1.2, hot: 2 });
+function sBox(c, t) {
+  K.ghost(c, 'HOLES', CX, 1330, 230, .03, 700);
+  for (let m = 0; m < 12; m++) {
+    const [x, y] = BOX(m), a = prog(t, A.a1.start - .1 + m * .04, A.a1.start + .35 + m * .04);
+    const lab = prog(t, A.a2.start + .1, A.a2.start + .6);
+    const hot = m === 6 ? Math.max(prog(t, A.a3.start + .9, A.a3.start + 1.2) * (1 - prog(t, A.a4.start, A.a4.start + .3)), prog(t, A.a4.start + 1.8, A.a4.start + 2.1)) : 0;
+    c.save(); c.globalAlpha *= a;
+    K.roundRect(c, x - BW / 2, y - BH / 2, BW, BH, 18); const g = c.createLinearGradient(0, y - BH / 2, 0, y + BH / 2); g.addColorStop(0, K.rgba('#14223a', .85)); g.addColorStop(1, K.rgba('#0a1220', .85)); c.fillStyle = g; c.fill();
+    c.strokeStyle = K.rgba(hot ? CO : K.mix(CY, INK, .4), .55 + .4 * hot); c.lineWidth = 2 + 1.5 * hot; c.stroke();
+    if (hot) K.sprC(c, CO, x, y, 200, .25 * hot, 'soft');
+    S.label(c, (m + 1) + ' 月', x - BW / 2 + 22, y - BH / 2 + 26, { align: 'left', size: 24, a: .3 + .5 * lab, w: 600 });
+    c.restore();
+  }
+  for (const b of BIRDS) {
+    const p = prog(t, b.t, b.t + .7); if (p <= 0) continue;
+    const [bx, by] = BOX(b.m), tx = bx + (b.s - 1) * 72 + (b.s === 0 ? 72 : 0) * 0, ty = by + 16;
+    const X = [bx - 72, bx, bx + 72][b.s] ?? bx, sx = CX + (M.hash(b.m * 7 + b.s, 2) - .5) * 900, sy = 160;
+    const k = E.inOutCubic(p), x = lerp(sx, X, k), y = lerp(sy, ty, k) - Math.sin(Math.PI * k) * 120;
+    K.orb(c, x, y, 26, { color: COLN[b.s], a: .9, atmo: .6, spec: .7, rim: .9 });
+    if (p < 1) K.glowLine(c, [[lerp(sx, X, Math.max(0, k - .15)), lerp(sy, ty, Math.max(0, k - .15)) - Math.sin(Math.PI * Math.max(0, k - .15)) * 120], [x, y]], { w: 2, color: COLN[b.s], a: .5 });
+    if (b.hot && p >= 1) K.core(c, X, ty, 4, .8, CO);
+    void tx;
+  }
+}
+S.hero('13 ＞ 12', A.a3.start + .9, A.a3.end, { y: 220, color: AM, size: 110 });
+S.hero('⌈25 / 12⌉ = 3', A.a5.start + .2, A.a5.end + .2, { y: 220, color: CO, size: 104 });
+K.shake(A.a3.start + 1.0, 8, .25);
+
+// ═════════ 場景 3：1～20 疊成 10 座塔
+const B = { b1: L.b1, b2: L.b2, b3: L.b3, b4: L.b4, b5: L.b5, b6: L.b6, b7: L.b7, b8: L.b8 };
+const TW = (i) => 120 + i * 93.3, TBASE = 1220, TDY = 140;
+const NUMS = Array.from({ length: 20 }, (_, i) => { const v = i + 1; let m = v, k = 0; while (m % 2 === 0) { m /= 2; k++; } return { v, m, k, ti: (m - 1) / 2 }; });
+const PICK = new Set([16, 12, 20, 14, 18, 11, 13, 15, 17, 19, 8]);   // 每座塔挑一個（塔頂），再多挑一個 8 → 和 16 同塔
+const gridXY = (i) => [220 + (i % 5) * 160, 520 + Math.floor(i / 5) * 150];
+function sTower(c, t) {
+  K.ghost(c, 'TOWERS', CX, 1340, 220, .03, 700);
+  const fly = (i) => E.inOutCubic(prog(t, B.b4.start + .1 + i * .05, B.b4.start + .9 + i * .05));
+  const sel = prog(t, B.b7.start + .1, B.b7.start + .6), pair = prog(t, B.b8.start + .1, B.b8.start + .6);
+  // 塔身與 ×2 連線
+  const tw = prog(t, B.b4.start + .6, B.b4.start + 1.6);
+  for (let i = 0; i < 10; i++) {
+    const vals = NUMS.filter((n) => n.ti === i), top = TBASE - (vals.length - 1) * TDY;
+    if (tw > 0) { const g = c.createLinearGradient(0, top - 60, 0, TBASE + 60); g.addColorStop(0, K.rgba(CY, 0)); g.addColorStop(.5, K.rgba(CY, .08 * tw)); g.addColorStop(1, K.rgba(CY, .02)); c.fillStyle = g; c.fillRect(TW(i) - 40, top - 60, 80, TBASE - top + 120); }
+    const x2 = prog(t, B.b5.start + .1, B.b5.start + .7);
+    for (let k = 1; k < vals.length; k++) { const y0 = TBASE - (k - 1) * TDY, y1 = TBASE - k * TDY; S.edge(c, [TW(i), y0 - 34], [TW(i), y1 + 34], CY, tw); if (x2 > 0 && i < 3) S.label(c, '×2', TW(i) + 34, (y0 + y1) / 2, { align: 'left', size: 22, color: CY, a: .8 * x2, w: 600 }); }
+    const bl = prog(t, B.b6.start + .1 + i * .04, B.b6.start + .5 + i * .04);
+    if (bl > 0) S.label(c, 'm=' + (2 * i + 1), TW(i), TBASE + 66, { size: 22, a: .75 * bl, color: AM, w: 600 });
+  }
+  NUMS.forEach((n, i) => {
+    const [gx0, gy0] = gridXY(i), tx = TW(n.ti), ty = TBASE - n.k * TDY, f = fly(i);
+    const x = lerp(gx0, tx, f), y = lerp(gy0, ty, f) - Math.sin(Math.PI * f) * 60;
+    const a = prog(t, B.b1.start + .1 + i * .03, B.b1.start + .5 + i * .03);
+    const picked = PICK.has(n.v), inPair = n.v === 8 || n.v === 16;
+    const dim = 1 - .7 * sel * (picked ? 0 : 1);
+    const col = pair > 0 && inPair ? CO : picked && sel > 0 ? AM : CY;
+    const r = lerp(36, 30, f);
+    S.node(c, x, y, r, col, a * dim, n.v, (picked ? sel : 0) * .7 + (inPair ? pair : 0));
+  });
+  // b3：12 = 2² × 3 的拆解
+  const dec = prog(t, B.b3.start + .2, B.b3.start + .7) * (1 - prog(t, B.b4.start, B.b4.start + .3));
+  if (dec > 0) { const [x, y] = gridXY(11); S.label(c, '= 2² × 3', x + 50, y + 4, { align: 'left', size: 34, w: 700, color: AM, a: dec }); }
+  // b8：8 | 16 的弧
+  if (pair > 0) { const x = TW(0), y0 = TBASE - 3 * TDY, y1 = TBASE - 4 * TDY; const pts = []; for (let i = 0; i <= 20; i++) { const u = i / 20; pts.push([x - 50 - Math.sin(Math.PI * u) * 70, lerp(y0, y1, u)]); } K.grow(c, pts, pair, { w: 3, color: CO }); }
+}
+S.hero('2ᵏ × 奇數', B.b3.start + .3, B.b3.end, { y: 220, color: AM, size: 110 });
+S.hero('11 ＞ 10', B.b7.start + .5, B.b7.end, { y: 220, color: AM, size: 110 });
+S.hero('8 ∣ 16', B.b8.start + .4, B.b8.end + .2, { y: 220, color: CO, size: 130, slam: true });
+K.shake(B.b8.start + .4, 8, .25);
+
+// ═════════ 場景 4：拉遠成 100 座塔
+const Cc = { c1: L.c1, c2: L.c2, c3: L.c3, c4: L.c4 };
+function sSky(c, t) {
+  const endDim = 1 - .85 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  K.ghost(c, '100', CX, 1340, 260, .03, 700);
+  const tops = prog(t, Cc.c3.start + .3, Cc.c3.start + 1.6);
+  skyline(c, t, 1, { grow: (i) => prog(t, Cc.c1.start - .1 + i * .008, Cc.c1.start + .7 + i * .008), tops, glow: .3 });
+  // c2：101 顆落下，第 101 顆撞到 m=37 的塔
+  for (let j = 0; j < 101; j++) {
+    const tw = j < 100 ? j : 18, t0 = Cc.c2.start + .1 + M.hash(j, 9) * 1.4 + (j === 100 ? .35 : 0), p = prog(t, t0, t0 + .45, E.inQuad);
+    if (p <= 0 || p >= 1) continue; const x = skyX(tw), y = lerp(200, SKY.base - (TOW[tw].vals.length - 1) * SKY.dy, p);
+    K.core(c, x, y, 2.6, 1, j === 100 ? CO : AM);
+  }
+  const hitT = Cc.c2.start + .1 + M.hash(100, 9) * 1.4 + .35 + .45;
+  if (t > hitT && t < Cc.c3.start) { const k = 1 - prog(t, hitT, hitT + 1.0); const x = skyX(18), y = SKY.base - (TOW[18].vals.length - 1) * SKY.dy; K.core(c, x, y, 9, 1, CO); K.sprC(c, CO, x, y, 120 * k, .5 * k, 'soft'); }
+  // c4：塔頂數字的範圍
+  const rg = prog(t, Cc.c4.start + .2, Cc.c4.start + .8);
+  if (rg > 0) { S.label(c, '每座塔頂 ＞ 100', CX, 520, { size: 40, w: 700, color: AM, a: rg }); S.label(c, '而且兩倍就超過 200', CX, 580, { size: 32, a: .7 * rg }); }
+  c.restore();
+}
+S.hero('101 ＞ 100', Cc.c2.start + .4, Cc.c2.end, { y: 220, color: AM, size: 110 });
+
+// ═════════ 片尾：考試這樣寫
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['N 個放進 k 種：至少一種有 ⌈N/k⌉ 個', INK, 44], ['籠子：奇數部分 m（1～2n 只有 n 種）', CY, 42], ['n+1 個數 → 兩數 m 相同', AM, 46], ['→ 小的整除大的（只差 2 的次方）', CO, 42], ['n 個不夠：取 n+1～2n', INK, 44]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 118 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+// ═════════ 場景排程
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: L.a1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'box', start: L.a1.start, end: L.b1.start, draw: sBox, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 840 } },
+  { id: 'tower', start: L.b1.start, end: L.c1.start, draw: sTower, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 840 } },
+  { id: 'sky', start: L.c1.start, end: DUR, draw: (c, t) => { sSky(c, t); sExam(c, t); }, color: AM, in: { type: 'push', dur: .6, x: TW(0), y: TBASE - 300 } },
+]);
+function drawAll(t) { if (t < L.a1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+
+// ── 鏡頭
+K.camKeys([
+  [0, 1.06, CX, 900], [T.start, 1, CX, 960, E.outExpo],
+  [L.a1.start, 1, CX, 900], [A.a3.start, 1, CX, 900], [A.a3.start + .6, 1.3, 380, 900, E.inOutQuart], [A.a3.end, 1.3, 380, 900], [A.a4.start + .3, 1, CX, 900, E.inOutQuart],
+  [A.a4.start + 1.4, 1, CX, 900], [A.a4.start + 2.0, 1.3, 380, 900, E.inOutQuart], [A.a5.end, 1.3, 380, 900], [L.b1.start, 1, CX, 900, E.inOutQuart],
+  [B.b8.start, 1, CX, 900], [B.b8.start + .5, 1.45, 260, 760, E.inOutQuart], [B.b8.end, 1.45, 260, 760], [L.c1.start, 1, CX, 900, E.inOutQuart],
+  [DUR, 1.03, CX, 900],
+]);
+K.amb.keys([
+  [0, { haze: .05, stars: .14, dust: .25 }],
+  [o1.start + 1, { haze: .12, stars: .24, dust: .45, bokeh: .15 }],
+  [T.start, { haze: .14, warm: .08, stars: .3, dust: .5, bokeh: .3 }],
+  [L.a1.start, { haze: .1, stars: .18, dust: .45, bokeh: .2 }],
+  [L.b1.start, { haze: .1, stars: .2, dust: .45, bokeh: .2, grid: .3 }],
+  [L.c1.start, { haze: .12, warm: .08, stars: .26, dust: .45, bokeh: .25 }],
+  [DUR, { haze: .12, stars: .25, dust: .45, bokeh: .25 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+S.chapters([[L.a1.start, '離散數學 · 證明方法  /  01 鴿子與籠子'], [L.b1.start, '離散數學 · 證明方法  /  02 設計籠子'], [L.c1.start, '離散數學 · 證明方法  /  03 100 座塔'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .4, sfx: 'swish', gain: -13 },
+    { t: DROPS[100].t + .55, sfx: 'impact', gain: -5 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: L.a1.start, sfx: 'whoosh', gain: -11 },
+    ...[0, 3, 6, 9].map((m) => ({ t: A.a1.start + .9 + m * .11, sfx: 'pop', gain: -16 })),
+    { t: A.a3.start + 1.0, sfx: 'thump', gain: -7 },
+    { t: A.a4.start + 1.9, sfx: 'thump', gain: -7 },
+    { t: L.b1.start, sfx: 'whoosh', gain: -11 },
+    { t: B.b4.start + .5, sfx: 'swish', gain: -12 },
+    { t: B.b7.start + .3, sfx: 'chime', gain: -12 },
+    { t: B.b8.start + .4, sfx: 'impact', gain: -6 },
+    { t: L.c1.start, sfx: 'reverse', align: 'end', gain: -10 },
+    { t: Cc.c3.start + .6, sfx: 'chime', gain: -10 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

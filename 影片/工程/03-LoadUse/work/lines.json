@@ -1,0 +1,44 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "有了 forwarding，還是要等", "hook": true},
+  {"id": "o2", "text": "因為資料不能[送回過去]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "Load-Use 危障", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "5 級管線：IF ID EX MEM WB", "scene": true},
+  {"id": "a2", "text": "時間往下流，一格一個[週期]"},
+  {"id": "a3", "text": "下一條指令晚一拍出發"},
+
+  {"id": "b1", "text": "先看 add 接 add", "scene": true},
+  {"id": "b2", "text": "結果在 [EX 結束]就算好"},
+  {"id": "b3", "text": "下一條在下一拍 [EX 開頭]才要"},
+  {"id": "b4", "text": "箭頭往下：[來得及]"},
+  {"id": "b5", "text": "這就是 [forwarding]", "pause": 0.2},
+
+  {"id": "c1", "text": "換成 lw 接 add", "scene": true},
+  {"id": "c2", "text": "lw 要到 [MEM 結束]才拿到資料"},
+  {"id": "c3", "text": "add 在同一拍 [EX 開頭]就要"},
+  {"id": "c4", "text": "箭頭得往[上]指，回到過去"},
+  {"id": "c5", "text": "硬體[做不到]", "pause": 0.2},
+
+  {"id": "d1", "text": "只好插一個[泡泡]", "scene": true},
+  {"id": "d2", "text": "add 整條往下[延一拍]"},
+  {"id": "d3", "text": "箭頭轉成往下，[來得及]了"},
+  {"id": "d4", "text": "代價：多 [1 個週期]", "pause": 0.2},
+
+  {"id": "e1", "text": "硬體怎麼知道要等", "scene": true},
+  {"id": "e2", "text": "ID/EX 是一條 [lw]"},
+  {"id": "e3", "text": "而且它的 Rt 正是下一條的 [Rs 或 Rt]"},
+  {"id": "e4", "text": "就把控制訊號清成 [0]"},
+  {"id": "e5", "text": "PC 和 IF/ID [不更新]", "pause": 0.2},
+
+  {"id": "f1", "text": "更好的辦法：[換順序]", "scene": true},
+  {"id": "f2", "text": "中間塞一條不相關的指令"},
+  {"id": "f3", "text": "距離變兩拍，[0 stall]", "hold": 2.8},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

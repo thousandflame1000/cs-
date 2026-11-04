@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>SRTF 排程</title>
+<!--
+  資工所衝刺 · 短影音 04：SRTF——新來的行程能把 CPU 搶走
+  視覺系統：CPU 是一條發光的晶片插槽；每個行程是一顆膠囊，長度＝剩餘時間，在 CPU 裡會被「燒短」；
+  下方是依剩餘時間排好的 ready queue；上方的甘特圖一格一格長出來。
+  語義色＝行程身分：P1 青、P2 琥珀、P3 珊瑚、P4 紫（全片固定）。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+const TAU = Math.PI * 2;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', CO = '#ff6a5c', AM = '#ffc14d', VI = '#b48cff';
+const PC = { P1: CY, P2: AM, P3: CO, P4: VI, A: '#8fb4d8', B: CY, C: '#8fb4d8', D: AM };
+const K = Kit({ W, H, stage, duration: DUR, seed: 41, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: AM } });
+K.warm([CY, CO, AM, VI, INK, '#8fb4d8']);
+K.hud.show = false;
+const S = CS(K, { stage });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 搶走: AM, '6.5': CY, 剩下最少: CY, 剩餘: CY, '8': CY, '4': AM, 搶: AM, 不搶: CO, '2': AM, P4: VI, P3: CO, '9': CY, '0': AM, '15': CO,
+    '7.75': INK, '8.75': INK, 最小: CY, 切換: AM, 餓著: CO },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E;
+
+// ═════════ 共用畫法：CPU 插槽、膠囊、甘特圖
+const U = 72, CAP_H = 70, CPU = { x0: 150, x1: 940, y: 800 }, LEFT = 190;
+function cpuSlot(c, t, a, hot = 0, y = CPU.y) {
+  if (a <= .003) return; const { x0, x1 } = CPU, h = 130;
+  c.save(); c.globalAlpha *= a;
+  K.halo(c, (x0 + x1) / 2, y, 520, .1 + .1 * hot, CY);
+  K.roundRect(c, x0, y - h / 2, x1 - x0, h, 20); const g = c.createLinearGradient(0, y - h / 2, 0, y + h / 2); g.addColorStop(0, K.rgba('#16243a', .9)); g.addColorStop(1, K.rgba('#0a111d', .9)); c.fillStyle = g; c.fill();
+  c.strokeStyle = K.rgba(K.mix(CY, INK, .4), .8); c.lineWidth = 2; c.stroke();
+  // 晶片腳位
+  c.strokeStyle = K.rgba(INK, .35); c.lineWidth = 3;
+  for (let x = x0 + 30; x < x1 - 20; x += 34) { c.beginPath(); c.moveTo(x, y - h / 2); c.lineTo(x, y - h / 2 - 14); c.moveTo(x, y + h / 2); c.lineTo(x, y + h / 2 + 14); c.stroke(); }
+  S.label(c, 'CPU', x1 - 24, y - h / 2 + 22, { align: 'right', size: 22, a: .55, ls: '4px', w: 600 });
+  c.restore();
+}
+/** 膠囊：x 左端、y 中心、rem 剩餘、orig 原長（畫淡的外框）、id 名稱 */
+function capsule(c, x, y, rem, id, a = 1, o = {}) {
+  if (a <= .003) return; const col = PC[id], len = Math.max(0, rem * U), h = o.h ?? CAP_H;
+  c.save(); c.globalAlpha *= a;
+  if (o.orig) { c.setLineDash([6, 7]); c.strokeStyle = K.rgba(col, .45); c.lineWidth = 2; K.roundRect(c, x, y - h / 2, o.orig * U, h, h / 2); c.stroke(); c.setLineDash([]); }
+  if (len > 2) {
+    K.roundRect(c, x, y - h / 2, len, h, Math.min(h / 2, len / 2));
+    const g = c.createLinearGradient(0, y - h / 2, 0, y + h / 2); g.addColorStop(0, K.rgba(K.mix(col, '#ffffff', .45), .95)); g.addColorStop(.45, K.rgba(col, .9)); g.addColorStop(1, K.rgba(K.mix(col, BG, .45), .95)); c.fillStyle = g; c.fill();
+    c.strokeStyle = K.rgba(K.mix(col, '#ffffff', .6), .8); c.lineWidth = 1.5; c.stroke();
+    if (o.burn) { K.core(c, x + len, y, 6, o.burn, col); K.sprC(c, col, x + len, y, 60, .5 * o.burn, 'soft'); }
+    S.label(c, id, x + 22, y + 1, { align: 'left', size: 30, w: 700, color: '#0a0f18', a: .9 });
+    if (rem > 1.15 && !o.noNum) S.label(c, (Math.abs(rem - Math.round(rem)) < .02 ? String(Math.round(rem)) : rem.toFixed(1)), x + len - 22, y + 1, { align: 'right', size: 30, w: 700, color: '#0a0f18', a: .85 });
+  }
+  c.restore();
+}
+const GX0 = 110, GX1 = 970, GU = (GX1 - GX0) / 26;
+const gx = (tau) => GX0 + tau * GU;
+function ruler(c, y, a, marks = [0, 1, 5, 10, 17, 26]) {
+  if (a <= .003) return; c.save(); c.globalAlpha *= a;
+  c.strokeStyle = K.I(.4); c.lineWidth = 1; c.beginPath(); c.moveTo(GX0, y); c.lineTo(GX1, y);
+  for (let k = 0; k <= 26; k++) { const x = gx(k); c.moveTo(x, y); c.lineTo(x, y + (k % 5 ? 6 : 11)); } c.stroke();
+  for (const k of marks) S.label(c, String(k), gx(k), y + 30, { size: 22, a: .6 });
+  c.restore();
+}
+function gantt(c, segs, y, tau, a, o = {}) {
+  if (a <= .003) return; const h = o.h ?? 64;
+  c.save(); c.globalAlpha *= a;
+  for (const [id, s, e] of segs) {
+    if (tau <= s) continue; const ee = Math.min(e, tau), col = PC[id];
+    K.roundRect(c, gx(s) + 1.5, y - h / 2, gx(ee) - gx(s) - 3, h, 8);
+    const g = c.createLinearGradient(0, y - h / 2, 0, y + h / 2); g.addColorStop(0, K.rgba(K.mix(col, '#ffffff', .35), .9)); g.addColorStop(1, K.rgba(K.mix(col, BG, .35), .9)); c.fillStyle = g; c.fill();
+    if (gx(ee) - gx(s) > 46) S.label(c, id, (gx(s) + gx(ee)) / 2, y + 1, { size: o.fs ?? 26, w: 700, color: '#0a0f18', a: .85 });
+    if (ee < e) K.core(c, gx(ee), y, 4, 1, col);
+  }
+  c.restore();
+}
+
+// ═════════ 場景 0：冷開場——長膠囊在 CPU 裡燒，短膠囊衝進來把它撞出去
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  const on = prog(t, -.6, o1.start + .6), hit = o1.start + 1.0;
+  cpuSlot(c, t, on * out, M.hit(t, [hit], .25));
+  c.save(); c.globalAlpha *= out;
+  const kick = E.outCubic(prog(t, hit, hit + .7));
+  const remL = 8 - .25 * clamp(t - 0) - .0 * kick;
+  capsule(c, LEFT + kick * 60, CPU.y + kick * 190, Math.max(0, remL), 'P1', on * (1 - .75 * prog(t, hit + .6, hit + 1.2)), { burn: 1 - kick, noNum: true });
+  const inS = E.inExpo(prog(t, hit - .45, hit)), sx = lerp(1200, LEFT, inS);
+  if (t > hit - .45) capsule(c, sx, CPU.y, 4 - .3 * clamp(t - hit), 'P2', 1, { burn: prog(t, hit, hit + .3), noNum: true });
+  if (t > hit - .45 && t < hit) for (let i = 0; i < 6; i++) K.glowLine(c, [[sx + 300 + i * 40, CPU.y - 30 + i * 12], [sx + 520 + i * 60, CPU.y - 30 + i * 12]], { w: 1.4, color: AM, a: .4 });
+  c.restore();
+}
+K.shake(o1.start + 1.0, 12, .3); K.flash(o1.start + 1.0, .1, .3);
+
+// ═════════ 場景 1：片名卡
+const title = S.titleCard(T, { kick: '最短剩餘時間優先', big: 'SRTF', size: 240, y: 600, en: 'SHORTEST  REMAINING  TIME  FIRST', q: '什麼時候該搶，什麼時候不搶', qGap: 360, color: AM });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .5; capsule(c, 250, 1250, 6, 'P1', 1, { noNum: true }); capsule(c, 250, 1340, 3, 'P2', 1, { noNum: true }); c.restore();
+  K.core(c, CX, 720, 9, a * (.6 + .4 * Math.sin(t * 3)), AM);
+}
+
+// ═════════ 場景 2：規則示範（A、B、C、D）
+const A = { a1: L.a1, a2: L.a2, a3: L.a3 };
+const QY = (r) => 1000 + r * 92;
+function sRule(c, t) {
+  cpuSlot(c, t, prog(t, A.a1.start - .1, A.a1.start + .4));
+  K.ghost(c, 'READY', CX, 1310, 220, .03, 700);
+  S.label(c, 'ready queue', LEFT, QY(0) - 70, { align: 'left', size: 24, a: .5 * prog(t, A.a1.start, A.a1.start + .5), ls: '3px' });
+  const t1 = A.a1.start + .9, t2 = A.a2.start + .2, t3 = A.a2.start + 1.6;
+  const bRem = lerp(2, 1.2, prog(t, t1 + .4, A.a2.start));
+  const items = [
+    ['A', 6, M.kf(t, [[0, [LEFT, QY(2)]], [t1, [LEFT, QY(2)]], [t3, [LEFT, QY(2)]]])],
+    ['B', bRem, M.kf(t, [[0, [LEFT, QY(0)]], [t1, [LEFT, QY(0)]], [t1 + .5, [LEFT, CPU.y], E.inOutCubic]])],
+    ['C', 4, M.kf(t, [[0, [LEFT, QY(1)]], [t1, [LEFT, QY(1)]], [t1 + .5, [LEFT, QY(0)], E.inOutCubic], [t3, [LEFT, QY(0)]], [t3 + .5, [LEFT, QY(1)], E.inOutCubic]])],
+    ['D', 3, M.kf(t, [[0, [1200, 640]], [t2, [1200, 640]], [t2 + .5, [LEFT, 640], E.outCubic], [t3, [LEFT, 640]], [t3 + .5, [LEFT, QY(0)], E.inOutCubic]])],
+  ];
+  items.forEach(([id, rem, [x, y]], i) => capsule(c, x, y, rem, id, prog(t, A.a1.start + i * .12, A.a1.start + .4 + i * .12), { burn: id === 'B' ? prog(t, t1 + .4, t1 + .6) : 0, orig: id === 'B' && t > A.a3.start ? 2 : 0 }));
+  // a2：比較
+  const cmp = prog(t, t2 + .5, t2 + .9) * (1 - prog(t, t3, t3 + .3));
+  if (cmp > 0) S.label(c, '3  ＞  1.2', 940, 572, { align: 'right', size: 40, w: 700, color: AM, a: cmp });
+  // a3：剩餘 vs 原本
+  const r3 = prog(t, A.a3.start + .3, A.a3.start + .8);
+  if (r3 > 0) { S.label(c, '原本 2', LEFT + 2 * U + 20, CPU.y - 22, { align: 'left', size: 26, a: .6 * r3 }); S.label(c, '剩餘 1.2', LEFT + 2 * U + 20, CPU.y + 22, { align: 'left', size: 30, w: 700, color: CY, a: r3 }); }
+}
+
+// ═════════ 場景 3：P1–P4 實際跑一遍（預先烘焙膠囊位置）
+const B = { b1: L.b1, b2: L.b2, b3: L.b3, b4: L.b4, b5: L.b5, b6: L.b6, b7: L.b7 };
+const PROC = { P1: [0, 8], P2: [1, 4], P3: [2, 9], P4: [3, 5] };
+const SEG_SRTF = [['P1', 0, 1], ['P2', 1, 5], ['P4', 5, 10], ['P1', 10, 17], ['P3', 17, 26]];
+const SEG_SJF = [['P1', 0, 8], ['P2', 8, 12], ['P4', 12, 17], ['P3', 17, 26]];
+const SEG_FCFS = [['P1', 0, 8], ['P2', 8, 12], ['P3', 12, 21], ['P4', 21, 26]];
+const tauAt = (t) => M.kf(t, [[0, 0], [B.b1.start + .5, 0], [B.b2.start + .1, 1, E.linear], [B.b4.start + .2, 1], [B.b4.start + .9, 2, E.linear], [B.b5.start + .2, 2], [B.b5.start + .9, 3, E.linear], [B.b6.start + .1, 3], [B.b6.start + 1.2, 5, E.linear], [B.b7.start + .1, 5], [B.b7.start + 2.9, 26, E.linear], [DUR, 26]], E.linear);
+const execd = (id, tau) => SEG_SRTF.reduce((s, [p, a, b]) => s + (p === id ? clamp(tau - a, 0, b - a) : 0), 0);
+const remAt = (id, tau) => PROC[id][1] - execd(id, tau);
+const runAt = (tau) => (SEG_SRTF.find(([, a, b]) => tau >= a && tau < b) || [null])[0];
+// 到達後在 CPU 上方的「比較位」停多久（P2 要等到 b3 才搶）
+const HOLD = { P2: [B.b2.start + .1, B.b3.start + .45], P3: [B.b4.start + .9, B.b4.start + 2.0], P4: [B.b5.start + .9, B.b5.start + 2.0] };
+function target(id, t) {
+  const tau = tauAt(t), [arr] = PROC[id];
+  if (HOLD[id] && t >= HOLD[id][0] && t < HOLD[id][1]) return [LEFT, 640];
+  if (tau < arr || (HOLD[id] && t < HOLD[id][0])) return [1200, 640];
+  let run = runAt(tau); if (t < HOLD.P2[1] && tau >= 1 && tau < 1.01) run = 'P1';   // b3 之前 P1 還在 CPU
+  if (remAt(id, tau) <= 1e-6) return [LEFT, CPU.y];
+  if (run === id) return [LEFT, CPU.y];
+  const q = Object.keys(PROC).filter((p) => p !== run && PROC[p][0] <= tau && remAt(p, tau) > 1e-6 && !(HOLD[p] && t >= HOLD[p][0] && t < HOLD[p][1])).sort((a, b) => remAt(a, tau) - remAt(b, tau) || PROC[a][0] - PROC[b][0]);
+  return [LEFT, QY(Math.max(0, q.indexOf(id)))];
+}
+// 烘焙：固定步長 1/120 秒，臨界阻尼追隨
+const BK = { t0: B.b1.start - .5, dt: 1 / 120, n: 0, pos: {} };
+(() => {
+  const t1 = L.c1.start + .5; BK.n = Math.ceil((t1 - BK.t0) / BK.dt) + 1;
+  for (const id of Object.keys(PROC)) {
+    const arr = new Float32Array(BK.n * 2); let [x, y] = target(id, BK.t0), vx = 0, vy = 0; const w = 16;
+    for (let i = 0; i < BK.n; i++) { const t = BK.t0 + i * BK.dt, [tx, ty] = target(id, t); const ax = w * w * (tx - x) - 2 * w * vx, ay = w * w * (ty - y) - 2 * w * vy; vx += ax * BK.dt; vy += ay * BK.dt; x += vx * BK.dt; y += vy * BK.dt; arr[i * 2] = x; arr[i * 2 + 1] = y; }
+    BK.pos[id] = arr;
+  }
+})();
+const posAt = (id, t) => { const u = clamp((t - BK.t0) / BK.dt, 0, BK.n - 1), i = Math.floor(u), f = u - i, a = BK.pos[id], j = Math.min(BK.n - 1, i + 1); return [lerp(a[i * 2], a[j * 2], f), lerp(a[i * 2 + 1], a[j * 2 + 1], f)]; };
+function sRun(c, t) {
+  const tau = tauAt(t);
+  cpuSlot(c, t, 1, 0);
+  K.ghost(c, 'SRTF', CX, 1330, 240, .03, 700);
+  S.label(c, 'ready queue', LEFT, QY(0) - 70, { align: 'left', size: 24, a: .5, ls: '3px' });
+  // 甘特圖 + 時間尺
+  ruler(c, 480, 1); gantt(c, SEG_SRTF, 430, tau, 1);
+  S.label(c, 't = ' + (Math.abs(tau - Math.round(tau)) < .01 ? Math.round(tau) : tau.toFixed(1)), gx(tau), 360, { size: 26, w: 700, color: INK, a: .8 });
+  K.glowLine(c, [[gx(tau), 380], [gx(tau), 470]], { w: 1.6, color: INK, a: .6 });
+  for (const id of Object.keys(PROC)) {
+    const [x, y] = posAt(id, t), rem = remAt(id, tau), done = rem <= 1e-6;
+    const run = runAt(tau) === id && !(t < HOLD.P2[1] && id === 'P2');
+    capsule(c, x, y, rem, id, done ? 1 - prog(t, 0, 0) : 1, { burn: run ? 1 : 0 });
+  }
+  // b3 搶；b4、b5 比較讀數
+  const cmps = [[B.b3.start + .1, B.b3.start + .45, '4  ＜  7', AM], [B.b4.start + 1.0, B.b4.start + 2.0, '9  ＞  3', CO], [B.b5.start + 1.0, B.b5.start + 2.0, '5  ＞  2', VI]];
+  for (const [a0, a1, s, col] of cmps) { const k = prog(t, a0 - .3, a0) * (1 - prog(t, a1, a1 + .3)); if (k > 0) S.label(c, s, 940, 572, { align: 'right', size: 40, w: 700, color: col, a: k }); }
+}
+S.hero('搶！', B.b3.start + .35, B.b3.end, { y: 200, color: AM, size: 120, slam: true });
+K.shake(B.b3.start + .45, 10, .28); K.flash(B.b3.start + .45, .08, .3);
+
+// ═════════ 場景 4：等待時間
+const Cc = { c1: L.c1, c2: L.c2, c3: L.c3, c4: L.c4 };
+const WROWS = [['P1', 9, Cc.c2], ['P2', 0, Cc.c2], ['P3', 15, Cc.c3], ['P4', 2, Cc.c3]];
+const WAITS = { P1: [[1, 10]], P2: [], P3: [[2, 17]], P4: [[3, 5]] };
+function sWait(c, t) {
+  ruler(c, 480, 1); gantt(c, SEG_SRTF, 430, 26, 1);
+  K.ghost(c, 'WAIT', CX, 1330, 240, .03, 700);
+  WROWS.forEach(([id, w, ln], i) => {
+    const y = 640 + i * 150, a = prog(t, Cc.c1.start + .2 + i * .15, Cc.c1.start + .7 + i * .15), hi = prog(t, ln.start, ln.start + .4);
+    if (a <= 0) return; c.save(); c.globalAlpha *= a;
+    S.label(c, id, 70, y, { size: 30, w: 700, color: PC[id] });
+    K.glowLine(c, [[gx(PROC[id][0]), y - 36], [gx(PROC[id][0]), y + 36]], { w: 1.6, color: INK, a: .6 });   // 到達
+    gantt(c, SEG_SRTF.filter(([p]) => p === id), y, 26, 1, { h: 40, fs: 20 });
+    for (const [s, e] of WAITS[id]) { const p = prog(t, ln.start + .2, ln.start + 1.0); const ee = lerp(s, e, p); if (p <= 0) continue; c.save(); K.roundRect(c, gx(s) + 2, y - 18, gx(ee) - gx(s) - 4, 36, 8); c.fillStyle = K.rgba(AM, .16 + .1 * hi); c.fill(); c.setLineDash([5, 6]); c.strokeStyle = K.rgba(AM, .85); c.lineWidth = 1.6; c.stroke(); c.restore(); }
+    if (hi > 0) S.label(c, '等 ' + w, 1010, y - 52, { align: 'right', size: 34, w: 700, color: w ? AM : CY, a: hi });
+    c.restore();
+  });
+}
+S.hero('26 ÷ 4 = [6.5#5be7ff]', Cc.c4.start + .3, Cc.c4.end + .2, { y: 210, size: 104 });
+
+// ═════════ 場景 5：三種排法比一比
+const D = { d1: L.d1, d2: L.d2, d3: L.d3, d4: L.d4, d5: L.d5 };
+const CMP = [['SRTF', SEG_SRTF, '6.5', 600, null], ['SJF', SEG_SJF, '7.75', 820, D.d1], ['FCFS', SEG_FCFS, '8.75', 1040, D.d2]];
+function sCompare(c, t) {
+  const endDim = 1 - .9 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  K.ghost(c, 'AVG', CX, 1330, 240, .03, 700);
+  CMP.forEach(([name, segs, avg, y, ln], i) => {
+    const t0 = ln ? ln.start + .1 : D.d1.start - .2, p = prog(t, t0, t0 + 1.0, E.inOutCubic);
+    const focus = name === 'SRTF' ? prog(t, D.d3.start, D.d3.start + .4) : 0;
+    ruler(c, y + 46, prog(t, t0, t0 + .4) * .7, [0, 26]);
+    gantt(c, segs, y, 26 * p, 1, { h: 58, fs: 22 });
+    S.label(c, name, GX0, y - 62, { align: 'left', size: 32, w: 700, a: .85 + .15 * focus, color: focus ? CY : INK });
+    S.label(c, '平均等待 ' + avg, GX1, y - 62, { align: 'right', size: 32, w: 700, a: prog(t, t0 + .8, t0 + 1.2), color: name === 'SRTF' ? CY : INK });
+    if (focus > 0) { K.roundRect(c, GX0 - 16, y - 100, GX1 - GX0 + 32, 170, 16); c.strokeStyle = K.rgba(CY, .8 * focus); c.lineWidth = 2.4; c.stroke(); }
+  });
+  // d4：SRTF 的切換點（閃電刻痕）
+  const sw = prog(t, D.d4.start + .2, D.d4.start + .7) * (1 - prog(t, D.d5.end, D.d5.end + .3));
+  if (sw > 0) for (const x of [1, 5, 10, 17]) { const X = gx(x); K.glowLine(c, [[X - 8, 540], [X + 6, 560], [X - 4, 574], [X + 8, 596]], { w: 2.4, color: AM, a: sw }); K.core(c, X, 600, 3, sw, AM); }
+  // d5：P3 一直等
+  const sv = prog(t, D.d5.start + .2, D.d5.start + .7);
+  if (sv > 0) { c.save(); c.setLineDash([6, 6]); c.strokeStyle = K.rgba(CO, .9 * sv); c.lineWidth = 2.4; K.roundRect(c, gx(2), 640, gx(17) - gx(2), 34, 10); c.stroke(); c.restore(); S.label(c, 'P3 等了 15', (gx(2) + gx(17)) / 2, 700, { size: 28, w: 700, color: CO, a: sv }); }
+  c.restore();
+}
+S.hero('4 次切換', D.d4.start + .5, D.d4.end, { y: 220, color: AM, size: 104 });
+
+// ═════════ 片尾：考試這樣寫
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['SRTF ＝ 可搶先的 SJF', INK, 64], ['到達時比：新來的 burst vs 執行中的剩餘', CY, 40], ['可搶先時平均等待最小', CY, 48], ['缺點：context switch 多、長工作飢餓', CO, 40], ['等待 ＝ 完成 − 到達 − burst', AM, 48]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 640 + i * 120 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+// ═════════ 場景排程
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: L.a1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'rule', start: L.a1.start, end: L.b1.start, draw: sRule, color: CY, in: { type: 'iris', dur: .55, x: CX, y: CPU.y } },
+  { id: 'run', start: L.b1.start, end: L.c1.start, draw: sRun, color: CY, in: { type: 'iris', dur: .55, x: CX, y: CPU.y } },
+  { id: 'wait', start: L.c1.start, end: L.d1.start, draw: sWait, color: AM, in: { type: 'iris', dur: .55, x: CX, y: 450 } },
+  { id: 'cmp', start: L.d1.start, end: DUR, draw: (c, t) => { sCompare(c, t); sExam(c, t); }, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 600 } },
+]);
+function drawAll(t) { if (t < L.a1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+
+// ── 鏡頭
+K.camKeys([
+  [0, 1.08, CX, 820], [T.start, 1, CX, 960, E.outExpo],
+  [L.a1.start, 1, CX, 960], [L.b1.start, 1, CX, 960],
+  [B.b3.start, 1, CX, 960], [B.b3.start + .3, 1.12, CX, 780, E.inOutQuart], [B.b3.end, 1.12, CX, 780], [B.b4.start + .3, 1, CX, 960, E.inOutQuart],
+  [B.b7.start, 1, CX, 960], [B.b7.start + 1.5, 1.05, CX, 700, E.inOutQuart], [L.c1.start, 1, CX, 960, E.inOutQuart],
+  [DUR, 1.03, CX, 950],
+]);
+K.amb.keys([
+  [0, { haze: .05, stars: .12, dust: .25 }],
+  [o1.start + 1, { haze: .12, warm: .06, stars: .2, dust: .45, bokeh: .15 }],
+  [T.start, { haze: .14, warm: .1, stars: .28, dust: .5, bokeh: .3 }],
+  [L.a1.start, { haze: .1, stars: .18, dust: .45, bokeh: .2, grid: .3 }],
+  [L.c1.start, { haze: .08, warm: .1, stars: .16, dust: .45, bokeh: .2, grid: .3 }],
+  [L.d1.start, { haze: .1, stars: .2, dust: .45, bokeh: .2 }],
+  [DUR, { haze: .12, stars: .25, dust: .45, bokeh: .25 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 700, .85, 1.6);
+S.chapters([[L.a1.start, '作業系統 · CPU 排程  /  01 規則'], [L.b1.start, '作業系統 · CPU 排程  /  02 跑一遍'], [L.c1.start, '作業系統 · CPU 排程  /  03 算等待'], [L.d1.start, '作業系統 · CPU 排程  /  04 比一比'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .55, sfx: 'whoosh', align: 'end', gain: -10 },
+    { t: o1.start + 1.0, sfx: 'impact', gain: -5 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: L.a1.start, sfx: 'whoosh', gain: -11 },
+    { t: A.a1.start + 1.3, sfx: 'click', gain: -13 },
+    { t: A.a2.start + .5, sfx: 'swish', gain: -13 },
+    { t: L.b1.start, sfx: 'whoosh', gain: -11 },
+    { t: B.b2.start + .2, sfx: 'swish', gain: -13 },
+    { t: B.b3.start + .45, sfx: 'impact', gain: -6 },
+    { t: B.b4.start + 1.0, sfx: 'swish', gain: -14 },
+    { t: B.b5.start + 1.0, sfx: 'swish', gain: -14 },
+    { t: B.b6.start + 1.2, sfx: 'pop', gain: -12 },
+    { t: B.b7.start + 1.0, sfx: 'pop', gain: -13 },
+    { t: B.b7.start + 2.9, sfx: 'chime', gain: -11 },
+    { t: L.c1.start, sfx: 'whoosh', gain: -11 },
+    { t: Cc.c4.start + .3, sfx: 'thump', gain: -7 },
+    { t: L.d1.start, sfx: 'whoosh', gain: -11 },
+    { t: D.d3.start + .1, sfx: 'chime', gain: -10 },
+    { t: D.d4.start + .3, sfx: 'glitch', gain: -14 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
