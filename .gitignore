@@ -1,0 +1,15 @@
+# Local study progress, conversations, and device pairing
+bridge/*
+!bridge/.gitkeep
+
+# Local environment and caches
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+.DS_Store
+Thumbs.db

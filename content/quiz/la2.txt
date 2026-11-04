@@ -1,0 +1,317 @@
+@q la-n01 | la-systems | 1
+3 × 5 矩陣的 rank 最多是多少？
+== 3
+---
+rank ≤ min(列數, 行數) = 3。
+
+@q la-n02 | la-systems | 1
+$2x+y=5$、$x-y=1$，x 是多少？
+== 2
+---
+兩式相加：3x = 6，x = 2（y = 1）。
+
+@q la-n03 | la-systems | 1
+$Ax=0$ 一定有解嗎？
+[x] 一定有（至少有 x = 0）
+[ ] 不一定
+---
+齊次方程組一定有零解，問題只在有沒有非零解。
+
+@q la-n04 | la-systems | 2
+4 × 6 矩陣的 rank 是 3，零空間的維度是多少？
+== 3
+---
+dim N(A) = 行數 − rank = 6 − 3 = 3。
+
+@q la-n05 | la-systems | 2
+同上（4 × 6、rank 3），左零空間 $N(A^T)$ 的維度是多少？
+== 1
+---
+列數 − rank = 4 − 3 = 1。
+
+@q la-n06 | la-systems | 2
+$A=\begin{bmatrix}1&2\\3&4\end{bmatrix}$ 做 LU 分解，L 左下角的 $l_{21}$ 是多少？
+== 3
+---
+第二列減掉 3 倍的第一列，乘數 3 記在 L 的 (2,1)。U = [[1,2],[0,−2]]。
+
+@q la-n07 | la-systems | 3
+A 是 5 × 3、rank 3。$Ax=b$ 可能是哪些情況？
+[x] 無解或剛好一解
+[ ] 一定剛好一解
+[ ] 可能無限多解
+[ ] 一定無解
+---
+行獨立（rank = 行數），所以有解時解唯一；但 5 維空間的 b 不一定在 3 維的行空間裡，可能無解。
+
+@q la-n08 | la-systems | 3
+哪些敘述正確？
+[x] $\operatorname{rank}(A^TA)=\operatorname{rank}(A)$
+[x] $\operatorname{rank}(AB)\le\operatorname{rank}(A)$
+[ ] $\operatorname{rank}(A+B)=\operatorname{rank}A+\operatorname{rank}B$
+[x] 列運算不會改變零空間
+[ ] 列運算不會改變行空間
+---
+rank(A + B) 只是 ≤。列運算會改變行空間（但不改變行之間的相依關係）。
+
+@q la-n09 | la-vs | 1
+$\mathbb R^3$ 的維度是多少？
+== 3
+---
+基底 (1,0,0)、(0,1,0)、(0,0,1)。
+
+@q la-n10 | la-vs | 1
+$\{(x,y):y=2x\}$ 是 $\mathbb R^2$ 的子空間嗎？
+[x] 是
+[ ] 不是
+---
+是一條過原點的直線：含 0、相加和放大都還在線上。
+
+@q la-n11 | la-vs | 1
+$\{(x,y):y=2x+1\}$ 是 $\mathbb R^2$ 的子空間嗎？
+[x] 不是
+[ ] 是
+---
+不含原點 (0,0)，所以不是。
+
+@q la-n12 | la-vs | 2
+次數 ≤ 3 的多項式構成的空間，維度是多少？
+== 4
+---
+基底 1、x、x²、x³。
+
+@q la-n13 | la-vs | 2
+在 $\mathbb R^5$ 中，dim U = 3、dim W = 4，$\dim(U\cap W)$ 至少是多少？
+== 2
+---
+dim(U + W) ≤ 5，所以 dim(U ∩ W) = 3 + 4 − dim(U + W) ≥ 2。
+
+@q la-n14 | la-vs | 2
+線性變換 $T:\mathbb R^5\to\mathbb R^3$ 是映成的，ker T 的維度是多少？
+== 2
+---
+rank = 3，rank-nullity：5 = nullity + 3。
+
+@q la-n15 | la-vs | 3
+所有 2 × 2 實矩陣構成的空間中，「對稱矩陣」這個子空間的維度是多少？
+== 3
+---
+$\begin{bmatrix}a&b\\b&c\end{bmatrix}$ 有 a、b、c 三個自由的數。
+
+@q la-n16 | la-vs | 3
+哪些敘述正確？
+[x] 含有零向量的集合一定線性相依
+[x] n 維空間中任意 n + 1 個向量一定線性相依
+[ ] 兩個子空間的聯集一定是子空間
+[x] 線性變換一定把 0 送到 0
+[ ] 存在一對一的線性變換 $\mathbb R^3\to\mathbb R^2$
+---
+x 軸 ∪ y 軸不是子空間（(1,0) + (0,1) 跑出去了）。3 維壓到 2 維一定有方向被壓成 0。
+
+@q la-n17 | la-det | 1
+$\det\begin{bmatrix}3&1\\2&4\end{bmatrix}$ 是多少？
+== 10
+---
+3 × 4 − 1 × 2 = 10。
+
+@q la-n18 | la-det | 1
+對角線是 2、3、4 的上三角矩陣，行列式是多少？
+== 24
+---
+三角矩陣的行列式 = 對角線相乘。
+
+@q la-n19 | la-det | 1
+行列式是 5 的矩陣交換兩列，行列式變成多少？
+== -5
+---
+交換兩列 → 變號。
+
+@q la-n20 | la-det | 2
+A 是 3 × 3、det A = 2，det(3A) 是多少？
+== 54
+---
+$\det(3A)=3^3\det A=27\times2=54$。
+
+@q la-n21 | la-det | 2
+A 是 3 × 3、det A = 4，$\det(A^{-1})$ 是多少？
+== 0.25
+---
+$\det(A^{-1})=1/\det A$。
+
+@q la-n22 | la-det | 2
+$\det\begin{bmatrix}1&2&3\\4&5&6\\7&8&10\end{bmatrix}$ 是多少？
+== -3
+---
+第一列展開：1(50 − 48) − 2(40 − 42) + 3(32 − 35) = 2 + 4 − 9 = −3。
+
+@q la-n23 | la-det | 3
+Vandermonde 行列式，$x_1=1,x_2=2,x_3=3$（矩陣 $\begin{bmatrix}1&1&1\\1&2&4\\1&3&9\end{bmatrix}$）的值是？
+== 2
+---
+$\prod_{i<j}(x_j-x_i)=(2-1)(3-1)(3-2)=2$。
+
+@q la-n24 | la-det | 3
+A 是 3 × 3、det A = 2，$\det(\operatorname{adj}A)$ 是多少？
+== 4
+---
+$\det(\operatorname{adj}A)=(\det A)^{n-1}=2^2=4$。
+
+@q la-n25 | la-eigen | 1
+$\begin{bmatrix}2&0\\0&5\end{bmatrix}$ 比較大的特徵值是多少？
+== 5
+---
+對角矩陣的特徵值就是對角線。
+
+@q la-n26 | la-eigen | 1
+3 × 3 矩陣的特徵值是 1、2、3，行列式是多少？
+== 6
+---
+行列式 = 特徵值相乘。
+
+@q la-n27 | la-eigen | 1
+3 × 3 矩陣的特徵值是 2、3、4，跡（對角線和）是多少？
+== 9
+---
+跡 = 特徵值相加。
+
+@q la-n28 | la-eigen | 2
+$\begin{bmatrix}4&1\\2&3\end{bmatrix}$ 比較大的特徵值是多少？
+== 5
+---
+跡 7、行列式 10：$\lambda^2-7\lambda+10=0$ → 5、2。
+
+@q la-n29 | la-eigen | 2
+A 有特徵值 3，$A^2+2I$ 對應的特徵值是多少？
+== 11
+---
+同一個特徵向量：$3^2+2=11$。
+
+@q la-n30 | la-eigen | 2
+$\begin{bmatrix}1&1\\0&1\end{bmatrix}$ 可以對角化嗎？
+[x] 不可以
+[ ] 可以
+---
+特徵值 1（代數重數 2），但 $N(A-I)$ 只有 1 維，只有一個獨立特徵向量。
+
+@q la-n31 | la-eigen | 3
+$\begin{bmatrix}2&1\\1&2\end{bmatrix}^{10}$ 的跡是多少？
+== 59050
+---
+特徵值 3、1，$A^{10}$ 的特徵值 $3^{10}$、1，跡 = 59049 + 1 = 59050。
+
+@q la-n32 | la-eigen | 3
+哪些敘述正確？
+[x] 特徵值全部相異 ⇒ 可以對角化
+[ ] 可以對角化 ⇒ 特徵值全部相異
+[x] AB 和 BA 的非零特徵值相同
+[x] 0 是特徵值 ⇔ 矩陣不可逆
+[ ] 相似矩陣的特徵向量相同
+---
+單位矩陣可對角化，但特徵值全是 1。相似矩陣特徵值相同，特徵向量要換座標。
+
+@q la-n33 | la-ortho | 1
+向量 (1, 2, 2) 的長度是多少？
+== 3
+---
+$\sqrt{1+4+4}=3$。
+
+@q la-n34 | la-ortho | 1
+$(1,2)\cdot(3,-1)$ 是多少？
+== 1
+---
+1 × 3 + 2 × (−1) = 1。
+
+@q la-n35 | la-ortho | 1
+投影矩陣 P 滿足 $P^2=$ ？
+[x] P
+[ ] I
+[ ] 0
+[ ] $P^T P^{-1}$
+---
+投影兩次跟投影一次一樣。
+
+@q la-n36 | la-ortho | 2
+b = (3, 4) 投影到 a = (1, 0) 方向，影子的長度是多少？
+== 3
+---
+$\frac{a\cdot b}{\|a\|}=3$，影子是 (3, 0)。
+
+@q la-n37 | la-ortho | 2
+b = (2, 3) 投影到 a = (1, 1) 方向，投影向量的第一個分量是多少？
+== 2.5
+---
+$\frac{a\cdot b}{a\cdot a}a=\frac52(1,1)=(2.5,2.5)$。
+
+@q la-n38 | la-ortho | 2
+正交矩陣的行列式可能是多少？
+[x] 1
+[x] −1
+[ ] 0
+[ ] 2
+---
+$\det(Q^TQ)=(\det Q)^2=1$。
+
+@q la-n39 | la-ortho | 3
+用最小平方法找直線 $y=C+Dt$ 通過 (0,1)、(1,3)、(2,4)，斜率 D 是多少？
+== 1.5
+---
+$A^TA=\begin{bmatrix}3&3\\3&5\end{bmatrix}$、$A^Tb=(8,11)$：3C + 3D = 8、3C + 5D = 11 → 2D = 3 → D = 1.5（C = 7/6）。
+
+@q la-n40 | la-ortho | 3
+對 $a_1=(1,1,0)$、$a_2=(1,0,1)$ 做 Gram–Schmidt，$v_2=a_2-\text{（}a_2\text{ 在 }a_1\text{ 方向的影子）}$，$\|v_2\|^2$ 是多少？
+== 1.5
+---
+影子 $\frac12(1,1,0)$，$v_2=(\tfrac12,-\tfrac12,1)$，長度平方 1/4 + 1/4 + 1 = 1.5。
+
+@q la-n41 | la-sym-svd | 1
+實對稱矩陣的特徵值一定是？
+[x] 實數
+[ ] 正數
+[ ] 整數
+[ ] 可能是複數
+---
+譜定理：實對稱矩陣的特徵值都是實數。
+
+@q la-n42 | la-sym-svd | 1
+$\begin{bmatrix}2&0\\0&3\end{bmatrix}$ 是正定的嗎？
+[x] 是
+[ ] 不是
+---
+特徵值 2、3 都大於 0。
+
+@q la-n43 | la-sym-svd | 1
+$\begin{bmatrix}1&2\\2&1\end{bmatrix}$ 是正定的嗎？
+[x] 不是
+[ ] 是
+---
+特徵值 3 和 −1，有負的。（行列式 1 − 4 = −3 < 0 也能看出來。）
+
+@q la-n44 | la-sym-svd | 2
+$A=\begin{bmatrix}2&-1\\-1&2\end{bmatrix}$，Rayleigh 商 $\frac{x^TAx}{x^Tx}$ 的最大值是多少？
+== 3
+---
+最大值 = 最大特徵值。特徵值 3、1，在 x = (1, −1) 取到 3。
+
+@q la-n45 | la-sym-svd | 2
+$A=\begin{bmatrix}0&2\\1&0\end{bmatrix}$ 的 2-範數（最大奇異值）是多少？
+== 2
+---
+$A^TA=\begin{bmatrix}1&0\\0&4\end{bmatrix}$，奇異值 $\sqrt4=2$、$\sqrt1=1$。
+
+@q la-n46 | la-sym-svd | 2
+rank 3 的矩陣有幾個非零奇異值？
+== 3
+---
+rank = 非零奇異值的個數。
+
+@q la-n47 | la-sym-svd | 3
+矩陣的奇異值是 5、3、1，Frobenius 範數是多少？（小數 3 位）
+== 5.916
+---
+$\sqrt{25+9+1}=\sqrt{35}\approx5.916$。
+
+@q la-n48 | la-sym-svd | 3
+同上（奇異值 5、3、1），最好的 rank-1 近似，2-範數誤差是多少？
+== 3
+---
+Eckart–Young：誤差 = 下一個奇異值 $\sigma_2=3$。

@@ -1,0 +1,13 @@
+const {chromium}=require('playwright');
+(async()=>{const b=await chromium.launch();const pg=await (await b.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];pg.on('pageerror',e=>errs.push(e.message));
+const failed=[];pg.on('requestfailed',r=>failed.push(r.url().slice(0,80)));
+await pg.goto('file://'+require('path').resolve(__dirname,'../dist/single.html')+'#practice');await pg.waitForTimeout(2000);
+const fontOK=await pg.evaluate(async()=>{await document.fonts.ready;return [...document.fonts].filter(f=>f.family.includes('KaTeX')).length;});
+console.log('katex font faces',fontOK);
+await pg.click('#fhGo');await pg.waitForTimeout(400);
+console.log('boss:',(await pg.locator('.boss').innerText()).replace(/\n/g,' '));
+await pg.click('#paperDone');await pg.waitForTimeout(200);
+const usesKatexFont=await pg.evaluate(()=>{const e=document.querySelector('.expl .katex .mord, .q-stem .katex .mord');return e?getComputedStyle(e).fontFamily:'none';});
+console.log('math font:',usesKatexFont);
+await pg.goto('file://'+require('path').resolve(__dirname,'../dist/single.html')+'#ds-hash');await pg.waitForTimeout(1200);console.log('lesson gist',await pg.locator('.c-gist').count(),'quiz',await pg.locator('.sec-quiz').count());
+console.log('errs',errs,'failed',failed.filter(u=>!u.includes('fonts.g')).slice(0,5));await b.close();})();

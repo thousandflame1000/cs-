@@ -1,0 +1,190 @@
+@q al-01 | al-recurrence | 3
+下列漸近關係哪些正確？
+[x] $2^{n+1}=O(2^n)$
+[ ] $2^{2n}=O(2^n)$
+[x] $\lg(n!)=\Theta(n\lg n)$
+[ ] $n^{\lg\lg n}=O((\lg n)!)$
+[x] $f(n)+o(f(n))=\Theta(f(n))$
+[ ] 若 $f(n)=O(g(n))$，則 $2^{f(n)}=O(2^{g(n)})$
+---
+B：$2^{2n}/2^n=2^n\to\infty$。D：$\lg((\lg n)!)=\Theta(\lg n\lg\lg n)$ 與 $\lg(n^{\lg\lg n})=\lg n\lg\lg n$ 同階，要更細比：令 $m=\lg n$，$(\lg n)!=m!<m^m=n^{\lg\lg n}$，而且 $m!/m^m\to0$，所以 $(\lg n)!=o(n^{\lg\lg n})$，D 錯。F 反例：$f=2n,g=n$。
+
+@q al-02 | al-recurrence | 3
+$T(n)=2T(n/2)+\dfrac{n}{\lg n}$ 的解為何？
+[ ] $\Theta(n)$
+[x] $\Theta(n\lg\lg n)$
+[ ] $\Theta(n\lg n)$
+[ ] Master theorem 的 case 1，$\Theta(n)$
+---
+$f(n)=n/\lg n$ 不是多項式地小於 $n^{\log_22}=n$，原始 Master 不適用。遞迴樹：第 $j$ 層成本 $\frac{n}{\lg n-j}$，加總 $n\sum_{k=1}^{\lg n}\frac1k=n\cdot H_{\lg n}=\Theta(n\lg\lg n)$。
+
+@q al-03 | al-recurrence | 3
+$T(n)=2T(\sqrt n)+\lg n$ 的解為何？
+[ ] $\Theta(\lg n)$
+[x] $\Theta(\lg n\lg\lg n)$
+[ ] $\Theta(\sqrt n)$
+[ ] $\Theta(\lg^2 n)$
+---
+令 $m=\lg n$、$S(m)=T(2^m)$：$S(m)=2S(m/2)+m=\Theta(m\lg m)$，代回 $\Theta(\lg n\lg\lg n)$。
+
+@q al-04 | al-recurrence | 2
+$T(n)=T(n/3)+T(2n/3)+n$ 的解為何？
+[ ] $\Theta(n)$
+[x] $\Theta(n\lg n)$
+[ ] $\Theta(n^{\log_{3/2}2})$
+[ ] $\Theta(n^2)$
+---
+遞迴樹每層成本至多 $n$（完整的層恰為 $n$），最短路徑 $\log_3n$ 層、最長 $\log_{3/2}n$ 層，上下界都是 $\Theta(n\lg n)$。Akra–Bazzi：$(1/3)^p+(2/3)^p=1$ ⇒ $p=1$，積分 $\int_1^n\frac{u}{u^2}du=\ln n$。
+
+@q al-05 | al-dc | 2
+用 Karatsuba 演算法乘兩個 $1024$ 位數（一路遞迴到 1 位數），共做幾次 1 位數乘法？
+== 59049
+---
+$M(n)=3M(n/2)$，$M(1)=1$，$M(2^{10})=3^{10}=59049$（一般方法要 $1024^2=1048576$ 次）。
+
+@q al-06 | al-dc | 1
+陣列 `2, 4, 1, 3, 5` 有幾個逆序對？
+== 3
+---
+(2,1)、(4,1)、(4,3)。分治時在 merge 階段：右半的元素先被放出時，左半剩下的元素都和它構成逆序對。
+
+@q al-07 | al-dp | 2
+矩陣鏈的維度 $p=\langle5,10,3,12,5,50,6\rangle$（6 個矩陣），最少需要多少次純量乘法？
+== 2010
+---
+$m[1,6]=2010$，最佳加括號 $((A_1A_2)((A_3A_4)(A_5A_6)))$（CLRS 15.2-1）。用 $m[i,j]=\min_k m[i,k]+m[k+1,j]+p_{i-1}p_kp_j$ 由短到長填表。
+
+@q al-08 | al-dp | 2
+`10010101` 與 `010110110` 的 LCS 長度？
+== 6
+---
+例如 `100110` 或 `010101`。用動畫實驗室的 DP 填表可以看到回溯路徑（CLRS 15.4-1）。
+
+@q al-09 | al-dp | 3
+關於動態規劃，下列哪些正確？
+[x] 0/1 背包的 $O(nW)$ 演算法不是多項式時間
+[x] 0/1 背包壓成一維陣列時，容量必須由大到小更新
+[ ] 最長簡單路徑具有最佳子結構，所以可以用 DP 在多項式時間解
+[x] LIS 可以在 $O(n\lg n)$ 時間求出長度
+[ ] 矩陣鏈乘的所有加括號方式數是 $2^{n-1}$
+[x] Memoization（top-down）只會計算實際用到的子問題
+---
+C 錯：最長簡單路徑沒有最佳子結構（一般圖上是 NP-hard），但在 DAG 上可以 DP。E 錯：是 Catalan 數 $C_{n-1}$。B：由小到大更新會讓同一物品被重複使用，變成無限背包。
+
+@q al-10 | al-dp | 3
+給定字串 $s[1..n]$，要把它切成若干段，每段都是回文，求最少段數。寫出 DP 的狀態定義、遞迴式、邊界、計算順序與時間複雜度。
+---
+**前處理**：$P[i][j]$ 表示 $s[i..j]$ 是否為回文：$P[i][j]=(s_i=s_j)\land(j-i<2\lor P[i+1][j-1])$，依長度由短到長填，$O(n^2)$。
+**狀態**：$c[j]$＝把前綴 $s[1..j]$ 切成回文段的最少段數。
+**遞迴**：$c[j]=\min_{1\le i\le j,\ P[i][j]}\ c[i-1]+1$；邊界 $c[0]=0$。
+**順序**：$j=1..n$ 遞增。答案 $c[n]$（題目若問「切幾刀」則為 $c[n]-1$）。
+**時間**：每個 $j$ 掃 $j$ 個 $i$，共 $O(n^2)$；空間 $O(n^2)$（可只存 $P$）。
+**正確性**：最佳切法的最後一段 $s[i..j]$ 必是回文，剩下的前綴也必須是最佳切法（剪貼論證），所以枚舉最後一段的起點即可。
+
+@q al-11 | al-greedy | 2
+字元頻率為 A:1、B:1、C:2、D:3、E:5、F:8。Huffman 編碼後編碼整段文字總共需要多少位元？
+== 45
+---
+合併 1+1=2、2+2=4、3+4=7、5+7=12、8+12=20。總位元數等於所有合併的和：$2+4+7+12+20=45$。頻率是 Fibonacci 數，樹退化成一條斜線，最長碼長 5 = n − 1。
+
+@q al-12 | al-greedy | 3
+下列關於 greedy 的敘述哪些正確？
+[x] Activity selection 選「最早結束」的活動可以得到最佳解
+[ ] Activity selection 選「最短」的活動也一定最佳
+[x] 分數背包依單位價值遞減挑選是最佳的
+[ ] 幣值 $\{1,3,4\}$ 時，每次拿最大的幣值可以讓硬幣數最少
+[x] Kruskal 演算法是圖擬陣上的 greedy
+[x] Belady 的離線快取策略（踢掉最晚才會再用的）是最佳的
+---
+B 反例：`[1,5) [4,7) [6,10)`。D 反例：湊 6，greedy 4+1+1，最佳 3+3。
+
+@q al-13 | al-sp | 2
+CLRS 的有向圖（s→t 10、s→y 5、t→x 1、t→y 2、y→t 3、y→x 9、y→z 2、x→z 4、z→x 6、z→s 7）從 s 跑 Dijkstra，求到 t、x、y、z 的最短距離。
+== 8,9,5,7
+?? d(t),d(x),d(y),d(z)
+---
+取出順序 s(0)、y(5)、z(7)、t(8)、x(9)。t 經 s→y→t = 5+3；x 經 s→y→t→x = 8+1；z 經 s→y→z = 7。動畫實驗室有這張圖。
+
+@q al-14 | al-sp | 3
+關於最短路徑，下列哪些正確？
+[x] 所有邊權乘上同一個正數，最短路徑不變
+[ ] 所有邊權加上同一個正數，最短路徑不變
+[x] Bellman-Ford 跑完 $|V|-1$ 輪後若仍能鬆弛，代表有從源點可達的負環
+[ ] Dijkstra 在有負權邊但沒有負環的圖上仍然正確
+[x] Johnson 演算法的重新加權 $\hat w(u,v)=w(u,v)+h(u)-h(v)$ 不改變最短路徑
+[x] 在 DAG 上依拓撲順序鬆弛，可以在 $O(V+E)$ 求單源最短路徑（允許負邊）
+---
+B 錯：邊數不同的路徑被加的量不同。D 錯：已取出的點不會再被更新，見 al-sp 的反例。
+
+@q al-15 | al-sp | 3
+證明 Johnson 演算法的重新加權：(1) 不改變任兩點之間的最短路徑；(2) 新權重都非負。並說明 $h$ 是怎麼求得的、為什麼需要額外加一個點 $q$。
+---
+**(1)** 對任一路徑 $p=\langle v_0,\dots,v_k\rangle$：$\hat w(p)=\sum(w(v_{i-1},v_i)+h(v_{i-1})-h(v_i))=w(p)+h(v_0)-h(v_k)$（望遠鏡相消）。同起終點的所有路徑都加上同一個常數 $h(v_0)-h(v_k)$，所以最短的那條不變；負環在新權重下仍是負環（環的 $h$ 項相消）。
+**(2)** 加入新點 $q$，對每個 $v$ 加邊 $q\to v$ 權重 0，用 Bellman-Ford 求 $h(v)=\delta(q,v)$（同時檢查負環）。由三角不等式 $h(v)\le h(u)+w(u,v)$ 得 $\hat w(u,v)=w(u,v)+h(u)-h(v)\ge0$。
+**為什麼要 $q$**：保證每個點都可達且 $h$ 有限；而且 $q$ 沒有入邊，不會產生新的路徑影響原圖中點對之間的距離。
+之後對每個點跑 Dijkstra，再把距離還原 $\delta(u,v)=\hat\delta(u,v)-h(u)+h(v)$，總時間 $O(VE\lg V)$（binary heap）。
+
+@q al-16 | al-mst-flow | 1
+CLRS 的無向圖（a-b 4、a-h 8、b-h 11、b-c 8、c-i 2、c-f 4、c-d 7、d-f 14、d-e 9、e-f 10、f-g 2、g-i 6、g-h 1、h-i 7）的最小生成樹權重？
+== 37
+---
+Kruskal 依序取 g-h 1、c-i 2、f-g 2、a-b 4、c-f 4、c-d 7、a-h 8（或 b-c 8）、d-e 9，總和 37。MST 不唯一但權重唯一。
+
+@q al-17 | al-mst-flow | 3
+下列關於 MST 與網路流的敘述哪些正確？
+[x] 邊權皆相異時 MST 唯一
+[x] 環上權重唯一最大的邊不會在任何 MST 中
+[ ] 所有邊權加上常數 $c$ 後，MST 可能改變
+[x] Edmonds–Karp 的時間是 $O(VE^2)$
+[ ] König 定理：任何圖的最大匹配大小等於最小頂點覆蓋大小
+[x] 容量都是整數時，存在整數值的最大流
+---
+C 錯：每棵生成樹都有 $V-1$ 條邊，總權重都加 $(V-1)c$，排序不變。E 錯：König 只對二分圖成立（三角形：匹配 1、覆蓋 2）。
+
+@q al-18 | al-np | 3
+下列敘述哪些正確？
+[x] 若某個 NP-complete 問題有多項式時間演算法，則 P = NP
+[x] 若 $A\le_pB$ 且 $B\in\text{P}$，則 $A\in\text{P}$
+[ ] 若 $A\le_pB$ 且 $A\in\text{P}$，則 $B\in\text{P}$
+[ ] 所有 NP-hard 問題都屬於 NP
+[x] 2-SAT 可以在線性時間解
+[ ] 0/1 背包是強 NP-complete
+[x] 若 P = NP，則 NP = co-NP
+---
+C 錯：歸約只給 $A$ 的上界。D 錯：停機問題是 NP-hard 但不在 NP。F 錯：0/1 背包有偽多項式解，是弱 NPC；強 NPC 的例子是 3-partition、TSP、bin packing。G：P 對補運算封閉，所以 NP = P = co-P = co-NP。
+
+@q al-19 | al-np | 2
+要證明新問題 X 是 NP-hard，正確的做法是？
+[ ] 找一個多項式時間的歸約 $X\le_p\text{SAT}$
+[x] 找一個已知 NP-complete 的問題 Y，證明 $Y\le_pX$
+[ ] 證明 X 有指數時間的演算法
+[ ] 證明 X 的驗證器需要指數時間
+---
+$Y\le_pX$ 表示能用 X 的解法解 Y，所以 X 至少和 Y 一樣難。反方向只說明 X 不比 SAT 難（等於說明 X ∈ NP）。
+
+@q al-20 | al-np | 3
+PARTITION：給一組正整數，能否分成總和相等的兩組？已知 SUBSET-SUM（給集合 $S$ 與目標 $t$，是否有子集合和為 $t$）是 NP-complete，證明 PARTITION 是 NP-complete。
+---
+**PARTITION ∈ NP**：certificate 是其中一組，$O(n)$ 驗證兩組和相等。
+**歸約 SUBSET-SUM ≤p PARTITION**：令 $\sigma=\sum S$。若 $t>\sigma$ 直接輸出一個無解的實例。否則令 $S'=S\cup\{x\}$，$x=|\sigma-2t|$（若 $x=0$ 就不必加）。總和為 $\sigma+x$。
+設 $\sigma\ge2t$，則 $x=\sigma-2t$，總和 $2\sigma-2t$，每組應為 $\sigma-t$。
+(⇒) 若 $A\subseteq S$ 和為 $t$，則 $A\cup\{x\}$ 和為 $t+\sigma-2t=\sigma-t$，另一組 $S\setminus A$ 和為 $\sigma-t$，相等。
+(⇐) 若 $S'$ 可平分，含 $x$ 的那一組其餘元素和為 $(\sigma-t)-x=t$，即為所求子集合。
+$\sigma<2t$ 的情況對稱（$x=2t-\sigma$，不含 $x$ 的那組和為 $t$）。轉換顯然是多項式時間（數字長度只多一個數）。
+
+@q al-21 | al-prob | 2
+`ababbabbabbababbabb` 的 KMP prefix function 最後一項 $\pi[19]$ 是多少？
+== 8
+---
+完整的 $\pi$：0 0 1 2 0 1 2 0 1 2 0 1 2 3 4 5 6 7 8（CLRS 32.4-1）。最後 8 個字元 `ababbabb` 等於開頭 8 個字元。
+
+@q al-22 | al-prob | 3
+下列關於隨機演算法與機率分析的敘述哪些正確？
+[x] 隨機 quicksort 是 Las Vegas 演算法
+[x] Miller–Rabin 回答「合數」時一定正確
+[ ] 把 $A[i]$ 與 $A[\text{RANDOM}(1,n)]$ 交換（$i=1..n$）會產生均勻隨機排列
+[x] 隨機排列的固定點個數期望值為 1，與 $n$ 無關
+[x] $n$ 個球隨機丟入 $n$ 個箱子，期望空箱數約為 $n/e$
+[ ] 期望值的線性性要求隨機變數彼此獨立
+---
+C 錯：$n^n$ 種等可能的執行無法平均分配到 $n!$ 種排列（$n!\nmid n^n$，$n\ge3$）。F 錯：線性性不需要獨立。D：每個位置是固定點的機率 $1/n$，用指示變數加總。
