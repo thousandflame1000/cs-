@@ -1,0 +1,273 @@
+{
+  "duration": 71.971,
+  "fps": 60,
+  "beats": null,
+  "scenes": [
+    {
+      "id": "o1",
+      "start": 0.3,
+      "end": 2.1,
+      "label": "o1"
+    },
+    {
+      "id": "o2",
+      "start": 2.1,
+      "end": 4.625,
+      "label": "o2"
+    },
+    {
+      "id": "T",
+      "start": 4.625,
+      "end": 8.325,
+      "label": "T"
+    },
+    {
+      "id": "a1",
+      "start": 8.325,
+      "end": 11.933,
+      "label": "a1"
+    },
+    {
+      "id": "a2",
+      "start": 11.933,
+      "end": 15.156,
+      "label": "a2"
+    },
+    {
+      "id": "a3",
+      "start": 15.156,
+      "end": 18.387,
+      "label": "a3"
+    },
+    {
+      "id": "b1",
+      "start": 18.387,
+      "end": 21.417,
+      "label": "b1"
+    },
+    {
+      "id": "b2",
+      "start": 21.417,
+      "end": 24.833,
+      "label": "b2"
+    },
+    {
+      "id": "b3",
+      "start": 24.833,
+      "end": 28.248,
+      "label": "b3"
+    },
+    {
+      "id": "b4",
+      "start": 28.248,
+      "end": 31.094,
+      "label": "b4"
+    },
+    {
+      "id": "c1",
+      "start": 31.094,
+      "end": 33.74,
+      "label": "c1"
+    },
+    {
+      "id": "c2",
+      "start": 33.74,
+      "end": 36.771,
+      "label": "c2"
+    },
+    {
+      "id": "c3",
+      "start": 36.771,
+      "end": 39.802,
+      "label": "c3"
+    },
+    {
+      "id": "c4",
+      "start": 39.802,
+      "end": 42.648,
+      "label": "c4"
+    },
+    {
+      "id": "d1",
+      "start": 42.648,
+      "end": 45.871,
+      "label": "d1"
+    },
+    {
+      "id": "d2",
+      "start": 45.871,
+      "end": 49.287,
+      "label": "d2"
+    },
+    {
+      "id": "d3",
+      "start": 49.287,
+      "end": 52.51,
+      "label": "d3"
+    },
+    {
+      "id": "d4",
+      "start": 52.51,
+      "end": 55.733,
+      "label": "d4"
+    },
+    {
+      "id": "d5",
+      "start": 55.733,
+      "end": 59.156,
+      "label": "d5"
+    },
+    {
+      "id": "e1",
+      "start": 59.156,
+      "end": 62.571,
+      "label": "e1"
+    },
+    {
+      "id": "e2",
+      "start": 62.571,
+      "end": 65.871,
+      "label": "e2"
+    },
+    {
+      "id": "E",
+      "start": 65.871,
+      "end": 71.971,
+      "label": "E"
+    }
+  ],
+  "cues": [
+    {
+      "t": 0.19999999999999998,
+      "sfx": "tick",
+      "gain": -16
+    },
+    {
+      "t": 0.42,
+      "sfx": "tick",
+      "gain": -16
+    },
+    {
+      "t": 0.64,
+      "sfx": "tick",
+      "gain": -16
+    },
+    {
+      "t": 0.86,
+      "sfx": "tick",
+      "gain": -16
+    },
+    {
+      "t": 1.08,
+      "sfx": "tick",
+      "gain": -16
+    },
+    {
+      "t": 1.3,
+      "sfx": "tick",
+      "gain": -16
+    },
+    {
+      "t": 1.52,
+      "sfx": "tick",
+      "gain": -16
+    },
+    {
+      "t": 2.4,
+      "sfx": "whoosh",
+      "gain": -9
+    },
+    {
+      "t": 3,
+      "sfx": "thump",
+      "gain": -8
+    },
+    {
+      "t": 4.625,
+      "sfx": "riser",
+      "align": "end",
+      "gain": -10
+    },
+    {
+      "t": 4.625,
+      "sfx": "impact",
+      "gain": -3
+    },
+    {
+      "t": 8.325,
+      "sfx": "whoosh",
+      "gain": -11
+    },
+    {
+      "t": 15.656,
+      "sfx": "pop",
+      "gain": -12
+    },
+    {
+      "t": 18.387,
+      "sfx": "whoosh",
+      "gain": -11
+    },
+    {
+      "t": 21.717000000000002,
+      "sfx": "glitch",
+      "gain": -12
+    },
+    {
+      "t": 25.333,
+      "sfx": "swish",
+      "gain": -10
+    },
+    {
+      "t": 31.094,
+      "sfx": "whoosh",
+      "gain": -11
+    },
+    {
+      "t": 34.64,
+      "sfx": "glitch",
+      "gain": -11
+    },
+    {
+      "t": 37.271,
+      "sfx": "swish",
+      "gain": -11
+    },
+    {
+      "t": 40.302,
+      "sfx": "swish",
+      "gain": -10
+    },
+    {
+      "t": 40.802,
+      "sfx": "chime",
+      "gain": -11
+    },
+    {
+      "t": 42.648,
+      "sfx": "whoosh",
+      "gain": -11
+    },
+    {
+      "t": 49.887,
+      "sfx": "swish",
+      "gain": -10
+    },
+    {
+      "t": 56.132999999999996,
+      "sfx": "chime",
+      "gain": -10
+    },
+    {
+      "t": 59.156,
+      "sfx": "reverse",
+      "align": "end",
+      "gain": -10
+    },
+    {
+      "t": 66.071,
+      "sfx": "chime",
+      "gain": -8
+    }
+  ]
+}
