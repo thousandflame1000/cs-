@@ -1,0 +1,223 @@
+{
+  "duration": 70.677,
+  "fps": 60,
+  "beats": null,
+  "scenes": [
+    {
+      "id": "o1",
+      "start": 0.3,
+      "end": 2.6,
+      "label": "o1"
+    },
+    {
+      "id": "o2",
+      "start": 2.6,
+      "end": 4.5,
+      "label": "o2"
+    },
+    {
+      "id": "T",
+      "start": 4.5,
+      "end": 8.2,
+      "label": "T"
+    },
+    {
+      "id": "a1",
+      "start": 8.2,
+      "end": 11.615,
+      "label": "a1"
+    },
+    {
+      "id": "a2",
+      "start": 11.615,
+      "end": 14.838,
+      "label": "a2"
+    },
+    {
+      "id": "a3",
+      "start": 14.838,
+      "end": 18.254,
+      "label": "a3"
+    },
+    {
+      "id": "a4",
+      "start": 18.254,
+      "end": 21.677,
+      "label": "a4"
+    },
+    {
+      "id": "b1",
+      "start": 21.677,
+      "end": 24.515,
+      "label": "b1"
+    },
+    {
+      "id": "b2",
+      "start": 24.515,
+      "end": 27.354,
+      "label": "b2"
+    },
+    {
+      "id": "b3",
+      "start": 27.354,
+      "end": 30.192,
+      "label": "b3"
+    },
+    {
+      "id": "b4",
+      "start": 30.192,
+      "end": 32.838,
+      "label": "b4"
+    },
+    {
+      "id": "b5",
+      "start": 32.838,
+      "end": 35.677,
+      "label": "b5"
+    },
+    {
+      "id": "b6",
+      "start": 35.677,
+      "end": 39.292,
+      "label": "b6"
+    },
+    {
+      "id": "c1",
+      "start": 39.292,
+      "end": 42.708,
+      "label": "c1"
+    },
+    {
+      "id": "c2",
+      "start": 42.708,
+      "end": 46.123,
+      "label": "c2"
+    },
+    {
+      "id": "c3",
+      "start": 46.123,
+      "end": 48.962,
+      "label": "c3"
+    },
+    {
+      "id": "c4",
+      "start": 48.962,
+      "end": 51.608,
+      "label": "c4"
+    },
+    {
+      "id": "c5",
+      "start": 51.608,
+      "end": 54.838,
+      "label": "c5"
+    },
+    {
+      "id": "d1",
+      "start": 54.838,
+      "end": 57.869,
+      "label": "d1"
+    },
+    {
+      "id": "d2",
+      "start": 57.869,
+      "end": 61.477,
+      "label": "d2"
+    },
+    {
+      "id": "d3",
+      "start": 61.477,
+      "end": 64.577,
+      "label": "d3"
+    },
+    {
+      "id": "E",
+      "start": 64.577,
+      "end": 70.677,
+      "label": "E"
+    }
+  ],
+  "cues": [
+    {
+      "t": 0.8999999999999999,
+      "sfx": "whoosh",
+      "gain": -10
+    },
+    {
+      "t": 2.7,
+      "sfx": "chime",
+      "gain": -9
+    },
+    {
+      "t": 4.5,
+      "sfx": "riser",
+      "align": "end",
+      "gain": -10
+    },
+    {
+      "t": 4.5,
+      "sfx": "impact",
+      "gain": -3
+    },
+    {
+      "t": 8.2,
+      "sfx": "whoosh",
+      "gain": -11
+    },
+    {
+      "t": 11.815,
+      "sfx": "swish",
+      "gain": -12
+    },
+    {
+      "t": 18.454,
+      "sfx": "swish",
+      "gain": -12
+    },
+    {
+      "t": 21.877,
+      "sfx": "pop",
+      "gain": -12
+    },
+    {
+      "t": 25.415,
+      "sfx": "thump",
+      "gain": -7
+    },
+    {
+      "t": 27.554,
+      "sfx": "pop",
+      "gain": -12
+    },
+    {
+      "t": 33.038000000000004,
+      "sfx": "chime",
+      "gain": -10
+    },
+    {
+      "t": 39.292,
+      "sfx": "whoosh",
+      "gain": -11
+    },
+    {
+      "t": 49.162000000000006,
+      "sfx": "thump",
+      "gain": -8
+    },
+    {
+      "t": 54.838,
+      "sfx": "reverse",
+      "align": "end",
+      "gain": -10
+    },
+    {
+      "t": 61.677,
+      "sfx": "chime",
+      "gain": -10
+    },
+    {
+      "t": 64.777,
+      "sfx": "chime",
+      "gain": -8
+    }
+  ]
+}
