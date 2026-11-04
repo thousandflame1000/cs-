@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>Cache 位址切割</title>
+<!--
+  資工所衝刺 · 短影音 09：Cache 位址切割——tag、index、offset
+  記憶宮殿：計組館 · 第 2 間。房間裡是一座 1024 層的「快取塔」（直接映射，每層一個 16-byte 區塊）；
+  32 位元位址是一排發光方塊，切成三段：tag（珊瑚）、index（青）、offset（琥珀）。
+  index 決定搭電梯到第幾層，offset 指向那層的第幾格，tag 用來確認「是不是我」。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', CO = '#ff6a5c', AM = '#ffc14d', OK = '#6ee7a8';
+const K = Kit({ W, H, stage, duration: DUR, seed: 91, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CO, accent2: CY } });
+K.warm([CY, CO, AM, OK, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .44, fogNear: 22, fogFar: 80 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { '147 Kbits': CO, 三段: INK, offset: AM, '4': AM, index: CY, '1024': CY, '10': CY, 一個: CY, '18': CO, 同一層: CO, 我: CO, 命中: OK, '147': CO },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E;
+const A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+
+// ═════════ 位址 0x00012345：tag 4、index 564、offset 5
+const ADDR = 0x00012345, BITS = [...ADDR.toString(2).padStart(32, '0')];
+const SEG = (i) => (i < 18 ? 'tag' : i < 28 ? 'index' : 'offset');
+const SCOL = { tag: CO, index: CY, offset: AM };
+const IDX = 564, OFF = 5;
+// 快取塔：1024 層
+const TB = { x: 0, y: 3.6, w: 5.6, d: 2.2, z0: .4, dz: .027 };
+const floorZ = (j) => TB.z0 + j * TB.dz;
+const FZ = floorZ(IDX);
+// 位址方塊的位置：一整排 → 切成三排
+const BAR = { y: -3.6, z: 2.6 };
+function bitPos(i, k) {
+  const x0 = (i - 15.5) * .115, z0 = BAR.z;
+  const seg = SEG(i), j = seg === 'tag' ? i : seg === 'index' ? i - 18 : i - 28, n = seg === 'tag' ? 18 : seg === 'index' ? 10 : 4;
+  const x1 = (j - (n - 1) / 2) * .14, z1 = { tag: 3.25, index: 2.65, offset: 2.05 }[seg];
+  return [lerp(x0, x1, k), BAR.y, lerp(z0, z1, k)];
+}
+function addrBar(c, t, k, o = {}) {
+  const A = o.a ?? 1; if (A <= .003) return;
+  for (let i = 0; i < 32; i++) {
+    const seg = SEG(i), p = bitPos(i, k), col = k > .02 || o.colored ? SCOL[seg] : '#9fb3d6', hot = o.hot?.(seg) ?? 0;
+    V.pillar(c, [p[0], p[1], p[2] - .05], .1, .1, col, A * (o.dim?.(seg) ?? 1), { fill: .5 + .3 * hot });
+    V.label(c, BITS[i], [p[0], p[1] - .07, p[2]], { size: .075, w: 700, color: '#ffffff', a: A * (o.dim?.(seg) ?? 1) * .9, minPx: 10, maxPx: 40 });
+  }
+  if (k > .5 && o.names !== false) for (const [seg, z, n] of [['tag', 3.25, 18], ['index', 2.65, 10], ['offset', 2.05, 4]]) V.label(c, `${seg} · ${n} 位元`, [0, BAR.y, z + .17], { size: .1, w: 700, color: SCOL[seg], a: A * clamp(k * 2 - 1) * (o.dim?.(seg) ?? 1), minPx: 16, maxPx: 44 });
+}
+function tower(c, t, o = {}) {
+  const A = o.a ?? 1; if (A <= .003) return;
+  const lit = o.lit ?? 0, upto = o.upto ?? -1;
+  for (let j = 0; j < 1024; j++) {
+    const z = floorZ(j), sel = j === IDX ? (o.sel ?? 0) : 0, on = j <= upto ? 1 : 0;
+    const x0 = TB.x - TB.w / 2, x1 = TB.x + TB.w / 2, y0 = TB.y - TB.d / 2, y1 = TB.y + TB.d / 2;
+    const q = [[x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z]].map(V.p); if (q.some((v) => !v)) continue;
+    const al = A * q[0].fog * (j % 64 === 0 ? .55 : .1 + .22 * on) + sel;
+    c.strokeStyle = K.rgba(sel > .01 ? CY : on ? K.mix(CO, AM, j / 1023) : '#9fb3d6', Math.min(1, al)); c.lineWidth = sel > .01 ? 2.4 : j % 64 === 0 ? 1.6 : 1;
+    c.beginPath(); q.forEach((v, i) => (i ? c.lineTo(v.x, v.y) : c.moveTo(v.x, v.y))); c.closePath(); c.stroke();
+    if (sel > .01) { c.fillStyle = K.rgba(CY, .18 * sel); c.fill(); }
+  }
+  // 四根柱子（塔的骨架）
+  for (const [x, y] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) V.line(c, [TB.x + x * TB.w / 2, TB.y + y * TB.d / 2, 0], [TB.x + x * TB.w / 2, TB.y + y * TB.d / 2, floorZ(1023)], { color: CO, a: A * .45, w: 1.6 });
+  V.label(c, '0', [TB.x - TB.w / 2 - .3, TB.y - TB.d / 2, floorZ(0)], { size: .4, a: A * .6 * (o.ends ?? 0), minPx: 18, maxPx: 50 });
+  V.label(c, '1023', [TB.x - TB.w / 2 - .5, TB.y - TB.d / 2, floorZ(1023)], { size: .4, a: A * .6 * (o.ends ?? 0), minPx: 18, maxPx: 50 });
+}
+/** 第 564 層的特寫：16 格資料 + tag 欄 + valid */
+function floorDetail(c, t, o = {}) {
+  const A = o.a ?? 1; if (A <= .003) return; const z = FZ + .02, y = TB.y - TB.d / 2;
+  for (let b = 0; b < 16; b++) { const x = TB.x - 2.4 + b * .3, hot = b === OFF ? (o.off ?? 0) : 0; V.pillar(c, [x + .13, y + .15, z], .25, .14, hot > .01 ? AM : '#7fd3ff', A * (.55 + .45 * hot), { fill: .4 + .4 * hot }); if (hot > .01) V.glow(c, [x + .13, y + .15, z + .2], .6, .6 * hot, AM); }
+  V.pillar(c, [TB.x - 3.4, y + .15, z], .8, .16, CO, A * (o.tagA ?? 1));
+  V.label(c, 'tag ' + (o.tagVal ?? 4), [TB.x - 3.4, y - .2, z + .34], { size: .2, w: 700, color: CO, a: A * (o.tagA ?? 1), minPx: 18, maxPx: 60 });
+  V.label(c, 'V 1', [TB.x - 3.4, y - .2, z - .18], { size: .16, w: 600, color: OK, a: A * (o.tagA ?? 1) * .8, minPx: 14, maxPx: 44 });
+  V.label(c, '第 564 層', [TB.x + 1.2, y, z + .45], { size: .2, w: 700, color: CY, a: A * (o.name ?? 1), align: 'left', minPx: 18, maxPx: 60 });
+}
+
+// ═════════ 鏡頭
+const camBar = { pos: [0, -11.6, 3.1], tgt: [0, BAR.y, 2.65], fov: 44 };
+const camTowerFar = { pos: [9, -36, 16], tgt: [0, TB.y, 14.5], fov: 50 };
+const camFloor = { pos: [2.6, -5.4, FZ + 2.6], tgt: [-.6, TB.y, FZ], fov: 46 };
+const camFloor2 = { pos: [-2.2, -5.6, FZ + 2.8], tgt: [-1.0, TB.y, FZ], fov: 46 };
+V.camKeys([
+  [0, { pos: [12, -30, 6], tgt: [0, TB.y, 13], fov: 50 }], [T.start, { pos: [6, -36, 12], tgt: [0, TB.y, 15], fov: 50 }],
+  [A1.start, camBar], [L.a3.end, Object.assign({}, camBar, { pos: [.6, -11.8, 3.3] })],
+  [B1.start + .3, camBar], [B1.start + 2.0, { pos: [5, -6, FZ - 2], tgt: [0, TB.y, FZ - 1], fov: 48 }],
+  [L.b2.start + .4, camTowerFar], [L.b2.end, camTowerFar], [L.b3.start + 1.0, camFloor], [L.b4.end, camFloor],
+  [C1.start + .4, camFloor2], [L.c2.start + .4, { pos: [0, -6, FZ + 2], tgt: [0, 0, FZ - 1], fov: 50 }], [L.c3.start + .5, camFloor2], [L.c4.end, camFloor2],
+  [D1.start + .5, { pos: [0, -6.4, FZ + 1.6], tgt: [0, TB.y - 1.5, FZ + .3], fov: 46 }], [L.d3.end, { pos: [0, -6.4, FZ + 1.6], tgt: [0, TB.y - 1.5, FZ + .3], fov: 46 }],
+  [L.d4.start + 1.2, camTowerFar], [Ec.start, camTowerFar], [DUR, { pos: [4, -40, 17], tgt: [0, TB.y, 14.5], fov: 50 }],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  const on = prog(t, -.5, o1.start + .8), up = prog(t, o1.start, o2.start + 1.2);
+  c.save(); c.globalAlpha *= out * on;
+  V.floor(c, { n: 14, step: 1.5, color: CO, a: .8, major: 4, cy: 2 });
+  tower(c, t, { upto: Math.floor(up * 1023) });
+  const lbl = prog(t, o2.start + .2, o2.start + .8);
+  if (lbl > 0) V.glow(c, [0, TB.y, floorZ(1023) + 1], 6, .5 * lbl, CO);
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '計算機組織 · Cache', big: '位址切割', size: 190, y: 600, en: 'TAG  ·  INDEX  ·  OFFSET', q: '一個位址怎麼找到它的那一格', qGap: 330, color: CO });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .3; tower(c, t, { upto: 1023 }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CO);
+}
+function sAddr(c, t) {
+  V.floor(c, { n: 14, step: 1.5, color: CO, a: .7, major: 4, cy: 2 });
+  tower(c, t, { a: .5, sel: prog(t, B1.start + 1.2, B1.start + 2.0), ends: prog(t, L.b2.start, L.b2.start + .5) });
+  const k = E.inOutCubic(prog(t, A1.start + .6, A1.start + 1.6));
+  const focus = t < B1.start ? 'offset' : t < C1.start ? 'index' : 'tag';
+  addrBar(c, t, k, { a: prog(t, A1.start - .1, A1.start + .4), hot: (s) => (s === focus && t > L.a2.start ? 1 : 0), dim: (s) => (t > L.a2.start && s !== focus ? .45 : 1) });
+  // a2–a3：旁邊的一個區塊（16 格），第 5 格亮
+  const blk = prog(t, L.a2.start + .3, L.a2.start + .8) * (1 - prog(t, B1.start, B1.start + .4));
+  if (blk > 0) { for (let b = 0; b < 16; b++) { const x = -1.2 + b * .16, hot = b === OFF ? 1 : 0; V.pillar(c, [x, BAR.y, 1.25], .13, .13, hot ? AM : '#7fd3ff', blk * (.55 + .45 * hot)); V.label(c, String(b), [x, BAR.y - .08, 1.12], { size: .06, a: blk * .7, minPx: 10, maxPx: 30 }); } const ob = bitPos(28, 1); V.path(c, [[ob[0] + .2, BAR.y, 1.98], [-1.2 + OFF * .16, BAR.y, 1.42]], { color: AM, w: 2.4, a: blk, p: prog(t, L.a2.start + .7, L.a2.start + 1.3) }); }
+  const a3 = prog(t, L.a3.start + .3, L.a3.start + .8) * (1 - prog(t, B1.start, B1.start + .3));
+  if (a3 > 0) V.label(c, '2⁴ = 16', [1.6, BAR.y, 1.25], { size: .18, w: 700, color: AM, a: a3, align: 'left', minPx: 24, maxPx: 70 });
+  // b1：index 光束搭電梯到第 564 層
+  const beam = prog(t, B1.start + .3, B1.start + 2.0, E.inOutCubic);
+  if (beam > 0 && t < C1.start) { const ib = bitPos(23, 1); V.path(c, [[ib[0], BAR.y, 2.6], [0, TB.y - TB.d / 2, 2.6], [0, TB.y - TB.d / 2, FZ]], { color: CY, w: 3.4, p: beam }); }
+  const fd = prog(t, L.b3.start + .6, L.b3.start + 1.2);
+  if (fd > 0) floorDetail(c, t, { a: fd, off: prog(t, L.b4.start + .3, L.b4.start + .8), tagA: prog(t, L.b4.start + .8, L.b4.start + 1.2) });
+}
+S.hero('2¹⁰ = 1024', L.b3.start + .3, L.b3.end, { y: 210, color: CY, size: 110 });
+function sTag(c, t) {
+  V.floor(c, { n: 14, step: 1.5, color: CO, a: .5, major: 4, cy: 2 });
+  tower(c, t, { a: .45, sel: 1 });
+  floorDetail(c, t, { off: 1, tagVal: 4, name: 1 });
+  // c2：三個位址搶同一層（index 一樣、tag 不同）
+  const fight = prog(t, L.c2.start + .2, L.c2.start + 1.2) * (1 - prog(t, L.c3.start, L.c3.start + .4));
+  if (fight > 0) [['4', CO, -2.4], ['20', '#ff9a7a', 0], ['36', '#ffb28f', 2.4]].forEach(([tg, col, x], i) => { const s = [x, -4.5, FZ + 1.6]; V.label(c, 'tag ' + tg, s, { size: .26, w: 700, color: col, a: fight, minPx: 22, maxPx: 64 }); V.path(c, [s, [x * .3, TB.y - TB.d / 2, FZ + .2]], { color: col, w: 2.2, a: fight, p: prog(t, L.c2.start + .3 + i * .2, L.c2.start + 1.0 + i * .2) }); });
+  // c3–c4：比對 tag
+  const cmp = prog(t, L.c3.start + .2, L.c3.start + .8);
+  if (cmp > 0) { const s = [-1.4, TB.y - TB.d / 2 - 1.4, FZ + .9]; V.label(c, '位址 tag 4', s, { size: .22, w: 700, color: CO, a: cmp, minPx: 22, maxPx: 60 }); V.label(c, '＝', [-1.9, TB.y - TB.d / 2 - .8, FZ + .55], { size: .3, w: 700, color: INK, a: cmp, minPx: 24, maxPx: 80 }); }
+  const hit = prog(t, L.c4.start + .3, L.c4.start + .8);
+  if (hit > 0) { V.glow(c, [0, TB.y, FZ + .3], 3.5, .5 * hit, OK); V.label(c, 'HIT', [0, TB.y - TB.d / 2, FZ + 1.1], { size: .5, w: 700, color: OK, a: hit, minPx: 40, maxPx: 130 }); }
+}
+// d 章：一層的位元預算，然後整座塔
+function sBits(c, t) {
+  const endDim = 1 - .85 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  V.floor(c, { n: 14, step: 1.5, color: CO, a: .5, major: 4, cy: 2 });
+  const all = prog(t, L.d4.start + .4, L.d4.start + 2.2);
+  tower(c, t, { a: .5, sel: 1 - all, upto: Math.floor(all * 1023) - 1 });
+  // 爆炸圖：valid 1 | tag 18 | data 128（寬度照位元數）
+  const ex = prog(t, D1.start + .3, D1.start + 1.0) * (1 - prog(t, L.d4.start + .3, L.d4.start + .8));
+  if (ex > 0) { const u = .017, y = TB.y - TB.d / 2 - 1.2, z = FZ + .5; let x = -147 * u / 2; for (const [n, col, lab, t0] of [[1, OK, 'V', L.d2.start], [18, CO, 'tag 18', L.d2.start + .5], [128, '#7fd3ff', '資料 128', L.d2.start + 1.0]]) { const p = prog(t, t0, t0 + .5); V.pillar(c, [x + n * u / 2, y, z], n * u, .22 * p + .001, col, ex * (.3 + .7 * p)); if (p > 0) V.label(c, lab, [x + n * u / 2, y - .2, z + .45], { size: .16, w: 700, color: col, a: ex * p, minPx: 16, maxPx: 50 }); x += n * u; } const s3 = prog(t, L.d3.start + .2, L.d3.start + .7); if (s3 > 0) V.label(c, '147 位元', [0, y - .2, z + .95], { size: .3, w: 700, color: INK, a: ex * s3, minPx: 30, maxPx: 90 }); }
+  c.restore();
+}
+S.hero('× 1024', L.d3.start + .6, L.d3.end, { y: 210, color: CY, size: 120 });
+S.hero('150528', L.d4.start + 1.4, L.d4.end + .2, { y: 210, color: CO, size: 130, slam: true });
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫　·　C 容量、B 區塊、k-way', CX, 520, { size: 32, a: .6, ls: '4px' });
+  const rows = [['offset = lg B', AM, 54], ['index = lg ( C / (B·k) )', CY, 54], ['tag = 位址位元 − index − offset', CO, 44], ['總位元 = 區塊數 × (8B + tag + valid)', INK, 40], ['write-back 再加 dirty；替換再加 LRU 位元', INK, 32]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 112 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'addr', start: A1.start, end: C1.start, draw: sAddr, color: CO, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'tag', start: C1.start, end: D1.start, draw: sTag, color: CO, in: { type: 'cut' } },
+  { id: 'bits', start: D1.start, end: DUR, draw: (c, t) => { sBits(c, t); sExam(c, t); }, color: CY, in: { type: 'cut' } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .12, warm: .08, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .17, warm: .1, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, warm: .1, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .16, warm: .1, stars: .2, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .17, warm: .08, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(C1.start, .08, .3); K.flash(D1.start, .08, .3);
+S.chapters([[A1.start, '記憶宮殿 · 計組館 · 第 2 間  /  01 offset'], [B1.start, '記憶宮殿 · 計組館 · 第 2 間  /  02 index'], [C1.start, '記憶宮殿 · 計組館 · 第 2 間  /  03 tag'], [D1.start, '記憶宮殿 · 計組館 · 第 2 間  /  04 算位元'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .2, sfx: 'riser', align: 'start', gain: -16 },
+    { t: o2.start + .3, sfx: 'thump', gain: -8 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start, sfx: 'whoosh', gain: -11 },
+    { t: A1.start + .9, sfx: 'glitch', gain: -13 },
+    { t: L.a2.start + .9, sfx: 'pop', gain: -13 },
+    { t: B1.start + .4, sfx: 'whoosh', gain: -10 },
+    { t: B1.start + 2.0, sfx: 'chime', gain: -11 },
+    { t: L.b4.start + .5, sfx: 'pop', gain: -13 },
+    { t: C1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.c2.start + .5, sfx: 'swish', gain: -12 },
+    { t: L.c4.start + .4, sfx: 'chime', gain: -8 },
+    { t: D1.start, sfx: 'whoosh', gain: -11 },
+    ...[0, 1, 2].map((i) => ({ t: L.d2.start + i * .5, sfx: 'tick', gain: -13 })),
+    { t: L.d4.start + 1.4, sfx: 'impact', gain: -6 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

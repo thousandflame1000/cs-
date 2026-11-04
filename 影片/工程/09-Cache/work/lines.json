@@ -1,0 +1,32 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "標著 16 KB 的 cache", "hook": true},
+  {"id": "o2", "text": "其實要做 [147 Kbits]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "Cache 位址切割", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "32 位元位址，切成[三段]", "scene": true},
+  {"id": "a2", "text": "最右邊是 [offset]：區塊裡第幾個 byte"},
+  {"id": "a3", "text": "區塊 16 bytes → offset [4] 位元", "pause": 0.2},
+
+  {"id": "b1", "text": "中間是 [index]：去第幾層", "scene": true},
+  {"id": "b2", "text": "16 KB ÷ 16 B = [1024] 層"},
+  {"id": "b3", "text": "所以 index 是 [10] 位元"},
+  {"id": "b4", "text": "直接映射：每層只放[一個]區塊", "pause": 0.2},
+
+  {"id": "c1", "text": "剩下的 [18] 位元是 tag", "scene": true},
+  {"id": "c2", "text": "很多位址會搶[同一層]"},
+  {"id": "c3", "text": "tag 用來確認：是不是[我]"},
+  {"id": "c4", "text": "tag 相同而且 valid：[命中]", "pause": 0.2},
+
+  {"id": "d1", "text": "每一層要存多少位元？", "scene": true},
+  {"id": "d2", "text": "資料 128 + tag 18 + valid 1"},
+  {"id": "d3", "text": "一層 [147] 位元，共 1024 層"},
+  {"id": "d4", "text": "總共 150528 位元 ≈ [147 Kbits]", "hold": 3.0},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>LRU 頁面置換</title>
+<!--
+  資工所衝刺 · 短影音 10：LRU 頁面置換——為什麼加頁框不會變糟
+  記憶宮殿：作業系統館 · 第 2 間。房間裡有兩座頁框塔（左 3 格、右 4 格），參考串像一條輸送帶從房間深處送過來；
+  每個頁是一顆發光方塊（1 青、2 琥珀、3 紫、4 珊瑚、5 綠）。LRU：用到就搬到最上面，換頁丟最底下。
+  缺頁時塔閃一下、計數器加一。結尾把右塔的上面三格罩在左塔上：LRU 永遠是子集合。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', GR = '#6ee7a8', CO = '#ff6a5c', AM = '#ffc14d', CY = '#5be7ff';
+const PCOL = { 1: '#5be7ff', 2: '#ffc14d', 3: '#b48cff', 4: '#ff9a7a', 5: '#6ee7a8' };
+const K = Kit({ W, H, stage, duration: DUR, seed: 101, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: GR, accent2: CY } });
+K.warm([GR, CO, AM, CY, INK, '#b48cff', '#ff9a7a']);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .42, fogNear: 10, fogFar: 28 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 變多: CO, 最久沒用: GR, 最上面: GR, 最底下: CO, '10': CO, '8': GR, '9': AM, 'Belady 異常': CO, 子集合: GR, 包住: GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+
+// ═════════ 模擬：LRU 與 FIFO，3 與 4 頁框
+const SEQ = [1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5];
+function sim(algo, n) {
+  const st = [[]], fl = []; let m = [];
+  for (const p of SEQ) { m = m.slice(); let f = 0; if (m.includes(p)) { if (algo === 'lru') { m.splice(m.indexOf(p), 1); m.push(p); } } else { f = 1; if (m.length === n) m.shift(); m.push(p); } st.push(m); fl.push(f); }
+  return { st, fl };
+}
+const RUNS = { lru3: sim('lru', 3), lru4: sim('lru', 4), fifo3: sim('fifo', 3), fifo4: sim('fifo', 4) };
+const SLOT = (k) => .45 + k * .72, CUBE = .52;
+const HOVER = [0, -1.0, 3.6];
+function cube(c, p, id, a = 1, o = {}) {
+  if (a <= .003) return; const col = PCOL[id];
+  V.pillar(c, [p[0], p[1], p[2] - CUBE / 2], CUBE, CUBE, col, a, { fill: .6 });
+  V.label(c, String(id), [p[0], p[1] - CUBE / 2 - .02, p[2]], { size: .32, w: 700, color: '#ffffff', a, minPx: 18, maxPx: 70 });
+  if (o.glow) V.glow(c, p, .9, .5 * o.glow * a, col);
+}
+/** 一座頁框塔：x 位置、n 格、run、步數進度 u（可為小數）、o.label */
+function frameTower(c, t, x, n, run, u, o = {}) {
+  const A = o.a ?? 1; if (A <= .003) return;
+  // 框架
+  for (let k = 0; k < n; k++) { const z = SLOT(k); V.poly(c, [[x - .38, -.38, z - .34], [x + .38, -.38, z - .34], [x + .38, -.38, z + .34], [x - .38, -.38, z + .34]], null, K.rgba(GR, .35), A); }
+  V.line(c, [x - .45, -.4, .05], [x - .45, -.4, SLOT(n - 1) + .45], { color: GR, a: .35 * A, w: 1.4 });
+  V.line(c, [x + .45, -.4, .05], [x + .45, -.4, SLOT(n - 1) + .45], { color: GR, a: .35 * A, w: 1.4 });
+  V.ring(c, [x, 0, .02], .7, { color: GR, a: .5 * A, w: 1.6 });
+  const i = Math.floor(u), f = E.inOutCubic(u - i), steps = run.st.length - 1;
+  const si = Math.min(i, steps), prev = run.st[si], next = run.st[Math.min(si + 1, steps)], moving = i < steps && f > 0;
+  const faults = run.fl.slice(0, si + (moving && f > .5 ? 1 : 0)).reduce((s, v) => s + v, 0);
+  const flash = moving && run.fl[si] ? Math.sin(Math.PI * f) : 0;
+  if (!moving) prev.forEach((id, k) => cube(c, [x, 0, SLOT(k)], id, A));
+  else {
+    next.forEach((id, k) => { const j = prev.indexOf(id), from = j >= 0 ? [x, 0, SLOT(j)] : [lerp(HOVER[0], x, .2), HOVER[1], HOVER[2]]; const to = [x, 0, SLOT(k)]; cube(c, [lerp(from[0], to[0], f), lerp(from[1], to[1], f), lerp(from[2], to[2], f)], id, A, { glow: j < 0 ? 1 - f : (j !== k ? .5 : 0) }); });
+    prev.filter((id) => !next.includes(id)).forEach((id) => { const j = prev.indexOf(id); cube(c, [x + (x < 0 ? -1 : 1) * 1.4 * f, -.4 * f, SLOT(j) - .8 * f * f], id, A * (1 - f)); });
+  }
+  if (flash > .01) V.glow(c, [x, 0, SLOT(n - 1)], 2.2, .5 * flash, CO);
+  if (o.counter !== false) V.label(c, String(faults), [x, 0, SLOT(n - 1) + 1.05], { size: .62, w: 700, color: o.cCol ?? (faults ? CO : INK), a: A, minPx: 40, maxPx: 120 });
+  if (o.label) V.label(c, o.label, [x, -.9, .02], { size: .28, w: 700, color: GR, a: A * .9, minPx: 22, maxPx: 60 });
+}
+/** 參考串輸送帶：目前在第 u 步 */
+function belt(c, t, u, a = 1) {
+  if (a <= .003) return;
+  V.line(c, [-.5, 1.4, .02], [-.5, 14, .02], { color: GR, a: .25 * a, w: 1.4 }); V.line(c, [.5, 1.4, .02], [.5, 14, .02], { color: GR, a: .25 * a, w: 1.4 });
+  for (let j = 0; j < SEQ.length; j++) { const d = j - u; if (d < -.6) continue; const y = 1.8 + d * 1.0, z = .32 + (d < 0 ? (-d) * 4 : 0); cube(c, [0, d < 0 ? lerp(1.8, HOVER[1], clamp(-d * 2)) : y, d < 0 ? lerp(.32, HOVER[2], clamp(-d * 2)) : .32], SEQ[j], a * (d < 0 ? clamp(1 + d * 1.6) : 1)); }
+}
+const stepU = (t, t0, dt, n = 12) => clamp((t - t0) / dt, 0, n);
+
+// ═════════ 鏡頭
+const camMain = { pos: [0, -10.8, 5.2], tgt: [0, .6, 1.7], fov: 44 };
+V.camKeys([
+  [0, { pos: [1.5, -8.8, 3.9], tgt: [0, .6, 1.6], fov: 44 }], [T.start, { pos: [-1, -9.6, 5.2], tgt: [0, .6, 1.7], fov: 44 }],
+  [A1.start, { pos: [0, -7.2, 3.8], tgt: [0, .2, 1.4], fov: 44 }], [L.a3.end, { pos: [.8, -7.0, 3.6], tgt: [0, .2, 1.4], fov: 44 }],
+  [B1.start + .5, camMain], [L.b3.end, Object.assign({}, camMain, { pos: [-1.2, -9.2, 4.8] })],
+  [C1.start + .5, Object.assign({}, camMain, { pos: [1.2, -9.4, 4.6] })], [L.c4.end, Object.assign({}, camMain, { pos: [1.8, -9.0, 4.4] })],
+  [D1.start + .6, { pos: [-1.0, -10.4, 4.0], tgt: [0, .4, 1.6], fov: 44 }], [L.d3.end, { pos: [-.6, -10.2, 4.0], tgt: [0, .4, 1.6], fov: 44 }],
+  [Ec.start, { pos: [0, -10.5, 5.4], tgt: [0, .6, 1.8], fov: 44 }], [DUR, { pos: [.6, -11, 5.6], tgt: [0, .6, 1.8], fov: 44 }],
+]);
+function room(c, a = 1) { V.floor(c, { n: 10, step: 1, color: GR, a: .8 * a, major: 3 }); }
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.5, o1.start + .5);
+  room(c);
+  const u = stepU(t, o1.start + .2, .3);
+  belt(c, t, u);
+  frameTower(c, t, -1.7, 3, RUNS.fifo3, u, { cCol: AM });
+  frameTower(c, t, 1.7, 4, RUNS.fifo4, u, { cCol: u >= 11.9 ? CO : AM });
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '作業系統 · 虛擬記憶體', big: 'LRU', size: 240, y: 600, en: 'LEAST  RECENTLY  USED', q: '為什麼 LRU 不會越加越慢', qGap: 360, color: GR });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .35; room(c); c.restore();
+  K.core(c, CX, 720, 9, a * (.6 + .4 * Math.sin(t * 3)), GR);
+}
+// a 章：一座 3 格的塔示範規則
+const RULE = { st: [[1, 2, 3], [2, 3, 1], [3, 1, 4]], fl: [0, 1] };
+function sRule(c, t) {
+  room(c);
+  const u = t < L.a2.start + .3 ? 0 : t < L.a3.start + .3 ? clamp((t - L.a2.start - .3) / .7) : 1 + clamp((t - L.a3.start - .3) / .7);
+  frameTower(c, t, 0, 3, RULE, u, { counter: false, a: prog(t, A1.start - .1, A1.start + .5) });
+  // 標註：最上面＝最近用過、最下面＝最久沒用
+  const lb = prog(t, A1.start + .5, A1.start + 1.0);
+  V.label(c, '最近用過', [.55, -.3, SLOT(2)], { size: .2, w: 700, color: GR, a: lb, align: 'left', minPx: 22, maxPx: 60 });
+  V.label(c, '最久沒用', [.55, -.3, SLOT(0)], { size: .2, w: 700, color: CO, a: lb, align: 'left', minPx: 22, maxPx: 60 });
+  // 正在存取的頁
+  if (t > L.a2.start && t < L.a2.start + 1.2) V.label(c, '用到 1', [-.55, -.3, SLOT(1)], { size: .2, w: 700, color: PCOL[1], a: prog(t, L.a2.start, L.a2.start + .3) * (1 - prog(t, L.a2.start + .9, L.a2.start + 1.2)), align: 'right', minPx: 22, maxPx: 60 });
+  if (t > L.a3.start && t < L.a3.start + 1.6) { const k = prog(t, L.a3.start, L.a3.start + .3) * (1 - prog(t, L.a3.start + 1.3, L.a3.start + 1.6)); V.label(c, '缺頁：4', [-.55, -.3, SLOT(2)], { size: .2, w: 700, color: CO, a: k, align: 'right', minPx: 22, maxPx: 60 }); }
+}
+// b 章：LRU 3 vs 4
+const RUN_T0 = { lru: B1.start + .8, fifo: C1.start + .5, rep: D1.start + .3 };
+const DT = { lru: (L.b3.end - .3 - (B1.start + .8)) / 12, fifo: (L.c3.end - .2 - (C1.start + .5)) / 12, rep: .32 };
+function sLRU(c, t) {
+  room(c);
+  const u = stepU(t, RUN_T0.lru, DT.lru);
+  belt(c, t, u, prog(t, B1.start - .1, B1.start + .5));
+  const hi3 = prog(t, L.b2.start + 2.0, L.b2.start + 2.5), hi4 = prog(t, L.b3.start + .2, L.b3.start + .6);
+  frameTower(c, t, -1.7, 3, RUNS.lru3, u, { label: '3 頁框', cCol: CO });
+  frameTower(c, t, 1.7, 4, RUNS.lru4, u, { label: '4 頁框', cCol: u >= 11.9 ? GR : CO });
+  void hi3; void hi4;
+}
+function sFIFO(c, t) {
+  room(c);
+  const u = stepU(t, RUN_T0.fifo, DT.fifo);
+  belt(c, t, u, prog(t, C1.start - .1, C1.start + .5));
+  frameTower(c, t, -1.7, 3, RUNS.fifo3, u, { label: '3 頁框', cCol: AM });
+  frameTower(c, t, 1.7, 4, RUNS.fifo4, u, { label: '4 頁框', cCol: u >= 11.9 ? CO : AM });
+  V.label(c, 'FIFO', [0, -.6, SLOT(3) + 1.6], { size: .4, w: 700, color: AM, a: prog(t, C1.start, C1.start + .5) * (1 - prog(t, L.c4.start, L.c4.start + .3)), minPx: 30, maxPx: 90 });
+}
+S.hero('10 → 8', L.b3.start + 1.2, L.b3.end + .1, { y: 210, color: GR, size: 120 });
+S.hero('9 → 10', L.c4.start + .2, L.c4.end + .1, { y: 210, color: CO, size: 120, slam: true });
+K.shake(L.c4.start + .2, 9, .3);
+// d 章：子集合（LRU 4 頁框的上面三格＝3 頁框的內容）
+function sSubset(c, t) {
+  const endDim = 1 - .85 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const fifo = t > L.d4.start;
+  const u = fifo ? 7 : stepU(t, RUN_T0.rep, DT.rep * 1.2 + .05);
+  const r3 = fifo ? RUNS.fifo3 : RUNS.lru3, r4 = fifo ? RUNS.fifo4 : RUNS.lru4;
+  frameTower(c, t, -1.7, 3, r3, u, { counter: false, label: fifo ? 'FIFO 3' : 'LRU 3' });
+  frameTower(c, t, 1.7, 4, r4, u, { counter: false, label: fifo ? 'FIFO 4' : 'LRU 4' });
+  // 子集合：小塔的每一顆，在大塔裡都找得到 → 連線
+  const lk = prog(t, L.d2.start + .2, L.d2.start + .8);
+  if (lk > 0) { const si = Math.min(12, Math.floor(u)); const A3 = r3.st[si], A4 = r4.st[si]; A3.forEach((id, k) => { const j = A4.indexOf(id); const col = j >= 0 ? GR : CO; if (j >= 0) V.path(c, [[-1.45, -.1, SLOT(k)], [1.45, -.1, SLOT(j)]], { color: col, w: 2.4, a: lk * .9 }); else { V.glow(c, [-1.7, 0, SLOT(k)], 1.2, .6 * lk, CO); V.label(c, '✗', [-.8, -.2, SLOT(k)], { size: .5, w: 700, color: CO, a: lk, minPx: 30, maxPx: 90 }); } }); }
+  const wrap = prog(t, L.d3.start + .2, L.d3.start + .8) * (1 - prog(t, L.d4.start, L.d4.start + .3));
+  if (wrap > 0) V.ring(c, [1.7, 0, SLOT(1.5)], 1.15, { color: GR, a: wrap, w: 3 });
+  c.restore();
+}
+S.hero('⊆', L.d2.start + .4, L.d3.end, { y: 200, color: GR, size: 160 });
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['LRU：換掉最久沒用的頁', GR, 52], ['堆疊演算法：M(n) ⊆ M(n+1)', GR, 46], ['LRU、OPT 不會 Belady；FIFO 會', AM, 44], ['1 2 3 4 1 2 5 1 2 3 4 5：FIFO 3→9、4→10', CO, 34], ['近似 LRU：clock（second chance）', INK, 40]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 112 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'rule', start: A1.start, end: B1.start, draw: sRule, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 800 } },
+  { id: 'lru', start: B1.start, end: C1.start, draw: sLRU, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 800 } },
+  { id: 'fifo', start: C1.start, end: D1.start, draw: sFIFO, color: AM, in: { type: 'cut' } },
+  { id: 'subset', start: D1.start, end: DUR, draw: (c, t) => { sSubset(c, t); sExam(c, t); }, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 800 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .12, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .17, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .16, stars: .2, dust: .45, bokeh: .2, cam: .2 }],
+  [C1.start, { haze: .16, warm: .1, stars: .2, dust: .45, bokeh: .2, cam: .2 }],
+  [D1.start, { haze: .17, stars: .24, dust: .45, bokeh: .25, cam: .2 }],
+  [DUR, { haze: .17, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(C1.start, .1, .3);
+S.chapters([[A1.start, '記憶宮殿 · 作業系統館 · 第 2 間  /  01 規則'], [B1.start, '記憶宮殿 · 作業系統館 · 第 2 間  /  02 LRU'], [C1.start, '記憶宮殿 · 作業系統館 · 第 2 間  /  03 FIFO'], [D1.start, '記憶宮殿 · 作業系統館 · 第 2 間  /  04 子集合'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const faultCues = (t0, dt, run3, run4, g) => run3.fl.map((f, i) => (f || run4.fl[i] ? { t: t0 + i * dt + dt * .5, sfx: 'tick', gain: g } : null)).filter(Boolean);
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    ...faultCues(o1.start + .2, .3, RUNS.fifo3, RUNS.fifo4, -18),
+    { t: o2.start + .6, sfx: 'thump', gain: -8 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.a2.start + .5, sfx: 'swish', gain: -13 }, { t: L.a3.start + .6, sfx: 'pop', gain: -12 },
+    { t: B1.start, sfx: 'whoosh', gain: -11 },
+    ...faultCues(RUN_T0.lru, DT.lru, RUNS.lru3, RUNS.lru4, -15),
+    { t: L.b3.start + 1.2, sfx: 'chime', gain: -10 },
+    { t: C1.start, sfx: 'whoosh', gain: -11 },
+    ...faultCues(RUN_T0.fifo, DT.fifo, RUNS.fifo3, RUNS.fifo4, -15),
+    { t: L.c4.start + .2, sfx: 'impact', gain: -6 },
+    { t: D1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.d2.start + .4, sfx: 'chime', gain: -10 },
+    { t: L.d4.start + .3, sfx: 'glitch', gain: -12 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

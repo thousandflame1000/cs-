@@ -1,0 +1,31 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "頁框從 3 個加到 4 個", "hook": true},
+  {"id": "o2", "text": "FIFO 缺頁反而[變多]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "LRU 頁面置換", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "LRU：換掉[最久沒用]的那一頁", "scene": true},
+  {"id": "a2", "text": "每次用到，就搬到[最上面]"},
+  {"id": "a3", "text": "要換頁時，丟掉[最底下]的", "pause": 0.2},
+
+  {"id": "b1", "text": "參考串：1 2 3 4 1 2 5 1 2 3 4 5", "scene": true, "hold": 3.0},
+  {"id": "b2", "text": "3 個頁框：缺頁 [10] 次", "hold": 3.6},
+  {"id": "b3", "text": "4 個頁框：只缺 [8] 次", "pause": 0.2},
+
+  {"id": "c1", "text": "換成 FIFO：先進先出", "scene": true},
+  {"id": "c2", "text": "3 個頁框：缺頁 [9] 次", "hold": 3.6},
+  {"id": "c3", "text": "4 個頁框：缺頁 [10] 次"},
+  {"id": "c4", "text": "頁框變多反而更糟：[Belady 異常]", "pause": 0.2},
+
+  {"id": "d1", "text": "LRU 為什麼不會？", "scene": true},
+  {"id": "d2", "text": "3 頁框永遠是 4 頁框的[子集合]"},
+  {"id": "d3", "text": "大的那疊[包住]小的，不會多缺頁"},
+  {"id": "d4", "text": "FIFO 沒有這個包含關係", "hold": 2.8},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

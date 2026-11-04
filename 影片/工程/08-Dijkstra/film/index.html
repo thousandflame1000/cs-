@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>film</title>
+<title>Dijkstra 與負邊</title>
 <!--
-  布线示例（wiring）：演示发光线描式知识动画的基本接法——
-  字幕时间轴(timing.js，timeline.py 生成) + kit.js 六层结构 + 一句一个视觉节拍 + 冷开场 → 片名卡。
-  这里的金色配色、三柱站台、材质球只是“接法示范”：主色相、主体、构图都必须按本片重设。
-  大片子按章节拆成 s1.js / s2.js …（每个文件往 SCENES 里 push 一个 (t)=>{}）。风格说明见 references/风格范式.md。
+  資工所衝刺 · 短影音 08：Dijkstra 與負邊——鎖得太早
+  記憶宮殿：演算法館 · 第 2 間。整支片在 3D 房間裡：四個點擺在地板上，每個點的距離 d＝一根發光柱的高度；
+  被 Dijkstra「鎖住」的點套上三圈金環。負邊 b→a 是珊瑚色。真正的最短路是一條先爬到 3、再往下掉到 1 的「山路」。
+  語義色：琥珀＝演算法館、青＝正確答案、珊瑚＝負邊與錯誤。
 -->
 <style>
   @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
@@ -18,7 +18,8 @@
   @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
   @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
   @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
-  /* ↑ new_film.mjs 在这里写入 @font-face：'Plex' = IBM Plex Sans SC（100/200/300/400/450/500/600/700），'HanSerif' = 思源宋体 SC（200/300/400/500/600/700/900）。不要叫 'Serif'：会被当成通用 serif */
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
   html, body { margin: 0; background: #000; overflow: hidden; }
 </style>
 </head>
@@ -26,73 +27,211 @@
 <div id="stage"><div id="world"></div></div>
 <script src="motion.js"></script>
 <script src="kit.js"></script>
-<!-- 需要地图/地球时：<script src="world110.js"></script><script src="geo.js"></script>，然后 const G = Geo(K); -->
-<script src="timing.js"></script>   <!-- timeline.py 生成：TIMING.total、L.<句id>.start/.end -->
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
 <script>
-// ── 画幅：?ratio=9x16 / 1x1 / 16x9（同一条时间线，按宽高重新排版，而不是裁切）
-const RATIO = (new URLSearchParams(location.search).get('ratio') || '9x16');
-const SIZES = { '16x9': [1920, 1080], '9x16': [1080, 1920], '1x1': [1440, 1440], '4x5': [1080, 1350] };
-const [W, H] = SIZES[RATIO] || SIZES['16x9'];
-const FPS = 60, DUR = TIMING.total, CX = W / 2;
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
 const stage = document.getElementById('stage');
 const { prog, ease: E, lerp, clamp } = M;
-const SCENES = [];   // 各章节文件往这里 push (t) => {}
 
-// ── 视觉系统（按本片重设）：近黑底 + 一个主色相 + 一个对立色
-const K = Kit({ W, H, stage, duration: DUR, seed: 7, vignette: .6,
-  palette: { bg: '#05060a', ink: '#eef0f6', accent: '#ffc14d', accent2: '#8fb4ff' } });
-K.amb.keys([
-  [0, { haze: 0, dust: .3 }],
-  [1.5, { haze: .12, dust: .5, bokeh: .25, stars: .1 }],
-  [DUR, { haze: .12, dust: .5, bokeh: .25, stars: .1 }],
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', CO = '#ff6a5c', AM = '#ffc14d';
+const K = Kit({ W, H, stage, duration: DUR, seed: 83, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: AM, accent2: CY } });
+K.warm([CY, CO, AM, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .43, fogNear: 10, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { '3': CO, '2': CY, 最近: AM, 鎖住: AM, 更長: AM, '−2': CO, 不會更新: CO, 錯了: CO, 變短: CO, 沒定: CO, '7': CY, '8': AM, 換人了: CO, 'Bellman-Ford': CY, 負環: CO },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E;
+
+// ═════════ 房間：四個點、四條邊
+const N = { s: [-1.55, -2.1], a: [1.55, -2.1], b: [-1.55, 2.6], c: [1.55, 2.6] };
+const EDGES = [['s', 'a', 2], ['s', 'b', 3], ['b', 'a', -2], ['a', 'c', 1]];
+const HU = .62;   // 每單位距離的柱高
+const P3 = (k, z = 0) => [N[k][0], N[k][1], z];
+/** d 隨時間變化：keys = [[t, 值]]，∞ 用 null */
+const D = {};
+function dAt(k, t) { let v = null, from = null, tt = -1; for (const [t0, x] of D[k]) if (t >= t0) { from = v; v = x; tt = t0; } const p = E.outBack(prog(t, tt, tt + .6)); return { v, show: v == null ? null : (from == null ? v * clamp(p) : lerp(from, v, clamp(p))) }; }
+// 鎖住的時刻
+const LOCK = {};
+function drawEdge(c, t, [u, v, w], o = {}) {
+  const A = o.a ?? 1; if (A <= .003) return; const p = N[u], q = N[v], dx = q[0] - p[0], dy = q[1] - p[1], l = Math.hypot(dx, dy), ux = dx / l, uy = dy / l, off = .62;
+  const a = [p[0] + ux * off, p[1] + uy * off, .03], b = [q[0] - ux * off, q[1] - uy * off, .03], col = o.col ?? (w < 0 ? CO : AM);
+  V.arrow(c, a, b, { color: col, a: A * (o.dim ? .35 : 1), w: o.hot ? 4.5 : 3, head: 20 });
+  if (o.flash) V.glow(c, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, .05], 1.6, .5 * o.flash, col);
+  const lab = o.w ?? String(w);
+  V.label(c, lab, [(p[0] + q[0]) / 2 + (u === 'b' && v === 'a' ? .45 : 0), (p[1] + q[1]) / 2, .42], { size: .5, w: 700, color: col, a: A * (o.dim ? .5 : 1), minPx: 26, maxPx: 60 });
+}
+function drawNode(c, t, k, o = {}) {
+  const A = o.a ?? 1; if (A <= .003) return; const { v, show } = dAt(k, t), col = o.col ?? AM;
+  V.ring(c, P3(k, .02), .55, { color: col, a: A * .8, w: 2 });
+  V.label(c, k, [N[k][0], N[k][1] - .95, .02], { size: .55, w: 700, color: INK, a: A * .85, minPx: 26, maxPx: 64 });
+  if (v == null) { V.label(c, '∞', P3(k, 1.0), { size: .6, w: 700, color: INK, a: A * .5, minPx: 26, maxPx: 70 }); return; }
+  const h = Math.max(.04, show * HU);
+  V.pillar(c, P3(k), .8, h, col, A, { fill: .5 });
+  V.core(c, P3(k, h + .02), .1, A * .9, col);
+  if (o.num !== false) V.label(c, o.numText ?? (Math.abs(show - Math.round(show)) < .05 ? String(Math.round(show)) : show.toFixed(1)), P3(k, h + .55), { size: .6, w: 700, color: o.numCol ?? '#ffffff', a: A, minPx: 30, maxPx: 84 });
+  const lk = LOCK[k] != null ? prog(t, LOCK[k], LOCK[k] + .5) : 0;
+  if (lk > 0 && !o.noLock) for (let i = 0; i < 3; i++) V.ring(c, P3(k, .15 + i * Math.max(.25, h / 3)), .62 + .02 * Math.sin(t * 3 + i), { color: AM, a: A * lk * (o.lockFlash ? .5 + .5 * Math.sin(t * 18) : .9), w: 2.2 });
+}
+
+// ═════════ 鏡頭（3D）
+const A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1, E1 = L.e1;
+V.camKeys([
+  [0, V.orbit(-16, 13.1, 7.8, [0, .6, .8])], [T.start, V.orbit(-8, 12.9, 7.2, [0, .6, .8])],
+  [A1.start, V.orbit(-14, 13.4, 8.2, [0, .6, .8])], [B1.start, V.orbit(-12, 13.1, 8.0, [0, .6, .9])],
+  [L.b4.start, V.orbit(-4, 12.3, 7.0, [-.4, .8, 1])], [L.b6.end, V.orbit(0, 12.5, 7.2, [0, .6, 1])],
+  [C1.start + .6, V.orbit(20, 12.5, 4.3, [0, .6, 1.2])], [L.c2.end, V.orbit(24, 12.3, 4.3, [0, .6, 1.2])],
+  [D1.start + .6, V.orbit(-8, 6.2, 14.0, [0, .6, 0])], [L.d4.end, V.orbit(4, 6.2, 14.0, [0, .6, 0])],
+  [E1.start + .6, V.orbit(-12, 13.4, 8.0, [0, .6, .8])], [Ec.start, V.orbit(-6, 14.3, 8.7, [0, .6, .8])], [DUR, V.orbit(-2, 14.8, 8.9, [0, .6, .8])],
 ]);
-K.hud.show = false;                       // 默认不显示角标；需要时自己加左上角极小的章节英文名
-K.caption.set(TIMING.lines);              // 底部单行字幕 52px（字体按内容选：Plex Medium 或 思源宋体 SemiBold，lines.json 里 "font" 指定；[强调] 加粗+主色）；hook 句画面大字；card 句不进字幕带
 
-const o1 = L.o1 || TIMING.lines[0], o2 = L.o2 || TIMING.lines[1] || o1, T = L.T || TIMING.lines[2] || o2;
+// ═════════ 時間軸上的 d 值與鎖
+const b = (id, x = 0) => L[id].start + x;
+D.s = [[0, 0]];
+// 冷開場：Dijkstra 的結果（c = 3），o2 時真相（c 沉到 2）
+const OPEN = { a: [[0, 2]], b: [[0, 3]], c: [[0, 3], [o2.start + .8, 2]] };
+// 正片：Dijkstra 跑一遍
+D.a = [[0, null], [b('b1', .3), 2], [b('b4', .7), 1], [C1.start, 1]];
+D.b = [[0, null], [b('b1', .9), 3]];
+D.c = [[0, null], [b('b2', .8), 3]];
+LOCK.s = b('a2', .2); LOCK.a = b('b2', .2); LOCK.b = b('b3', .2); LOCK.c = b('b6', .2);
+// Bellman-Ford：每輪依序鬆弛 (s,a) (s,b) (a,c) (b,a)
+const BF_ORDER = [['s', 'a'], ['s', 'b'], ['a', 'c'], ['b', 'a']];
+const ROUND = (r) => b('e2', .2 + r * 1.0);
+const BF = { a: [[0, null], [ROUND(0) + .0, 2], [ROUND(0) + .75, 1]], b: [[0, null], [ROUND(0) + .25, 3]], c: [[0, null], [ROUND(0) + .5, 3], [ROUND(1) + .5, 2]] };
 
-// ── 片名卡（DOM）：宋体发光大字 + 英文小字 + 一句问题
-const title = K.text(K.world, '片名', { x: 0, y: H * .33, size: 160, w: 900, align: 'c', ls: '.1em' });
-title.style.fontFamily = 'HanSerif'; K.glowTitle(title, { color: K.P.accent2 });
-const en = K.text(K.world, '<ENGLISH SUBTITLE>', { x: 0, y: H * .29, size: 32, align: 'c' });
-const q = K.text(K.world, '一句问题，就是全片要回答的？', { x: 0, y: H * .56, size: 40, w: 400, align: 'c' }); q.style.fontFamily = 'HanSerif';
-
-// ── 场景 1：冷开场（一个具体的人，一个瞬间）
-SCENES.push((t) => {
-  const on = 1 - prog(t, T.start - .4, T.start, E.inCubic); if (on <= 0) return;
-  const c = K.ctx; c.save(); c.globalAlpha = on;
-  K.ghost(c, '问题', CX, H * .5, H * .5, .04 * prog(t, o2.start, o2.start + 1), 900, 'HanSerif');   // 巨字虚影
-  const pods = [[CX - 260, H * .78, 140, 'A', '#9fb3d6'], [CX, H * .72, 200, 'B', K.P.accent], [CX + 260, H * .82, 100, 'C', '#d08a5c']];
-  pods.forEach(([x, y, h, n, col], i) => {
-    const lit = prog(t, o1.start + i * .25, o1.start + i * .25 + .6, E.outCubic);
-    K.spotlight(c, x, -40, Math.PI / 2, .3, y + 60, .28 * lit, col);
-    const g = c.createLinearGradient(0, y, 0, y + h + 200); g.addColorStop(0, K.rgba(col, .5 * lit)); g.addColorStop(1, K.rgba(col, 0));
-    c.fillStyle = g; c.fillRect(x - 110, y, 220, H - y); c.strokeStyle = K.rgba(col, .8 * lit); c.lineWidth = 1.5; c.strokeRect(x - 110, y, 220, H - y + 10);
-    c.font = '700 72px Plex'; c.textAlign = 'center'; c.fillStyle = K.rgba(col, .85 * lit); c.fillText(n, x, y + 90);
-  });
-  // 主体动作：两侧的球升起，居中的不动——动作对比就是这句话的意思（主体按本片文案重选，不默认用人形）
-  const up = prog(t, o2.start, o2.start + .6, E.outBack);
-  K.orb(c, CX - 260, H * .78 - 70 - 40 * up, 60, { color: '#9fb3d6', a: prog(t, o1.start, o1.start + .6), t });
-  K.orb(c, CX, H * .72 - 80, 72, { color: '#ffd27a', a: prog(t, o1.start + .25, o1.start + .85), t });
-  K.orb(c, CX + 260, H * .82 - 60 - 40 * up, 52, { color: '#d08a5c', a: prog(t, o1.start + .5, o1.start + 1.1), t });
-  K.callout(c, CX - 260, H * .78 - 200, -120, -40, 'LABEL', prog(t, o2.start + .6, o2.start + 1.4), { sub: '示意标注', len: 110 });
+// ═════════ 畫一幀房間
+function room(c, t, o = {}) {
+  const A = o.a ?? 1; if (A <= .003) return;
+  c.save(); c.globalAlpha *= A;
+  V.floor(c, { n: 9, step: 1, color: AM, a: .8, major: 3, cy: .6 });
   c.restore();
-});
+}
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  const on = prog(t, -.5, o1.start + .6);
+  c.save(); c.globalAlpha *= out * on;
+  room(c, t);
+  const save = { a: D.a, b: D.b, c: D.c }; D.a = OPEN.a; D.b = OPEN.b; D.c = OPEN.c;
+  const truth = prog(t, o2.start, o2.start + .5);
+  for (const e of EDGES) drawEdge(c, t, e, { dim: truth > 0 && !(e[0] === 'b' && e[1] === 'a') && !(e[0] === 's' && e[1] === 'b') && !(e[0] === 'a' && e[1] === 'c'), flash: e[2] < 0 ? truth : 0, w: '' });
+  for (const k of ['s', 'a', 'b', 'c']) drawNode(c, t, k, { num: k === 'c', numCol: truth > .5 ? CY : CO, col: k === 'c' && truth > .5 ? CY : AM, noLock: true });
+  if (truth > 0) { const pts = [P3('s', .05), P3('b', 3 * HU), P3('a', 1 * HU), P3('c', 2 * HU)]; V.path(c, pts, { p: prog(t, o2.start + .1, o2.start + 1.0), color: CY, w: 4 }); }
+  Object.assign(D, save);
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '最短路徑', big: 'Dijkstra', size: 200, y: 600, en: 'WHEN  GREEDY  LOCKS  TOO  EARLY', q: '為什麼一條負邊就讓它算錯', qGap: 330, color: AM });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .35; room(c, t); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), AM);
+}
+// 正片（a、b 兩章）
+function sRun(c, t) {
+  room(c, t);
+  const e1 = prog(t, b('b1', .1), b('b1', .5)), e2 = prog(t, b('b1', .7), b('b1', 1.1)), e3 = prog(t, b('b2', .6), b('b2', 1.0)), e4 = prog(t, b('b4', .2), b('b4', .6));
+  const show = [prog(t, A1.start - .1, A1.start + .6), e1, e2, e4, e3];
+  drawEdge(c, t, EDGES[0], { a: Math.max(.25 * show[0], e1), flash: M.hit(t, [b('b1', .3)], .3) });
+  drawEdge(c, t, EDGES[1], { a: Math.max(.25 * show[0], e2), flash: M.hit(t, [b('b1', .9)], .3) });
+  drawEdge(c, t, EDGES[2], { a: Math.max(.25 * show[0], e4), flash: M.hit(t, [b('b4', .5)], .3), hot: e4 > 0 });
+  drawEdge(c, t, EDGES[3], { a: Math.max(.25 * show[0], e3), flash: M.hit(t, [b('b2', .8)], .3), dim: t > b('b5') && t < C1.start });
+  const lockFlash = t > b('b5') && t < b('b5', 1.4);
+  for (const k of ['s', 'a', 'b', 'c']) drawNode(c, t, k, { a: show[0], col: k === 'a' && t > b('b4', .7) ? CO : AM, lockFlash: k === 'a' && lockFlash, numCol: k === 'c' && t > b('b6') ? CO : '#ffffff' });
+  // a3：所有往外的邊都只會往上加
+  const up = prog(t, b('a3', .2), b('a3', 1.4)) * (1 - prog(t, B1.start - .3, B1.start));
+  if (up > 0) for (const [u, v] of [['s', 'a'], ['s', 'b']]) { const pts = [P3(u, .1), P3(v, 1.4)]; V.path(c, pts, { p: up, color: AM, w: 3 }); }
+  // b5：a→c 的「不會更新」✗
+  const nx = prog(t, b('b5', .3), b('b5', .7)) * (1 - prog(t, C1.start - .3, C1.start));
+  if (nx > 0) V.label(c, '✗', [N.a[0] + .2, (N.a[1] + N.c[1]) / 2, .6], { size: .9, w: 700, color: CO, a: nx, minPx: 40, maxPx: 110 });
+}
+S.hero('w ≥ 0', b('a3', .3), L.a3.end, { y: 210, color: AM, size: 120 });
+S.hero('1 ＜ 2', b('b4', .9), L.b4.end, { y: 210, color: CO, size: 120 });
+S.hero('c = 3 ✗', b('b6', .3), L.b6.end + .1, { y: 210, color: CO, size: 120, slam: true });
+K.shake(b('b6', .3), 9, .3);
+// c 章：真正的最短路是一條「山路」
+function sWhy(c, t) {
+  room(c, t);
+  for (const e of EDGES) drawEdge(c, t, e, { dim: !(e[2] < 0), hot: e[2] < 0 });
+  const save = { a: D.a, c: D.c }; D.a = [[0, 1]]; D.c = [[0, 2]];
+  for (const k of ['s', 'a', 'b', 'c']) drawNode(c, t, k, { col: k === 'a' ? CO : k === 'c' ? CY : AM, numCol: k === 'c' ? CY : '#ffffff', noLock: true });
+  D.a = save.a; D.c = save.c;
+  const pts = [P3('s', .05), P3('b', 3 * HU + .05), P3('a', 1 * HU + .05), P3('c', 2 * HU + .05)];
+  const pp = prog(t, C1.start + .5, C1.start + 2.2, E.inOutCubic);
+  const head = V.path(c, pts, { p: pp, color: CY, w: 5 });
+  if (head && pp < 1) K.core(c, head[0], head[1], 7, 1, CY);
+  if (pp > .55) V.label(c, '往下掉 2', [(N.b[0] + N.a[0]) / 2 - .4, (N.b[1] + N.a[1]) / 2, 2.3], { size: .45, w: 700, color: CO, a: prog(t, C1.start + 1.6, C1.start + 2.0), minPx: 28, maxPx: 60 });
+}
+S.hero('鎖得太早', L.c2.start + .3, L.c2.end + .1, { y: 210, color: CO, size: 120 });
+// d 章：每條邊加 2
+function sPlus(c, t) {
+  room(c, t);
+  const pl = prog(t, D1.start + .5, D1.start + 1.3);
+  const hiA = prog(t, L.d2.start + .1, L.d2.start + .6), hiB = prog(t, L.d3.start + .1, L.d3.start + .6);
+  EDGES.forEach((e) => { const onA = (e[0] === 's' && e[1] === 'a') || (e[0] === 'a' && e[1] === 'c'), onB = !(e[0] === 's' && e[1] === 'a'); const col = hiB > 0 && onB ? AM : hiA > 0 && onA ? CY : (e[2] < 0 && pl < .5 ? CO : '#9fb3d6'); drawEdge(c, t, e, { col, w: pl < .5 ? String(e[2]) : String(e[2] + 2), hot: (hiA > 0 && onA && hiB <= 0) || (hiB > 0 && onB), dim: (hiA > 0 || hiB > 0) && !((hiA > 0 && onA && hiB <= 0) || (hiB > 0 && onB)) }); });
+  for (const k of ['s', 'a', 'b', 'c']) { V.ring(c, P3(k, .02), .55, { color: INK, a: .6, w: 2 }); V.label(c, k, [N[k][0], N[k][1] - .95, .02], { size: .55, w: 700, color: INK, a: .85, minPx: 26, maxPx: 64 }); V.core(c, P3(k, .1), .12, .8, INK); }
+  if (hiA > 0) V.label(c, '4 + 3 = 7', [N.c[0], N.c[1] + .9, .1], { size: .55, w: 700, color: CY, a: hiA, minPx: 30, maxPx: 70 });
+  if (hiB > 0) V.label(c, '5 + 0 + 3 = 8', [N.c[0] - 1.2, N.c[1] + 1.7, .1], { size: .55, w: 700, color: AM, a: hiB, minPx: 30, maxPx: 70 });
+}
+S.hero('+2', D1.start + .6, L.d1.end, { y: 210, color: INK, size: 140 });
+S.hero('7 ＜ 8', L.d4.start + .3, L.d4.end + .1, { y: 210, color: CO, size: 120 });
+// e 章：Bellman-Ford
+function sBF(c, t) {
+  const endDim = 1 - .85 * prog(t, Ec.start - .2, Ec.start + .5);
+  c.save(); c.globalAlpha *= endDim;
+  room(c, t);
+  const save = { a: D.a, b: D.b, c: D.c }; Object.assign(D, BF);
+  const r = Math.floor((t - ROUND(0)) / 1.0), inR = t >= ROUND(0) && r < 3;
+  EDGES.forEach((e) => { const i = BF_ORDER.findIndex(([u, v]) => u === e[0] && v === e[1]); const fl = [0, 1, 2].reduce((m, rr) => Math.max(m, M.hit(t, [ROUND(rr) + i * .25], .2)), 0); drawEdge(c, t, e, { flash: fl, hot: fl > .3 }); });
+  for (const k of ['s', 'a', 'b', 'c']) drawNode(c, t, k, { col: k === 'c' && t > ROUND(1) + .6 ? CY : AM, noLock: true, numCol: k === 'c' && t > ROUND(1) + .6 ? CY : '#ffffff' });
+  Object.assign(D, save);
+  if (inR) S.label(c, `第 ${r + 1} 輪`, CX, 430, { size: 44, w: 700, color: INK, a: .85 });
+  // e3：第 V 輪再檢查一次
+  const chk = prog(t, L.e3.start + .2, L.e3.start + .7) * (1 - prog(t, Ec.start - .3, Ec.start));
+  if (chk > 0) { S.label(c, '第 4 輪：沒有任何更新', CX, 430, { size: 40, w: 700, color: CY, a: chk }); S.label(c, '→ 沒有負環', CX, 490, { size: 34, a: .8 * chk }); EDGES.forEach((e, i) => { const fl = M.hit(t, [L.e3.start + .3 + i * .22], .2); if (fl > .01) drawEdge(c, t, e, { flash: fl, col: CY }); }); }
+  c.restore();
+}
+S.hero('c = 2 ✓', ROUND(1) + .7, L.e2.end, { y: 210, color: CY, size: 120 });
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['Dijkstra：邊權必須 ≥ 0', AM, 52], ['（取出就定案；負邊會讓定案的值變小）', INK, 34], ['Bellman-Ford：V − 1 輪鬆弛，O(VE)', CY, 44], ['第 V 輪還能更新 → 有負環', CO, 44], ['全部加常數會改變最短路；Johnson 用 h(u) − h(v)', INK, 32]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 112 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  c.restore();
+}
 
-// ── 场景 2：片名卡（粒子聚合 + 同心光环 + 发光宋体）
-const PTS = K.sample((x, w, h) => { x.lineWidth = 3; for (let r = 60; r < 240; r += 50) { x.beginPath(); x.ellipse(w / 2, h / 2, r * 2.2, r * .5, 0, 0, 7); x.stroke(); } }, { w: 1200, h: 300, step: 7 });
-SCENES.push((t) => {
-  const a = prog(t, T.start - .3, T.start + .4) * (1 - prog(t, T.end - .2, T.end + .3));
-  if (a > 0) K.particles(K.ctx, PTS, CX, H * .5, prog(t, T.start - .3, T.start + 1.2), { spread: 700, size: 1.6, color: 'white', a: a * .6, t });
-  title.reveal(t, T.start, { mode: 'center', dur: .9, stagger: .06 }); title.hide(t, T.end, { dur: .4 });
-  en.reveal(t, T.start + .4, { dur: .6 }); en.hide(t, T.end, { dur: .3 });
-  q.reveal(t, T.start + .9, { mode: 'ink', dur: .3, stagger: 1 / 16 }); q.hide(t, T.end, { dur: .3 });
-});
-K.flash(T.start, .2, .6); K.flare(T.start + .05, CX, H * .42, .8, 1.6);
+// ═════════ 場景排程（3D 鏡頭由 V.camKeys 控制；2D 鏡頭保持不動）
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'run', start: A1.start, end: C1.start, draw: sRun, color: AM, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'why', start: C1.start, end: D1.start, draw: sWhy, color: CO, in: { type: 'cut' } },
+  { id: 'plus', start: D1.start, end: E1.start, draw: sPlus, color: INK, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+  { id: 'bf', start: E1.start, end: DUR, draw: (c, t) => { sBF(c, t); sExam(c, t); }, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 820 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .12, warm: .06, stars: .16, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .17, warm: .1, stars: .24, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, warm: .1, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .16, warm: .12, stars: .2, dust: .45, bokeh: .2, cam: .2 }],
+  [C1.start, { haze: .16, warm: .06, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [E1.start, { haze: .17, stars: .24, dust: .45, bokeh: .25, cam: .2 }],
+  [DUR, { haze: .17, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(C1.start, .1, .3);
+S.chapters([[A1.start, '記憶宮殿 · 演算法館 · 第 2 間  /  01 貪婪地鎖'], [B1.start, '記憶宮殿 · 演算法館 · 第 2 間  /  02 跑一遍'], [C1.start, '記憶宮殿 · 演算法館 · 第 2 間  /  03 為什麼錯'], [D1.start, '記憶宮殿 · 演算法館 · 第 2 間  /  04 加常數？'], [E1.start, '記憶宮殿 · 演算法館 · 第 2 間  /  05 Bellman-Ford'], [Ec.start, '']]);
 
 function render(t) {
-  K.begin(t);
-  for (const s of SCENES) s(t);
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
   K.end(t);
 }
 
@@ -100,10 +239,24 @@ M.film({
   width: W, height: H, fps: FPS, duration: DUR, stage, render,
   scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
   cues: [
-    { t: o1.start, sfx: 'swish', gain: -12 },
-    { t: o2.start, sfx: 'thump', gain: -8 },
+    { t: o1.start + .4, sfx: 'swish', gain: -13 },
+    { t: o2.start + .1, sfx: 'glitch', gain: -10 },
+    { t: o2.start + .8, sfx: 'thump', gain: -8 },
     { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
-    { t: T.start, sfx: 'impact', gain: -4 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start, sfx: 'whoosh', gain: -11 },
+    { t: LOCK.s, sfx: 'click', gain: -12 }, { t: LOCK.a, sfx: 'click', gain: -12 }, { t: LOCK.b, sfx: 'click', gain: -12 }, { t: LOCK.c, sfx: 'click', gain: -12 },
+    { t: b('b1', .3), sfx: 'pop', gain: -14 }, { t: b('b1', .9), sfx: 'pop', gain: -14 }, { t: b('b2', .8), sfx: 'pop', gain: -14 },
+    { t: b('b4', .5), sfx: 'glitch', gain: -11 },
+    { t: b('b6', .3), sfx: 'impact', gain: -6 },
+    { t: C1.start, sfx: 'whoosh', gain: -11 },
+    { t: C1.start + 1.3, sfx: 'swish', gain: -12 },
+    { t: D1.start + .6, sfx: 'thump', gain: -9 },
+    { t: L.d4.start + .3, sfx: 'glitch', gain: -11 },
+    { t: E1.start, sfx: 'whoosh', gain: -11 },
+    ...[0, 1, 2].map((r) => ({ t: ROUND(r), sfx: 'tick', gain: -13 })),
+    { t: ROUND(1) + .7, sfx: 'chime', gain: -9 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
   ],
 });
 </script>
