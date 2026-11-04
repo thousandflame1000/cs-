@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>Build-Heap 為什麼是 O(n)</title>
+<!--
+  資工所衝刺 · 短影音 01：Build-Heap 為什麼是 O(n)
+  視覺系統：近黑藍底 + 珊瑚（插入／往上爬）× 青（Build-Heap／往下沉）× 琥珀（算帳）。
+  貫穿物：一座由 4095 個光點排成的「光之金字塔」（真正的堆積索引排法），開頭與結尾都是它。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  /* 數學符號後備（DejaVu Sans 子集）：Plex TC 沒有 × ⌈ ⌉ ʰ ⁺ ¹ ≤ */
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00D7, U+00B2-00B3, U+00B9, U+02B0-02FF, U+2070-209F, U+2211, U+2264-2265, U+2308-230B, U+221E, U+2248; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00D7, U+00B2-00B3, U+00B9, U+02B0-02FF, U+2070-209F, U+2211, U+2264-2265, U+2308-230B, U+221E, U+2248; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp, kf } = M;
+const TAU = Math.PI * 2;
+
+// ── 視覺系統
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', CO = '#ff6a5c', AM = '#ffc14d', LEAF = '#9fffe0';
+const K = Kit({ W, H, stage, duration: DUR, seed: 11, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: CO } });
+K.warm([CY, CO, AM, LEAF, INK]);
+K.hud.show = false;
+const SIZE = { hero: 132, mid: 64, small: 30 };   // 三級字號：英雄字 / 畫面中字 / 標註
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 96, hookY: 1150, hookMaxW: W * .9, shade: .5,
+  colors: { 插入: CO, 最底層: CO, 'lg n': CO, 一半: CO, 'n lg n': CO, 多數: CO,
+    由下往上: CY, 不用動: CY, '1 層': CY, 減半: CY, '1 個': CY, 方向: CY, 最近: CY, '105 萬': CY, '18 倍': CY,
+    越少: AM, n: AM, 'O(n)': AM },
+});
+
+// ── 時間點
+const o1 = L.o1, o2 = L.o2, T = L.T, Ecard = L.E;
+const SC = { open: 0, title: T.start, ins: L.a1.start, bh: L.b1.start, cup: L.c1.start, recap: L.d1.start, end: L.d4.start };
+
+// ── 疊加層：不跟鏡頭動的畫面大字（hero text）
+const over = document.createElement('div');
+Object.assign(over.style, { position: 'absolute', left: 0, top: 0, width: W + 'px', height: H + 'px', zIndex: 7, pointerEvents: 'none' });
+stage.appendChild(over);
+const heroes = [];
+/** 畫面大字：在 [t0, t1] 出現；mode rise/center；color 角色色 */
+function hero(str, t0, t1, o = {}) {
+  const e = K.text(over, str, { x: 0, y: o.y ?? 300, size: o.size ?? SIZE.hero, align: 'c', ls: o.ls ?? '.02em', lh: 1.1, w: o.w ?? 700 });
+  e.style.fontFamily = 'Plex';
+  if (o.color) K.glowTitle(e, { color: o.color, strength: o.glow ?? .8 });
+  heroes.push({ e, t0, t1, mode: o.mode || 'rise', slam: o.slam });
+  return e;
+}
+function drawHeroes(t) {
+  for (const h of heroes) {
+    if (t < h.t0 - .2 || t > h.t1 + .5) { h.e.style.visibility = 'hidden'; continue; }
+    if (h.slam) { K.slam(h.e, t, h.t0, { from: 1.5, dur: .5 }); h.e.style.visibility = 'visible'; const k = prog(t, h.t1, h.t1 + .3, E.inCubic); if (k > 0) h.e.style.opacity = 1 - k; continue; }
+    h.e.reveal(t, h.t0, { mode: h.mode, dur: .6, stagger: .03 }); h.e.hide(t, h.t1, { dur: .3 });
+  }
+}
+
+// ── 共用畫法
+const font = (w, s) => `${w} ${s}px "Plex"`;
+function label(c, s, x, y, o = {}) {
+  c.save(); c.font = font(o.w ?? 500, o.size ?? SIZE.small); c.textAlign = o.align || 'center'; c.textBaseline = 'middle';
+  if (o.ls) c.letterSpacing = o.ls;
+  c.fillStyle = o.color ? K.rgba(o.color, o.a ?? 1) : K.I(o.a ?? .6); c.fillText(s, x, y); c.restore();
+}
+/** 樹的版面：第 k 個節點（1 起算）的位置 */
+const treeXY = (k, g) => { const r = Math.floor(Math.log2(k)), j = k - (1 << r); return [g.cx - g.w / 2 + (j + .5) * g.w / (1 << r), g.top + r * g.dy]; };
+const depth = (k) => Math.floor(Math.log2(k));
+/** 節點：有體積的發光球 + 數字 */
+function node(c, x, y, r, col, a, txt, lit = 0) {
+  if (a <= .003) return;
+  K.orb(c, x, y, r, { color: col, a: a * (.55 + .45 * lit), atmo: .5, spec: .55, rim: .7 });
+  if (lit > .02) K.core(c, x, y - r * .05, r * .16, .35 * lit * a, col);
+  if (txt != null) { c.save(); c.globalAlpha *= a; label(c, String(txt), x, y + 1, { w: 600, size: r * .82, color: '#ffffff', a: .55 + .45 * lit }); c.restore(); }
+}
+function edge(c, p, q, col, a) { if (a > .003) K.glowLine(c, [p, q], { w: 1.6, color: col, a: a * .5 }); }
+/** 位置交換的時間軌：events = [{t, a, b, d}]，回傳 slotOf(id) 的浮點插值 */
+function swapTrack(init, events) {
+  return (t) => {
+    const slot = init.slice();               // slot[i] = 第 i 格目前放的值 id
+    const pos = {};                          // id → [fromSlot, toSlot, p]
+    slot.forEach((id, i) => { if (id != null) pos[id] = [i, i, 1]; });
+    for (const ev of events) {
+      if (t < ev.t) break;
+      const p = clamp((t - ev.t) / ev.d), A = slot[ev.a], B = slot[ev.b];
+      if (p < 1) { pos[A] = [ev.a, ev.b, p]; pos[B] = [ev.b, ev.a, p]; continue; }
+      slot[ev.a] = B; slot[ev.b] = A; pos[A] = [ev.b, ev.b, 1]; pos[B] = [ev.a, ev.a, 1];
+    }
+    return pos;
+  };
+}
+function slotXY(ps, g) {
+  const [f, to, p] = ps, k = E.inOutCubic(p), A = treeXY(f, g), B = treeXY(to, g);
+  const arc = Math.sin(Math.PI * k) * 22 * (A[0] < B[0] ? -1 : 1);
+  return [lerp(A[0], B[0], k) + arc, lerp(A[1], B[1], k)];
+}
+function arrow(c, x0, y0, x1, y1, col, a, w = 3) {
+  if (a <= .003) return; K.glowLine(c, [[x0, y0], [x1, y1]], { w, color: col, a });
+  const ang = Math.atan2(y1 - y0, x1 - x0), s = 10 + w * 2;
+  K.glowLine(c, [[x1 - Math.cos(ang - .5) * s, y1 - Math.sin(ang - .5) * s], [x1, y1], [x1 - Math.cos(ang + .5) * s, y1 - Math.sin(ang + .5) * s]], { w, color: col, a });
+}
+
+// ═════════ 貫穿物：光之金字塔（4095 個光點，第 k 點的爸爸是 k>>1）
+const PR = 12, PN = (1 << PR) - 1;
+const PY = { top: 380, bot: 1010, hw: 470 };
+const PYR = Array.from({ length: PN + 1 }, (_, k) => {
+  if (!k) return null; const r = depth(k), j = k - (1 << r), hw = PY.hw * Math.pow(r / (PR - 1), .9);
+  const R = M.rng(k * 7 + 3);
+  return { r, x: CX - hw + (j + .5) * 2 * hw / (1 << r), y: PY.top + r * (PY.bot - PY.top) / (PR - 1), sx: R() * W, sy: R() * H * .8 + 100, h: R(), tw: R() * TAU };
+});
+const pyrXY = (k) => [PYR[k].x, PYR[k].y];
+/** 畫金字塔：form 0..1 聚合，a 透明度，hue 底色，hot 邊線亮度 */
+function pyramid(c, t, form, a = 1, col = CY, dimBottom = 0) {
+  if (a <= .003) return;
+  c.save(); c.globalAlpha *= a;
+  for (let k = 2; k < 128; k++) { const p = PYR[k], q = PYR[k >> 1]; const f = E.inOutCubic(clamp((form - .3 - p.r * .04) / .4)); if (f > .01) edge(c, [p.x, p.y], [q.x, q.y], col, .35 * f); }
+  for (let k = 1; k <= PN; k++) {
+    const p = PYR[k], d = clamp((form - (p.r / PR) * .45 - p.h * .15) / .4), f = E.inOutCubic(d);
+    if (f <= 0) continue;
+    const x = lerp(p.sx, p.x, f), y = lerp(p.sy, p.y, f), tw = .7 + .3 * Math.sin(t * 2.2 + p.tw);
+    const dim = 1 - dimBottom * clamp((p.r - 8) / 3);
+    if (p.r < 6) K.sprC(c, col, x, y, 22 - p.r * 2.6, f * tw * dim);
+    else { c.fillStyle = K.rgba(p.r > 9 ? K.mix(col, INK, .3) : col, (.35 + .4 * p.h) * f * tw * dim); const s = p.r > 9 ? 1.6 : 2.4; c.fillRect(x - s / 2, y - s / 2, s, s); }
+  }
+  c.restore();
+}
+/** 沿著樹路徑的發光光痕：path = 節點序列，p 0..1，tail 尾長比例 */
+function streak(c, pts, p, col, a = 1, tail = .45, w = 2.4) {
+  if (p <= 0 || p >= 1 + tail || a <= .003) return;
+  const n = pts.length - 1, h = clamp(p) * n, s = clamp(p - tail) * n;
+  const out = []; const at = (u) => { const i = Math.min(n - 1, Math.floor(u)), f = u - i; return [lerp(pts[i][0], pts[i + 1][0], f), lerp(pts[i][1], pts[i + 1][1], f)]; };
+  out.push(at(s)); for (let i = Math.ceil(s); i < h; i++) out.push(pts[i]); out.push(at(h));
+  K.glowLine(c, out, { w, color: col, a: a * .9 }); if (p < 1) K.core(c, ...at(h), 3.2, a, col);
+}
+const upPath = (k) => { const ps = []; while (k >= 1) { ps.push(pyrXY(k)); k >>= 1; } return ps; };
+const downPath = (k, len, seed) => { const ps = [pyrXY(k)]; for (let i = 0; i < len && (k << 1) <= PN; i++) { k = (k << 1) + (M.hash(k, seed) > .5 ? 1 : 0); ps.push(pyrXY(k)); } return ps; };
+const INS_STREAKS = Array.from({ length: 22 }, (_, i) => ({ k: 2048 + Math.floor(M.hash(i, 5) * 2047), t: o1.start + .25 + i * .085, d: 1.05 + M.hash(i, 9) * .3 }));
+const BH_STREAKS = Array.from({ length: 46 }, (_, i) => { const r = i < 30 ? 10 : i < 40 ? 8 + (i % 2) : i < 45 ? 4 + (i % 3) : 0; const k = (1 << r) + Math.floor(M.hash(i, 3) * ((1 << r) - 1)); return { k, len: PR - 1 - r, t: o2.start + .05 + M.hash(i, 7) * 1.2, d: .35 + (PR - 1 - r) * .06 }; });
+
+// ═════════ 場景 0：冷開場（金字塔聚合 → 珊瑚往上爬 → 青往下沉）
+function sOpen(c, t) {
+  const form = prog(t, -.9, o1.start + 1.4), out = 1 - prog(t, T.start - .1, T.start + .5, E.inCubic);
+  K.spotlight(c, CX, 120, Math.PI / 2, .55, 1100, .1 * form * out, INK);
+  pyramid(c, t, form, out, K.mix(CY, INK, .35 + .4 * prog(t, o2.start, o2.start + .6)), .4 * prog(t, o2.start, o2.start + .6));
+  c.save(); c.globalAlpha *= out;
+  const coolOff = 1 - prog(t, o2.start - .2, o2.start + .4);
+  for (const s of INS_STREAKS) streak(c, upPath(s.k), (t - s.t) / s.d, CO, coolOff, .5, 2.2);
+  for (const s of BH_STREAKS) if (s.len > 0) streak(c, downPath(s.k, Math.min(s.len, s.k < 64 ? 6 : 1), s.k), (t - s.t) / s.d, CY, 1, .6, 2.4);
+  c.restore();
+}
+
+// ═════════ 場景 1：片名卡
+const TITLE = K.text(over, 'O(n)', { x: 0, y: 560, size: 300, align: 'c', ls: '0', lh: 1 }); TITLE.style.fontFamily = 'Plex'; TITLE.style.fontWeight = 700; K.glowTitle(TITLE, { color: CY, strength: 1.1 });
+const EN = K.text(over, 'BUILD-HEAP  IN  LINEAR  TIME', { x: 0, y: 500, size: 26, align: 'c', ls: '.32em' }); EN.style.color = K.I(.6);
+const BHT = K.text(over, 'Build-Heap', { x: 0, y: 420, size: 72, align: 'c', ls: '.04em' }); BHT.style.fontFamily = 'Plex'; BHT.style.fontWeight = 600; BHT.style.color = INK;
+const Q = K.text(over, '每個節點都可能沉 lg n 層|為什麼加起來不是 [n lg n#ff6a5c]', { x: 0, y: 980, size: 50, align: 'c', lh: 1.45 }); Q.style.fontWeight = 500;
+const RING = K.sample((x, w, h) => { x.lineWidth = 2.5; for (let r = 1; r <= 4; r++) { x.beginPath(); x.ellipse(w / 2, h / 2, 120 + r * 95, 40 + r * 34, 0, 0, TAU); x.stroke(); } }, { w: 1100, h: 420, step: 7 });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35));
+  if (a <= 0) return;
+  K.particles(c, RING, CX, 700, prog(t, T.start - .3, T.start + 1.1), { spread: 800, size: 1.5, color: 'accent', a: a * .7, t });
+  K.core(c, CX, 700, 10, a * (.6 + .4 * Math.sin(t * 3)), CY);
+  K.ghost(c, 'HEAP', CX, 780, 330, .035 * a, 700);
+}
+function titleDom(t) {
+  BHT.reveal(t, T.start + .1, { mode: 'rise', dur: .6 }); BHT.hide(t, T.end);
+  EN.reveal(t, T.start + .35, { mode: 'rise', dur: .6, stagger: .012 }); EN.hide(t, T.end);
+  TITLE.reveal(t, T.start, { mode: 'center', dur: .9, stagger: .07 }); TITLE.hide(t, T.end, { dur: .35 });
+  Q.reveal(t, T.start + .9, { mode: 'ink', dur: .3, stagger: 1 / 20 }); Q.hide(t, T.end, { dur: .3 });
+}
+
+// ═════════ 場景 2：做法一：一個一個插入（珊瑚）
+const G1 = { cx: 580, w: 820, top: 520, dy: 190 };
+const INS_VALS = [null, 90, 70, 80, 40, 60, 50, 75, 10, 30, 20, 35, 45, 15, 65, 99];
+const A = { a1: L.a1, a2: L.a2, a3: L.a3, a4: L.a4, a5: L.a5, a6: L.a6 };
+const INS_SW = [[15, 7], [7, 3], [3, 1]].map(([a, b], i) => ({ t: A.a3.start + .15 + i * .55, a, b, d: .45 }));
+const insTrack = swapTrack(INS_VALS.map((v, i) => (i ? i : null)), INS_SW);   // 用 slot 編號當值 id
+const NR = 36;
+function sInsert(c, t, lt) {
+  const pos = insTrack(t), g = G1;
+  K.halo(c, CX, 820, 760, .1, CO); K.ghost(c, 'INSERT', CX, 1250, 230, .03, 700);
+  K.spotlight(c, treeXY(1, g)[0], 120, Math.PI / 2, .5, 520, .06, INK);
+  const sceneA = 1 - prog(t, L.b1.start - .2, L.b1.start + .2);
+  const bottomHot = prog(t, A.a5.start, A.a5.start + .5) * (1 - prog(t, A.a6.end, A.a6.end + .4));
+  const dimOthers = 1 - .65 * bottomHot;
+  // 邊
+  for (let k = 2; k <= 15; k++) { const ap = prog(t, A.a1.start + .1 + (k - 1) * .09, A.a1.start + .4 + (k - 1) * .09); edge(c, treeXY(k, g), treeXY(k >> 1, g), CO, ap * (k === 15 ? prog(t, A.a2.start + .5, A.a2.start + .9) : 1) * dimOthers); }
+  // 空位虛線圈
+  const [ex, ey] = treeXY(15, g), dash = prog(t, A.a1.start + 1.4, A.a1.start + 1.8) * (1 - prog(t, A.a2.start + .5, A.a2.start + .8));
+  if (dash > 0) { c.save(); c.setLineDash([6, 8]); c.strokeStyle = K.rgba(CO, .6 * dash); c.lineWidth = 2; c.beginPath(); c.arc(ex, ey, NR + 4, 0, TAU); c.stroke(); c.restore(); }
+  // 爬升光痕（a3）
+  const climb = prog(t, INS_SW[0].t, INS_SW[2].t + INS_SW[2].d);
+  if (climb > 0) {
+    const path = [15, 7, 3, 1].map((k) => treeXY(k, g)), fade = 1 - prog(t, A.a4.end, A.a4.end + .5);
+    const n = 3 * climb, i = Math.min(2, Math.floor(n)), f = n - i, pts = path.slice(0, i + 1).concat([[lerp(path[i][0], path[i + 1][0], f), lerp(path[i][1], path[i + 1][1], f)]]);
+    K.glowLine(c, pts, { w: 5, color: CO, a: .75 * fade });
+  }
+  // 節點
+  for (let id = 1; id <= 15; id++) {
+    const ps = pos[id]; if (!ps) continue;
+    let [x, y] = slotXY(ps, g);
+    let a = prog(t, A.a1.start + .1 + (id - 1) * .09, A.a1.start + .4 + (id - 1) * .09);
+    if (id === 15) { const d = prog(t, A.a2.start + .25, A.a2.start + .9, E.outBack); a = prog(t, A.a2.start + .2, A.a2.start + .5); y = lerp(y - 360, y, d); }
+    const leaf = ps[2] >= 1 && ps[1] >= 8;
+    const lit = id === 15 ? 1 : (bottomHot * (leaf ? 1 : 0));
+    const dim = id === 15 ? 1 : (leaf ? 1 : dimOthers);
+    node(c, x, y, NR, id === 15 ? '#ff8f6a' : CO, a * dim, INS_VALS[id], lit * .9 + (id === 15 ? .1 : 0));
+  }
+  // 最底層括號（a2）
+  const br = prog(t, A.a2.start + .9, A.a2.start + 1.3) * (1 - prog(t, A.a3.start, A.a3.start + .3));
+  if (br > 0) { const y = g.top + 3 * g.dy + 58, x0 = treeXY(8, g)[0] - 40, x1 = treeXY(15, g)[0] + 40; K.glowLine(c, [[x0, y - 12], [x0, y], [lerp(x0, x1, br), y]], { w: 2, color: CO, a: br * .8 }); label(c, '最底層 · 葉子', CX + 35, y + 34, { a: .55 * br, ls: '3px' }); }
+  // lg n 尺規（a4）
+  const ru = prog(t, A.a4.start, A.a4.start + .6) * (1 - prog(t, A.a5.start, A.a5.start + .4));
+  if (ru > 0) {
+    const x = 130, y0 = g.top, y1 = g.top + 3 * g.dy * E.outCubic(ru);
+    K.glowLine(c, [[x, y0], [x, y1]], { w: 2.2, color: CO, a: ru });
+    for (let i = 0; i <= 3; i++) if (g.top + i * g.dy <= y1 + 1) { K.glowLine(c, [[x - 14, g.top + i * g.dy], [x + 14, g.top + i * g.dy]], { w: 2, color: CO, a: ru }); }
+    label(c, '3 層', x, y0 - 44, { a: .7 * ru, color: CO });
+  }
+  // 底層一齊往上射（a6）：每個葉子到根的路徑
+  for (let j = 0; j < 8; j++) {
+    const k = 8 + j, st = A.a6.start + .15 + j * .07;
+    const p = prog(t, st, st + .7, E.inOutCubic), fade = 1 - prog(t, A.a6.end - .1, A.a6.end + .4);
+    if (p > 0 && fade > 0) { const path = []; for (let q = k; q >= 1; q >>= 1) path.push(treeXY(q, g)); streak(c, path, p, CO, fade, 1.2, 3); }
+  }
+  if (t > A.a6.start + .7) K.core(c, ...treeXY(1, g), 9, (1 - prog(t, A.a6.end, A.a6.end + .4)) * (.7 + .3 * Math.sin(t * 6)), CO);
+  c.globalAlpha = 1; void sceneA;
+}
+hero('lg n', A.a4.start + .3, A.a4.end, { y: 245, color: CO });
+hero('8 / 15', A.a5.start + .2, A.a5.end, { y: 230, color: CO, size: 120 });
+hero('n lg n', A.a6.start + .75, A.a6.end + .1, { y: 245, color: CO, slam: true });
+K.shake(A.a6.start + .75, 9, .3); K.flash(A.a6.start + .75, .1, .4);
+
+// ═════════ 場景 3：做法二：Build-Heap（青）
+const G2 = { cx: 580, w: 820, top: 520, dy: 190 };
+const B = { b1: L.b1, b2: L.b2, b3: L.b3, b4: L.b4, b5: L.b5, b6: L.b6 };
+// 輸入 1..15 遞增（最壞情況：每次下沉都沉到底），模擬 Max-Heapify 得到真正的交換序列
+const BH_SW = (() => {
+  const a = [null]; for (let i = 1; i <= 15; i++) a.push(i);
+  const plan = { 7: B.b4.start + .3, 6: B.b4.start + .7, 5: B.b4.start + 1.1, 4: B.b4.start + 1.5, 3: B.b5.start + .25, 2: B.b5.start + 1.15, 1: B.b6.start + .35 };
+  const ev = [];
+  for (let i = 7; i >= 1; i--) {
+    let k = i, tt = plan[i];
+    while (2 * k <= 15) { let ch = 2 * k; if (ch + 1 <= 15 && a[ch + 1] > a[ch]) ch++; if (a[ch] <= a[k]) break; ev.push({ t: tt, a: k, b: ch, d: .38, from: i }); [a[k], a[ch]] = [a[ch], a[k]]; k = ch; tt += .42; }
+  }
+  return ev;
+})();
+const bhTrack = swapTrack(Array.from({ length: 16 }, (_, i) => (i ? i : null)), BH_SW);
+const LEDGER = [[3, '1 × 3', B.b6.start + 1.6], [2, '2 × 2', B.b5.start + 2.0], [1, '4 × 1', B.b4.start + 2.0], [0, '8 × 0', B.b3.start + .6]];   // [高度 h, 個數 × 下沉層數]
+function sBuild(c, t) {
+  const g = G2, pos = bhTrack(t);
+  K.halo(c, CX, 820, 760, .1, CY); K.ghost(c, 'HEAPIFY', CX, 1250, 210, .03, 700);
+  K.spotlight(c, treeXY(1, g)[0], 120, Math.PI / 2, .5, 520, .06, INK);
+  const enter = prog(t, B.b1.start + .9, B.b1.start + 1.9);
+  // 輸入陣列（b1）：15 格，接著飛進樹裡
+  const arrA = prog(t, B.b1.start + .1, B.b1.start + .6) * (1 - prog(t, B.b2.start + .4, B.b2.start + .9));
+  if (arrA > 0) {
+    const cw = 62, x0 = CX - 7.5 * cw, y = 370;
+    c.save(); c.globalAlpha *= arrA; for (let i = 0; i < 15; i++) { K.roundRect(c, x0 + i * cw + 3, y - 28, cw - 6, 56, 8); c.strokeStyle = K.rgba(CY, .6); c.lineWidth = 1.6; c.stroke(); }
+    label(c, 'A[1..15]', x0 - 10, y - 56, { align: 'left', a: .5, size: 24, ls: '2px' }); c.restore();
+  }
+  for (let k = 2; k <= 15; k++) edge(c, treeXY(k, g), treeXY(k >> 1, g), CY, enter * (1 - .5 * prog(t, B.b3.start, B.b3.start + .4)) * (.6 + .4 * prog(t, B.b4.start, B.b4.start + .3)));
+  // 掃描游標（b2）：i = 7 → 1
+  const sc = prog(t, B.b2.start + .4, B.b2.end - .2);
+  if (sc > 0 && sc < 1) { const i = 7 - Math.min(6, Math.floor(sc * 7)), [x, y] = treeXY(i, g); c.save(); c.setLineDash([5, 7]); c.strokeStyle = K.rgba(CY, .9); c.lineWidth = 2.4; c.beginPath(); c.arc(x, y, NR + 12, 0, TAU); c.stroke(); c.restore(); K.core(c, x, y - NR - 22, 3, .9, CY); }
+  // 下沉箭頭痕跡
+  for (const ev of BH_SW) {
+    const p = prog(t, ev.t, ev.t + ev.d), fade = 1 - prog(t, ev.t + 1.6, ev.t + 2.4);
+    if (p > 0 && fade > 0) { const [x0, y0] = treeXY(ev.a, g), [x1, y1] = treeXY(ev.b, g); arrow(c, x0, y0 + NR + 4, lerp(x0, x1, E.outCubic(p)), lerp(y0 + NR + 4, y1 - NR - 6, E.outCubic(p)), CY, .85 * fade, 2.6); }
+  }
+  // 節點
+  const leafCalm = prog(t, B.b3.start + .1, B.b3.start + .6);
+  for (let id = 1; id <= 15; id++) {
+    const ps = pos[id];
+    const [tx, ty] = slotXY(ps, g);
+    const cw = 62, ax = CX - 7.5 * cw + (id - .5) * cw, ay = 370;
+    const fly = E.inOutCubic(prog(t, B.b1.start + .9 + id * .045, B.b1.start + 1.6 + id * .045));
+    const x = lerp(ax, tx, fly), y = lerp(ay, ty, fly), r = lerp(22, NR, fly);
+    const slot = ps[2] < 1 ? -1 : ps[1];
+    const moving = ps[2] < 1;
+    const isLeafSlot = slot >= 8;
+    const col = isLeafSlot ? K.mix(CY, LEAF, leafCalm) : CY;
+    const lit = moving ? 1 : (isLeafSlot ? .5 * leafCalm * (1 - prog(t, B.b4.start, B.b4.start + .5)) : 0);
+    node(c, x, y, r, col, prog(t, B.b1.start + .1 + id * .03, B.b1.start + .5 + id * .03), id, lit);
+  }
+  // 「不用動」
+  const ok = prog(t, B.b3.start + .5, B.b3.start + .9) * (1 - prog(t, B.b4.start, B.b4.start + .4));
+  if (ok > 0) label(c, '高度 0 · 不用動', CX + 35, g.top + 3 * g.dy + 70, { a: .6 * ok, color: LEAF, ls: '3px' });
+  // 左側帳本：每層「個數 × 下沉層數」
+  for (const [h, s, t0] of LEDGER) {
+    const a = prog(t, t0, t0 + .5) * (1 - prog(t, L.c1.start - .4, L.c1.start));
+    if (a > 0) label(c, s, 100, g.top + (3 - h) * g.dy, { a: .85 * a, color: h === 0 ? LEAF : CY, size: 30, w: 600 });
+  }
+}
+hero('0+4+4+3 = [11#5be7ff] ＜ 15', B.b6.start + 1.9, B.b6.end + .1, { y: 250, size: SIZE.mid });
+
+// ═════════ 場景 4：量杯（琥珀）
+const C = { c1: L.c1, c2: L.c2, c3: L.c3, c4: L.c4, c5: L.c5, c6: L.c6, c7: L.c7 };
+const CUP = { x0: 330, x1: 750, top: 400, line: 470, bot: 1300 };
+const POURS = (() => {
+  const list = [[C.c2.start + .35, 1.2, 1 / 4, 'n/4'], [C.c3.start + .35, 1.2, 1 / 4, 'n/4'], [C.c4.start + .35, 1.2, 3 / 16, '3n/16']];
+  let tt = C.c5.start + .15; for (let h = 4; h <= 12; h++) { const d = Math.max(.18, .5 - (h - 4) * .05); list.push([tt, d, h / Math.pow(2, h + 1), h === 4 ? 'n/8' : null]); tt += d + .04; }
+  return list.map(([t0, d, v, lab], i) => ({ t0, d, v, lab, i }));
+})();
+const levelAt = (t) => { let s = 0; for (const p of POURS) s += p.v * E.inOutQuad(prog(t, p.t0, p.t0 + p.d)); return s; };
+const yOf = (f) => lerp(CUP.bot, CUP.line, f);
+const AMB = ['#ffc14d', '#ffb347', '#ffa63d', '#ff9a3a', '#ff8f38'];
+function sCup(c, t) {
+  const g = prog(t, C.c1.start + .2, C.c1.start + 1.2, E.outCubic), lv = levelAt(t), glowEnd = prog(t, C.c7.start, C.c7.start + .5);
+  const { x0, x1, top, line, bot } = CUP, w = x1 - x0;
+  // 杯後光
+  K.halo(c, CX, (top + bot) / 2, 700, .12 * g, AM);
+  // 液體分層
+  let acc = 0;
+  for (const p of POURS) {
+    const f = p.v * E.inOutQuad(prog(t, p.t0, p.t0 + p.d)); if (f <= 0) continue;
+    const yA = yOf(acc), yB = yOf(acc + f), col = AMB[Math.min(4, p.i)];
+    const gr = c.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, K.rgba(K.mix(col, BG, .55), .9)); gr.addColorStop(.35, K.rgba(col, .75)); gr.addColorStop(1, K.rgba(K.mix(col, BG, .6), .9));
+    c.fillStyle = gr; c.fillRect(x0 + 6, yB, w - 12, yA - yB);
+    if (p.i < 4) { c.strokeStyle = K.rgba('#fff2d0', .35); c.lineWidth = 1; c.beginPath(); c.moveTo(x0 + 6, yB); c.lineTo(x1 - 6, yB); c.stroke(); }
+    // 右側標籤：目前這層亮，其他淡
+    if (p.lab) { const cur = t < (POURS[p.i + 1]?.t0 ?? 1e9) ? 1 : .35; const la = prog(t, p.t0 + .3, p.t0 + .7) * (1 - prog(t, C.c6.start, C.c6.start + .3)); if (la > 0) { label(c, p.lab, x1 + 70, (yA + yB) / 2, { align: 'left', a: la * cur * .9, color: AM, w: 600, size: 32 }); K.glowLine(c, [[x1 + 10, (yA + yB) / 2], [x1 + 58, (yA + yB) / 2]], { w: 1.2, color: AM, a: .5 * la * cur }); } }
+    acc += f;
+  }
+  // 液面
+  if (lv > 0) { const y = yOf(lv), pts = []; for (let i = 0; i <= 40; i++) { const x = lerp(x0 + 6, x1 - 6, i / 40); pts.push([x, y + Math.sin(i * .7 + t * 4) * 2.2 * (1 - glowEnd * .6)]); } K.glowLine(c, pts, { w: 2.4, color: '#fff0c8', a: .9 }); K.core(c, CX, y, 5 + 3 * glowEnd, .85, AM); }
+  // 倒入的光流
+  for (const p of POURS) {
+    const a = prog(t, p.t0 - .1, p.t0 + .05) * (1 - prog(t, p.t0 + p.d - .05, p.t0 + p.d + .1)); if (a <= 0) continue;
+    const wid = 6 + 60 * Math.sqrt(p.v), ys = top - 170, ye = yOf(levelAt(t));
+    const gr = c.createLinearGradient(0, ys, 0, ye); gr.addColorStop(0, K.rgba(AM, 0)); gr.addColorStop(.3, K.rgba(AM, .55 * a)); gr.addColorStop(1, K.rgba('#fff0c8', .8 * a));
+    c.fillStyle = gr; c.fillRect(CX - wid / 2, ys, wid, ye - ys);
+    for (let i = 0; i < 26; i++) { const u = M.fract(t * 1.6 + i / 26), yy = lerp(ys, ye, u); K.sprC(c, AM, CX + (M.hash(i, p.i) - .5) * wid * .8, yy, 5, a * .8); }
+    K.sprC(c, '#fff0c8', CX, ye, 26 + wid * .6, a * .7, 'soft');
+  }
+  // 玻璃杯
+  c.save(); c.globalAlpha *= g;
+  const gl = c.createLinearGradient(x0, 0, x1, 0); gl.addColorStop(0, K.I(.1)); gl.addColorStop(.12, K.I(.02)); gl.addColorStop(.85, K.I(.015)); gl.addColorStop(1, K.I(.08));
+  c.fillStyle = gl; c.fillRect(x0, top, w, bot - top);
+  K.glowLine(c, [[x0 - 18, top - 6], [x0, top + 10], [x0, bot - 26], [x0 + 26, bot], [x1 - 26, bot], [x1, bot - 26], [x1, top + 10], [x1 + 18, top - 6]], { w: 2.2, color: K.mix(INK, AM, .25), a: .9 });
+  c.fillStyle = K.I(.14); c.fillRect(x0 + 22, top + 40, 10, bot - top - 120);   // 高光條
+  for (let i = 1; i < 16; i++) { const y = yOf(i / 16), big = i % 4 === 0; c.strokeStyle = K.I(big ? .45 : .2); c.lineWidth = 1.2; c.beginPath(); c.moveTo(x0, y); c.lineTo(x0 + (big ? 34 : 18), y); c.stroke(); if (big) label(c, ({ 4: 'n/4', 8: 'n/2', 12: '3n/4' })[i], x0 - 22, y, { align: 'right', a: .38, size: 22 }); }
+  // n 的刻度線
+  const nl = .6 + .4 * Math.sin(t * 3);
+  K.glowLine(c, [[x0 - 40, line], [x1 + 40, line]], { w: 2.4, color: AM, a: .95 });
+  label(c, 'n', x0 - 64, line, { a: 1, color: AM, w: 700, size: 44 });
+  c.restore();
+  // c6：液面和 n 線之間的縫（放大）
+  const gap = prog(t, C.c6.start + .2, C.c6.start + .8) * (1 - prog(t, C.c7.start, C.c7.start + .3));
+  if (gap > 0) { const y = yOf(lv); K.glowLine(c, [[x1 + 26, line + 3], [x1 + 26, y - 3]], { w: 1.4, color: '#fff0c8', a: gap * nl }); label(c, '永遠差一點', x1 - 16, line - 26, { align: 'right', a: .85 * gap, size: 20, color: '#fff0c8' }); }
+}
+hero('= n/4', C.c2.start + .9, C.c2.end, { y: 220, size: SIZE.mid, color: AM });
+hero('= n/4', C.c3.start + .9, C.c3.end, { y: 220, size: SIZE.mid, color: AM });
+hero('= 3n/16', C.c4.start + .9, C.c4.end, { y: 220, size: SIZE.mid, color: AM });
+hero('Σ h/2ʰ⁺¹ = 1', C.c5.start + .6, C.c6.end, { y: 220, size: SIZE.mid, color: AM });
+hero('O(n)', C.c7.start + .25, C.c7.end + .1, { y: 190, size: 150, color: AM, slam: true });
+K.flash(C.c7.start + .25, .12, .5); K.shake(C.c7.start + .25, 7, .25);
+
+// ═════════ 場景 5：差別只在方向（上：插入 / 下：Build-Heap）
+const D = { d1: L.d1, d2: L.d2, d3: L.d3 };
+const GT = { cx: 585, w: 700, top: 360, dy: 112 }, GB = { cx: 585, w: 700, top: 830, dy: 112 };
+function sRecap(c, t) {
+  const a = prog(t, D.d1.start + .1, D.d1.start + .7);
+  const focusTop = prog(t, D.d2.start, D.d2.start + .4) * (1 - prog(t, D.d3.start, D.d3.start + .4));
+  const focusBot = prog(t, D.d3.start, D.d3.start + .4);
+  const aT = a * (1 - .6 * focusBot), aB = a * (1 - .6 * focusTop);
+  for (const [g, col, al] of [[GT, CO, aT], [GB, CY, aB]]) {
+    for (let k = 2; k <= 15; k++) edge(c, treeXY(k, g), treeXY(k >> 1, g), col, al * .8);
+    for (let k = 1; k <= 15; k++) node(c, ...treeXY(k, g), 19, col, al, null, 0);
+  }
+  label(c, '插入', 112, GT.top + 1.5 * GT.dy, { color: CO, a: .9 * aT, size: 34, w: 600 });
+  label(c, '由下往上', 112, GB.top + 1.5 * GB.dy, { color: CY, a: .9 * aB, size: 30, w: 600 });
+  // 上：8 個葉子都爬到根（長路）
+  for (let j = 0; j < 8; j++) {
+    const st = D.d2.start + .2 + j * .09, p = prog(t, st, st + .9), f = 1 - prog(t, D.d3.start + .2, D.d3.start + .6);
+    if (p > 0) { const path = []; for (let q = 8 + j; q >= 1; q >>= 1) path.push(treeXY(q, GT)); streak(c, path, p, CO, f, 1.2, 3); }
+  }
+  // 下：內部節點只往下走很短（葉子不動）
+  const sinks = [[4, 1], [5, 1], [6, 1], [7, 1], [2, 2], [3, 2], [1, 3]];
+  sinks.forEach(([k, len], i) => {
+    const st = D.d3.start + .25 + i * .12, p = prog(t, st, st + .35 + len * .12);
+    if (p > 0) { const path = [treeXY(k, GB)]; let q = k; for (let s = 0; s < len; s++) { q = 2 * q + (M.hash(q, 2) > .5 ? 1 : 0); path.push(treeXY(q, GB)); } streak(c, path, p, CY, 1, 1.2, 3); }
+  });
+  // 葉子的亮度：插入時葉子最忙，Build-Heap 時葉子最閒
+  for (let k = 8; k <= 15; k++) { K.core(c, ...treeXY(k, GT), 3, .6 * focusTop, CO); }
+}
+
+// ═════════ 場景 6：回到金字塔 + 考試寫法
+function sEnd(c, t) {
+  const form = prog(t, L.d4.start - .2, L.d4.start + 1.4), dim = 1 - .7 * prog(t, Ecard.start - .2, Ecard.start + .5);
+  pyramid(c, t, form, dim, K.mix(CY, INK, .3), .2);
+  for (const s of BH_STREAKS) if (s.len > 0) streak(c, downPath(s.k, Math.min(s.len, s.k < 64 ? 6 : 1), s.k), (t - (s.t - o2.start + L.d4.start + .9)) / s.d, CY, dim, .6, 2.4);
+  K.core(c, CX, PY.top, 8, dim * .9, CY);
+}
+const CNT = K.text(over, '', { x: 0, y: 1060, size: 112, align: 'c', ls: '.02em', lh: 1 }); CNT.style.fontFamily = 'Plex'; CNT.style.fontWeight = 700; K.glowTitle(CNT, { color: CY, strength: .8 });
+const CNT2 = K.text(over, '', { x: 0, y: 1205, size: 38, align: 'c', ls: '.04em' }); CNT2.style.fontFamily = 'Plex';
+const FORM = K.text(over, '<考試這樣寫>|Σ ⌈n/2ʰ⁺¹⌉ · O(h)|= [O(n)]', { x: 0, y: 640, size: 76, align: 'c', lh: 1.5, ls: '.02em' }); FORM.style.fontFamily = 'Plex'; FORM.style.fontWeight = 600;
+const FSUB = K.text(over, '因為 Σ h/2ʰ 收斂到 2', { x: 0, y: 1060, size: 36, align: 'c', ls: '.08em' }); FSUB.style.color = K.I(.55);
+function endDom(t) {
+  const d4 = L.d4, show = t > d4.start - .2 && t < Ecard.start + .2;
+  CNT.style.visibility = show ? 'visible' : 'hidden'; CNT2.style.visibility = show ? 'visible' : 'hidden';
+  if (show) {
+    const k = prog(t, d4.start + .4, d4.start + 2.0, E.outExpo), out = 1 - prog(t, Ecard.start - .3, Ecard.start);
+    const ft = M.frameT ?? t, kk = prog(ft, d4.start + .4, d4.start + 2.0, E.outExpo);
+    CNT.textContent = Math.round(1048555 * kk).toLocaleString('en-US'); CNT.style.opacity = prog(t, d4.start + .3, d4.start + .6) * out;
+    CNT2.innerHTML = `<span style="color:${K.rgba(CO, .95)};text-decoration:line-through">插入 18,874,370</span>　<span style="color:${K.I(.65)}">n = 1,048,575</span>`;
+    CNT2.style.opacity = prog(t, d4.start + 1.4, d4.start + 1.9) * out; void k;
+  }
+  FORM.reveal(t, Ecard.start + .1, { mode: 'rise', dur: .7, stagger: .025 }); FORM.hide(t, DUR + 1);
+  FSUB.reveal(t, Ecard.start + 1.2, { mode: 'ink', dur: .4, stagger: .03 }); FSUB.hide(t, DUR + 1);
+}
+
+// ═════════ 場景排程
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: L.a1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'ins', start: L.a1.start, end: L.b1.start, draw: sInsert, color: CO, in: { type: 'iris', dur: .7, x: CX, y: 700 } },
+  { id: 'bh', start: L.b1.start, end: L.c1.start, draw: sBuild, color: CY, in: { type: 'sweep', dur: .7 } },
+  { id: 'cup', start: L.c1.start, end: L.d1.start, draw: sCup, color: AM, in: { type: 'iris', dur: .8, x: CX, y: 860 } },
+  { id: 'recap', start: L.d1.start, end: L.d4.start, draw: sRecap, color: CY, in: { type: 'sweep', dur: .7 } },
+  { id: 'end', start: L.d4.start, end: DUR, draw: sEnd, color: CY, in: { type: 'push', dur: .7, x: CX, y: 700 } },
+]);
+// drawScenes 只畫「目前所在」的場景；open/title 有重疊時需要兩個都畫
+function drawAll(t) {
+  if (t < L.a1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; }
+  K.drawScenes(t);
+}
+
+// ── 鏡頭（景別變化）
+K.camKeys([
+  [0, 1, CX, 960], [o2.start, 1, CX, 960], [o2.start + 1.2, 1.06, CX, 900, E.inOutQuart], [T.start, 1, CX, 960, E.outExpo],
+  [L.a1.start, 1, CX, 960], [A.a2.start, 1, CX, 960], [A.a3.start + .1, 1.1, 650, 800, E.inOutQuart], [A.a4.start, 1.1, 650, 800], [A.a4.start + .5, 1, CX, 960, E.inOutQuart],
+  [A.a5.start, 1, CX, 960], [A.a5.start + .6, 1.04, CX, 1000, E.inOutQuart], [A.a6.start + .1, 1.04, CX, 1000], [A.a6.start + .6, .98, CX, 950, E.inOutQuart],
+  [L.b1.start, 1, CX, 960], [B.b3.start, 1, CX, 960], [B.b3.start + .6, 1.1, CX, 1080, E.inOutQuart], [B.b4.start, 1.1, CX, 1080], [B.b4.start + .5, 1, CX, 960, E.inOutQuart],
+  [B.b6.start, 1, CX, 960], [B.b6.start + .4, 1.06, CX, 880, E.inOutQuart], [B.b6.end, 1.06, CX, 880], [L.c1.start, 1, CX, 960, E.inOutQuart],
+  [C.c5.end, 1, CX, 960], [C.c6.start + .1, 2.3, 680, 520, E.inOutQuart], [C.c6.end, 2.3, 680, 520], [C.c7.start + .2, 1, CX, 960, E.inOutQuart],
+  [L.d1.start, 1, CX, 960], [L.d4.start, 1, CX, 960], [DUR, 1.04, CX, 940],
+]);
+
+// ── 環境（同一個世界，各章換氣氛）
+K.amb.keys([
+  [0, { haze: .04, stars: .1, dust: .2 }],
+  [o1.start + 1, { haze: .12, stars: .22, dust: .45, bokeh: .15 }],
+  [T.start, { haze: .16, stars: .3, dust: .5, bokeh: .3 }],
+  [L.a1.start, { haze: .1, warm: .06, stars: .18, dust: .45, bokeh: .2 }],
+  [L.b1.start, { haze: .12, stars: .2, dust: .45, bokeh: .2, grid: .5 }],
+  [L.c1.start, { haze: .06, warm: .16, stars: .12, dust: .55, bokeh: .25 }],
+  [L.d1.start, { haze: .12, stars: .2, dust: .45, bokeh: .2 }],
+  [L.d4.start, { haze: .14, stars: .3, dust: .5, bokeh: .3 }],
+  [DUR, { haze: .14, stars: .3, dust: .5, bokeh: .3 }],
+]);
+K.flash(T.start, .2, .6); K.flare(T.start + .05, CX, 640, .85, 1.6);
+K.flash(L.c1.start, .08, .4); K.flash(L.d4.start + .2, .1, .5);
+
+// ── 章節角標（極小，左上安全區內）
+const CHAP = K.text(over, '', { x: 64, y: 300, size: 22, ls: '.3em' }); CHAP.style.color = K.I(.42);
+const CHAPS = [[L.a1.start, '資料結構 · 堆積  /  01 插入'], [L.b1.start, '資料結構 · 堆積  /  02 由下往上'], [L.c1.start, '資料結構 · 堆積  /  03 算帳'], [L.d1.start, '資料結構 · 堆積  /  04 差在哪'], [L.d4.start, '']];
+function chap(t) { let s = ''; for (const [t0, v] of CHAPS) if (t >= t0) s = v; if (CHAP.textContent !== s) CHAP.textContent = s; CHAP.style.opacity = s ? .9 : 0; }
+
+function render(t) {
+  K.begin(t);
+  drawAll(t);
+  titleDom(t); drawHeroes(t); endDom(t); chap(t);
+  K.end(t);
+}
+
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .2, sfx: 'swish', gain: -12 },
+    { t: o2.start, sfx: 'reverse', align: 'end', gain: -12 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: L.a1.start, sfx: 'whoosh', gain: -10 },
+    { t: L.a2.start + .9, sfx: 'thump', gain: -10 },
+    ...INS_SW.map((s) => ({ t: s.t + .4, sfx: 'tick', gain: -14 })),
+    { t: A.a6.start + .75, sfx: 'impact', gain: -6 },
+    { t: L.b1.start, sfx: 'whoosh', gain: -10 },
+    { t: L.b1.start + 1.6, sfx: 'pop', gain: -14 },
+    ...BH_SW.map((s) => ({ t: s.t + .35, sfx: 'tick', gain: -17 })),
+    { t: B.b6.start + 1.9, sfx: 'chime', gain: -10 },
+    { t: L.c1.start, sfx: 'whoosh', gain: -10 },
+    ...POURS.slice(0, 4).map((p) => ({ t: p.t0 + .1, sfx: 'swish', gain: -15 })),
+    { t: C.c7.start + .25, sfx: 'thump', gain: -5 },
+    { t: L.d1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.d4.start, sfx: 'reverse', align: 'end', gain: -10 },
+    { t: L.d4.start + .2, sfx: 'impact', gain: -6 },
+    { t: Ecard.start + .1, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
