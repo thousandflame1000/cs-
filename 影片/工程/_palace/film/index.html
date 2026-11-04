@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>記憶宮殿</title>
+<!--
+  資工所衝刺 · 記憶宮殿片段（每支短片的片頭與片尾共用）
+  ?id=08&mode=intro  ：從俯瞰全館飛進這一間（約 3 秒），接在片名卡之後
+  ?id=08&mode=outro  ：從這一間沿走廊走向下一間（約 3 秒），接在考試卡之後
+  中庭在原點，六個館各一色：資結青、演算法琥珀、計組珊瑚、作業系統綠、離散紫、線代藍。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="palace.js"></script>
+<script>
+const Q = new URLSearchParams(location.search);
+const ID = Q.get('id') || '08', MODE = Q.get('mode') || 'intro';
+const W = 1080, H = 1920, FPS = 60, DUR = 3.0, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+const BG = '#04070d', INK = '#eef3fa';
+const K = Kit({ W, H, stage, duration: DUR, seed: 97, vignette: .6, grain: .14, bloom: .95, palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: '#7aa8ff', accent2: '#ffc14d' } });
+K.warm(['#5be7ff', '#ffc14d', '#ff6a5c', '#6ee7a8', '#b48cff', '#7aa8ff', INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .42, fogNear: 14, fogFar: 46 });
+const P = Palace(K, S, V);
+const R = P.ROOMS[ID], NEXT = P.next(ID), RN = NEXT ? P.ROOMS[NEXT] : null;
+const roomName = (r) => `${r.wing.name} · 第 ${r.idx + 1} 間`;
+
+if (MODE === 'intro') {
+  V.camKeys([[0, P.overview()], [.7, Object.assign(P.overview(), { pos: [0, -14, 29] })], [2.55, P.closeup(ID), E.inOutCubic], [DUR, P.closeup(ID, 6.1, 3.6)]]);
+} else {
+  const mid = RN ? P.closeup(NEXT, 7.5, 6.5) : P.overview();
+  V.camKeys([[0, P.closeup(ID, 6.1, 3.6)], [1.35, P.overview(), E.inOutCubic], [2.6, mid, E.inOutCubic], [DUR, mid]]);
+}
+K.amb.keys([[0, { haze: .16, stars: .35, dust: .4, bokeh: .2, cam: .3 }], [DUR, { haze: .16, stars: .35, dust: .4, bokeh: .2, cam: .3 }]]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  const c = K.ctx, fade = prog(t, 0, .22) * (1 - prog(t, DUR - .22, DUR));
+  c.save(); c.globalAlpha *= fade;
+  if (MODE === 'intro') {
+    const hi = prog(t, 1.4, 2.4);
+    P.draw(c, t, { cur: ID, hi });
+    const pts = P.pathTo(ID), pp = prog(t, .3, 1.6, E.inOutCubic);
+    const head = V.path(c, pts, { p: pp, color: R.wing.color, w: 3.4 });
+    if (head && pp < 1) K.core(c, head[0], head[1], 6, 1, R.wing.color);
+  } else {
+    P.draw(c, t, { cur: ID, hi: 1 - .4 * prog(t, 0, 1) });
+    if (RN) {
+      const pts = P.pathBetween(ID, NEXT), pp = prog(t, .45, 2.2, E.inOutCubic);
+      const head = V.path(c, pts, { p: pp, color: RN.wing.color, w: 3.4 });
+      if (head && pp < 1) K.core(c, head[0], head[1], 6, 1, RN.wing.color);
+      const nh = prog(t, 1.9, 2.6);
+      if (nh > 0) { V.pillar(c, RN.pos, .62, .25 + 1.1 * nh, RN.wing.color, 1); V.ring(c, [RN.pos[0], RN.pos[1], .02], .8, { color: RN.wing.color, a: nh, w: 2.4 }); V.glow(c, [RN.pos[0], RN.pos[1], 1.4 * nh], 1.5, .5 * nh, RN.wing.color); }
+    } else { const pp = prog(t, .45, 2.2, E.inOutCubic); V.path(c, P.pathTo(ID).reverse(), { p: pp, color: INK, w: 3.4 }); }
+  }
+  c.restore();
+  // 文字（固定在畫面下方）
+  const f2 = c; f2.save(); f2.globalAlpha *= fade;
+  S.label(f2, '記憶宮殿　MEMORY PALACE', CX, 300, { size: 26, a: .55, ls: '6px' });
+  if (MODE === 'intro') {
+    const a1 = prog(t, .5, 1.0), a2 = prog(t, 1.4, 1.9);
+    S.label(f2, roomName(R), CX, 1330, { size: 46, w: 700, color: R.wing.color, a: a1 });
+    S.label(f2, R.title, CX, 1420, { size: 76, w: 700, color: '#ffffff', a: a2 });
+  } else {
+    const a1 = prog(t, .3, .8), a2 = prog(t, 1.6, 2.2);
+    S.label(f2, '下一間', CX, 1250, { size: 34, a: .7 * a1, ls: '8px' });
+    if (RN) { S.label(f2, roomName(RN), CX, 1330, { size: 46, w: 700, color: RN.wing.color, a: a2 }); S.label(f2, RN.title, CX, 1420, { size: 76, w: 700, color: '#ffffff', a: a2 }); }
+    else S.label(f2, '回到中庭：全部走完了', CX, 1380, { size: 60, w: 700, color: '#ffffff', a: a2 });
+  }
+  f2.restore();
+  K.end(t);
+}
+M.film({ width: W, height: H, fps: FPS, duration: DUR, stage, render, scenes: [{ id: MODE, start: 0, end: DUR, label: MODE }],
+  cues: MODE === 'intro' ? [{ t: .2, sfx: 'whoosh', gain: -10 }, { t: 1.2, sfx: 'swish', gain: -12 }, { t: 2.3, sfx: 'chime', gain: -10 }] : [{ t: .4, sfx: 'whoosh', gain: -11 }, { t: 2.3, sfx: 'chime', gain: -10 }] });
+</script>
+</body>
+</html>

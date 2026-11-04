@@ -1,0 +1,36 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "Dijkstra 說 c 的距離是 [3]", "hook": true},
+  {"id": "o2", "text": "真正的答案是 [2]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "Dijkstra 與負邊", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "Dijkstra：每次挑[最近]的點", "scene": true},
+  {"id": "a2", "text": "挑到就[鎖住]，不再改"},
+  {"id": "a3", "text": "前提：後面的路只會[更長]", "pause": 0.2},
+
+  {"id": "b1", "text": "s 到 a 是 2，到 b 是 3", "scene": true},
+  {"id": "b2", "text": "鎖住 a，更新 c 為 [3]"},
+  {"id": "b3", "text": "接著鎖住 b"},
+  {"id": "b4", "text": "b → a 是 [−2]：a 其實只要 1"},
+  {"id": "b5", "text": "但 a 已經鎖住，c [不會更新]"},
+  {"id": "b6", "text": "最後 c = 3，[錯了]", "pause": 0.2},
+
+  {"id": "c1", "text": "負邊讓後面的路[變短]", "scene": true},
+  {"id": "c2", "text": "鎖住的那一刻，答案還[沒定]", "pause": 0.2},
+
+  {"id": "d1", "text": "每條邊都加 2，變非負就好？", "scene": true},
+  {"id": "d2", "text": "s→a→c 從 3 變 [7]"},
+  {"id": "d3", "text": "s→b→a→c 從 2 變 [8]"},
+  {"id": "d4", "text": "邊數多的被多加，最短路[換人了]", "pause": 0.2},
+
+  {"id": "e1", "text": "有負邊就用 [Bellman-Ford]", "scene": true},
+  {"id": "e2", "text": "所有邊鬆弛 V − 1 輪，c = [2]"},
+  {"id": "e3", "text": "多跑一輪還能更新，就有[負環]", "hold": 2.8},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

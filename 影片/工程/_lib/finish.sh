@@ -6,6 +6,7 @@ P="$1"; NAME="$2"; HOLDS="${3:-}"; CUTS="${4:-}"
 SK=/home/user/azenyes/leaderai-media-toolkit/skills/lead-knowledge-animation/scripts
 cd "$P"
 cp ../_lib/cs.js film/cs.js 2>/dev/null || true
+[ -f film/space.js ] && cp ../_lib/space.js film/space.js
 python3 $SK/fonts.py film/ > /dev/null
 [ -d work/sfx ] || python3 $SK/sfx.py --out work/sfx --variants 3 --bed 120 --bpm 84 --key A --mood calm > /dev/null
 DUR=$(python3 -c "import json;s=open('film/timing.js',encoding='utf-8').read();print(json.loads(s[s.index('{'):s.index(';\n')])['total'])")

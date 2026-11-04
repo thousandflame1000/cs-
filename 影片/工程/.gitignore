@@ -1,5 +1,9 @@
 # 影片工程：只追蹤原始碼與字幕稿；渲染過程檔可重建
 */out/
-*/work/sfx/
 */work/*.wav
+*/work/sfx/
 */work/封面检查/
+_palace/out/
+_palace/out/\n_palace/work/*.wav\n_palace/work/sfx/
+_palace/work/*.wav
+_palace/work/sfx/
