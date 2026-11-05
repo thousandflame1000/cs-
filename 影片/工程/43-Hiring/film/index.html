@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>雇用問題</title>
+<!--
+  資工所衝刺 · 短影音 43：雇用問題——指示隨機變數，E[X] = Hₙ ≈ ln n
+  記憶宮殿：演算法館 · 第 8 間。十個應徵者排成一排柱子，高度＝能力（3 7 2 5 9 1 6 10 4 8）；琥珀色的「目前最好」橫桿往右掃，比它高就換人（綠）。
+  01 隨機順序換 4 次；排成遞增就換 10 次。02 第 5 個被雇 ⇔ 他是前 5 個裡最好的，最好的人落在 5 個位置之一，機率 1/5；每人底下一顆 0/1 指示方塊。
+  03 每根柱子換成 1/i 的高度，加起來沿著 1/x 曲線 → H₁₀ ≈ 2.93、H₁₀₀ ≈ 5.19 ≈ ln n。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', GR = '#6ee7a8', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 431, vignette: .6, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: AM, accent2: GR } });
+K.warm([CY, AM, CO, GR, VI, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { '只有 5 次': GR, 'n 次': CO, '1/i': AM, 'ln n': GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1;
+const add = (a, b) => a.map((v, i) => v + b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: AM, a: .2 * a, major: 3 });
+let tNow = 0;
+function box3(c, p, sz, col, a = 1, fill = .6) {
+  if (a <= .003) return; const [x, y, z] = p, [hx, hy, hz] = sz.map(v => v / 2), cam = V.camAt(tNow).pos;
+  const F = [[[0, -1, 0], [[x - hx, y - hy, z - hz], [x + hx, y - hy, z - hz], [x + hx, y - hy, z + hz], [x - hx, y - hy, z + hz]], .7], [[1, 0, 0], [[x + hx, y - hy, z - hz], [x + hx, y + hy, z - hz], [x + hx, y + hy, z + hz], [x + hx, y - hy, z + hz]], .45], [[-1, 0, 0], [[x - hx, y + hy, z - hz], [x - hx, y - hy, z - hz], [x - hx, y - hy, z + hz], [x - hx, y + hy, z + hz]], .45], [[0, 0, 1], [[x - hx, y - hy, z + hz], [x + hx, y - hy, z + hz], [x + hx, y + hy, z + hz], [x - hx, y + hy, z + hz]], .95]];
+  for (const [n, q, k] of F) { const d = [cam[0] - x, cam[1] - y, cam[2] - z]; if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] <= 0) continue; V.poly(c, q, K.rgba(K.mix(col, '#ffffff', k * .3), fill * k), K.rgba(K.mix(col, '#ffffff', .4), .9), a); }
+}
+const lab = (c, s, p, col, a, size = .13, ex = {}) => { if (a > .003) V.label(c, s, p, Object.assign({ size, w: 700, color: col, a, minPx: 16, maxPx: 70 }, ex)); };
+
+// ═════════ 十個應徵者
+const RND = [3, 7, 2, 5, 9, 1, 6, 10, 4, 8], INC = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const PX = (i) => -1.17 + i * .26, HS = .15;
+const hiresOf = (arr) => { let best = 0; return arr.map(v => { const h = v > best; if (h) best = v; return h; }); };
+/** st: arr、sweep（0..10 掃到第幾個）、one（指示方塊）、frac（柱子換成 1/i 的程度） */
+function drawRow(c, t, st) {
+  const { a = 1, arr = RND, sweep = 10, one = 0, frac = 0, focus = -1, grow = 1 } = st;
+  const H_ = hiresOf(arr), items = [];
+  let best = 0, bestIdx = -1; for (let i = 0; i < 10 && i < Math.floor(sweep + .001); i++) if (arr[i] > best) { best = arr[i]; bestIdx = i; }
+  for (let i = 0; i < 10; i++) {
+    const g = prog(grow, i * .06, i * .06 + .3); if (g <= 0) continue;
+    const seen = i < sweep, hired = H_[i] && seen, hNorm = arr[i] * HS, hFrac = (1 / (i + 1)) * 1.3, h = lerp(hNorm, hFrac, E.inOutCubic(frac)) * E.outCubic(g);
+    const dim = focus >= 0 && i > focus ? .25 : 1;
+    const col = frac > .5 ? AM : hired ? GR : seen ? '#6b7a8a' : CY;
+    items.push({ p: [PX(i), 0, h / 2], draw: () => {
+      V.pillar(c, [PX(i), 0, 0], .18, Math.max(.02, h), col, .8 * a * dim);
+      if (frac < .5) lab(c, String(arr[i]), [PX(i), -.12, h + .1], '#ffffff', a * g * dim * (1 - frac * 2), .11);
+      else lab(c, '1/' + (i + 1), [PX(i), -.12, h + .1], AM, a * (frac - .5) * 2, .1);
+      if (one > 0) { const b = [PX(i), -.32, -.0], on = H_[i]; box3(c, add(b, [0, 0, .07]), [.16, .1, .14], on ? GR : '#3a4553', a * one, .6); lab(c, on ? '1' : '0', add(b, [0, -.06, .07]), on ? '#ffffff' : '#8a98a6', a * one, .1); }
+    } });
+  }
+  V.sorted(items);
+  // 目前最好的橫桿
+  if (sweep > 0 && sweep < 10.5 && frac < .2 && bestIdx >= 0) { const z = best * HS + .02; V.line(c, [PX(0) - .13, -.12, z], [PX(Math.min(9, Math.floor(sweep))) + .13, -.12, z], { color: AM, a: a * .85 * (1 - frac * 5), w: 3 }); }
+  // 掃描光點
+  if (sweep > 0 && sweep < 10) { const i = Math.floor(sweep), p = [PX(i), -.1, arr[i] * HS + .2]; V.glow(c, p, .3, .7 * a, H_[i] ? GR : INK); }
+  return H_.filter((x, i) => x && i < sweep).length;
+}
+
+// ═════════ 鏡頭
+V.camKeys([
+  [0, V.orbit(-10, 7.6, 1.3, [0, 0, -.05], 44)], [T.start, V.orbit(-6, 7.2, 1.5, [0, 0, .55], 44)],
+  [A1.start, V.orbit(-12, 6.4, 1.2, [0, 0, .72], 44)], [L.a3.end, V.orbit(-4, 6.5, 1.3, [0, 0, .72], 44)],
+  [B1.start + .3, V.orbit(-10, 6.5, 1.2, [0, 0, .78], 44)], [L.b3.end, V.orbit(4, 6.6, 1.3, [0, 0, .7], 44)],
+  [C1.start + .3, V.orbit(-8, 6.4, 1.2, [0, 0, .6], 44)], [L.c3.end, V.orbit(4, 6.5, 1.3, [0, 0, .6], 44)], [DUR, V.orbit(-2, 6.8, 1.4, [0, 0, .6], 44)],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c);
+  drawRow(c, t, { sweep: prog(t, .2, 3.6) * 10, grow: prog(t, 0, .6) });
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '演算法 · 機率分析', big: '雇用問題', size: 180, y: 600, en: 'THE  HIRING  PROBLEM', q: 'E[X] = Hₙ ≈ ln n', qGap: 330, color: AM });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); drawRow(c, t, {}); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), AM);
+}
+function sHire(c, t) {
+  const fade = 1 - prog(t, B1.start - .3, B1.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c);
+  const a1 = A1.start, a2 = L.a2.start, a3 = L.a3.start;
+  const inc = E.inOutCubic(prog(t, a2 + .1, a2 + .7)) * (1 - E.inOutCubic(prog(t, a3 + .1, a3 + .7)));
+  const arr = inc > .5 ? INC : RND;
+  const sweep = t < a2 ? prog(t, a1 + .4, a1 + 3.4) * 10 : t < a3 ? prog(t, a2 + .8, a2 + 3.0) * 10 : 10;
+  const n = drawRow(c, t, { arr, sweep: inc > 0 && inc < 1 ? 0 : sweep, grow: prog(t, a1, a1 + .6) });
+  const ca = prog(t, a1 + .4, a1 + .7) * (1 - prog(t, a3 + .1, a3 + .3));
+  if (ca > 0 && !(inc > 0 && inc < 1)) { S.label(c, '換人', CX, 230, { size: 34, a: .7 * ca, ls: '6px' }); S.label(c, n + ' 次', CX, 315, { size: 90, w: 700, color: arr === INC ? CO : GR, a: ca }); }
+  const qa = prog(t, a3 + .5, a3 + .9);
+  if (qa > 0) { S.label(c, '隨機順序', CX, 260, { size: 70, w: 700, color: AM, a: qa }); S.label(c, '平均換幾次？', CX, 350, { size: 46, a: .8 * qa }); }
+  c.restore();
+}
+function sProb(c, t) {
+  const fade = 1 - prog(t, C1.start - .3, C1.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c);
+  const b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start;
+  // 前 5 個聚焦：最好的那個在 5 格裡亂跳
+  const foc = prog(t, b1 + .3, b1 + .7) * (1 - prog(t, b3 + .1, b3 + .5));
+  drawRow(c, t, { focus: foc > .5 ? 4 : -1, one: prog(t, b3 + .3, b3 + .9) });
+  if (foc > 0) {
+    const hop = t < b2 + .4 ? Math.floor((t - b1) * 3) % 5 : 4, p = [PX(hop), -.3, 1.82];
+    V.glow(c, p, .4, .8 * foc, GR); V.core(c, p, .06, foc, GR); lab(c, '最好', add(p, [0, 0, .22]), GR, foc, .12);
+    [0, 1, 2, 3, 4].forEach(i => V.line(c, [PX(i), -.3, 1.65], [PX(i), -.3, 1.69], { color: INK, a: .5 * foc, w: 2 }));
+    V.line(c, [PX(0) - .1, -.3, 1.67], [PX(4) + .1, -.3, 1.67], { color: INK, a: .3 * foc, w: 1.4, plain: true });
+  }
+  const pa = prog(t, b1 + .5, b1 + .9) * (1 - prog(t, b2 - .1, b2 + .2));
+  if (pa > 0) S.label(c, '第 5 個被雇 ⇔ 前 5 個裡最大', CX, 260, { size: 44, w: 700, color: INK, a: pa });
+  const qa = prog(t, b2 + .2, b2 + .6) * (1 - prog(t, b3 - .1, b3 + .2));
+  if (qa > 0) { S.label(c, 'P = 1/5', CX, 280, { size: 90, w: 700, color: AM, a: qa }); S.label(c, '一般：1/i', CX, 370, { size: 44, color: AM, a: .85 * qa }); }
+  const xa = prog(t, b3 + .4, b3 + .8);
+  if (xa > 0) { S.label(c, 'X = X₁ + X₂ + … + Xₙ', CX, 260, { size: 52, w: 700, color: GR, a: xa }); S.label(c, '1 + 1 + 0 + 0 + 1 + 0 + 0 + 1 + 0 + 0 = 4', CX, 345, { size: 34, a: .8 * xa * prog(t, b3 + 1.2, b3 + 1.6) }); }
+  c.restore();
+}
+function sSum(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+  const fr = prog(t, c1 + .3, c1 + 1.4);
+  drawRow(c, t, { frac: fr, one: 1 - prog(t, c1 + .1, c1 + .5) });
+  // 1/x 曲線
+  const ca = prog(t, c2 + .2, c2 + 1.4);
+  if (ca > 0) { const pts = []; for (let k = 0; k <= 60; k++) { const x = 1 + k / 60 * 9.5; pts.push([PX(x - 1), -.12, (1 / x) * 1.3]); } V.path(c, pts, { p: ca, color: GR, a: .95, w: 3.5 }); }
+  const ea = prog(t, c1 + .6, c1 + 1.0) * (1 - prog(t, c2 - .1, c2 + .2));
+  if (ea > 0) { S.label(c, 'E[X] = Σ E[Xᵢ] = Σ 1/i', CX, 270, { size: 52, w: 700, color: AM, a: ea }); S.label(c, '期望值線性：不用獨立', CX, 355, { size: 40, color: GR, a: .85 * ea * prog(t, c1 + 1.6, c1 + 2.0) }); }
+  const ha = prog(t, c2 + .4, c2 + .8) * (1 - prog(t, c3 - .1, c3 + .2));
+  if (ha > 0) { S.label(c, 'Hₙ ≈ ln n', CX, 270, { size: 90, w: 700, color: GR, a: ha }); S.label(c, 'H₁₀ ≈ 2.93', CX, 365, { size: 44, a: .8 * ha }); }
+  const na = prog(t, c3 + .2, c3 + .6);
+  if (na > 0) { const v = lerp(0, 5.19, E.outCubic(prog(t, c3 + .2, c3 + 1.6))); S.label(c, 'n = 100', CX, 240, { size: 44, a: .75 * na }); S.label(c, v.toFixed(2) + ' 次', CX, 330, { size: 96, w: 700, color: GR, a: na }); S.label(c, '最壞 100 次', CX, 420, { size: 40, color: CO, a: .85 * prog(t, c3 + 1.6, c3 + 2.0) }); }
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['Xᵢ = I{ 第 i 人被雇 }', CY, 54], ['P(Xᵢ = 1) = 1/i（隨機順序）', AM, 50], ['E[X] = Σ 1/i = Hₙ', GR, 56], ['Hₙ = ln n + O(1)', INK, 56]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'hire', start: A1.start, end: B1.start, draw: sHire, color: AM, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'prob', start: B1.start, end: C1.start, draw: sProb, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'sum', start: C1.start, end: DUR, draw: (c, t) => { sSum(c, t); sExam(c, t); }, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+const TAG = '記憶宮殿 · 演算法館 · 第 8 間  /  ';
+S.chapters([[A1.start, TAG + '01 換人'], [B1.start, TAG + '02 機率 1/i'], [C1.start, TAG + '03 期望值'], [Ec.start, '']]);
+
+function render(t) {
+  tNow = t;
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const a1 = A1.start, a2 = L.a2.start, a3 = L.a3.start, b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start, c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+const hireCues = (t0, dur, arr) => hiresOf(arr).map((h, i) => ({ t: t0 + (i + .02) * dur / 10, sfx: h ? 'chime' : 'tick', gain: h ? -11 : -17 }));
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    ...hireCues(.2, 3.4, RND),
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    ...hireCues(a1 + .4, 3.0, RND),
+    { t: a2 + .1, sfx: 'swish', gain: -11 }, ...hireCues(a2 + .8, 2.2, INC),
+    { t: a3 + .1, sfx: 'swish', gain: -11 }, { t: a3 + .5, sfx: 'pop', gain: -10 },
+    { t: b1 + .3, sfx: 'whoosh', gain: -12 }, { t: b2 + .2, sfx: 'thump', gain: -8 },
+    { t: b3 + .3, sfx: 'tick', gain: -10 }, { t: b3 + 1.2, sfx: 'chime', gain: -10 },
+    { t: c1 + .3, sfx: 'swish', gain: -10 }, { t: c1 + 1.6, sfx: 'chime', gain: -10 },
+    { t: c2 + .2, sfx: 'riser', gain: -14 }, { t: c2 + .8, sfx: 'impact', gain: -9 },
+    { t: c3 + .2, sfx: 'riser', gain: -15 }, { t: c3 + 1.6, sfx: 'chime', gain: -7 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
