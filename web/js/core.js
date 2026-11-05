@@ -437,6 +437,7 @@ const ICON_P = {
   course: '<path d="M12 6.6C10.1 5.2 7.6 4.5 4.5 4.5v13c3.1 0 5.6.7 7.5 2.1 1.9-1.4 4.4-2.1 7.5-2.1v-13c-3.1 0-5.6.7-7.5 2.1zM12 6.6v13"/>',
   practice: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
   records: '<path d="M4 20h16M7.5 16.5v-5M12 16.5V7M16.5 16.5v-8"/>',
+  palace: '<path d="M4 20V10l3-2v3l3-2v3l2-1.3 2 1.3V9l3 2V8l3 2v10z"/><path d="M10 20v-4h4v4"/>',
   settings: '<path d="M4 7h9.5M18.5 7H20M4 17h3.5M12.5 17H20"/><circle cx="16" cy="7" r="2.4"/><circle cx="10" cy="17" r="2.4"/>',
   star: '<path d="M12 3.9l2.5 5.1 5.6.8-4.05 3.95.95 5.6L12 16.7l-5 2.65.95-5.6L3.9 9.8l5.6-.8z"/>',
   play: '<path d="M8 5.6v12.8L18.4 12z" fill="currentColor"/>',

@@ -13,13 +13,14 @@ function renderRail() {
   const rail = $('#rail');
   const left = S.daysLeft();
   const cur = location.hash.slice(1) || 'go';
-  const groupOf = h => /^(go|today)$/.test(h) ? 'today' : /^(practice|cards|wrong|gen)$/.test(h) ? 'practice' : /^(stats|state|plan|rewards)$/.test(h) ? 'records' : /^(setup|agent|methods)$/.test(h) ? 'settings' : (LESSON[h] || /^(subj-|videos|video-|feed|lab)/.test(h)) ? 'course' : 'today';
+  const groupOf = h => /^(go|today)$/.test(h) ? 'today' : /^(practice|cards|wrong|gen)$/.test(h) ? 'practice' : /^(stats|state|plan|rewards)$/.test(h) ? 'records' : /^(setup|agent|methods)$/.test(h) ? 'settings' : h === 'palace' ? 'palace' : (LESSON[h] || /^(subj-|videos|video-|feed|lab)/.test(h)) ? 'course' : 'today';
   const isCur = id => cur === id || (id === 'lab' && cur.startsWith('lab-')) || (id === 'videos' && (cur.startsWith('feed') || cur.startsWith('video')));
   const sub = ([id, t]) => `<a href="#${id}" class="nav-sub${isCur(id) ? ' cur' : ''}">${t}${id === 'agent' ? '<span class="unread-badge" hidden></span>' : ''}</a>`;
   const G = [
     { id: 'today', t: '今天', items: [['go', '帶我讀'], ['today', '今日總覽']] },
     { id: 'course', t: '課程', items: [['videos', '影片'], ['lab', '實驗室']], subj: true },
     { id: 'practice', t: '練習', items: [['practice', '闖關'], ['cards', '必背卡'], ['wrong', '錯題本'], ['gen', '隨機題']] },
+    { id: 'palace', t: '宮殿', items: [['palace', '宮殿']] },
     { id: 'records', t: '紀錄', items: [['stats', '儀表板'], ['state', '狀態'], ['plan', '30 天計畫'], ['rewards', '獎勵']] },
   ], SET = { id: 'settings', t: '設定', items: [['setup', '設定'], ['agent', Bridge.mode === 'cloud' ? 'Claude' : 'Agent'], ['methods', '學習法']] };
   const curG = groupOf(cur);
@@ -33,7 +34,7 @@ function renderRail() {
       ${ls.map(l => { const g = (S.st.lessons[l.id] || {}); const cls = g.gate === 'pass' ? 'pass' : g.gate === 'revise' ? 'revise' : g.gate === 'pending' ? 'pending' : g.read ? 'read' : ''; return `<a class="nav-ch ${l.id === cur ? 'cur' : ''}" href="#${l.id}"><span class="st ${cls}"></span>${esc(l.title)}</a>`; }).join('')}
     </details>`;
   }).join('');
-  const grp = g => `<div class="nav-g${curG === g.id ? ' on' : ''}"><a class="nav-gh" href="#${g.items[0][0]}">${ICON(g.id)}<span>${g.t}</span></a>${curG === g.id ? `<div class="nav-gs">${g.items.map(sub).join('')}${g.subj ? `<div class="nav-subjs">${subjHtml}</div>` : ''}</div>` : ''}</div>`;
+  const grp = g => `<div class="nav-g${curG === g.id ? ' on' : ''}"><a class="nav-gh" href="#${g.items[0][0]}">${ICON(g.id)}<span>${g.t}</span></a>${curG === g.id && (g.items.length > 1 || g.subj) ? `<div class="nav-gs">${g.items.map(sub).join('')}${g.subj ? `<div class="nav-subjs">${subjHtml}</div>` : ''}</div>` : ''}</div>`;
   rail.innerHTML = `
     <div class="brand"><a href="#go"><span class="b1">資工所</span><span class="b2">衝刺站</span></a>
       <button class="rail-close" id="railClose" aria-label="關閉選單">${ICON('close')}</button></div>
@@ -51,6 +52,7 @@ function route() {
   Labs.stopAll && Labs.stopAll();
   typeof Clips !== 'undefined' && Clips.stopAll();
   typeof Explain !== 'undefined' && Explain.stopAll();
+  typeof Palace3D !== 'undefined' && Palace3D.stop();
   document.body.classList.toggle('feed-mode', hsh === 'feed' || hsh.startsWith('feed-'));
   renderRail();
   Rewards.sync();
@@ -75,6 +77,7 @@ function route() {
   else if (hsh === 'setup') viewSetup();
   else if (hsh === 'rewards') viewRewards();
   else if (hsh === 'state') StateLog.view();
+  else if (hsh === 'palace') Palace3D.view();
   else viewToday();
   renderGoPill(hsh);
 }
