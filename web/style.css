@@ -1047,10 +1047,10 @@ details.sec:not([open]) > :not(summary) { display: none; }
 #chList .ch-act .btn { width: 100%; justify-content: center; flex: none; }
 #chList .ch-act .btn:only-child { grid-column: 1 / -1; }
 
-/* 只看重點：每段留第一段、粗體句、框框、圖、表；其餘推導收起 */
-#lessonBody.skim .sec > p:not(:first-of-type):not(:has(strong)),
-#lessonBody.skim .sec > ul, #lessonBody.skim .sec > ol,
-#lessonBody.skim .sec > h4 { display: none; }
+/* 只看重點：每段只留「要點」框、提示框、圖、表與獨立公式；段落文字全部收起（按 ⋯ →「看完整」展開） */
+#lessonBody.skim .sec > p, #lessonBody.skim .sec > ul, #lessonBody.skim .sec > ol,
+#lessonBody.skim .sec > h4, #lessonBody.skim .sec > blockquote { display: none; }
+#lessonBody.skim .sec > p:has(> .katex-display) { display: block; }
 #lessonBody { line-height: 1.95; }
 #lessonBody p { margin: .7em 0; }
 
@@ -1317,3 +1317,4 @@ dl.kv .kv-fig { padding: .3em 0; }
 .xp-ask-o .xp-o-t { flex: 1; display: block; min-width: 0; }
 .xp-hero-side .xp-play-btn { display: inline-flex; align-items: center; gap: 8px; font-size: 1.05rem; padding: 10px 22px; }
 
+.feyn-more > summary { cursor: pointer; color: var(--ink-2); font-size: .88rem; font-weight: 600; margin: 4px 0 8px; }

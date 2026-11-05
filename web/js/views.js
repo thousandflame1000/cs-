@@ -338,7 +338,6 @@ function viewLesson(id) {
     <header class="page-head">
       <div class="eyebrow subj-eb"><a href="#subj-${l.subject}">${esc(s.name)}</a>｜第 ${idx + 1} 章｜${l.mins} 分</div>
       <h1>${esc(l.title)}</h1>
-      ${l.summary ? `<p class="lede">${esc(l.summary)}</p>` : ''}
       <div class="row toolbar">
         <button class="btn" id="btnChQuiz" ${cs.n ? '' : 'disabled'}>本章練習 ${cs.n} 題</button>
         <button class="btn" id="btnRead">${ls.read ? '已讀 ✓（' + ls.read + '）' : '標記讀完'}</button>
@@ -409,7 +408,7 @@ function routeHtml(l) {
 function wireRoute(l) {
   $$('.route-st').forEach(b => b.onclick = () => {
     const el = $(b.dataset.to); if (!el) return;
-    if (b.dataset.to === '#lessonBody') { const d = $('details.sec[open]') || $('details.sec'); if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; } }
+    if (b.dataset.to === '#lessonBody') { const all = $$('details.sec'), ls = S.lesson(l.id), d = $('details.sec[open]') || all[Math.min(ls.sec || 0, all.length - 1)] || all[0]; if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; } }
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 }
@@ -554,7 +553,7 @@ function chunkLesson(l) {
   const groups = []; let cur = null;
   for (const el of [...body.children]) { if (el.tagName === 'H3') { cur = { h: el, els: [] }; groups.push(cur); } else if (cur) cur.els.push(el); }
   if (groups.length < 2) return;
-  const ls = S.lesson(l.id), last = groups.length - 1, want = window.__openSec && window.__openSec.ch === l.id ? window.__openSec.i : null, at = want != null ? want : ls.read ? -1 : Math.min(ls.sec || 0, last), ds = [];
+  const ls = S.lesson(l.id), last = groups.length - 1, want = window.__openSec && window.__openSec.ch === l.id ? window.__openSec.i : null, at = want != null ? want : -1, ds = [];
   if (want != null) { window.__openSec = null; setTimeout(() => { const d = ds[want]; if (d) { d.scrollIntoView({ behavior: 'smooth', block: 'start' }); d.classList.add('flash'); setTimeout(() => d.classList.remove('flash'), 1600); } }, 120); }
   groups.forEach((g, i) => {
     const d = document.createElement('details'); d.className = 'sec'; if (i === at) d.open = true;
@@ -613,13 +612,18 @@ function wireWorked(l) {
     (k < n ? li[k] : $('.wk-end', sec)).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 }
+function feynPrompt(src) {
+  const s = String(src || ''), m = s.match(/^(.+?[。？！?])(.+)$/s);
+  if (!m || m[2].trim().length < 12) return `<div class="feyn-prompt">${md(s)}</div>`;
+  return `<div class="feyn-prompt">${md(m[1])}</div><details class="feyn-more"><summary>完整要求</summary><div class="feyn-prompt">${md(m[2].trim())}</div></details>`;
+}
 function feynmanSection(l) {
   if (!l.feynman) return '';
   const ls = S.lesson(l.id);
   const last = S.st.msgs.filter(x => x.type === 'feynman' && x.ctx && x.ctx.lesson === l.id).slice(-1)[0];
   return `<section class="card feyn" id="feyn">
     <div class="card-h"><h2>費曼檢核</h2><span class="gate g-${ls.gate}">${gateLabel(ls.gate)}</span></div>
-    <p class="feyn-prompt">${md(l.feynman)}</p>
+    ${feynPrompt(l.feynman)}
     ${typeof CloudAgent !== 'undefined' && CloudAgent.ready() && !['pass', 'pending'].includes(ls.gate) ? `<div class="row"><button class="btn primary" id="btnFeynChat">💬 用聊天過關（一次回一兩句就好）</button></div><p class="muted small">或寫完整版：≥ 200 字｜每步寫因果｜一個例子｜何時不成立</p>` : '<p class="muted small">≥ 200 字｜每步寫因果｜一個例子｜何時不成立</p>'}
     ${last && last.gradeText ? `<div class="grade ${last.verdict}"><b>${last.verdict === 'pass' ? '通過' : '退回'}${last.score != null ? `｜${last.score} 分` : ''}</b>${md(last.gradeText)}</div>` : ''}
     ${(window.SpeechRecognition || window.webkitSpeechRecognition) && !['pass', 'pending'].includes(ls.gate) ? '<div class="row"><button class="btn" id="btnMic" type="button">🎤 用講的</button></div>' : ''}

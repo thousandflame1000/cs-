@@ -1,0 +1,94 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {
+   "id": "o1",
+   "text": "比較排序再怎麼聰明",
+   "hook": true
+  },
+  {
+   "id": "o2",
+   "text": "都快不過 [n log n]",
+   "hook": true,
+   "pause": 0.1
+  },
+  {
+   "id": "T",
+   "text": "比較排序下界",
+   "card": true,
+   "hold": 3.4
+  },
+  {
+   "id": "a1",
+   "text": "每次比較 = 一個[岔路]",
+   "scene": true,
+   "hold": 4.4
+  },
+  {
+   "id": "a2",
+   "text": "3 個數有 [6 種]排法",
+   "hold": 3.4
+  },
+  {
+   "id": "a3",
+   "text": "6 片葉子，樹至少 [3 層]",
+   "hold": 3.8,
+   "pause": 0.2
+  },
+  {
+   "id": "b1",
+   "text": "4 個數：24 種",
+   "scene": true,
+   "hold": 3.0
+  },
+  {
+   "id": "b2",
+   "text": "24 片葉子 → 至少 [5 層]",
+   "hold": 3.6
+  },
+  {
+   "id": "b3",
+   "text": "10 個數：至少 [22 層]",
+   "hold": 3.6,
+   "pause": 0.2
+  },
+  {
+   "id": "c1",
+   "text": "層數 = log n!",
+   "scene": true,
+   "hold": 3.4
+  },
+  {
+   "id": "c2",
+   "text": "右半邊每根都 ≥ log(n/2)",
+   "hold": 3.8
+  },
+  {
+   "id": "c3",
+   "text": "所以 log n! ≥ (n/2)·log(n/2)：[n log n] 級",
+   "hold": 3.8,
+   "pause": 0.2
+  },
+  {
+   "id": "d1",
+   "text": "計數排序[不比較]",
+   "scene": true,
+   "hold": 3.4
+  },
+  {
+   "id": "d2",
+   "text": "直接數：[O(n + k)]",
+   "hold": 3.6
+  },
+  {
+   "id": "E",
+   "text": "考試這樣寫",
+   "card": true,
+   "hold": 4.6
+  }
+ ]
+}

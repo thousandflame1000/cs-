@@ -1,0 +1,186 @@
+window.TIMING = {
+ "total": 57.75,
+ "lines": [
+  {
+   "id": "o1",
+   "start": 0.3,
+   "end": 1.925,
+   "text": "比較排序再怎麼聰明",
+   "cap": true,
+   "card": false,
+   "n": 9,
+   "scene": false,
+   "hook": true,
+   "font": "sans"
+  },
+  {
+   "id": "o2",
+   "start": 2.225,
+   "end": 3.85,
+   "text": "都快不過 [n log n]",
+   "cap": true,
+   "card": false,
+   "n": 9,
+   "scene": false,
+   "hook": true,
+   "font": "sans"
+  },
+  {
+   "id": "T",
+   "start": 4.25,
+   "end": 7.65,
+   "text": "比較排序下界",
+   "cap": false,
+   "card": true,
+   "n": 6,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a1",
+   "start": 7.95,
+   "end": 12.35,
+   "text": "每次比較 = 一個[岔路]",
+   "cap": true,
+   "card": false,
+   "n": 9,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a2",
+   "start": 12.65,
+   "end": 16.05,
+   "text": "3 個數有 [6 種]排法",
+   "cap": true,
+   "card": false,
+   "n": 8,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a3",
+   "start": 16.35,
+   "end": 20.15,
+   "text": "6 片葉子，樹至少 [3 層]",
+   "cap": true,
+   "card": false,
+   "n": 9,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b1",
+   "start": 20.65,
+   "end": 23.65,
+   "text": "4 個數：24 種",
+   "cap": true,
+   "card": false,
+   "n": 6,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b2",
+   "start": 23.95,
+   "end": 27.55,
+   "text": "24 片葉子 → 至少 [5 層]",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b3",
+   "start": 27.85,
+   "end": 31.45,
+   "text": "10 個數：至少 [22 層]",
+   "cap": true,
+   "card": false,
+   "n": 9,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c1",
+   "start": 31.95,
+   "end": 35.35,
+   "text": "層數 = log n",
+   "cap": true,
+   "card": false,
+   "n": 7,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c2",
+   "start": 35.65,
+   "end": 39.45,
+   "text": "右半邊每根都 ≥ log(n/2)",
+   "cap": true,
+   "card": false,
+   "n": 13,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c3",
+   "start": 39.75,
+   "end": 43.55,
+   "text": "所以 log n! ≥ (n/2)·log(n/2)：[n log n] 級",
+   "cap": true,
+   "card": false,
+   "n": 22,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d1",
+   "start": 44.05,
+   "end": 47.45,
+   "text": "計數排序[不比較]",
+   "cap": true,
+   "card": false,
+   "n": 7,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d2",
+   "start": 47.75,
+   "end": 51.35,
+   "text": "直接數：[O(n + k)]",
+   "cap": true,
+   "card": false,
+   "n": 7,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "E",
+   "start": 51.65,
+   "end": 56.25,
+   "text": "考試這樣寫",
+   "cap": false,
+   "card": true,
+   "n": 5,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  }
+ ]
+};
+window.L = Object.fromEntries(window.TIMING.lines.map((l) => [l.id, l]));  // L.o1.start / L.o1.end

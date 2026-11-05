@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>比較排序下界</title>
+<!--
+  資工所衝刺 · 短影音 20：比較排序下界——決策樹的葉子
+  記憶宮殿：資結館 · 第 4 間。3D 決策樹：每個節點是一次比較，往左右（第 1、3 層）或前後（第 2 層）分岔；
+  葉子是排列卡（三根小柱依序由矮到高，顏色是 a、b、c）。3 個數 6 片葉子 → 至少 3 層；4 個數 24 片 → 5 層；10 個數 → 22 層。
+  log n! 用 16 根柱子（高 = log i）看：右半邊每根都 ≥ log(n/2)。最後計數排序：方塊掉進桶子，不比較。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', PK = '#ff9ad5', GR = '#6ee7a8', CO = '#ff6a5c', VI = '#b48cff';
+const COL = { a: CY, b: AM, c: PK };
+const K = Kit({ W, H, stage, duration: DUR, seed: 201, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: AM } });
+K.warm([CY, AM, PK, GR, CO, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 'n log n': AM, 岔路: CY, '6 種': PK, '3 層': CY, '5 層': CY, '22 層': CY, 不比較: GR, 'O(n + k)': GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+const add = (a, b) => a.map((v, i) => v + b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: CY, a: .55 * a, major: 3 });
+let tNow = 0;
+function box(c, x0, x1, y0, y1, z0, z1, col, a = 1, fill = .5) {
+  if (a <= .003 || x1 - x0 < .002 || z1 - z0 < .002) return;
+  const cam = V.camAt(tNow).pos, mid = [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2];
+  const F = [[[0, -1, 0], [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]], .55], [[1, 0, 0], [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], .38], [[-1, 0, 0], [[x0, y1, z0], [x0, y0, z0], [x0, y0, z1], [x0, y1, z1]], .38], [[0, 1, 0], [[x1, y1, z0], [x0, y1, z0], [x0, y1, z1], [x1, y1, z1]], .3], [[0, 0, 1], [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], .95]];
+  for (const [n, q, k] of F) { const d = [cam[0] - mid[0], cam[1] - mid[1], cam[2] - mid[2]]; if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] <= 0) continue; V.poly(c, q, K.rgba(K.mix(col, '#ffffff', k * .35), fill * k), K.rgba(K.mix(col, '#ffffff', .4), .85), a); }
+}
+function counter(c, label, val, col, a, x = CX, y = 300, sz = 84) {
+  if (a <= .003) return;
+  S.label(c, label, x, y - 50, { size: 30, w: 500, color: INK, a: .6 * a, ls: '4px' });
+  S.label(c, val, x, y + 14, { size: sz, w: 700, color: col, a });
+}
+/** 排列卡：依排列順序放三（或四）根由矮到高的小柱 */
+function card(c, p, perm, a = 1, s = 1) {
+  if (a <= .003) return;
+  const n = perm.length, w = .13 * s, gap = .17 * s;
+  [...perm].forEach((ch, i) => { const x = p[0] + (i - (n - 1) / 2) * gap; box(c, x - w / 2, x + w / 2, p[1] - w / 2, p[1] + w / 2, p[2], p[2] + (.12 + i * .1) * s, COL[ch] || VI, a, .6); });
+}
+
+// ═════════ n = 3 的決策樹（插入排序那棵）
+const Z0 = 3.3, DZ = 1.0;
+const TREE = { id: 'R', cmp: 'a : b', p: [0, 0, Z0], kids: [
+  { id: 'L', cmp: 'b : c', side: '＜', kids: [{ id: 'LL', leaf: 'abc', side: '＜' }, { id: 'LR', cmp: 'a : c', side: '＞', kids: [{ id: 'LRL', leaf: 'acb', side: '＜' }, { id: 'LRR', leaf: 'cab', side: '＞' }] }] },
+  { id: 'Rt', cmp: 'a : c', side: '＞', kids: [{ id: 'RL', leaf: 'bac', side: '＜' }, { id: 'RR', cmp: 'b : c', side: '＞', kids: [{ id: 'RRL', leaf: 'bca', side: '＜' }, { id: 'RRR', leaf: 'cba', side: '＞' }] }] }] };
+const OFF = [[1.15, 0, 0], [0, .9, 0], [.5, 0, 0]];
+const NODES = []; (function lay(n, d, par) { n.d = d; if (par) n.p = add(par.p, add(OFF[d - 1].map((v) => v * (n === par.kids[0] ? -1 : 1)), [0, 0, -DZ])); n.par = par; NODES.push(n); (n.kids || []).forEach((k) => lay(k, d + 1, n)); })(TREE, 0, null);
+const LEAVES = NODES.filter((n) => n.leaf);
+const PATH = ['R', 'L', 'LR', 'LRR'].map((id) => NODES.find((n) => n.id === id)); // a = 2, b = 3, c = 1 → c < a < b
+function drawTree3(c, t, a = 1) {
+  const grow = (n) => prog(t, A1.start + .1 + n.d * .35, A1.start + .5 + n.d * .35) * a;
+  for (const n of NODES) if (n.par) { const g = grow(n); if (g > 0) V.line(c, n.par.p, mix3(n.par.p, n.p, g), { color: INK, a: .35 * g, w: 2 }); if (g > .8) V.label(c, n.side, add(mix3(n.par.p, n.p, .45), [0, 0, .12]), { size: .2, w: 700, color: n.side === '＜' ? GR : CO, a: .8 * g, minPx: 18, maxPx: 48 }); }
+  const items = NODES.map((n) => ({ p: n.p, draw: () => {
+    const g = grow(n); if (g <= 0) return;
+    if (n.leaf) { const hl = prog(t, L.a2.start + .2 + LEAVES.indexOf(n) * .25, L.a2.start + .5 + LEAVES.indexOf(n) * .25); card(c, add(n.p, [0, 0, -.12]), n.leaf, g, 1 + .15 * hl); if (hl > 0) V.glow(c, n.p, .7, .3 * hl, PK); }
+    else { V.orb(c, n.p, .16, { color: VI, a: g, atmo: .5, spec: .5 }); V.label(c, n.cmp, add(n.p, [0, 0, .34]), { size: .22, w: 700, color: INK, a: g, minPx: 20, maxPx: 52 }); }
+  } }));
+  V.sorted(items);
+  // 走一條路：a = 2, b = 3, c = 1
+  const pk = prog(t, A1.start + 1.7, A1.start + 4.0), seg = pk * (PATH.length - 1), i = Math.min(PATH.length - 2, Math.floor(seg));
+  if (pk > 0 && t < L.a2.start + .3) { const p = mix3(PATH[i].p, PATH[i + 1].p, E.inOutCubic(seg - i)); V.core(c, p, .09, 1, '#ffffff'); V.glow(c, p, .8, .5, '#ffffff'); }
+}
+
+// ═════════ 鏡頭
+const TG = [0, 0, 1.75];
+V.camKeys([
+  [0, V.orbit(-34, 9.2, 2.8, [0, 0, 1.1], 44)], [T.start, V.orbit(-12, 10, 3.2, [0, 0, 1.3], 44)],
+  [A1.start, V.orbit(-26, 8.8, 2.6, TG, 44)], [L.a3.end, V.orbit(6, 9.0, 2.8, TG, 44)],
+  [B1.start + .3, V.orbit(-30, 9.6, 4.6, [0, 0, 1.4], 44)], [L.b3.end, V.orbit(-4, 10.4, 5.2, [0, 0, 1.4], 44)],
+  [C1.start + .3, V.orbit(-20, 8.0, 2.4, [0, 0, 1.0], 44)], [L.c3.end, V.orbit(4, 8.2, 2.6, [0, 0, 1.0], 44)],
+  [D1.start + .3, V.orbit(-24, 7.6, 3.4, [0, -.2, .7], 44)], [DUR, V.orbit(4, 7.8, 3.6, [0, -.2, .7], 44)],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c); drawTree3(c, t + (A1.start - o1.start) * 0 + 99, 1);
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '資料結構 · 排序', big: 'n log n', size: 190, y: 600, en: 'LOWER  BOUND  FOR  COMPARISON  SORTS', q: '再聰明也躲不掉的比較次數', qGap: 330, color: AM });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .18; room(c); drawTree3(c, 99, 1); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), AM);
+}
+function sTree3(c, t) {
+  room(c);
+  drawTree3(c, t, 1);
+  const la = prog(t, L.a3.start + .2, L.a3.start + .7);
+  // 每層最多 1、2、4、8 個：只有第 3 層裝得下 6 片
+  if (la > 0) for (let d = 0; d <= 3; d++) { const z = Z0 - d * DZ, cap = 2 ** d, ok = cap >= 6; V.line(c, [-1.6, 1.3, z], [1.6, 1.3, z], { color: ok ? CY : INK, a: (ok ? .8 : .25) * la, w: ok ? 2.4 : 1.2, plain: !ok }); V.label(c, String(cap), [1.85, 1.3, z], { size: .3, w: 700, color: ok ? CY : INK, a: (ok ? 1 : .55) * la, minPx: 24, maxPx: 80 }); }
+  counter(c, '排法', prog(t, L.a2.start + .2, L.a2.start + .6) > 0 ? '6' : '—', PK, prog(t, A1.start + .3, A1.start + .8), CX - 200);
+  counter(c, '至少幾層', la > .5 ? '3' : '—', CY, prog(t, A1.start + .3, A1.start + .8), CX + 200);
+}
+// b：n = 4 → 完全二元樹的 5 層，最底 32 格亮 24 片
+const OFF5 = [[1.3, 0, 0], [0, 1.0, 0], [.66, 0, 0], [0, .5, 0], [.33, 0, 0]], DZ5 = .62, Z5 = 3.4;
+const T5 = []; (function lay(p, d, id) { T5.push({ p, d, id }); if (d < 5) for (const s of [-1, 1]) lay(add(p, add(OFF5[d].map((v) => v * s), [0, 0, -DZ5])), d + 1, id * 2 + (s > 0 ? 1 : 0)); })([0, 0, Z5], 0, 1);
+const PERM4 = (() => { const out = []; const go = (pre, rest) => { if (!rest.length) return out.push(pre); [...rest].forEach((ch, i) => go(pre + ch, rest.slice(0, i) + rest.slice(i + 1))); }; go('', 'abcd'); return out; })();
+function sTree5(c, t) {
+  room(c);
+  const items = [];
+  for (const n of T5) {
+    const g = prog(t, B1.start + .1 + n.d * .3, B1.start + .5 + n.d * .3); if (g <= 0) continue;
+    if (n.d) { const par = T5.find((m) => m.id === n.id >> 1); V.line(c, par.p, mix3(par.p, n.p, g), { color: INK, a: .22 * g, w: 1.2, plain: true }); }
+    if (n.d < 5) items.push({ p: n.p, draw: () => V.core(c, n.p, .05, g * .9, VI) });
+    else { const li = n.id - 32, lit = li < 24, la = lit ? prog(t, L.b2.start + .1 + li * .04, L.b2.start + .4 + li * .04) : 0; items.push({ p: n.p, draw: () => { if (lit && la > 0) card(c, add(n.p, [0, 0, -.06]), PERM4[li], la, .45); else V.core(c, n.p, .04, .4 * g, INK); } }); }
+  }
+  V.sorted(items);
+  const a = prog(t, B1.start + .2, B1.start + .7), big = prog(t, L.b3.start + .2, L.b3.start + .7);
+  counter(c, big > .5 ? 'n = 10 排法' : '排法', big > .5 ? '3,628,800' : '24', PK, a, CX - 200, 300, big > .5 ? 64 : 84);
+  counter(c, '至少幾層', big > .5 ? '22' : prog(t, L.b2.start + 1.4, L.b2.start + 1.9) > 0 ? '5' : '—', CY, a, CX + 200);
+  if (big > 0) S.label(c, '2²² = 4,194,304', CX, 470, { size: 44, w: 600, color: INK, a: .8 * big });
+}
+// c：log n! = log 1 + log 2 + … + log n（n = 16 根柱子）
+const NB = 16, BW = .2, BX = (i) => (i - (NB + 1) / 2) * .23, HZ = .42;
+function sStirling(c, t) {
+  room(c);
+  const half = prog(t, L.c2.start + .2, L.c2.start + .9), rect = prog(t, L.c3.start + .2, L.c3.start + .9);
+  const items = [];
+  for (let i = 1; i <= NB; i++) {
+    const g = E.outCubic(prog(t, C1.start + .2 + i * .1, C1.start + .6 + i * .1)); if (g <= 0) continue;
+    const h = Math.log2(i) * HZ * g, right = i > NB / 2, col = right && half > 0 ? K.mix(CY, AM, half) : CY;
+    items.push({ p: [BX(i), 0, h / 2], draw: () => { if (h > .01) box(c, BX(i) - BW / 2, BX(i) + BW / 2, -.2, .2, 0, h, col, 1, .5); V.label(c, String(i), [BX(i), -.3, -.12], { size: .14, color: INK, a: .5 * g, minPx: 14, maxPx: 34 }); } });
+  }
+  V.sorted(items);
+  // 全長 n、高 log n 的虛框
+  const ga = prog(t, C1.start + 2.2, C1.start + 2.8), x0 = BX(.5), x1 = BX(NB + .5), top = Math.log2(NB) * HZ;
+  if (ga > 0) { V.line(c, [x0, -.21, top], [x1, -.21, top], { color: INK, a: .5 * ga, w: 1.4, plain: true }); V.line(c, [x1, -.21, 0], [x1, -.21, top], { color: INK, a: .5 * ga, w: 1.4, plain: true }); V.label(c, 'n log n', [x1 + .3, -.21, top + .1], { size: .2, w: 600, color: INK, a: .7 * ga, align: 'left', minPx: 18, maxPx: 50 }); }
+  // log(n/2) 的線與右半邊的長方形
+  const lz = Math.log2(NB / 2) * HZ;
+  if (half > 0) { V.line(c, [BX(NB / 2 + .5), -.22, lz], [x1, -.22, lz], { color: AM, a: .95 * half, w: 2.6 }); V.label(c, 'log(n/2)', [BX(NB / 2 + .5) - .1, -.22, lz], { size: .2, w: 700, color: AM, a: half, align: 'right', minPx: 18, maxPx: 54 }); }
+  if (rect > 0) V.poly(c, [[BX(NB / 2 + .5), -.23, 0], [x1, -.23, 0], [x1, -.23, lz], [BX(NB / 2 + .5), -.23, lz]], K.rgba(AM, .18 * rect), K.rgba(AM, .9 * rect), 1);
+  const a = prog(t, C1.start + .2, C1.start + .7);
+  counter(c, 'log₂ 16!', '44.25', AM, a, CX - 200);
+  counter(c, '16 log₂ 16', '64', INK, a, CX + 200);
+  if (rect > 0) S.label(c, '8 × 3 = 24 ≤ 44.25', CX, 470, { size: 46, w: 600, color: AM, a: rect });
+}
+// d：計數排序
+const VALS = [3, 1, 4, 1, 0, 3, 2, 4, 1, 3], KB = 5, TX = (v) => (v - 2) * .62, VC = [VI, CY, GR, AM, PK];
+function sCount(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const a = prog(t, D1.start - .1, D1.start + .3), cnt = Array(KB).fill(0), out = prog(t, L.d2.start + .4, L.d2.start + 2.4);
+  for (let v = 0; v < KB; v++) { V.poly(c, [[TX(v) - .24, .1, 0], [TX(v) + .24, .1, 0], [TX(v) + .24, .1, 1.6], [TX(v) - .24, .1, 1.6]], K.rgba(VC[v], .05 * a), K.rgba(VC[v], .5 * a), 1); V.label(c, String(v), [TX(v), -.1, -.15], { size: .22, w: 700, color: VC[v], a, minPx: 20, maxPx: 56 }); }
+  const items = [];
+  VALS.forEach((v, i) => {
+    const f = E.inOutCubic(prog(t, D1.start + .4 + i * .22, D1.start + .9 + i * .22)), slot = cnt[v]++;
+    const start = [(i - 4.5) * .28, -1.0, 2.4], inBin = [TX(v), .1, .14 + slot * .26];
+    const sorted = VALS.slice().sort((x, y) => x - y), oi = (() => { let k = 0; for (let j = 0; j < i; j++) if (VALS[j] === v) k++; return sorted.indexOf(v) + k; })();
+    const end = [(oi - 4.5) * .28, -1.1, .14];
+    const p = out > 0 ? mix3(inBin, end, E.inOutCubic(prog(out, oi * .05, oi * .05 + .5))) : mix3(start, inBin, f);
+    items.push({ p, draw: () => { box(c, p[0] - .11, p[0] + .11, p[1] - .11, p[1] + .11, p[2] - .11, p[2] + .11, VC[v], a, .6); } });
+  });
+  V.sorted(items);
+  const cntA = prog(t, D1.start + 2.9, D1.start + 3.3) * (1 - out);
+  const counts = [0, 1, 2, 3, 4].map((v) => VALS.filter((x) => x === v).length);
+  if (cntA > 0) counts.forEach((n, v) => V.label(c, '×' + n, [TX(v), .1, 1.85], { size: .24, w: 700, color: VC[v], a: cntA, minPx: 22, maxPx: 60 }));
+  counter(c, '比較次數', '0', GR, prog(t, D1.start + .3, D1.start + .8));
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['葉子 n! 片 → 高 ≥ log n!', CY, 52], ['log n! = Θ(n log n)', AM, 56], ['合併、堆積排序已最佳', INK, 50], ['計數排序不比較：O(n + k)', GR, 48]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'tree3', start: A1.start, end: B1.start, draw: sTree3, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'tree5', start: B1.start, end: C1.start, draw: sTree5, color: VI, in: { type: 'cut' } },
+  { id: 'stirling', start: C1.start, end: D1.start, draw: sStirling, color: AM, in: { type: 'cut' } },
+  { id: 'count', start: D1.start, end: DUR, draw: (c, t) => { sCount(c, t); sExam(c, t); }, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+S.chapters([[A1.start, '記憶宮殿 · 資結館 · 第 4 間  /  01 決策樹'], [B1.start, '記憶宮殿 · 資結館 · 第 4 間  /  02 葉子變多'], [C1.start, '記憶宮殿 · 資結館 · 第 4 間  /  03 log n!'], [D1.start, '記憶宮殿 · 資結館 · 第 4 間  /  04 不比較'], [Ec.start, '']]);
+
+function render(t) {
+  tNow = t;
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .2, sfx: 'whoosh', gain: -12 },
+    { t: o2.start + .2, sfx: 'chime', gain: -10 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    ...[0, 1, 2, 3].map((d) => ({ t: A1.start + .1 + d * .35, sfx: 'pop', gain: -13 })),
+    ...[0, 1, 2].map((k) => ({ t: A1.start + 1.7 + k * .77, sfx: 'tick', gain: -11 })),
+    ...[0, 1, 2, 3, 4, 5].map((k) => ({ t: L.a2.start + .2 + k * .25, sfx: 'tick', gain: -14 })),
+    { t: L.a3.start + .2, sfx: 'chime', gain: -10 },
+    { t: B1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.b2.start + 1.4, sfx: 'impact', gain: -8 },
+    { t: L.b3.start + .2, sfx: 'riser', gain: -14 },
+    { t: C1.start, sfx: 'whoosh', gain: -11 },
+    { t: L.c2.start + .2, sfx: 'swish', gain: -10 }, { t: L.c3.start + .2, sfx: 'chime', gain: -10 },
+    ...VALS.map((v, i) => ({ t: D1.start + .9 + i * .22, sfx: 'tick', gain: -14 })),
+    { t: L.d2.start + .4, sfx: 'swish', gain: -10 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
