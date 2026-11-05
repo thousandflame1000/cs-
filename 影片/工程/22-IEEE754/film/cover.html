@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>封面</title>
+<!-- 封面（代码绘制）：与成片共用 motion.js / kit.js，同一套字体、色彩与发光语言。本页是静态一帧（t 的纯函数）。
+     ?cover=land → 横版 16:9：设计 1920×1080，4K 输出 = scale 2（3840×2160）；核心内容必须落在中央 4:3 区域 x∈[240,1680]，两侧各 240px 只放氛围
+     ?cover=port → 竖版 3:4：设计 1080×1440，4K 输出 = scale 2（2160×2880）；四周留 60px 以上边距
+     &guides=1   → 叠加安全区参考线（只用于检查，不交付）
+     渲染：node <skill>/scripts/cover.mjs film/cover.html --out out/封面 --name <片名> --guides
+     必改：① COPY 文案（从字幕稿挑最有代表性的金句/主题）② 配色 ③ drawSubject（把成片里最有代表性的主体搬过来，放大放亮）
+     详见 references/文案与封面.md -->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 100 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script>
+const Q = new URLSearchParams(location.search);
+const MODE = Q.get('cover') === 'port' ? 'port' : 'land';
+const [W, H] = { land: [1920, 1080], port: [1080, 1440] }[MODE];
+const TAU = M.TAU, stage = document.getElementById('stage');
+
+// ───────────── ① 文案：三层——钩子句（小）/ 金句主标题（大，≤8 字，竖版可拆两行）/ 片名（小）
+const COPY = {
+  font: 'Plex',
+  kicker: '−6.25 存進電腦',
+  hero: ['長這樣', '0xC0C80000'],
+  title: 'IEEE 754 浮點數　·　計算機組織',
+};
+// ───────────── ② 配色：与成片主色一致（一个主色相 + 一个强调色）
+const MAIN = '#ffc14d', HOT = '#ffc14d', WARM = '#ffc14d', CORAL = '#ff6a5c', INK = '#eef3fa';
+const K = Kit({ W, H, stage, duration: 1, seed: 7, vignette: .55, grain: .12, bloom: 1.3, font: 'Plex',
+  palette: { bg: '#04070d', ink: INK, sub: '#8a98a6', accent: MAIN, accent2: CORAL } });
+K.warm([MAIN, WARM, CORAL, INK]);
+for (const f of [`700 100px ${COPY.font}`, `500 40px ${COPY.font}`])
+  M.wait(document.fonts.load(f, [COPY.kicker, ...COPY.hero, COPY.title].join('')));
+
+// ───────────── 版式（设计坐标）。横版：主体在中央 4:3 内，文字居中、整体不越过 x∈[240,1680]
+const LAY = {
+  land: { gx: 960, gy: 380, gr: 360, hero: 170, kick: 50, kickY: 770, heroY: 940, tY: 1025, tSize: 34 },
+  port: { gx: 540, gy: 500, gr: 360, hero: 214, kick: 46, kickY: 862, heroY: [1085, 1295], tY: 1372, tSize: 34 },
+}[MODE];
+const SAFE = MODE === 'land' ? [240, W - 240] : [60, W - 60];
+const guard = (label, l, r) => { if (l < SAFE[0] - .5 || r > SAFE[1] + .5) console.error(`封面越界（${MODE}）：${label} 占 x=${Math.round(l)}–${Math.round(r)}，安全范围 ${SAFE[0]}–${SAFE[1]}`); };
+
+K.amb.keys([[0, { haze: .2, wisp: .12, stars: .75, dust: .35, cam: .3 }]]);
+
+// ───────────── ③ 主体：把成片里最有代表性的东西画大画亮（这里只是占位：材质球 + 光环 + 亮核；有 core.js 就 <script src="core.js"> 后用 Core(K)）
+// 主體：−6.25 的 32 格位元牆（珊瑚＝符號、琥珀＝指數、青＝尾數；1 的格子凸出發亮）
+function drawSubject(c, { gx, gy, gr }) {
+  K.spotlight(c, gx, gy - gr * 1.3, Math.PI / 2, .7, gr * 2.4, .08, INK);
+  K.halo(c, gx, gy, gr * 1.6, .14, MAIN);
+  const S2 = CS(K, { stage }), V = Space(K, S2, { cx: gx, cy: gy, fogNear: 12, fogFar: 30 });
+  V.camKeys([[0, V.orbit(-18, 5.4, 1.2, [0, 0, 1.9], 44)]]); V.begin(0);
+  const sc = gr / 420; c.save(); c.translate(gx, gy); c.scale(sc, sc); c.translate(-gx, -gy);
+  const BITS = '1' + '10000001' + '1001' + '0'.repeat(19), G = .32, T2 = .135;
+  const pos = i => { let r, q, n; if (i < 9) { r = 0; q = i; n = 9; } else { const j = i - 9; r = 1 + Math.floor(j / 8); q = j % 8; n = r === 3 ? 7 : 8; } return [(q - (n - 1) / 2) * G, 0, 2.6 - r * .44]; };
+  for (let i = 0; i < 32; i++) { const p = pos(i), on = BITS[i] === '1', col = i === 0 ? '#ff6a5c' : i < 9 ? '#ffc14d' : '#5be7ff', y = on ? -.16 : 0;
+    V.poly(c, [[p[0] - T2, y - .1, p[2] - T2], [p[0] + T2, y - .1, p[2] - T2], [p[0] + T2, y - .1, p[2] + T2], [p[0] - T2, y - .1, p[2] + T2]], K.rgba(col, on ? .75 : .18), K.rgba(col, on ? 1 : .45), 1);
+    V.label(c, on ? '1' : '0', [p[0], y - .2, p[2]], { size: .16, w: 700, color: on ? '#ffffff' : '#8a98a6', minPx: 14, maxPx: 60 }); if (on) V.glow(c, [p[0], -.3, p[2]], .45, .4, col); }
+  c.restore();
+}
+const BG0 = '#04070d';
+
+const glowText = (c, str, x, y, size, col, o = {}) => {
+  c.save(); c.font = `${o.w || 700} ${size}px "${COPY.font}"`; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.letterSpacing = o.ls || '0px';
+  let w = c.measureText(str).width; const room = SAFE[1] - SAFE[0] - 60;   // 放不下就自动缩小（金句多于 6 个字时常见）
+  if (w > room) { size = Math.floor(size * room / w); c.font = `${o.w || 700} ${size}px "${COPY.font}"`; w = c.measureText(str).width; }
+  guard(str, x - w / 2, x + w / 2);
+  c.shadowColor = K.rgba(col, .85); c.shadowBlur = o.blur ?? 46; c.fillStyle = K.rgba(K.mix(col, '#ffffff', .4), 1); c.fillText(str, x, y);
+  c.shadowBlur = 0; c.fillStyle = K.rgba(K.mix(col, '#ffffff', .8), 1); c.fillText(str, x, y); c.restore();
+};
+
+function render(t) {
+  K.begin(t);
+  const c = K.ctx, cx = W / 2;
+  drawSubject(c, LAY);
+  c.save(); c.font = `500 ${LAY.kick}px "${COPY.font}"`; c.textAlign = 'center'; c.letterSpacing = '.12em'; c.fillStyle = K.rgba(INK, .9); c.shadowColor = '#000'; c.shadowBlur = 18;
+  guard('kicker', cx - c.measureText(COPY.kicker).width / 2, cx + c.measureText(COPY.kicker).width / 2); c.fillText(COPY.kicker, cx, LAY.kickY); c.restore();
+  if (MODE === 'land') glowText(c, COPY.hero.join('，'), cx, LAY.heroY, LAY.hero, HOT, { ls: '.04em' });
+  else COPY.hero.forEach((s, i) => glowText(c, s, cx, LAY.heroY[i], LAY.hero, HOT, { ls: '.06em' }));
+  c.save(); c.font = `500 ${LAY.tSize}px "${COPY.font}"`; c.textAlign = 'center'; c.letterSpacing = '.2em'; c.fillStyle = K.rgba(WARM, .92); c.shadowColor = K.rgba(WARM, .6); c.shadowBlur = 14;
+  guard('title', cx - c.measureText(COPY.title).width / 2, cx + c.measureText(COPY.title).width / 2); c.fillText(COPY.title, cx, LAY.tY); c.restore();
+  // 主体越界检查（主体外缘约 gr×.92；主体不是以 gr 为半径时自己改）
+  guard('主体', LAY.gx - LAY.gr * .92, LAY.gx + LAY.gr * .92);
+  K.end(t);
+  if (Q.get('guides')) {   // 安全区参考线（检查用）
+    c.save(); c.fillStyle = 'rgba(255,0,60,.14)'; c.strokeStyle = '#ff3b6b'; c.lineWidth = 2;
+    if (MODE === 'land') { c.fillRect(0, 0, 240, H); c.fillRect(W - 240, 0, 240, H); c.strokeRect(240, 0, 1440, H); }
+    else c.strokeRect(60, 60, W - 120, H - 120);
+    c.restore();
+  }
+}
+
+M.film({ width: W, height: H, fps: 30, duration: 1, stage, render });
+</script>
+</body>
+</html>
