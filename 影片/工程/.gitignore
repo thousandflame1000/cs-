@@ -11,3 +11,5 @@ _toolkit/lead-knowledge-animation/assets/fonts/*.ttf
 _toolkit/**/__pycache__/
 _lib/*.log
 */work/cues.json
+_palace/work/*_intro.json
+_palace/work/*_outro.json
