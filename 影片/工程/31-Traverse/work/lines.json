@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "同一張圖，兩種走法", "hook": true},
+  {"id": "o2", "text": "一個像[水波]，一個[走到底]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "BFS 與 DFS", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "BFS：從 s 一圈一圈往外", "scene": true, "hold": 4.0},
+  {"id": "a2", "text": "第一次碰到，就是[最短距離]", "hold": 3.6},
+  {"id": "a3", "text": "用佇列排隊：先進先出", "hold": 3.8, "pause": 0.2},
+
+  {"id": "b1", "text": "DFS：一條路走到底", "scene": true, "hold": 4.0},
+  {"id": "b2", "text": "走不下去，從[堆疊]退回", "hold": 3.8},
+  {"id": "b3", "text": "每個點有進來、離開兩個時間", "hold": 3.6, "pause": 0.2},
+
+  {"id": "c1", "text": "有向圖：走到堆疊裡的點", "scene": true, "hold": 4.0},
+  {"id": "c2", "text": "這條是[後向邊]：有環", "hold": 3.4},
+  {"id": "c3", "text": "沒有後向邊，就能[拓撲排序]", "hold": 4.0},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

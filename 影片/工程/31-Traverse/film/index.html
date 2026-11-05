@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>BFS 與 DFS</title>
+<!--
+  資工所衝刺 · 短影音 31：BFS 與 DFS
+  記憶宮殿：資結館 · 第 8 間。圖平鋪在地板上：點是球、邊是地上的光線。
+  01 BFS：從 s 放出水波，一層一層點亮；每個點升到「距離」那麼高（一層層梯田），佇列平躺在前面先進先出。
+  02 DFS：一路走到底，走過的點疊成直立的堆疊塔；退回時從塔頂拿掉；每個點標上 進來/離開 時間。
+  03 有向圖：DFS 走到塔裡的點＝後向邊＝有環；把那條邊反過來就沒有環，依離開時間排成一列＝拓撲排序。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', GR = '#6ee7a8', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 311, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: AM } });
+K.warm([CY, AM, CO, GR, VI, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 水波: CY, 走到底: AM, 最短距離: CY, 堆疊: AM, 後向邊: CO, 拓撲排序: GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1;
+const add = (a, b) => a.map((v, i) => v + b[i]), sub3 = (a, b) => a.map((v, i) => v - b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const nrm = (a) => { const l = Math.hypot(...a) || 1; return a.map(v => v / l); };
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: CY, a: .28 * a, major: 3 });
+let tNow = 0;
+function cube(c, p, s, col, a = 1) {
+  if (a <= .003) return; const h = s / 2, [x, y, z] = p, cam = V.camAt(tNow).pos;
+  const F = [[[0, -1, 0], [[x - h, y - h, z - h], [x + h, y - h, z - h], [x + h, y - h, z + h], [x - h, y - h, z + h]], .7], [[1, 0, 0], [[x + h, y - h, z - h], [x + h, y + h, z - h], [x + h, y + h, z + h], [x + h, y - h, z + h]], .45], [[-1, 0, 0], [[x - h, y + h, z - h], [x - h, y - h, z - h], [x - h, y - h, z + h], [x - h, y + h, z + h]], .45], [[0, 0, 1], [[x - h, y - h, z + h], [x + h, y - h, z + h], [x + h, y + h, z + h], [x - h, y + h, z + h]], .95]];
+  for (const [n, q, k] of F) { const d = [cam[0] - x, cam[1] - y, cam[2] - z]; if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] <= 0) continue; V.poly(c, q, K.rgba(K.mix(col, '#ffffff', k * .3), .6 * k), K.rgba(K.mix(col, '#ffffff', .4), .9), a); }
+}
+const ball = (c, p, s, col, a = 1, r = .17, glow = .3) => { if (a <= .003) return; V.glow(c, p, .45, glow * a, col); V.orb(c, p, r, { color: col, a }); if (s) V.label(c, s, add(p, [0, -.05, .02]), { size: .15, w: 700, color: '#ffffff', a, minPx: 18, maxPx: 44 }); };
+const box = (c, p, s, col, a = 1, sz = .3) => { if (a <= .003) return; cube(c, p, sz, col, a); V.label(c, s, add(p, [0, -sz / 2 - .02, 0]), { size: .15, w: 700, color: '#ffffff', a, minPx: 18, maxPx: 44 }); };
+function arrow(c, from, to, col, p = 1, a = 1, w = 2.6, r0 = .2, r1 = .22) {
+  if (p <= .003 || a <= .003) return; const d = nrm(sub3(to, from)), s = add(from, d.map(v => v * r0)), e0 = sub3(to, d.map(v => v * r1));
+  V.arrow(c, s, mix3(s, e0, p), { color: col, a, w, head: 15 });
+}
+const seg = (c, a, b, col, al, w = 2.4) => { if (al > .003) V.line(c, a, b, { color: col, a: al, w }); };
+
+// ═════════ 無向圖：地板上 6 個點
+const G = { s: [0, -1.25], a: [-.8, -.45], b: [.8, -.45], c: [-.8, .55], d: [.8, .55], e: [0, 1.35] };
+const EDG = [['s', 'a'], ['s', 'b'], ['a', 'b'], ['a', 'c'], ['b', 'd'], ['c', 'e'], ['d', 'e']];
+const DIST = { s: 0, a: 1, b: 1, c: 2, d: 2, e: 3 }, TREE = { a: 's', b: 's', c: 'a', d: 'b', e: 'c' };
+const Z0 = .2, DZ = .48;
+const at = (k, h = 0) => [G[k][0], G[k][1], Z0 + h];
+
+// ═════════ 鏡頭（往下看地板）
+const TG = [0, .15, .55];
+V.camKeys([
+  [0, V.orbit(-14, 5.7, 4.0, [0, -.65, .2], 44)], [T.start, V.orbit(-6, 6.0, 4.2, [0, -.6, .2], 44)],
+  [A1.start, V.orbit(-10, 5.6, 3.8, [0, -.7, .2], 44)], [L.a2.start + .2, V.orbit(-16, 5.9, 3.0, [0, -.45, .85], 44)], [L.a3.start + .3, V.orbit(-6, 5.9, 3.6, [0, -.35, .35], 44)], [L.a3.end, V.orbit(-2, 6.0, 3.7, [0, -.3, .35], 44)],
+  [B1.start + .3, V.orbit(-8, 5.8, 3.6, [0, -.35, .6], 44)], [L.b3.end, V.orbit(8, 5.9, 3.5, [0, -.35, .6], 44)],
+  [C1.start + .3, V.orbit(-10, 5.7, 3.6, [0, -.45, .5], 44)], [L.c2.end, V.orbit(6, 5.8, 3.5, [0, -.45, .5], 44)], [DUR, V.orbit(-2, 6.0, 3.6, [0, -.6, .35], 44)],
+]);
+
+// ═════════ BFS 場景（開場也用）
+function drawBFS(c, t, st) {
+  const { a = 1, lit = {}, rise = 0, ring = -1, distA = 0 } = st;
+  const items = [];
+  const P = {}; for (const k in G) P[k] = at(k, rise * DIST[k] * DZ);
+  for (const [u, v] of EDG) { const tree = TREE[v] === u || TREE[u] === v, l = Math.min(lit[u] ?? 0, lit[v] ?? 0); seg(c, P[u], P[v], tree ? K.mix(INK, CY, l) : INK, a * (tree ? .25 + .6 * l : .22), tree && l > .5 ? 3 : 2); }
+  for (const k in G) {
+    if (rise > 0 && DIST[k] > 0) items.push({ p: [G[k][0], G[k][1], (Z0 + P[k][2]) / 2], draw: () => V.pillar(c, [G[k][0], G[k][1], 0], .16, P[k][2] - .1, CY, .5 * a * rise) });
+    items.push({ p: P[k], draw: () => { const l = lit[k] ?? 0; ball(c, P[k], k, K.mix('#5d6b7a', CY, l), a * (.55 + .45 * l), .16, .1 + .35 * l); if (distA > 0) V.label(c, String(DIST[k]), add(P[k], [.3, 0, .1]), { size: .2, w: 700, color: AM, a: a * distA, minPx: 22, maxPx: 56 }); } });
+  }
+  V.sorted(items);
+  if (ring >= 0) for (let q = 0; q < 2; q++) { const r = ring * 3.2 - q * .55; if (r > .05 && r < 3.1) V.ring(c, [G.s[0], G.s[1], .02], r, { color: CY, a: a * .6 * (1 - r / 3.1), w: 3 }); }
+  return P;
+}
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c);
+  const r = ((t - .1) % 2.2) / 2.2, lit = {}; for (const k in G) lit[k] = clamp(r * 3.2 / (DIST[k] * .85 + .3) > 1 ? 1 : 0);
+  drawBFS(c, t, { lit, ring: r });
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '資料結構 · 圖的走訪', big: 'BFS · DFS', size: 170, y: 600, en: 'BREADTH  /  DEPTH', q: '佇列 vs 堆疊', qGap: 330, color: CY });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  const lit = {}; for (const k in G) lit[k] = 1;
+  c.save(); c.globalAlpha *= a * .2; room(c); drawBFS(c, t, { lit }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CY);
+}
+const LAYER_T = (k) => A1.start + .9 + k * .75;
+const QSTEPS = [['s'], ['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'e'], ['e'], []];
+function sBFS(c, t) {
+  const fade = 1 - prog(t, B1.start - .3, B1.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c);
+  const lit = {}; for (const k in G) lit[k] = prog(t, LAYER_T(DIST[k]), LAYER_T(DIST[k]) + .3);
+  const ring = t > LAYER_T(0) - .1 && t < LAYER_T(3) + 1.2 ? (t - LAYER_T(0) + .1) / 3.4 : -1;
+  const rise = E.inOutCubic(prog(t, L.a2.start + .2, L.a2.start + 1.4)) * (1 - E.inOutCubic(prog(t, L.a3.start, L.a3.start + .6))), distA = prog(t, L.a2.start + 1.0, L.a2.start + 1.5);
+  drawBFS(c, t, { a: prog(t, A1.start, A1.start + .4), lit, ring, rise, distA });
+  // a3：佇列平躺在前面（先進先出）
+  const qa = prog(t, L.a3.start + .1, L.a3.start + .4);
+  if (qa > 0) {
+    const t0 = L.a3.start + .5, step = .5, i = clamp(Math.floor((t - t0) / step), 0, QSTEPS.length - 1), f = clamp((t - t0 - i * step) / step);
+    const QY = 2.35, QZ = .17, slot = (j) => [-.42 + j * .42, QY, QZ];
+    V.poly(c, [[-.7, QY - .22, .0], [.98, QY - .22, .0], [.98, QY + .22, .0], [-.7, QY + .22, .0]], K.rgba(CY, .06 * qa), K.rgba(CY, .45 * qa), 1);
+    V.label(c, '出', [-.95, QY, .15], { size: .17, w: 700, color: AM, a: qa, minPx: 22, maxPx: 50 }); V.label(c, '進', [1.22, QY, .15], { size: .17, w: 700, color: CY, a: qa, minPx: 22, maxPx: 50 });
+    const cur = QSTEPS[i], next = QSTEPS[Math.min(i + 1, QSTEPS.length - 1)], k = t < t0 ? 0 : E.inOutCubic(f);
+    // 前面那個出隊（往左飛走），其餘往前挪一格，新的從右邊進來
+    cur.forEach((n, j) => { if (j === 0 && i < QSTEPS.length - 1) { box(c, add(slot(0), [-.5 * k, 0, .25 * Math.sin(Math.PI * k)]), n, AM, qa * (1 - k)); } else { const nj = next.indexOf(n); box(c, mix3(slot(j), slot(nj < 0 ? j : nj), k), n, CY, qa); } });
+    next.forEach((n, j) => { if (!cur.includes(n)) box(c, mix3(add(slot(j), [.6, 0, 0]), slot(j), k), n, CY, qa * k); });
+    if (t > t0 && i < QSTEPS.length - 1 && cur[0]) { const P = at(cur[0], rise * DIST[cur[0]] * DZ); V.glow(c, P, .6, .55 * qa * Math.sin(Math.PI * f), AM); }
+  }
+  c.restore();
+}
+// DFS：s → a → b → d → e → c（一路到底），再一層層退回
+const DORD = ['s', 'a', 'b', 'd', 'e', 'c'], DIN = (i) => B1.start + .45 + i * .55, DOUT = (j) => L.b2.start + .35 + j * .45;
+const DTIME = { s: '1/12', a: '2/11', b: '3/10', d: '4/9', e: '5/8', c: '6/7' };
+const TOWER = [0, 2.25, 0];
+function sDFS(c, t) {
+  const fade = 1 - prog(t, C1.start - .3, C1.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c);
+  const items = [];
+  const st = {}; DORD.forEach((k, i) => { const j = 5 - i; st[k] = t < DIN(i) ? 0 : t < DOUT(j) ? 1 : 2; });
+  for (const [u, v] of EDG) { const i = DORD.indexOf(v), pi = DORD.indexOf(u), path = Math.abs(i - pi) === 1, l = path ? prog(t, DIN(Math.max(i, pi)) - .3, DIN(Math.max(i, pi))) : 0; seg(c, at(u), at(v), path ? K.mix(INK, AM, l) : INK, path ? .22 + .7 * l : .2, path && l > .5 ? 3.2 : 2); }
+  for (const k in G) items.push({ p: at(k), draw: () => { const s = st[k], col = s === 0 ? '#5d6b7a' : s === 1 ? AM : CY; ball(c, at(k), k, col, .55 + .45 * (s > 0), .16, s === 1 ? .5 : .15); } });
+  // 堆疊塔：直立在後面
+  const base = TOWER;
+  V.poly(c, [[-.3, base[1] - .3, 0], [.3, base[1] - .3, 0], [.3, base[1] + .3, 0], [-.3, base[1] + .3, 0]], K.rgba(AM, .08), K.rgba(AM, .5), prog(t, B1.start + .2, B1.start + .6));
+  DORD.forEach((k, i) => {
+    const j = 5 - i, pin = E.outCubic(prog(t, DIN(i), DIN(i) + .35)), pout = E.inCubic(prog(t, DOUT(j), DOUT(j) + .35));
+    if (pin <= 0 || pout >= 1) return;
+    const top = [base[0], base[1], .17 + i * .32], from = at(k, .2), p = pout > 0 ? add(top, [0, 0, pout * .9]) : mix3(from, top, pin);
+    items.push({ p, draw: () => box(c, p, k, AM, (1 - pout) * Math.min(1, pin * 2)) });
+  });
+  V.sorted(items);
+  const la = prog(t, B1.start + .6, B1.start + 1.0) * (1 - prog(t, L.b3.start - .2, L.b3.start + .2));
+  if (la > 0) V.label(c, '堆疊', add(base, [0, 0, -.25]), { size: .17, w: 700, color: AM, a: la, minPx: 22, maxPx: 50 });
+  // b3：進來/離開時間
+  const ta = prog(t, L.b3.start + .2, L.b3.start + .7);
+  if (ta > 0) DORD.forEach((k, i) => V.label(c, DTIME[k], add(at(k), [0, 0, .36]), { size: .17, w: 700, color: AM, a: ta * prog(t, L.b3.start + .2 + i * .12, L.b3.start + .5 + i * .12), minPx: 22, maxPx: 52 }));
+  const pa = prog(t, L.b3.start + 1.6, L.b3.start + 2.0);
+  if (pa > 0) { S.label(c, '區間：包住，或分開', CX, 285, { size: 50, w: 700, color: AM, a: pa }); }
+  c.restore();
+}
+// 有向圖：s → a → b → c → a（後向邊）；反過來 a → c 後拓撲排序
+const D = { s: [-.65, -.75], a: [.65, -.75], b: [.65, .6], c: [-.65, .6] }, DO = ['s', 'a', 'b', 'c'], TOPO = { s: [-.9, -.2], a: [-.3, -.2], b: [.3, -.2], c: [.9, -.2] };
+const dIn = (i) => C1.start + .5 + i * .6;
+function sDir(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const c2 = L.c2.start, c3 = L.c3.start;
+  const flip = E.inOutCubic(prog(t, c3 + .2, c3 + 1.0)), line = E.inOutCubic(prog(t, c3 + 1.4, c3 + 2.4));
+  const P = {}; for (const k in D) { const a = [D[k][0], D[k][1], Z0], b = [TOPO[k][0], TOPO[k][1], Z0]; P[k] = mix3(a, b, line); }
+  const items = [];
+  const pushed = (i) => prog(t, dIn(i), dIn(i) + .35), back = prog(t, c2 + .1, c2 + .6), clear = prog(t, c3 + .1, c3 + .5);
+  const red = back * (1 - flip);
+  // 邊
+  const E1 = [['s', 'a'], ['a', 'b'], ['b', 'c']];
+  E1.forEach(([u, v], i) => arrow(c, P[u], P[v], K.mix(INK, red > 0 && i > 0 ? CO : AM, pushed(i + 1)), 1, .35 + .6 * pushed(i + 1), 2.8));
+  // c → a（後向邊）在 c1 末端被走到；c3 反成 a → c
+  const bk = prog(t, C1.start + 3.0, C1.start + 3.6, E.outCubic);
+  if (flip < .5) arrow(c, P.c, P.a, K.mix(K.mix(INK, AM, bk), CO, back), bk, (.4 + .6 * bk) * (1 - flip * 2), 3 + 2 * back);
+  else { const arc = []; for (let q = 0; q <= 20; q++) { const u = q / 20, p = mix3(P.a, P.c, u); p[1] += -Math.sin(Math.PI * u) * .9 * line; p[2] += Math.sin(Math.PI * u) * .55 * line; arc.push(p); } V.path(c, arc.slice(1, -1), { color: GR, a: (flip - .5) * 2, w: 3 }); const q1 = arc[18], q2 = arc[19]; arrow(c, q1, q2, GR, 1, (flip - .5) * 2, 3, 0, .2); }
+  if (red > .05) for (let k = 0; k < 4; k++) { const u = (t * .7 - k * .03) % 1, seq = [P.a, P.b, P.c, P.a], h = u * 3, i = Math.min(2, Math.floor(h)); V.glow(c, mix3(seq[i], seq[i + 1], h - i), .3 - k * .05, red * (.9 - k * .2), CO); }
+  DO.forEach((k, i) => items.push({ p: P[k], draw: () => { const g = pushed(i) * (1 - clear), done = clear; const col = done > 0 ? K.mix(AM, CY, done) : g > 0 ? (red > 0 && i > 0 ? K.mix(AM, CO, red) : AM) : '#5d6b7a'; ball(c, P[k], k, col, .6 + .4 * Math.max(g, done), .17, .15 + .4 * g); } }));
+  // 堆疊塔
+  const base = [0, 2.1, 0], ta = prog(t, C1.start + .3, C1.start + .7) * (1 - clear);
+  if (ta > 0) {
+    V.poly(c, [[-.3, base[1] - .3, 0], [.3, base[1] - .3, 0], [.3, base[1] + .3, 0], [-.3, base[1] + .3, 0]], K.rgba(AM, .08), K.rgba(AM, .5), ta);
+    DO.forEach((k, i) => { const pin = E.outCubic(pushed(i)); if (pin <= 0) return; const top = [0, base[1], .17 + i * .32], p = mix3(add(P[k], [0, 0, .2]), top, pin); items.push({ p, draw: () => box(c, p, k, red > 0 && k === 'a' ? CO : AM, ta) }); });
+  }
+  V.sorted(items);
+  // c → a 打到塔裡的 a：標「後向邊」
+  if (back > 0 && flip < .5) { V.label(c, '後向邊', add(mix3(P.c, P.a, .5), [.32, -.15, .22]), { size: .2, w: 700, color: CO, a: back * (1 - flip * 2), minPx: 26, maxPx: 60 }); }
+  const ra = prog(t, c2 + .8, c2 + 1.2) * (1 - prog(t, c3, c3 + .3));
+  if (ra > 0) S.label(c, '有環：a → b → c → a', CX, 285, { size: 50, w: 700, color: CO, a: ra });
+  const oa = prog(t, c3 + 2.2, c3 + 2.6);
+  if (oa > 0) { S.label(c, '拓撲排序', CX, 260, { size: 40, a: .7 * oa, ls: '6px' }); S.label(c, 's　a　b　c', CX, 340, { size: 64, w: 700, color: GR, a: oa }); }
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['BFS：佇列，求無權最短路', CY, 54], ['DFS：堆疊，一路走到底', AM, 54], ['後向邊 ⇔ 有向圖有環', CO, 54], ['兩者都是 O(V + E)', INK, 54]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'bfs', start: A1.start, end: B1.start, draw: sBFS, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'dfs', start: B1.start, end: C1.start, draw: sDFS, color: AM, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'dir', start: C1.start, end: DUR, draw: (c, t) => { sDir(c, t); sExam(c, t); }, color: CO, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+const TAG = '記憶宮殿 · 資結館 · 第 8 間  /  ';
+S.chapters([[A1.start, TAG + '01 BFS'], [B1.start, TAG + '02 DFS'], [C1.start, TAG + '03 後向邊'], [Ec.start, '']]);
+
+function render(t) {
+  tNow = t;
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o2.start + .2, sfx: 'whoosh', gain: -11 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    ...[0, 1, 2, 3].map(k => ({ t: LAYER_T(k), sfx: k === 0 ? 'pop' : 'chime', gain: -12 + k })),
+    { t: L.a2.start + .2, sfx: 'riser', gain: -15 }, { t: L.a2.start + 1.2, sfx: 'thump', gain: -9 },
+    ...[0, 1, 2, 3, 4, 5].map(i => ({ t: L.a3.start + .5 + i * .5, sfx: 'tick', gain: -11 })),
+    ...DORD.map((k, i) => ({ t: DIN(i), sfx: 'pop', gain: -12 + i * .5 })),
+    ...DORD.map((k, j) => ({ t: DOUT(j), sfx: 'swish', gain: -13 })),
+    { t: L.b3.start + .2, sfx: 'tick', gain: -10 }, { t: L.b3.start + 1.6, sfx: 'chime', gain: -10 },
+    ...[0, 1, 2, 3].map(i => ({ t: dIn(i), sfx: 'pop', gain: -12 })), { t: C1.start + 3.0, sfx: 'whoosh', gain: -11 },
+    { t: L.c2.start + .1, sfx: 'glitch', gain: -8 }, { t: L.c2.start + .8, sfx: 'impact', gain: -9 },
+    { t: L.c3.start + .2, sfx: 'swish', gain: -10 }, { t: L.c3.start + 1.4, sfx: 'whoosh', gain: -12 }, { t: L.c3.start + 2.2, sfx: 'chime', gain: -9 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
