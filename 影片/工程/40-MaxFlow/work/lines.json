@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "水管網路，最多能送多少水？", "hook": true},
+  {"id": "o2", "text": "答案是[最細的那一刀]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "最大流", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "管子粗細是容量，從 s 送到 t", "scene": true, "hold": 3.6},
+  {"id": "a2", "text": "找一條還有空間的路，灌滿它", "hold": 4.0},
+  {"id": "a3", "text": "再找兩條：一共送了 [6]", "hold": 4.2, "pause": 0.2},
+
+  {"id": "b1", "text": "殘餘網路裡，s 走得到的點圈起來", "scene": true, "hold": 4.2},
+  {"id": "b2", "text": "跨出去的管子[全滿]", "hold": 3.2},
+  {"id": "b3", "text": "這一刀切掉的，剛好就是 6", "hold": 3.6, "pause": 0.2},
+
+  {"id": "c1", "text": "換別的刀：9、9，都比較大", "scene": true, "hold": 4.0},
+  {"id": "c2", "text": "最大流 = [最小割]", "hold": 3.2},
+  {"id": "c3", "text": "用 BFS 找路：O(VE²)", "hold": 3.4},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "兩顆核心存著同一個值", "hook": true},
+  {"id": "o2", "text": "一個人寫，其他人的[副本作廢]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "MESI", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "P1 讀：只有它有，狀態 [E]", "scene": true, "hold": 3.8},
+  {"id": "a2", "text": "P2 也讀：兩邊都變 [S]", "hold": 3.6},
+  {"id": "a3", "text": "P1 要寫：先廣播作廢，P2 變 [I]", "hold": 4.2, "pause": 0.2},
+
+  {"id": "b1", "text": "P1 寫完是 [M]：記憶體是舊的", "scene": true, "hold": 3.8},
+  {"id": "b2", "text": "P2 再讀：P1 交出資料、寫回記憶體", "hold": 4.4},
+  {"id": "b3", "text": "兩邊又回到 S", "hold": 3.0, "pause": 0.2},
+
+  {"id": "c1", "text": "E 狀態寫入：沒人有副本，不用廣播", "scene": true, "hold": 4.0},
+  {"id": "c2", "text": "不同變數擠在同一塊：[false sharing]", "hold": 4.0},
+  {"id": "c3", "text": "區塊來回搬，效能掉很多", "hold": 3.4},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

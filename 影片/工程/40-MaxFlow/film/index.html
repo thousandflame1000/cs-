@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>最大流最小割</title>
+<!--
+  資工所衝刺 · 短影音 40：最大流 = 最小割
+  記憶宮殿：演算法館 · 第 6 間。網路立在房間中央：s、a、b、t，管子粗細＝容量（s→a 5、s→b 4、a→b 3、a→t 2、b→t 4），裡面的水＝流量。
+  01 三條擴增路徑：s→a→b→t 3、s→a→t 2、s→b→t 1，總共 6。02 殘餘網路裡 s 走得到 b，再沿反向邊走到 a：S = {s, a, b}；
+  跨出去的 a→t、b→t 全滿，刀片切下去 2 + 4 = 6。03 其他兩刀都是 9；最大流 = 最小割；Edmonds–Karp O(VE²)。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', GR = '#6ee7a8', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 401, vignette: .6, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: GR } });
+K.warm([CY, AM, CO, GR, VI, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 最細的那一刀: GR, '6': CY, 全滿: CO, 最小割: GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1;
+const add = (a, b) => a.map((v, i) => v + b[i]), sub3 = (a, b) => a.map((v, i) => v - b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const nrm = (a) => { const l = Math.hypot(...a) || 1; return a.map(v => v / l); };
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: CY, a: .22 * a, major: 3 });
+let tNow = 0;
+const lab = (c, s, p, col, a, size = .14, ex = {}) => { if (a > .003) V.label(c, s, p, Object.assign({ size, w: 700, color: col, a, minPx: 18, maxPx: 56 }, ex)); };
+
+// ═════════ 網路
+const N = { s: [-1.1, 0, 1.3], a: [0, 0, 2.05], b: [0, 0, .55], t: [1.1, 0, 1.3] };
+const ED = [['s', 'a', 5], ['s', 'b', 4], ['a', 'b', 3], ['a', 't', 2], ['b', 't', 4]];
+const PATHS = [[['s', 'a'], ['a', 'b'], ['b', 't'], 3], [['s', 'a'], ['a', 't'], 2], [['s', 'b'], ['b', 't'], 1]];
+const TW = .03;
+const key = (u, v) => u + v;
+function flowsAt(prg) { const f = {}; ED.forEach(([u, v]) => f[key(u, v)] = 0); PATHS.forEach((P, i) => { const amt = P[P.length - 1], k = clamp(prg[i] ?? 0); P.slice(0, -1).forEach(([u, v]) => f[key(u, v)] += amt * k); }); return f; }
+/** st: grow、prg（三條路徑的灌水進度）、pulse（[路徑 i, u]）、cut、Sglow、rev */
+function drawNet(c, t, st) {
+  const { a = 1, grow = 1, prg = [0, 0, 0], pulse = null, hiFull = 0, Sglow = 0, rev = 0, labels = 1 } = st;
+  const f = flowsAt(prg);
+  ED.forEach(([u, v, cap], i) => {
+    const g = prog(grow, .15 + i * .1, .45 + i * .1); if (g <= 0) return;
+    const p0 = N[u], p1 = N[v], d = nrm(sub3(p1, p0)), s0 = add(p0, d.map(x => x * .2)), e0 = sub3(p1, d.map(x => x * .2)), e = mix3(s0, e0, g);
+    const full = f[key(u, v)] >= cap - .01, crossing = (v === 't' && (u === 'a' || u === 'b'));
+    const tubeCol = hiFull > 0 && crossing ? K.mix(INK, CO, hiFull) : INK;
+    V.line(c, s0, e, { color: tubeCol, a: a * (.22 + .3 * (hiFull > 0 && crossing ? hiFull : 0)), worldW: cap * TW + .02 });
+    const fl = f[key(u, v)]; if (fl > .01) V.line(c, s0, mix3(s0, e, clamp(fl / cap > 0 ? 1 : 0)), { color: CY, a: a * .9, worldW: fl * TW });
+    // 方向小箭頭
+    const m = mix3(s0, e0, .62); V.arrow(c, mix3(s0, e0, .5), m, { color: INK, a: a * g * .6, w: 2, head: 11 });
+    if (labels > 0) { const mid = mix3(s0, e0, .5), off = u === 'a' && v === 'b' ? [.22, 0, 0] : [0, 0, (v === 'b' || u === 'b') ? -.2 : .2]; lab(c, Math.round(fl) + '/' + cap, add(mid, off), full ? AM : INK, a * g * labels * (full ? 1 : .75), .13); }
+  });
+  // 反向殘餘邊 b → a
+  if (rev > 0) { const p0 = add(N.b, [-.14, -.05, .2]), p1 = add(N.a, [-.14, -.05, -.2]); V.arrow(c, p0, mix3(p0, p1, rev), { color: VI, a: a * rev, w: 3, head: 13 }); lab(c, '反向 3', add(mix3(p0, p1, .5), [-.3, 0, 0]), VI, a * rev, .13); }
+  // 擴增路徑的光點
+  if (pulse) { const [P, u] = pulse, pts = [N[P[0][0]], ...P.slice(0, -1).map(([x, y]) => N[y])], n = pts.length - 1, h = clamp(u) * n, i = Math.min(n - 1, Math.floor(h)); const q = mix3(pts[i], pts[i + 1], h - i); V.glow(c, q, .4, .9 * a, AM); V.core(c, q, .05, a, AM); }
+  // S 的範圍
+  if (Sglow > 0) { ['s', 'a', 'b'].forEach(k => V.glow(c, N[k], .75, .35 * Sglow * a, GR)); lab(c, 'S', add(N.s, [-.05, 0, .45]), GR, a * Sglow, .22); lab(c, 'T', add(N.t, [0, 0, .45]), INK, a * Sglow * .8, .22); }
+  const items = Object.entries(N).map(([k, p]) => ({ p, draw: () => { const col = k === 's' ? GR : k === 't' ? AM : CY; V.glow(c, p, .45, .3 * a, col); V.orb(c, p, .17, { color: col, a: a * prog(grow, 0, .2) }); lab(c, k, add(p, [0, -.2, 0]), '#ffffff', a * prog(grow, 0, .2), .15); } }));
+  V.sorted(items);
+}
+/** 刀片：沿 x-z 平面上一條線、往 y 方向展開的薄片 */
+function blade(c, p0, p1, col, a, sum) {
+  if (a <= .003) return; const q = [[p0[0], -.55, p0[1]], [p0[0], .55, p0[1]], [p1[0], .55, p1[1]], [p1[0], -.55, p1[1]]];
+  V.poly(c, q, K.rgba(col, .13 * a), K.rgba(col, .7 * a), 1); V.line(c, [p0[0], -.55, p0[1]], [p1[0], -.55, p1[1]], { color: col, a, w: 3 });
+  if (sum) lab(c, sum, [p1[0], -.55, p1[1] + .2], col, a, .2);
+}
+
+// ═════════ 鏡頭
+V.camKeys([
+  [0, V.orbit(-14, 6.6, 1.4, [0, 0, .95], 44)], [T.start, V.orbit(-6, 7.0, 1.6, [0, 0, 1.1], 44)],
+  [A1.start, V.orbit(-14, 5.7, 1.2, [0, 0, 1.25], 44)], [L.a3.end, V.orbit(-2, 5.8, 1.4, [0, 0, 1.25], 44)],
+  [B1.start + .3, V.orbit(-18, 5.8, 1.6, [0, 0, 1.25], 44)], [L.b3.end, V.orbit(-6, 5.9, 1.8, [0, 0, 1.25], 44)],
+  [C1.start + .3, V.orbit(-20, 6.0, 2.0, [0, 0, 1.2], 44)], [L.c2.end, V.orbit(-8, 6.1, 1.9, [0, 0, 1.2], 44)], [DUR, V.orbit(-2, 6.4, 2.0, [0, 0, 1.2], 44)],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c);
+  drawNet(c, t, { prg: [prog(t, .3, 1.0), prog(t, .8, 1.4), prog(t, 1.2, 1.7)], labels: 0 });
+  blade(c, [.6, .15], [.6, 2.45], GR, prog(t, o2.start + .2, o2.start + .6), '6');
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '演算法 · 網路流', big: '最大流', size: 200, y: 600, en: 'MAX FLOW  =  MIN CUT', q: '流量 = 最小割', qGap: 330, color: CY });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); drawNet(c, t, { prg: [1, 1, 1], labels: 0 }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CY);
+}
+function sAug(c, t) {
+  const fade = 1 - prog(t, B1.start - .3, B1.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c);
+  const a1 = A1.start, a2 = L.a2.start, a3 = L.a3.start;
+  const tp = [[a2 + .3, a2 + 1.6, a2 + 2.6], [a3 + .2, a3 + 1.1, a3 + 1.8], [a3 + 2.0, a3 + 2.8, a3 + 3.4]];
+  const prg = tp.map(([, f0, f1]) => prog(t, f0, f1));
+  let pulse = null; tp.forEach(([p0, f0], i) => { if (t > p0 && t < f0) pulse = [PATHS[i], (t - p0) / (f0 - p0)]; });
+  drawNet(c, t, { grow: prog(t, a1 + .2, a1 + 2.0), prg, pulse });
+  const f = flowsAt(prg), total = Math.round(f.at + f.bt);
+  const ta = prog(t, a2 + .3, a2 + .7);
+  if (ta > 0) { S.label(c, '送出', CX, 230, { size: 34, a: .7 * ta, ls: '6px' }); S.label(c, String(total), CX, 310, { size: 96, w: 700, color: CY, a: ta }); }
+  const pa = [[a2 + .3, 's → a → b → t：+3'], [a3 + .2, 's → a → t：+2'], [a3 + 2.0, 's → b → t：+1']];
+  pa.forEach(([t0, s], i) => { const la = prog(t, t0, t0 + .3) * (1 - prog(t, (pa[i + 1]?.[0] ?? B1.start) - .1, (pa[i + 1]?.[0] ?? B1.start) + .1)); if (la > 0) S.label(c, s, CX, 400, { size: 40, w: 700, color: AM, a: la }); });
+  c.restore();
+}
+function sCut(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start, c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+  // b1：殘餘網路可達：s → b（還剩 3）→ a（反向邊）
+  const walk = prog(t, b1 + .4, b1 + 2.2), rev = prog(t, b1 + 1.4, b1 + 2.0), Sg = prog(t, b1 + 2.4, b1 + 3.0);
+  drawNet(c, t, { prg: [1, 1, 1], rev: rev * (1 - prog(t, c1, c1 + .3)), Sglow: Sg, hiFull: prog(t, b2 + .2, b2 + .7) });
+  if (walk > 0 && walk < 1) { const pts = [N.s, N.b, N.a], h = walk * 2, i = Math.min(1, Math.floor(h)), q = mix3(pts[i], pts[i + 1], h - i); V.glow(c, q, .4, .9, GR); V.core(c, q, .05, 1, GR); }
+  const ra = prog(t, b1 + .5, b1 + .9) * (1 - prog(t, b2 - .1, b2 + .2));
+  if (ra > 0) { S.label(c, 's → b 還剩 3', CX, 250, { size: 46, w: 700, color: GR, a: ra }); S.label(c, 'b → a 走反向邊', CX, 330, { size: 46, w: 700, color: VI, a: ra * prog(t, b1 + 1.4, b1 + 1.8) }); S.label(c, 'S = { s, a, b }', CX, 410, { size: 50, w: 700, color: GR, a: ra * prog(t, b1 + 2.4, b1 + 2.8) }); }
+  const fa = prog(t, b2 + .3, b2 + .7) * (1 - prog(t, b3 - .1, b3 + .2));
+  if (fa > 0) S.label(c, 'a → t 2/2、b → t 4/4', CX, 290, { size: 50, w: 700, color: CO, a: fa });
+  // b3：最小割刀片
+  const bl = prog(t, b3 + .2, b3 + .8);
+  blade(c, [.6, .15], [.6, 2.45], GR, bl, '');
+  const ca = prog(t, b3 + .6, b3 + 1.0) * (1 - prog(t, c1 - .1, c1 + .2));
+  if (ca > 0) { S.label(c, '2 + 4 = 6', CX, 290, { size: 80, w: 700, color: GR, a: ca }); S.label(c, '= 流量', CX, 380, { size: 44, a: .75 * ca }); }
+  // c1：其他刀
+  const k1 = prog(t, c1 + .3, c1 + .8) * (1 - prog(t, c2 + .3, c2 + .7)), k2 = prog(t, c1 + 1.6, c1 + 2.1) * (1 - prog(t, c2 + .3, c2 + .7));
+  blade(c, [-.55, .2], [-.55, 2.4], CO, k1, '9'); blade(c, [-.9, .2], [1.0, 2.6], AM, k2, '9');
+  const oa = prog(t, c1 + .4, c1 + .8) * (1 - prog(t, c2 - .1, c2 + .2));
+  if (oa > 0) { S.label(c, '{s}：5 + 4 = 9', CX, 260, { size: 46, w: 700, color: CO, a: oa }); S.label(c, '{s, a}：4 + 3 + 2 = 9', CX, 340, { size: 46, w: 700, color: AM, a: oa * prog(t, c1 + 1.7, c1 + 2.1) }); }
+  const ma = prog(t, c2 + .2, c2 + .6);
+  if (ma > 0) { S.label(c, '最大流 6 = 最小割 6', CX, 290, { size: 60, w: 700, color: GR, a: ma * (1 - prog(t, c3 + .1, c3 + .4)) }); V.glow(c, [.6, 0, 1.3], 1.0, .35 * ma, GR); }
+  const ea = prog(t, c3 + .2, c3 + .6);
+  if (ea > 0) { S.label(c, 'Edmonds–Karp', CX, 260, { size: 50, w: 700, color: CY, a: ea }); S.label(c, 'BFS 找最短的擴增路徑', CX, 340, { size: 40, a: .75 * ea }); }
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['流量 ≤ 任何割的容量', CY, 54], ['沒有擴增路徑 ⇔ 最大流', AM, 54], ['S = 殘餘網路中 s 走得到的點', GR, 48], ['最大流 = 最小割', INK, 58]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'aug', start: A1.start, end: B1.start, draw: sAug, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'cut', start: B1.start, end: DUR, draw: (c, t) => { sCut(c, t); sExam(c, t); }, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+const TAG = '記憶宮殿 · 演算法館 · 第 6 間  /  ';
+S.chapters([[A1.start, TAG + '01 擴增路徑'], [B1.start, TAG + '02 最小割'], [C1.start, TAG + '03 每一刀'], [Ec.start, '']]);
+
+function render(t) {
+  tNow = t;
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const a2 = L.a2.start, a3 = L.a3.start, b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start, c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: .3, sfx: 'whoosh', gain: -13 }, { t: o2.start + .2, sfx: 'swish', gain: -10 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    ...[0, 1, 2, 3, 4].map(i => ({ t: A1.start + .2 + i * .18, sfx: 'tick', gain: -14 })),
+    { t: a2 + .3, sfx: 'whoosh', gain: -11 }, { t: a2 + 1.6, sfx: 'riser', gain: -15 }, { t: a2 + 2.6, sfx: 'chime', gain: -10 },
+    { t: a3 + .2, sfx: 'whoosh', gain: -12 }, { t: a3 + 1.8, sfx: 'chime', gain: -10 }, { t: a3 + 2.0, sfx: 'whoosh', gain: -12 }, { t: a3 + 3.4, sfx: 'chime', gain: -8 },
+    { t: b1 + .4, sfx: 'swish', gain: -11 }, { t: b1 + 1.4, sfx: 'reverse', gain: -11 }, { t: b1 + 2.4, sfx: 'chime', gain: -10 },
+    { t: b2 + .2, sfx: 'glitch', gain: -11 },
+    { t: b3 + .2, sfx: 'swish', gain: -9 }, { t: b3 + .6, sfx: 'impact', gain: -8 },
+    { t: c1 + .3, sfx: 'swish', gain: -11 }, { t: c1 + 1.6, sfx: 'swish', gain: -11 },
+    { t: c2 + .2, sfx: 'chime', gain: -7 },
+    { t: c3 + .2, sfx: 'tick', gain: -10 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
