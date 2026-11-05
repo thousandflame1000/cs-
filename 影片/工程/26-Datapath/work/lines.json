@@ -1,0 +1,24 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "單週期 CPU", "hook": true},
+  {"id": "o2", "text": "為什麼全被 [lw] 拖慢？", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "單週期 vs 多週期", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "lw 要走完 5 站：800 ps", "scene": true, "hold": 4.2},
+  {"id": "a2", "text": "時脈只能有一種長度：全部 [800]", "hold": 4.0},
+  {"id": "a3", "text": "beq 只要 500，剩下 300 [空等]", "hold": 4.0, "pause": 0.2},
+
+  {"id": "b1", "text": "多週期：時脈縮成最慢的一站 200", "scene": true, "hold": 4.2},
+  {"id": "b2", "text": "lw 5 拍、add 4 拍、beq 3 拍", "hold": 4.2},
+  {"id": "b3", "text": "短的指令[早下班]", "hold": 3.4, "pause": 0.2},
+
+  {"id": "c1", "text": "管線：每一拍都送進一條新指令", "scene": true, "hold": 4.4},
+  {"id": "c2", "text": "同樣 5 條：4000 ps → [1800 ps]", "hold": 4.0},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

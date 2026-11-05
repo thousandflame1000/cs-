@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>單週期 vs 多週期</title>
+<!--
+  資工所衝刺 · 短影音 26：單週期 vs 多週期 vs 管線——時間軸上的空等
+  記憶宮殿：計組館 · 第 5 間。地上是 3D 甘特圖：每條指令一排，五站（IF 青、ID 紫、EX 琥珀、MEM 珊瑚、WB 綠）是長度＝時間的方塊。
+  單週期：每條都占 800 ps，短指令剩下的時間是灰色「空等」；多週期：時脈 200，指令做完就換下一條（3800 ps）；
+  管線：每拍送進一條（1800 ps）。程式 = lw、add、beq、add、beq。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#06060b', INK = '#eef3fa', CY = '#5be7ff', VI = '#b48cff', AM = '#ffc14d', CO = '#ff6a5c', GR = '#6ee7a8';
+const K = Kit({ W, H, stage, duration: DUR, seed: 261, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CO, accent2: AM } });
+K.warm([CY, VI, AM, CO, GR, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { lw: CO, 800: CO, 空等: CO, 早下班: GR, '1800 ps': GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1;
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: CO, a: .35 * a, major: 3 });
+let tNow = 0;
+function box(c, x0, x1, y0, y1, z0, z1, col, a = 1, fill = .5) {
+  if (a <= .003 || x1 - x0 < .002) return;
+  const cam = V.camAt(tNow).pos, mid = [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2];
+  const F = [[[0, -1, 0], [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]], .6], [[1, 0, 0], [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], .4], [[-1, 0, 0], [[x0, y1, z0], [x0, y0, z0], [x0, y0, z1], [x0, y1, z1]], .4], [[0, 0, 1], [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], .95]];
+  for (const [n, q, k] of F) { const d = [cam[0] - mid[0], cam[1] - mid[1], cam[2] - mid[2]]; if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] <= 0) continue; V.poly(c, q, K.rgba(K.mix(col, '#ffffff', k * .3), fill * k), K.rgba(K.mix(col, '#ffffff', .4), .85), a); }
+}
+function counter(c, label, val, col, a, x = CX, y = 300, sz = 72) {
+  if (a <= .003) return;
+  S.label(c, label, x, y - 50, { size: 30, w: 500, color: INK, a: .6 * a, ls: '4px' });
+  S.label(c, val, x, y + 14, { size: sz, w: 700, color: col, a });
+}
+
+// ═════════ 指令與五站
+const ST = { IF: [200, CY], ID: [100, VI], EX: [200, AM], MEM: [200, CO], WB: [100, GR] };
+const NEED = { lw: ['IF', 'ID', 'EX', 'MEM', 'WB'], add: ['IF', 'ID', 'EX', 'WB'], beq: ['IF', 'ID', 'EX'] };
+const PROG = ['lw', 'add', 'beq', 'add', 'beq'];
+const SC = 2.7 / 4000, X0 = -1.2, rowZ = k => 2.5 - k * .5, BD = .16;
+const X = ps => X0 + ps * SC;
+/** 三種排法：回傳每條指令的方塊 [{x0, x1, col, st}] 與空等 */
+function layout(mode) {
+  const rows = [];
+  if (mode === 'single') PROG.forEach((ins, k) => { let t = k * 800; const b = NEED[ins].map(s => { const r = { t0: t, t1: t + ST[s][0], col: ST[s][1], st: s }; t += ST[s][0]; return r; }); rows.push({ b, idle: [t, (k + 1) * 800] }); });
+  if (mode === 'multi') { let t = 0; PROG.forEach(ins => { const b = NEED[ins].map(s => { const r = { t0: t, t1: t + 200, col: ST[s][1], st: s }; t += 200; return r; }); rows.push({ b, idle: null }); }); }
+  if (mode === 'pipe') PROG.forEach((ins, k) => { const b = ['IF', 'ID', 'EX', 'MEM', 'WB'].map((s, j) => ({ t0: (k + j) * 200, t1: (k + j + 1) * 200, col: ST[s][1], st: s, ghost: !NEED[ins].includes(s) })); rows.push({ b, idle: null }); });
+  return rows;
+}
+const LS = layout('single'), LM = layout('multi'), LP = layout('pipe');
+/** 在兩種排法之間內插（k 0..1） */
+function gantt(c, A, B, k, t, o = {}) {
+  const items = [];
+  A.forEach((ra, r) => {
+    const rb = B[r], show = o.rows ? o.rows(r) : 1; if (show <= 0) return;
+    const n = Math.max(ra.b.length, rb.b.length);
+    for (let j = 0; j < n; j++) {
+      const a = ra.b[Math.min(j, ra.b.length - 1)], b = rb.b[Math.min(j, rb.b.length - 1)], exists = (j < ra.b.length ? 1 - k : 0) + (j < rb.b.length ? k : 0); if (exists <= .01) continue;
+      const t0 = lerp(a.t0, b.t0, k), t1 = lerp(a.t1, b.t1, k), col = j < rb.b.length && k > .5 ? b.col : a.col, gh = (k > .5 ? b : a).ghost;
+      const g = (o.grow ? o.grow(r, j) : 1) * show * exists;
+      items.push({ p: [X((t0 + t1) / 2), 0, rowZ(r)], draw: () => box(c, X(t0) + .008, X(t1) - .008, -BD, BD, rowZ(r) - .17, rowZ(r) + .17, col, g * (gh ? .3 : 1), gh ? .15 : .55) });
+    }
+    const idA = ra.idle, ida = (1 - k) * show * (o.idle ?? 1);
+    if (idA && ida > .01 && idA[1] > idA[0]) items.push({ p: [X((idA[0] + idA[1]) / 2), .1, rowZ(r)], draw: () => { box(c, X(idA[0]) + .008, X(idA[1]) - .008, .05, BD, rowZ(r) - .17, rowZ(r) + .17, '#4b5563', ida, .4); if (o.idleLabel && o.idleLabel(r) > 0) V.label(c, '空等 ' + (idA[1] - idA[0]), [X((idA[0] + idA[1]) / 2), -.2, rowZ(r)], { size: .17, w: 700, color: CO, a: o.idleLabel(r), minPx: 18, maxPx: 46 }); } });
+    V.label(c, PROG[r], [X(-170), 0, rowZ(r)], { size: .2, w: 700, color: INK, a: show * .85, minPx: 18, maxPx: 52 });
+  });
+  V.sorted(items);
+}
+function clock(c, period, a, total = 4000) { if (a <= .003) return; for (let t = 0; t <= total + 1; t += period) V.line(c, [X(t), .2, rowZ(-.6)], [X(t), .2, rowZ(4.6)], { color: INK, a: .22 * a, w: 1.2, plain: true }); }
+
+// ═════════ 鏡頭
+const TG = [0, 0, 0];
+V.camKeys([
+  [0, V.orbit(-16, 7.0, 1.6, [.1, 0, 1.5], 44)], [T.start, V.orbit(-6, 7.4, 1.8, [.1, 0, 1.5], 44)],
+  [A1.start, V.orbit(-6, 2.3, .4, [-.93, 0, 2.5], 44)], [L.a2.start + .5, V.orbit(-14, 7.0, 1.6, [.1, 0, 1.5], 44)], [L.a3.end, V.orbit(8, 7.2, 1.8, [.1, 0, 1.5], 44)],
+  [B1.start + .3, V.orbit(-10, 7.2, 1.6, [.1, 0, 1.5], 44)], [L.b3.end, V.orbit(10, 7.4, 1.8, [.1, 0, 1.5], 44)],
+  [C1.start + .3, V.orbit(-12, 7.0, 1.6, [.1, 0, 1.5], 44)], [DUR, V.orbit(8, 7.2, 1.8, [.1, 0, 1.5], 44)],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c); clock(c, 800, 1); gantt(c, LS, LS, 0, t, { rows: r => prog(t, o1.start + r * .2, o1.start + .4 + r * .2), idleLabel: r => r === 2 ? prog(t, o2.start + .3, o2.start + .8) : 0 });
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '計算機組織 · 處理器', big: '時脈', size: 200, y: 600, en: 'SINGLE  vs  MULTI-CYCLE', q: '時間都花在哪裡', qGap: 330, color: CO });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); gantt(c, LS, LS, 0, t); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CO);
+}
+function sSingle(c, t) {
+  room(c);
+  const allRows = prog(t, L.a2.start + .2, L.a2.start + 1.0);
+  clock(c, 800, allRows);
+  gantt(c, LS, LS, 0, t, { rows: r => (r === 0 ? 1 : prog(t, L.a2.start + .2 + r * .15, L.a2.start + .6 + r * .15)), grow: (r, j) => (r === 0 ? prog(t, A1.start + .3 + j * .5, A1.start + .7 + j * .5) : 1), idle: allRows, idleLabel: r => (r === 2 || r === 4 ? prog(t, L.a3.start + .3, L.a3.start + .8) : 0) });
+  // a1：lw 每站的時間
+  const la = prog(t, A1.start + .3, A1.start + 3.0) * (1 - prog(t, L.a2.start, L.a2.start + .4));
+  if (la > 0) LS[0].b.forEach((b, j) => { const g = prog(t, A1.start + .5 + j * .5, A1.start + .9 + j * .5); V.label(c, b.st, [X((b.t0 + b.t1) / 2), -.2, rowZ(0) + (j % 2 ? .5 : .32)], { size: .17, w: 700, color: b.col, a: g * la, minPx: 16, maxPx: 44 }); V.label(c, String(b.t1 - b.t0), [X((b.t0 + b.t1) / 2), -.2, rowZ(0) - (j % 2 ? .5 : .32)], { size: .15, color: INK, a: .8 * g * la, minPx: 14, maxPx: 40 }); });
+  counter(c, '時脈', '800 ps', CO, prog(t, L.a2.start + .3, L.a2.start + .8), CX - 200);
+  counter(c, '5 條總共', '4000 ps', INK, prog(t, L.a2.start + 1.6, L.a2.start + 2.1), CX + 200);
+}
+function sMulti(c, t) {
+  room(c);
+  const k = E.inOutCubic(prog(t, B1.start + .5, B1.start + 2.4));
+  clock(c, lerp(800, 200, k), 1);
+  gantt(c, LS, LM, k, t);
+  const la = prog(t, L.b2.start + .2, L.b2.start + .7);
+  if (la > 0) LM.forEach((r, i) => V.label(c, r.b.length + ' 拍', [X(r.b[r.b.length - 1].t1) + .08, -.2, rowZ(i)], { size: .17, w: 700, color: AM, a: la, align: 'left', minPx: 16, maxPx: 44 }));
+  counter(c, '時脈', k > .5 ? '200 ps' : '800 ps', AM, 1, CX - 200);
+  counter(c, '5 條總共', prog(t, L.b3.start + .2, L.b3.start + .6) > 0 ? '3800 ps' : '…', GR, 1, CX + 200);
+}
+function sPipe(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const k = E.inOutCubic(prog(t, C1.start + .5, C1.start + 2.6));
+  clock(c, 200, 1, 4000);
+  gantt(c, LM, LP, k, t);
+  const cmp = prog(t, L.c2.start + .2, L.c2.start + .7);
+  if (cmp > 0) { counter(c, '單週期', '4000', INK, cmp, CX - 300, 300, 60); counter(c, '多週期', '3800', AM, cmp, CX, 300, 60); counter(c, '管線', '1800', GR, cmp, CX + 300, 300, 60); }
+  else counter(c, '時脈', '200 ps', AM, 1, CX);
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['單週期：時脈 = 最慢的指令', CO, 50], ['多週期：時脈 = 最慢的一站', AM, 50], ['時間 = 指令數 × CPI × 週期', INK, 48], ['管線：理想 CPI = 1', GR, 54]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'single', start: A1.start, end: B1.start, draw: sSingle, color: CO, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'multi', start: B1.start, end: C1.start, draw: sMulti, color: AM, in: { type: 'cut' } },
+  { id: 'pipe', start: C1.start, end: DUR, draw: (c, t) => { sPipe(c, t); sExam(c, t); }, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+S.chapters([[A1.start, '記憶宮殿 · 計組館 · 第 5 間  /  01 單週期'], [B1.start, '記憶宮殿 · 計組館 · 第 5 間  /  02 多週期'], [C1.start, '記憶宮殿 · 計組館 · 第 5 間  /  03 管線'], [Ec.start, '']]);
+
+function render(t) {
+  tNow = t;
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    ...[0, 1, 2, 3, 4].map(r => ({ t: o1.start + r * .2, sfx: 'tick', gain: -13 })), { t: o2.start + .3, sfx: 'glitch', gain: -11 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    ...[0, 1, 2, 3, 4].map(j => ({ t: A1.start + .3 + j * .5, sfx: 'pop', gain: -12 })),
+    { t: L.a2.start + .2, sfx: 'whoosh', gain: -11 }, { t: L.a3.start + .3, sfx: 'glitch', gain: -10 },
+    { t: B1.start + .5, sfx: 'swish', gain: -10 }, { t: L.b3.start + .2, sfx: 'chime', gain: -10 },
+    { t: C1.start + .5, sfx: 'swish', gain: -10 }, { t: L.c2.start + .2, sfx: 'impact', gain: -7 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
