@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>平面圖</title>
+<!--
+  資工所衝刺 · 短影音 36：平面圖——數邊就能證明畫不平
+  記憶宮殿：離散館 · 第 7 間。01 K4 平鋪在地板，三個內面＋外面上色：4 − 6 + 4 = 2；每個面的邊界依序亮起：2e ≥ 3f。
+  02 e ≤ 3v − 6；K5 在空中是個金字塔（3D 不用交叉），塔尖壓到地板上，兩條對角線一定撞在一起；10 > 9。
+  03 K3,3（三間房、三個水電）：9 ≤ 12 擋不住；沒有三角形，每面至少 4 條邊 → e ≤ 2v − 4 = 8 < 9。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', GR = '#6ee7a8', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 361, vignette: .6, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: AM } });
+K.warm([CY, AM, CO, GR, VI, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 邊: AM, '2': GR, '3v − 6': AM, 畫不平: CO, '4': AM, 不行: CO },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1;
+const add = (a, b) => a.map((v, i) => v + b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: CY, a: .26 * a, major: 3 });
+let tNow = 0;
+const NZ = .15;
+const node = (c, p, s, col, a = 1, r = .14) => { if (a <= .003) return; V.glow(c, p, .4, .3 * a, col); V.orb(c, p, r, { color: col, a }); if (s) V.label(c, s, add(p, [0, -.05, .02]), { size: .13, w: 700, color: '#ffffff', a, minPx: 18, maxPx: 44 }); };
+const edge = (c, a, b, col, al, w = 2.6, p = 1) => { if (al <= .003 || p <= .003) return; V.line(c, a, mix3(a, b, p), { color: col, a: al, w }); };
+const face = (c, pts, col, al) => { if (al > .003) V.poly(c, pts.map(p => [p[0], p[1], .01]), K.rgba(col, .28 * al), K.rgba(col, .0), 1); };
+/** 2D 線段交點（地板上的 x, y） */
+function cross(p, q, r, s) {
+  const d = (q[0] - p[0]) * (s[1] - r[1]) - (q[1] - p[1]) * (s[0] - r[0]); if (Math.abs(d) < 1e-9) return null;
+  const u = ((r[0] - p[0]) * (s[1] - r[1]) - (r[1] - p[1]) * (s[0] - r[0])) / d, v = ((r[0] - p[0]) * (q[1] - p[1]) - (r[1] - p[1]) * (q[0] - p[0])) / d;
+  return u > .02 && u < .98 && v > .02 && v < .98 ? [p[0] + u * (q[0] - p[0]), p[1] + u * (q[1] - p[1])] : null;
+}
+function crossings(P, EDG) { const out = []; for (let i = 0; i < EDG.length; i++) for (let j = i + 1; j < EDG.length; j++) { const [a, b] = EDG[i], [c2, d] = EDG[j]; if (a === c2 || a === d || b === c2 || b === d) continue; const x = cross(P[a], P[b], P[c2], P[d]); if (x) out.push(x); } return out; }
+
+// ═════════ K4
+const K4 = { A: [0, .9, NZ], B: [-.82, -.6, NZ], C: [.82, -.6, NZ], D: [0, -.08, NZ] };
+const K4E = [['A', 'B'], ['B', 'C'], ['C', 'A'], ['D', 'A'], ['D', 'B'], ['D', 'C']];
+const K4F = [[['A', 'B', 'D'], VI], [['B', 'C', 'D'], CY], [['C', 'A', 'D'], AM]];
+// ═════════ K5：底下正方形 + 塔尖
+const K5B = { a: [-.75, -.7], b: [.75, -.7], c: [.75, .7], d: [-.75, .7] };
+const K5E = [['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a'], ['a', 'c'], ['b', 'd'], ['e', 'a'], ['e', 'b'], ['e', 'c'], ['e', 'd']];
+// ═════════ K3,3
+const K33 = { h1: [-.8, .7, NZ], h2: [0, .7, NZ], h3: [.8, .7, NZ], u1: [-.8, -.7, NZ], u2: [0, -.7, NZ], u3: [.8, -.7, NZ] };
+const K33E = []; ['h1', 'h2', 'h3'].forEach(h => ['u1', 'u2', 'u3'].forEach(u => K33E.push([h, u])));
+
+// ═════════ 鏡頭
+V.camKeys([
+  [0, V.orbit(-10, 6.2, 3.6, [0, -.7, .3], 44)], [T.start, V.orbit(-4, 6.4, 3.8, [0, -.6, .3], 44)],
+  [A1.start, V.orbit(-10, 4.2, 3.0, [0, -.45, .15], 44)], [L.a3.end, V.orbit(0, 4.3, 3.2, [0, -.45, .15], 44)],
+  [B1.start + .3, V.orbit(-14, 5.0, 2.4, [0, -.35, .6], 44)], [L.b2.end, V.orbit(-6, 5.0, 2.8, [0, -.4, .5], 44)], [L.b3.end, V.orbit(0, 4.4, 3.3, [0, -.45, .15], 44)],
+  [C1.start + .3, V.orbit(-8, 4.3, 3.1, [0, -.45, .15], 44)], [L.c3.end, V.orbit(2, 4.4, 3.3, [0, -.45, .15], 44)], [DUR, V.orbit(-2, 4.7, 3.5, [0, -.5, .15], 44)],
+]);
+
+function drawK5(c, t, st) {
+  const { a = 1, drop = 0, grow = 1, hot = 0 } = st;
+  const P = {}; for (const k in K5B) P[k] = [...K5B[k], NZ];
+  P.e = [0, .22 * drop, lerp(1.4, NZ, E.inOutCubic(drop))];
+  K5E.forEach(([u, v], i) => { const g = prog(grow, i * .07, i * .07 + .3); const diag = (u === 'a' && v === 'c') || (u === 'b' && v === 'd'); edge(c, P[u], P[v], diag && hot > 0 ? K.mix(INK, CO, hot) : INK, a * (.45 + .3 * (diag ? hot : 0)) * g, diag && hot > 0 ? 3.2 : 2.2); });
+  const items = Object.entries(P).map(([k, p]) => ({ p, draw: () => node(c, p, '', k === 'e' ? AM : CY, a * prog(grow, 0, .3)) }));
+  V.sorted(items);
+  if (drop > .97) { const flat = {}; for (const k in P) flat[k] = [P[k][0], P[k][1]]; crossings(flat, K5E).forEach(([x, y]) => { V.glow(c, [x, y, NZ], .5, a * hot * (.7 + .3 * Math.sin(t * 9)), CO); V.core(c, [x, y, NZ], .05, a * hot, CO); }); }
+}
+function drawK4(c, t, st) {
+  const { a = 1, grow = 1, faces = 1, ring = -1 } = st;
+  K4F.forEach(([vs, col], i) => { const hi = ring >= 0 ? (Math.floor(ring) === i ? 1 : .35) : 1; face(c, vs.map(k => K4[k]), col, a * faces * hi); });
+  if (faces > 0) { const hi = ring >= 0 ? (Math.floor(ring) === 3 ? 1 : .3) : .6; for (let k = 0; k < 3; k++) { const s = [K4.A, K4.B, K4.C, K4.A]; V.line(c, add(s[k], [0, 0, -.13]), add(s[k + 1], [0, 0, -.13]), { color: GR, a: a * faces * hi * .5, w: 6 }); } }
+  K4E.forEach(([u, v], i) => {
+    let col = INK, al = .75, w = 2.6;
+    if (ring >= 0) { const fi = Math.floor(ring), on = fi < 3 ? K4F[fi][0].includes(u) && K4F[fi][0].includes(v) : ['A', 'B', 'C'].includes(u) && ['A', 'B', 'C'].includes(v); if (on) { col = fi < 3 ? K4F[fi][1] : GR; al = 1; w = 4; } }
+    edge(c, K4[u], K4[v], col, a * al * prog(grow, .2 + i * .1, .45 + i * .1), w);
+  });
+  const items = Object.entries(K4).map(([k, p]) => ({ p, draw: () => node(c, p, '', CY, a * prog(grow, 0, .25)) }));
+  V.sorted(items);
+}
+function drawK33(c, t, st) {
+  const { a = 1, grow = 1, cyc = 0, hot = 0 } = st;
+  K33E.forEach(([u, v], i) => { const on4 = cyc > 0 && [['h1', 'u1'], ['h2', 'u1'], ['h2', 'u2'], ['h1', 'u2']].some(([x, y]) => x === u && y === v); edge(c, K33[u], K33[v], on4 ? K.mix(INK, AM, cyc) : INK, a * (.5 + .5 * (on4 ? cyc : 0)), on4 ? 2.6 + 1.6 * cyc : 2.2, prog(grow, .2 + i * .06, .45 + i * .06)); });
+  const items = Object.entries(K33).map(([k, p]) => ({ p, draw: () => node(c, p, '', k[0] === 'h' ? VI : CY, a * prog(grow, 0, .3)) }));
+  V.sorted(items);
+  if (hot > 0) { const flat = {}; for (const k in K33) flat[k] = [K33[k][0], K33[k][1]]; crossings(flat, K33E).forEach(([x, y]) => { V.glow(c, [x, y, NZ], .35, a * hot * (.6 + .3 * Math.sin(t * 9)), CO); V.core(c, [x, y, NZ], .04, a * hot, CO); }); }
+}
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c);
+  const d = prog(t, .6, 2.0);
+  drawK5(c, t, { drop: d, grow: prog(t, 0, .8), hot: prog(t, 2.0, 2.3) });
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '離散數學 · 圖論', big: '平面圖', size: 200, y: 600, en: 'PLANAR  GRAPHS', q: 'e ≤ 3v − 6', qGap: 330, color: CY });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); drawK5(c, t, { drop: 1, hot: 1 }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CY);
+}
+function sEuler(c, t) {
+  const fade = 1 - prog(t, L.b2.start - .3, L.b2.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c);
+  const a1 = A1.start, a2 = L.a2.start, a3 = L.a3.start, b1 = B1.start;
+  const dim = 1 - .6 * prog(t, b1 + .1, b1 + .5);
+  const ring = t > a3 + .3 && t < a3 + 3.5 ? (t - a3 - .3) / .8 : -1;
+  drawK4(c, t, { a: dim, grow: prog(t, a1 + .2, a1 + 1.8), faces: prog(t, a2 + .3, a2 + 1.2), ring });
+  const ca = prog(t, a2 + .3, a2 + .7) * (1 - prog(t, a3, a3 + .3));
+  if (ca > 0) {
+    const n = [['點', 4, CY, a2 + .3], ['邊', 6, INK, a2 + .8], ['面', 4, AM, a2 + 1.3]];
+    n.forEach(([s, v, col, t0], i) => { const g = prog(t, t0, t0 + .3); S.label(c, s, 300 + i * 240, 225, { size: 34, a: .7 * g * ca }); S.label(c, String(v), 300 + i * 240, 300, { size: 80, w: 700, color: col, a: g * ca }); });
+    const eq = prog(t, a2 + 2.0, a2 + 2.4); if (eq > 0) S.label(c, '4 − 6 + 4 = 2', CX, 400, { size: 54, w: 700, color: GR, a: eq * ca });
+    const oa = prog(t, a2 + 1.3, a2 + 1.7); if (oa > 0) V.label(c, '外面也算一面', [0, -1.15, .02], { size: .13, w: 700, color: GR, a: oa * ca * .9, minPx: 20, maxPx: 44 });
+  }
+  const ea = prog(t, a3 + .4, a3 + .8) * (1 - prog(t, b1 - .1, b1 + .2));
+  if (ea > 0) { S.label(c, '2e ≥ 3f', CX, 260, { size: 72, w: 700, color: AM, a: ea }); S.label(c, '每個面 ≥ 3 條邊，每條邊算 2 次', CX, 350, { size: 36, a: .7 * ea * prog(t, a3 + 1.2, a3 + 1.6) }); }
+  const da = prog(t, b1 + .2, b1 + .6) * (1 - prog(t, L.b2.start - .3, L.b2.start));
+  if (da > 0) { S.label(c, 'f ≤ 2e/3 代入 v − e + f = 2', CX, 250, { size: 40, a: .8 * da }); S.label(c, 'e ≤ 3v − 6', CX, 350, { size: 96, w: 700, color: AM, a: prog(t, b1 + 1.0, b1 + 1.4) }); }
+  c.restore();
+}
+function sK5(c, t) {
+  const fade = 1 - prog(t, C1.start - .3, C1.start); if (fade <= 0 || t < L.b2.start - .3) return;
+  c.save(); c.globalAlpha *= fade * prog(t, L.b2.start - .3, L.b2.start + .1);
+  room(c);
+  const b2 = L.b2.start, b3 = L.b3.start;
+  drawK5(c, t, { grow: prog(t, b2 + .1, b2 + 1.2), drop: prog(t, b3 + .1, b3 + 1.3), hot: prog(t, b3 + 1.3, b3 + 1.6) });
+  const ka = prog(t, b2 + .5, b2 + .9);
+  if (ka > 0) { S.label(c, 'K5：e = 10', CX, 250, { size: 56, w: 700, color: INK, a: ka }); S.label(c, '3 × 5 − 6 = 9', CX, 335, { size: 50, w: 700, color: AM, a: prog(t, b2 + 1.3, b2 + 1.7) }); S.label(c, '10 > 9', CX, 425, { size: 64, w: 700, color: CO, a: prog(t, b2 + 2.2, b2 + 2.6) }); }
+  c.restore();
+}
+function sK33(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+  drawK33(c, t, { grow: prog(t, c1 + .1, c1 + 1.4), cyc: prog(t, c2 + .4, c2 + 1.0) * (1 - prog(t, c3 + .2, c3 + .6)), hot: prog(t, c3 + 1.6, c3 + 2.0) });
+  const la = prog(t, c1 + .4, c1 + .8) * (1 - prog(t, c2 - .1, c2 + .2));
+  if (la > 0) { S.label(c, 'K3,3：e = 9', CX, 250, { size: 56, w: 700, color: INK, a: la }); S.label(c, '3 × 6 − 6 = 12', CX, 335, { size: 50, w: 700, color: AM, a: prog(t, c1 + 1.3, c1 + 1.7) }); S.label(c, '9 ≤ 12：擋不住', CX, 425, { size: 52, w: 700, color: AM, a: prog(t, c1 + 2.2, c1 + 2.6) }); }
+  const fa = prog(t, c2 + 1.0, c2 + 1.4) * (1 - prog(t, c3 - .1, c3 + .2));
+  if (fa > 0) { S.label(c, '最短的環 = 4', CX, 260, { size: 60, w: 700, color: AM, a: fa }); S.label(c, '2e ≥ 4f', CX, 350, { size: 56, w: 700, color: AM, a: prog(t, c2 + 1.8, c2 + 2.2) }); }
+  const ga = prog(t, c3 + .3, c3 + .7);
+  if (ga > 0) { S.label(c, 'e ≤ 2v − 4 = 8', CX, 260, { size: 66, w: 700, color: GR, a: ga }); S.label(c, '9 > 8', CX, 355, { size: 66, w: 700, color: CO, a: prog(t, c3 + 1.2, c3 + 1.6) }); }
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['v − e + f = 2', GR, 58], ['簡單平面圖：e ≤ 3v − 6', AM, 54], ['沒有三角形：e ≤ 2v − 4', CY, 54], ['K5、K3,3 都不是平面圖', CO, 54]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'euler', start: A1.start, end: C1.start, draw: (c, t) => { sEuler(c, t); sK5(c, t); }, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'k33', start: C1.start, end: DUR, draw: (c, t) => { sK33(c, t); sExam(c, t); }, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+const TAG = '記憶宮殿 · 離散館 · 第 7 間  /  ';
+S.chapters([[A1.start, TAG + '01 歐拉公式'], [B1.start, TAG + '02 K5'], [C1.start, TAG + '03 K3,3'], [Ec.start, '']]);
+
+function render(t) {
+  tNow = t;
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const a2 = L.a2.start, a3 = L.a3.start, b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start, c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: .6, sfx: 'whoosh', gain: -12 }, { t: 2.0, sfx: 'glitch', gain: -9 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start + .2, sfx: 'pop', gain: -12 },
+    { t: a2 + .3, sfx: 'tick', gain: -10 }, { t: a2 + .8, sfx: 'tick', gain: -10 }, { t: a2 + 1.3, sfx: 'tick', gain: -10 }, { t: a2 + 2.0, sfx: 'chime', gain: -8 },
+    ...[0, 1, 2, 3].map(i => ({ t: a3 + .3 + i * .8, sfx: 'swish', gain: -13 })),
+    { t: b1 + 1.0, sfx: 'impact', gain: -8 },
+    { t: b2 + .1, sfx: 'whoosh', gain: -11 }, { t: b2 + 2.2, sfx: 'thump', gain: -8 },
+    { t: b3 + .1, sfx: 'riser', gain: -14 }, { t: b3 + 1.3, sfx: 'glitch', gain: -7 },
+    { t: c1 + .1, sfx: 'whoosh', gain: -11 }, { t: c1 + 2.2, sfx: 'tick', gain: -9 },
+    { t: c2 + .4, sfx: 'swish', gain: -10 }, { t: c2 + 1.8, sfx: 'chime', gain: -10 },
+    { t: c3 + .3, sfx: 'chime', gain: -9 }, { t: c3 + 1.6, sfx: 'glitch', gain: -7 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

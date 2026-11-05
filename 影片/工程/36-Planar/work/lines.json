@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "這 5 個點，畫在紙上一定會交叉", "hook": true},
+  {"id": "o2", "text": "數[邊]就能證明", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "平面圖", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "平面圖：邊可以不交叉地畫平", "scene": true, "hold": 3.6},
+  {"id": "a2", "text": "歐拉公式：點 − 邊 + 面 = [2]", "hold": 3.8},
+  {"id": "a3", "text": "每個面至少 3 條邊，每條邊碰 2 個面", "hold": 4.4, "pause": 0.2},
+
+  {"id": "b1", "text": "代進去：邊數最多 [3v − 6]", "scene": true, "hold": 3.8},
+  {"id": "b2", "text": "K5 有 10 條邊，上限只有 9", "hold": 3.8},
+  {"id": "b3", "text": "所以 K5 [畫不平]", "hold": 3.0, "pause": 0.2},
+
+  {"id": "c1", "text": "K3,3：9 條邊，上限 12，擋不住", "scene": true, "hold": 4.0},
+  {"id": "c2", "text": "二分圖沒有三角形：每面至少 [4] 條", "hold": 4.0},
+  {"id": "c3", "text": "上限變 2v − 4 = 8，K3,3 也[不行]", "hold": 3.8},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
