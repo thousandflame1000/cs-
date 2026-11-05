@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>對稱矩陣與 SVD</title>
+<!--
+  資工所衝刺 · 短影音 38：對稱矩陣與 SVD——圓變橢圓，軸互相垂直
+  記憶宮殿：線代館 · 第 6 間。單位圓平鋪在地板上，A = [[2, 1], [1, 2]] 把它慢慢壓成橢圓：八根箭頭裡只有 (1, 1)、(1, −1) 兩根不轉（λ = 3、1）。
+  02 QΛQᵀ 分三段：轉 −45°、沿軸拉 3 和 1、轉回來；xᵀAx 從地板升成碗（全正）→ 換成 [[1, 2], [2, 1]] 變馬鞍（3、−1）。
+  03 不對稱的剪切 [[1, 1], [0, 1]]：Vᵀ 轉、Σ 拉、U 轉；σ₁ ≈ 1.618、σ₂ ≈ 0.618 是橢圓的半軸。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', GR = '#6ee7a8', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 381, vignette: .6, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: GR } });
+K.warm([CY, AM, CO, GR, VI, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 互相垂直: GR, 不轉: GR, 碗: GR, 馬鞍: CO },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1;
+const add = (a, b) => a.map((v, i) => v + b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: CY, a: .22 * a, major: 3 });
+let tNow = 0;
+const lab = (c, s, p, col, a, size = .15, ex = {}) => { if (a > .003) V.label(c, s, p, Object.assign({ size, w: 700, color: col, a, minPx: 18, maxPx: 60 }, ex)); };
+
+// ═════════ 2×2 矩陣工具（矩陣單位 → 世界：× U）
+const U = .34, Z0 = .03;
+const mul = (m, p) => [m[0][0] * p[0] + m[0][1] * p[1], m[1][0] * p[0] + m[1][1] * p[1]];
+const mm = (a, b) => [[a[0][0] * b[0][0] + a[0][1] * b[1][0], a[0][0] * b[0][1] + a[0][1] * b[1][1]], [a[1][0] * b[0][0] + a[1][1] * b[1][0], a[1][0] * b[0][1] + a[1][1] * b[1][1]]];
+const lerpM = (a, b, k) => a.map((r, i) => r.map((v, j) => lerp(v, b[i][j], k)));
+const rot = (th) => [[Math.cos(th), -Math.sin(th)], [Math.sin(th), Math.cos(th)]];
+const I2 = [[1, 0], [0, 1]], A = [[2, 1], [1, 2]], B = [[1, 2], [2, 1]], SH = [[1, 1], [0, 1]];
+const w3 = (p, z = Z0) => [p[0] * U, p[1] * U, z];
+// SVD of SH
+const svd = (() => { const [[a, b], [c, d]] = SH, tv = .5 * Math.atan2(2 * (a * b + c * d), (a * a + c * c) - (b * b + d * d)), tu = .5 * Math.atan2(2 * (a * c + b * d), (a * a + b * b) - (c * c + d * d));
+  const Rv = rot(tv), Ru = rot(tu), Ru_t = [[Ru[0][0], Ru[1][0]], [Ru[0][1], Ru[1][1]]], Sg = mm(mm(Ru_t, SH), Rv); let s1 = Sg[0][0], s2 = Sg[1][1], tu2 = tu, flip = 1; if (s2 < 0) { s2 = -s2; flip = -1; } if (s1 < 0) { s1 = -s1; }
+  return { tv, tu, s1, s2, flip }; })();
+/** 依階段組合變換：stages = [[matrix, k], ...]（依序套用、每段內插） */
+function compose(stages) { let M = I2; for (const [m, k] of stages) { if (k <= 0) break; M = mm(lerpM(I2, m, clamp(k)), M); } return M; }
+function rotStage(th, k) { return rot(th * clamp(k)); }
+
+// ═════════ 圓、箭頭
+const NC = 72;
+function drawShape(c, M, st = {}) {
+  const { a = 1, col = CY, arrows = 1, eig = 0, eigA = null, hi = [] } = st;
+  const pts = []; for (let i = 0; i <= NC; i++) { const th = i / NC * Math.PI * 2; pts.push(w3(mul(M, [Math.cos(th), Math.sin(th)]))); }
+  V.path(c, pts, { color: col, a: a * .9, w: 3 });
+  V.poly(c, pts.slice(0, -1), K.rgba(col, .07 * a), null, 1);
+  if (arrows > 0) for (let i = 0; i < 8; i++) {
+    const th = i / 8 * Math.PI * 2 + Math.PI / 4, v = [Math.cos(th), Math.sin(th)], isE = eigA && eigA.some(e => Math.abs(Math.cos(th) * e[0] + Math.sin(th) * e[1]) > .999), q = mul(M, v);
+    const ccol = isE && eig > 0 ? (Math.abs(Math.cos(th) * eigA[0][0] + Math.sin(th) * eigA[0][1]) > .999 ? GR : AM) : INK;
+    V.arrow(c, [0, 0, Z0], w3(q), { color: ccol, a: a * arrows * (isE && eig > 0 ? 1 : .55), w: isE && eig > 0 ? 3.4 : 2, head: 12 });
+    // 原來的方向（淡虛影）
+    if (isE && eig > 0) V.line(c, [0, 0, Z0], w3([v[0] * 1.8, v[1] * 1.8]), { color: ccol, a: .25 * a * eig, w: 1.2, plain: true });
+  }
+}
+/** 二次型曲面 z = s · xᵀMx（矩陣單位 [-1.2, 1.2]） */
+function drawForm(c, M, s, st = {}) {
+  const { a = 1, n = 13, R = 1.2 } = st; if (a <= .003 || s <= .003) return;
+  const f = (x, y) => (M[0][0] * x * x + (M[0][1] + M[1][0]) * x * y + M[1][1] * y * y) * .11 * s;
+  for (let fam = 0; fam < 2; fam++) for (let i = 0; i < n; i++) {
+    const u = -R + 2 * R * i / (n - 1), pts = [], cols = [];
+    for (let j = 0; j <= 24; j++) { const v = -R + 2 * R * j / 24, x = fam ? v : u, y = fam ? u : v, z = f(x, y); pts.push([x * U, y * U, Z0 + z]); }
+    // 分段上色：z ≥ 0 綠，z < 0 珊瑚
+    for (let j = 0; j < 24; j++) { const z = (pts[j][2] + pts[j + 1][2]) / 2 - Z0; V.line(c, pts[j], pts[j + 1], { color: z >= 0 ? GR : CO, a: a * .55, w: 1.4, plain: true }); }
+  }
+}
+
+// ═════════ 鏡頭
+V.camKeys([
+  [0, V.orbit(-14, 4.2, 3.2, [0, -.3, .1], 44)], [T.start, V.orbit(-6, 4.6, 3.4, [0, -.25, .1], 44)],
+  [A1.start, V.orbit(-12, 3.8, 3.1, [0, -.25, .05], 44)], [L.a3.end, V.orbit(4, 3.9, 3.3, [0, -.25, .05], 44)],
+  [B1.start + .3, V.orbit(-10, 3.9, 3.1, [0, -.25, .05], 44)], [L.b2.start + .2, V.orbit(-20, 4.1, 2.1, [0, -.15, .38], 44)], [L.b3.end, V.orbit(16, 4.2, 2.3, [0, -.15, .3], 44)],
+  [C1.start + .3, V.orbit(-8, 3.7, 3.2, [0, -.25, .05], 44)], [L.c3.end, V.orbit(6, 3.8, 3.4, [0, -.25, .05], 44)], [DUR, V.orbit(-2, 4.1, 3.5, [0, -.3, .05], 44)],
+]);
+const EIG_A = [[Math.SQRT1_2, Math.SQRT1_2], [Math.SQRT1_2, -Math.SQRT1_2]];
+function matLabel(c, name, m, y, a, col = INK) {
+  if (a <= .003) return; const x0 = 470;
+  S.label(c, name + ' =', x0 - 110, y + 36, { size: 46, w: 700, color: col, a });
+  m.forEach((r, i) => r.forEach((v, j) => S.label(c, String(v), x0 + 30 + j * 80, y + i * 72, { size: 50, w: 700, color: INK, a })));
+  [[x0 - 18, -1], [x0 + 158, 1]].forEach(([x, s]) => K.glowLine(c, [[x + s * -10, y - 34], [x, y - 34], [x, y + 106], [x + s * -10, y + 106]], { w: 2.5, color: INK, a: a * .7 }));
+}
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c);
+  const k = E.inOutCubic(prog(t, .5, 2.2));
+  drawShape(c, lerpM(I2, A, k), { eig: prog(t, 1.6, 2.2), eigA: EIG_A });
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '線性代數 · 譜定理', big: '對稱矩陣', size: 170, y: 600, en: 'SPECTRAL  THEOREM', q: 'A = QΛQᵀ', qGap: 330, color: CY });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); drawShape(c, A, { eig: 1, eigA: EIG_A }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CY);
+}
+function sEigen(c, t) {
+  const fade = 1 - prog(t, B1.start - .3, B1.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c);
+  const a1 = A1.start, a2 = L.a2.start, a3 = L.a3.start;
+  const k = E.inOutCubic(prog(t, a2 + .2, a2 + 2.2)) ;
+  const eig = prog(t, a2 + 1.8, a2 + 2.4);
+  drawShape(c, lerpM(I2, A, k), { a: prog(t, a1 + .1, a1 + .6), eig, eigA: EIG_A, arrows: prog(t, a1 + .8, a1 + 1.4) });
+  matLabel(c, 'A', A, 240, prog(t, a1 + .4, a1 + .9) * (1 - prog(t, a3 + .1, a3 + .4)));
+  const la = prog(t, a3 + .2, a3 + .6);
+  if (la > 0) {
+    lab(c, 'λ = 3', w3([2.5, 2.5], .1), GR, la, .17); lab(c, 'λ = 1', w3([1.05, -1.05], .1), AM, la, .17);
+    const s = .16; V.path(c, [w3([s * .707, s * .707]), w3([s * 1.414, 0]), w3([s * .707, -s * .707])], { color: INK, a: la * .8, w: 2 });
+    S.label(c, '互相垂直', CX, 290, { size: 66, w: 700, color: GR, a: prog(t, a3 + .8, a3 + 1.2) });
+  }
+  c.restore();
+}
+function sForm(c, t) {
+  const fade = 1 - prog(t, C1.start - .3, C1.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c);
+  const b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start;
+  // b1：QΛQᵀ 三段
+  const s1 = E.inOutCubic(prog(t, b1 + .4, b1 + 1.3)), s2 = E.inOutCubic(prog(t, b1 + 1.5, b1 + 2.5)), s3 = E.inOutCubic(prog(t, b1 + 2.7, b1 + 3.6));
+  let M = mm(rotStage(-Math.PI / 4, s1), I2); M = mm(lerpM(I2, [[3, 0], [0, 1]], s2), M); M = mm(rotStage(Math.PI / 4, s3), M);
+  const shapeA = 1 - .65 * prog(t, b2 + .1, b2 + .5);
+  // 畫在旋轉座標下的特徵軸
+  drawShape(c, M, { a: shapeA, eig: 1, eigA: EIG_A, arrows: 1 - prog(t, b2, b2 + .3) });
+  const step = t < b1 + 1.4 ? 0 : t < b1 + 2.6 ? 1 : 2, sa = prog(t, b1 + .3, b1 + .6) * (1 - prog(t, b2 - .1, b2 + .2));
+  if (sa > 0) [['Q', 0, '轉回'], ['Λ', 1, '拉'], ['Qᵀ', 2, '轉']].forEach(([s, i, w]) => { const on = (2 - i) === step, x = 320 + i * 220; S.label(c, s, x, 270, { size: on ? 84 : 64, w: 700, color: on ? AM : INK, a: sa * (on ? 1 : .45) }); S.label(c, w, x, 355, { size: 36, color: on ? AM : INK, a: sa * (on ? .9 : .35) }); });
+  // b2：碗；b3：換成 B 變馬鞍
+  const up = E.outCubic(prog(t, b2 + .3, b2 + 1.4)), mB = E.inOutCubic(prog(t, b3 + .2, b3 + 1.4));
+  drawForm(c, lerpM(A, B, mB), up, { a: 1 });
+  const fa = prog(t, b2 + .8, b2 + 1.2) * (1 - prog(t, b3 + .1, b3 + .4));
+  if (fa > 0) { S.label(c, 'λ = 3、1 都 > 0', CX, 260, { size: 52, w: 700, color: GR, a: fa }); S.label(c, '正定：xᵀAx > 0', CX, 345, { size: 50, w: 700, color: GR, a: fa * prog(t, b2 + 1.4, b2 + 1.8) }); }
+  const ga = prog(t, b3 + 1.2, b3 + 1.6);
+  if (ga > 0) { S.label(c, 'λ = 3、−1', CX, 260, { size: 56, w: 700, color: CO, a: ga }); S.label(c, '不定：有正有負', CX, 345, { size: 46, w: 700, color: CO, a: ga * prog(t, b3 + 1.7, b3 + 2.1) }); }
+  c.restore();
+}
+function sSVD(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+  // c1：直接剪切；c2：重新播一次分三段
+  const k1 = E.inOutCubic(prog(t, c1 + .6, c1 + 2.2)) * (1 - prog(t, c2 + .1, c2 + .5));
+  const s1 = E.inOutCubic(prog(t, c2 + .6, c2 + 1.4)), s2 = E.inOutCubic(prog(t, c2 + 1.6, c2 + 2.5)), s3 = E.inOutCubic(prog(t, c2 + 2.7, c2 + 3.6));
+  let M = t < c2 + .3 ? lerpM(I2, SH, k1) : I2;
+  if (t >= c2 + .3) { M = rotStage(-svd.tv, s1); M = mm(lerpM(I2, [[svd.s1, 0], [0, svd.s2 * svd.flip]], s2), M); M = mm(rotStage(svd.tu, s3), M); }
+  drawShape(c, M, { a: prog(t, c1, c1 + .4), col: VI, arrows: 1 });
+  matLabel(c, 'A', SH, 240, prog(t, c1 + .2, c1 + .6) * (1 - prog(t, c2 + .1, c2 + .4)), VI);
+  const step = t < c2 + 1.5 ? 0 : t < c2 + 2.6 ? 1 : 2, sa = prog(t, c2 + .4, c2 + .7) * (1 - prog(t, c3 - .1, c3 + .2));
+  if (sa > 0) [['U', 0, '再轉'], ['Σ', 1, '拉'], ['Vᵀ', 2, '轉']].forEach(([s, i, w]) => { const on = (2 - i) === step, x = 320 + i * 220; S.label(c, s, x, 270, { size: on ? 84 : 64, w: 700, color: on ? AM : INK, a: sa * (on ? 1 : .45) }); S.label(c, w, x, 355, { size: 36, color: on ? AM : INK, a: sa * (on ? .9 : .35) }); });
+  // c3：半軸
+  const ha = prog(t, c3 + .2, c3 + .7);
+  if (ha > 0) {
+    const ax1 = [Math.cos(svd.tu) * svd.s1, Math.sin(svd.tu) * svd.s1], ax2 = [-Math.sin(svd.tu) * svd.s2, Math.cos(svd.tu) * svd.s2];
+    V.line(c, [0, 0, Z0 + .01], w3(ax1, Z0 + .01), { color: GR, a: ha, w: 4 }); V.line(c, [0, 0, Z0 + .01], w3(ax2, Z0 + .01), { color: AM, a: ha, w: 4 });
+    lab(c, 'σ₁', w3([ax1[0] * 1.18, ax1[1] * 1.18], .12), GR, ha, .2); lab(c, 'σ₂', w3([ax2[0] * 1.6, ax2[1] * 1.6], .12), AM, ha, .2);
+    S.label(c, 'σ₁ ≈ 1.618　σ₂ ≈ 0.618', CX, 270, { size: 50, w: 700, color: INK, a: ha }); S.label(c, 'σ² = AᵀA 的特徵值', CX, 355, { size: 42, color: VI, a: .85 * prog(t, c3 + 1.0, c3 + 1.4) });
+  }
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['實對稱：λ 是實數、向量垂直', CY, 52], ['A = QΛQᵀ', GR, 60], ['正定 ⇔ λ 全 > 0 ⇔ 碗', AM, 54], ['SVD：A = UΣVᵀ，σ = 半軸', VI, 52]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'eigen', start: A1.start, end: B1.start, draw: sEigen, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'form', start: B1.start, end: C1.start, draw: sForm, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'svd', start: C1.start, end: DUR, draw: (c, t) => { sSVD(c, t); sExam(c, t); }, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+const TAG = '記憶宮殿 · 線代館 · 第 6 間  /  ';
+S.chapters([[A1.start, TAG + '01 不轉的方向'], [B1.start, TAG + '02 碗與馬鞍'], [C1.start, TAG + '03 SVD'], [Ec.start, '']]);
+
+function render(t) {
+  tNow = t;
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const a2 = L.a2.start, a3 = L.a3.start, b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start, c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: .5, sfx: 'riser', gain: -15 }, { t: 2.2, sfx: 'chime', gain: -11 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start + .1, sfx: 'pop', gain: -12 }, { t: A1.start + .8, sfx: 'swish', gain: -13 },
+    { t: a2 + .2, sfx: 'whoosh', gain: -11 }, { t: a2 + 2.0, sfx: 'chime', gain: -9 },
+    { t: a3 + .8, sfx: 'tick', gain: -9 },
+    { t: b1 + .4, sfx: 'swish', gain: -11 }, { t: b1 + 1.5, sfx: 'whoosh', gain: -11 }, { t: b1 + 2.7, sfx: 'swish', gain: -11 },
+    { t: b2 + .3, sfx: 'riser', gain: -13 }, { t: b2 + 1.3, sfx: 'chime', gain: -9 },
+    { t: b3 + .2, sfx: 'glitch', gain: -11 }, { t: b3 + 1.3, sfx: 'thump', gain: -9 },
+    { t: c1 + .6, sfx: 'whoosh', gain: -11 },
+    { t: c2 + .6, sfx: 'swish', gain: -11 }, { t: c2 + 1.6, sfx: 'whoosh', gain: -11 }, { t: c2 + 2.7, sfx: 'swish', gain: -11 },
+    { t: c3 + .2, sfx: 'chime', gain: -9 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

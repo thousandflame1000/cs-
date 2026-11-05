@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "對稱矩陣把圓壓成橢圓", "hook": true},
+  {"id": "o2", "text": "兩條軸[互相垂直]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "對稱矩陣", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "對稱矩陣 A 作用在單位圓上", "scene": true, "hold": 3.4},
+  {"id": "a2", "text": "大部分向量會轉向，兩個方向[不轉]", "hold": 4.0},
+  {"id": "a3", "text": "它們互相垂直：λ = 3、λ = 1", "hold": 3.6, "pause": 0.2},
+
+  {"id": "b1", "text": "A = QΛQᵀ：轉、拉、轉回來", "scene": true, "hold": 4.4},
+  {"id": "b2", "text": "特徵值都正：xᵀAx 是一個[碗]", "hold": 3.8},
+  {"id": "b3", "text": "有一個負的：變成[馬鞍]", "hold": 3.4, "pause": 0.2},
+
+  {"id": "c1", "text": "不對稱的矩陣也能拆：SVD", "scene": true, "hold": 3.6},
+  {"id": "c2", "text": "A = UΣVᵀ：轉、拉、再轉", "hold": 4.2},
+  {"id": "c3", "text": "σ 就是橢圓半軸的長度", "hold": 3.4},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
