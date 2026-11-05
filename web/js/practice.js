@@ -42,7 +42,7 @@ const Practice = {
 
   /* 關卡制：小怪（★）→ 菁英（★★）→ 魔王（★★★），由簡入難，不一上來就開大 */
   STAGE: { 1: { ic: 'star', name: '小怪', sub: '先熱身，一步就想得出來' }, 2: { ic: 'sword', name: '菁英', sub: '要多想幾步' }, 3: { ic: 'crown', name: '魔王', sub: '台大難度，慢慢寫沒關係' } },
-  /* 🎯 推薦：不用自己挑，依序推「快忘的 → 有漏的 → 下一顆星 → 新章 → 卡片」 */
+  /* 推薦：不用自己挑，依序推「快忘的 → 有漏的 → 下一顆星 → 新章 → 卡片」 */
   recs() {
     const out = [], today = D.today();
     const due = S.dueReviews(); if (due.length >= 3) out.push({ k: 'due', ic: 'review', t: '快忘的題目', sub: `${Math.min(due.length, 15)} 題`, go: () => this.start(this.rampSort(due).slice(0, 15), { title: '到期複習', review: true }) });
@@ -80,7 +80,7 @@ const Practice = {
     $$('[data-rk]').forEach(b => b.onclick = () => { const x = r.find(y => y.k === b.dataset.rk); if (x) x.go(); });
   },
   goNext() { const r = this.recs(); this.fi = 0; if (r.length) r[0].go(); else { this.sess = null; this.view(); } },
-  /* 🏛️ 考古題考頻（content/exams/meta.md → DATA.examFreq，各章占比）；沒有資料時大家一樣重 */
+  /* 考古題考頻（content/exams/meta.md → DATA.examFreq，各章占比）；沒有資料時大家一樣重 */
   examF(ch) { return (DATA.examFreq || {})[ch] || 0; },
   hasExam() { return !!Object.keys(DATA.examFreq || {}).length; },
   dOf(id) { return ((this.getQ(id) || {}).diff) || 2; },
@@ -272,7 +272,7 @@ const Practice = {
     const fi = $('#opt-fill'); if (fi) { fi.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); if (!s.conf) s.conf = 2; this.submit(q, qid); } }); setTimeout(() => fi.focus({ preventScroll: true }), 30); }
   },
 
-  /* ---------- ✍️ 紙筆模式：先自己寫出來，再翻答案、對照自評（考場是手寫） ---------- */
+  /* ---------- 紙筆模式：先自己寫出來，再翻答案、對照自評（考場是手寫） ---------- */
   paperOn() { try { return localStorage.getItem('paperMode') !== '0'; } catch (e) { return true; } },
   paperSet(v) { try { localStorage.setItem('paperMode', v ? '1' : '0'); } catch (e) {} },
 
@@ -375,7 +375,7 @@ const Practice = {
     $('#feedback').scrollIntoView({ behavior: 'smooth', block: 'start' });
   },
 
-  /* ---------- ✍️ 整頁默寫（自由回想）：寫完對照要點，漏的就是該補的 ---------- */
+  /* ---------- 整頁默寫（自由回想）：寫完對照要點，漏的就是該補的 ---------- */
   dictGet(ch) { return this.store('dict', 'dictate')[ch] || null; },
   dictRedo() { return Object.entries(this.store('dict', 'dictate')).filter(([ch, d]) => LESSON[ch] && d && d.hit < d.total && d.date < D.today()).map(([ch, d]) => ({ ch, hit: d.hit, total: d.total })); },
   dictSet(ch, hit, total, miss) { this.store('dict', 'dictate')[ch] = { date: D.today(), hit, total, miss }; S.save(); },
@@ -575,7 +575,7 @@ const Practice = {
     };
     clearInterval(s.mock.timer); s.mock.timer = setInterval(tick, 1000); tick();
     $('#handIn').onclick = () => this.handIn(); $('#handIn2').onclick = () => this.handIn();
-    // 👹 血條：每答一題扣一格（只看有沒有作答，不看對錯）
+    // 血條：每答一題扣一格（只看有沒有作答，不看對錯）
     const hp = () => { const n = s.ids.length, done = s.ids.filter((id, k) => { const q = this.getQ(id), li = $('#eq-' + k); try { return li && this.readResponse(q, li, 'e' + k) != null; } catch (e) { return false; } }).length;
       const left = n - done, b = $('#mockHp'), t = $('#mockHpN'); if (b) b.style.width = (left / n * 100) + '%'; if (t) t.textContent = left + '/' + n; };
     m.addEventListener('change', hp); m.addEventListener('input', debounce(hp, 300)); hp();

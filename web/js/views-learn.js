@@ -34,7 +34,7 @@ function viewCards() {
   const due = Learn.cardDue(today).length, newN = Math.min(Learn.newLeft(), Learn.newCards().length), learned = all.filter(c => srs[c.id]).length;
   main().innerHTML = `
   ${due + newN ? `<section class="feed-hero"><div class="fh-ic" aria-hidden="true">🃏</div><h2>今日卡片</h2><div class="fh-sub">${due ? `快忘的 ${due} 張` : ''}${due && newN ? ' · ' : ''}${newN ? `新的 ${newN} 張` : ''}</div><button class="go-start" id="cToday">▶ 開始</button></section>`
-    : `<section class="feed-hero"><div class="fh-ic" aria-hidden="true">✅</div><h2>今天的卡片清空了</h2><button class="go-start" id="cTf">▶ 陷阱判斷</button></section>`}
+    : `<section class="feed-hero"><div class="fh-ic" aria-hidden="true"></div><h2>今天的卡片清空了</h2><button class="go-start" id="cTf">▶ 陷阱判斷</button></section>`}
   <details class="self-pick"><summary>自己挑</summary>
   <section class="kpis kpis3">
     <div class="kpi"><span class="k">${due}</span><span class="l">到期</span></div>
@@ -59,7 +59,7 @@ function renderCardItem() {
   <header class="page-head slim"><div class="eyebrow">${s.i + 1} / ${s.list.length}</div><div class="progress"><i style="width:${s.i / s.list.length * 100}%"></i></div></header>
   <section class="card fcard k-${c.kind}" style="--sc:var(--s-${c.subject})">
     <div class="q-meta"><span class="chip sm" style="--sc:var(--s-${c.subject})"><span class="sdot"></span>${esc(l ? l.title : c.ch)}</span></div>
-    <div class="f-front prose"><div class="f-kind"><span class="f-kind-ic" aria-hidden="true">${({ key: '🎯', tf: '⚖️', recall: '💭' })[c.kind] || '🃏'}</span>${({ key: '考點：想一下答案再翻面', tf: '對還是錯？', recall: '先在心裡講一遍，再翻面' })[c.kind] || ''}</div><div class="f-q">${md(c.front)}</div></div>
+    <div class="f-front prose"><div class="f-kind"><span class="f-kind-ic" aria-hidden="true">${({ key: '', tf: '', recall: '' })[c.kind] || '🃏'}</span>${({ key: '考點：想一下答案再翻面', tf: '對還是錯？', recall: '先在心裡講一遍，再翻面' })[c.kind] || ''}</div><div class="f-q">${md(c.front)}</div></div>
     <div id="fAct">${c.kind === 'tf' ? `<div class="tf-btns"><button class="btn tf no" data-tf="0">✗ <kbd>←</kbd></button><button class="btn tf yes" data-tf="1">✓ <kbd>→</kbd></button></div>` : `<div class="row center"><button class="btn primary" id="flip">翻面 <kbd>空白</kbd></button></div>`}</div>
     <div id="fBack"></div>
   </section>
@@ -69,7 +69,7 @@ function renderCardItem() {
   $('#cQuit').onclick = () => { s.list = s.list.slice(0, s.i); route(); };
 }
 function backHtml(c) {
-  const l = LESSON[c.ch], pic = l && l.intuit ? `<button class="btn sm ghost intu-btn" data-intu="${c.ch}">📖 這章圖解</button>` : '';
+  const l = LESSON[c.ch], pic = l && l.intuit ? `<button class="btn sm ghost intu-btn" data-intu="${c.ch}">這章圖解</button>` : '';
   return `${c.back ? `<div class="prose f-b">${md(c.back)}</div>` : ''}<div class="f-more">${pic}<a class="small muted" href="#${c.ch}">${esc(l ? l.title : c.ch)}</a></div>`;
 }
 /* 任何地方都能叫出某章的「先懂直覺」圖解 */
@@ -92,7 +92,7 @@ function cardTF(pick) {
   const s = CardSess; if (s.state !== 'front') return; s.state = 'back'; const c = s.list[s.i], ok = pick === c.ans; s.pick = pick;
   $$('[data-tf]').forEach(b => { b.disabled = true; if ((b.dataset.tf === '1') === c.ans) b.classList.add('right'); else if ((b.dataset.tf === '1') === pick) b.classList.add('wrong'); });
   const fc = $('.fcard'); if (fc) fc.classList.add('flipped');
-  $('#fBack').innerHTML = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${ok ? '✅' : '❌'}</span><b>${ok ? '答對了' : '答錯了'}：這句是「${c.ans ? '對' : '錯'}」的</b></div></div>${backHtml(c)}${rateBtns(c, ok ? 3 : 1)}`;
+  $('#fBack').innerHTML = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${ok ? '' : ''}</span><b>${ok ? '答對了' : '答錯了'}：這句是「${c.ans ? '對' : '錯'}」的</b></div></div>${backHtml(c)}${rateBtns(c, ok ? 3 : 1)}`;
   wireRate(ok ? 3 : 1);
 }
 function cardFlip() {
@@ -105,7 +105,7 @@ function cardRate(g) {
   const s = CardSess; if (s.state !== 'back') return; s.state = 'done'; const c = s.list[s.i], isNew = !Learn.card(c.id);
   Learn.review(c.id, g); const L = S.day(); L.cards = (L.cards || 0) + 1; if (isNew) L.newCards = (L.newCards || 0) + 1; S.save();
   const ok = c.kind === 'tf' ? s.pick === c.ans : g > 1; s.res.push({ id: c.id, g, ok });
-  s.combo = ok ? (s.combo || 0) + 1 : 0; if (s.combo >= 3 && typeof Rewards !== 'undefined') Rewards.float('🔥 ' + s.combo + ' 連擊', 'combo');
+  s.combo = ok ? (s.combo || 0) + 1 : 0; if (s.combo >= 3 && typeof Rewards !== 'undefined') Rewards.float('' + s.combo + ' 連擊', 'combo');
   if (g === 1 && (s.requeue[c.id] || 0) < 2) { s.requeue[c.id] = (s.requeue[c.id] || 0) + 1; s.list.splice(Math.min(s.list.length, s.i + 6), 0, c); }
   s.i++; route();
 }

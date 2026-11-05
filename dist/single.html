@@ -5136,7 +5136,7 @@ const Practice = {
 
   /* 關卡制：小怪（★）→ 菁英（★★）→ 魔王（★★★），由簡入難，不一上來就開大 */
   STAGE: { 1: { ic: 'star', name: '小怪', sub: '先熱身，一步就想得出來' }, 2: { ic: 'sword', name: '菁英', sub: '要多想幾步' }, 3: { ic: 'crown', name: '魔王', sub: '台大難度，慢慢寫沒關係' } },
-  /* 🎯 推薦：不用自己挑，依序推「快忘的 → 有漏的 → 下一顆星 → 新章 → 卡片」 */
+  /* 推薦：不用自己挑，依序推「快忘的 → 有漏的 → 下一顆星 → 新章 → 卡片」 */
   recs() {
     const out = [], today = D.today();
     const due = S.dueReviews(); if (due.length >= 3) out.push({ k: 'due', ic: 'review', t: '快忘的題目', sub: `${Math.min(due.length, 15)} 題`, go: () => this.start(this.rampSort(due).slice(0, 15), { title: '到期複習', review: true }) });
@@ -5174,7 +5174,7 @@ const Practice = {
     $$('[data-rk]').forEach(b => b.onclick = () => { const x = r.find(y => y.k === b.dataset.rk); if (x) x.go(); });
   },
   goNext() { const r = this.recs(); this.fi = 0; if (r.length) r[0].go(); else { this.sess = null; this.view(); } },
-  /* 🏛️ 考古題考頻（content/exams/meta.md → DATA.examFreq，各章占比）；沒有資料時大家一樣重 */
+  /* 考古題考頻（content/exams/meta.md → DATA.examFreq，各章占比）；沒有資料時大家一樣重 */
   examF(ch) { return (DATA.examFreq || {})[ch] || 0; },
   hasExam() { return !!Object.keys(DATA.examFreq || {}).length; },
   dOf(id) { return ((this.getQ(id) || {}).diff) || 2; },
@@ -5366,7 +5366,7 @@ const Practice = {
     const fi = $('#opt-fill'); if (fi) { fi.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); if (!s.conf) s.conf = 2; this.submit(q, qid); } }); setTimeout(() => fi.focus({ preventScroll: true }), 30); }
   },
 
-  /* ---------- ✍️ 紙筆模式：先自己寫出來，再翻答案、對照自評（考場是手寫） ---------- */
+  /* ---------- 紙筆模式：先自己寫出來，再翻答案、對照自評（考場是手寫） ---------- */
   paperOn() { try { return localStorage.getItem('paperMode') !== '0'; } catch (e) { return true; } },
   paperSet(v) { try { localStorage.setItem('paperMode', v ? '1' : '0'); } catch (e) {} },
 
@@ -5469,7 +5469,7 @@ const Practice = {
     $('#feedback').scrollIntoView({ behavior: 'smooth', block: 'start' });
   },
 
-  /* ---------- ✍️ 整頁默寫（自由回想）：寫完對照要點，漏的就是該補的 ---------- */
+  /* ---------- 整頁默寫（自由回想）：寫完對照要點，漏的就是該補的 ---------- */
   dictGet(ch) { return this.store('dict', 'dictate')[ch] || null; },
   dictRedo() { return Object.entries(this.store('dict', 'dictate')).filter(([ch, d]) => LESSON[ch] && d && d.hit < d.total && d.date < D.today()).map(([ch, d]) => ({ ch, hit: d.hit, total: d.total })); },
   dictSet(ch, hit, total, miss) { this.store('dict', 'dictate')[ch] = { date: D.today(), hit, total, miss }; S.save(); },
@@ -5669,7 +5669,7 @@ const Practice = {
     };
     clearInterval(s.mock.timer); s.mock.timer = setInterval(tick, 1000); tick();
     $('#handIn').onclick = () => this.handIn(); $('#handIn2').onclick = () => this.handIn();
-    // 👹 血條：每答一題扣一格（只看有沒有作答，不看對錯）
+    // 血條：每答一題扣一格（只看有沒有作答，不看對錯）
     const hp = () => { const n = s.ids.length, done = s.ids.filter((id, k) => { const q = this.getQ(id), li = $('#eq-' + k); try { return li && this.readResponse(q, li, 'e' + k) != null; } catch (e) { return false; } }).length;
       const left = n - done, b = $('#mockHp'), t = $('#mockHpN'); if (b) b.style.width = (left / n * 100) + '%'; if (t) t.textContent = left + '/' + n; };
     m.addEventListener('change', hp); m.addEventListener('input', debounce(hp, 300)); hp();
@@ -7918,7 +7918,7 @@ function viewCards() {
   const due = Learn.cardDue(today).length, newN = Math.min(Learn.newLeft(), Learn.newCards().length), learned = all.filter(c => srs[c.id]).length;
   main().innerHTML = `
   ${due + newN ? `<section class="feed-hero"><div class="fh-ic" aria-hidden="true">🃏</div><h2>今日卡片</h2><div class="fh-sub">${due ? `快忘的 ${due} 張` : ''}${due && newN ? ' · ' : ''}${newN ? `新的 ${newN} 張` : ''}</div><button class="go-start" id="cToday">▶ 開始</button></section>`
-    : `<section class="feed-hero"><div class="fh-ic" aria-hidden="true">✅</div><h2>今天的卡片清空了</h2><button class="go-start" id="cTf">▶ 陷阱判斷</button></section>`}
+    : `<section class="feed-hero"><div class="fh-ic" aria-hidden="true"></div><h2>今天的卡片清空了</h2><button class="go-start" id="cTf">▶ 陷阱判斷</button></section>`}
   <details class="self-pick"><summary>自己挑</summary>
   <section class="kpis kpis3">
     <div class="kpi"><span class="k">${due}</span><span class="l">到期</span></div>
@@ -7943,7 +7943,7 @@ function renderCardItem() {
   <header class="page-head slim"><div class="eyebrow">${s.i + 1} / ${s.list.length}</div><div class="progress"><i style="width:${s.i / s.list.length * 100}%"></i></div></header>
   <section class="card fcard k-${c.kind}" style="--sc:var(--s-${c.subject})">
     <div class="q-meta"><span class="chip sm" style="--sc:var(--s-${c.subject})"><span class="sdot"></span>${esc(l ? l.title : c.ch)}</span></div>
-    <div class="f-front prose"><div class="f-kind"><span class="f-kind-ic" aria-hidden="true">${({ key: '🎯', tf: '⚖️', recall: '💭' })[c.kind] || '🃏'}</span>${({ key: '考點：想一下答案再翻面', tf: '對還是錯？', recall: '先在心裡講一遍，再翻面' })[c.kind] || ''}</div><div class="f-q">${md(c.front)}</div></div>
+    <div class="f-front prose"><div class="f-kind"><span class="f-kind-ic" aria-hidden="true">${({ key: '', tf: '', recall: '' })[c.kind] || '🃏'}</span>${({ key: '考點：想一下答案再翻面', tf: '對還是錯？', recall: '先在心裡講一遍，再翻面' })[c.kind] || ''}</div><div class="f-q">${md(c.front)}</div></div>
     <div id="fAct">${c.kind === 'tf' ? `<div class="tf-btns"><button class="btn tf no" data-tf="0">✗ <kbd>←</kbd></button><button class="btn tf yes" data-tf="1">✓ <kbd>→</kbd></button></div>` : `<div class="row center"><button class="btn primary" id="flip">翻面 <kbd>空白</kbd></button></div>`}</div>
     <div id="fBack"></div>
   </section>
@@ -7953,7 +7953,7 @@ function renderCardItem() {
   $('#cQuit').onclick = () => { s.list = s.list.slice(0, s.i); route(); };
 }
 function backHtml(c) {
-  const l = LESSON[c.ch], pic = l && l.intuit ? `<button class="btn sm ghost intu-btn" data-intu="${c.ch}">📖 這章圖解</button>` : '';
+  const l = LESSON[c.ch], pic = l && l.intuit ? `<button class="btn sm ghost intu-btn" data-intu="${c.ch}">這章圖解</button>` : '';
   return `${c.back ? `<div class="prose f-b">${md(c.back)}</div>` : ''}<div class="f-more">${pic}<a class="small muted" href="#${c.ch}">${esc(l ? l.title : c.ch)}</a></div>`;
 }
 /* 任何地方都能叫出某章的「先懂直覺」圖解 */
@@ -7976,7 +7976,7 @@ function cardTF(pick) {
   const s = CardSess; if (s.state !== 'front') return; s.state = 'back'; const c = s.list[s.i], ok = pick === c.ans; s.pick = pick;
   $$('[data-tf]').forEach(b => { b.disabled = true; if ((b.dataset.tf === '1') === c.ans) b.classList.add('right'); else if ((b.dataset.tf === '1') === pick) b.classList.add('wrong'); });
   const fc = $('.fcard'); if (fc) fc.classList.add('flipped');
-  $('#fBack').innerHTML = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${ok ? '✅' : '❌'}</span><b>${ok ? '答對了' : '答錯了'}：這句是「${c.ans ? '對' : '錯'}」的</b></div></div>${backHtml(c)}${rateBtns(c, ok ? 3 : 1)}`;
+  $('#fBack').innerHTML = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${ok ? '' : ''}</span><b>${ok ? '答對了' : '答錯了'}：這句是「${c.ans ? '對' : '錯'}」的</b></div></div>${backHtml(c)}${rateBtns(c, ok ? 3 : 1)}`;
   wireRate(ok ? 3 : 1);
 }
 function cardFlip() {
@@ -7989,7 +7989,7 @@ function cardRate(g) {
   const s = CardSess; if (s.state !== 'back') return; s.state = 'done'; const c = s.list[s.i], isNew = !Learn.card(c.id);
   Learn.review(c.id, g); const L = S.day(); L.cards = (L.cards || 0) + 1; if (isNew) L.newCards = (L.newCards || 0) + 1; S.save();
   const ok = c.kind === 'tf' ? s.pick === c.ans : g > 1; s.res.push({ id: c.id, g, ok });
-  s.combo = ok ? (s.combo || 0) + 1 : 0; if (s.combo >= 3 && typeof Rewards !== 'undefined') Rewards.float('🔥 ' + s.combo + ' 連擊', 'combo');
+  s.combo = ok ? (s.combo || 0) + 1 : 0; if (s.combo >= 3 && typeof Rewards !== 'undefined') Rewards.float('' + s.combo + ' 連擊', 'combo');
   if (g === 1 && (s.requeue[c.id] || 0) < 2) { s.requeue[c.id] = (s.requeue[c.id] || 0) + 1; s.list.splice(Math.min(s.list.length, s.i + 6), 0, c); }
   s.i++; route();
 }
@@ -8364,7 +8364,7 @@ const Nudge = {
     const t = S.st.timer; if (!t.running || document.hidden || this.idleShown) return false;
     if (this.idleMin() < this.IDLE_MIN) return false;
     this.idleShown = true;
-    this.overlay(`<div class="nd-ic">👀</div><h2>還在嗎？</h2><p class="muted">計時已暫停</p>`,
+    this.overlay(`<div class="nd-ic"></div><h2>還在嗎？</h2><p class="muted">計時已暫停</p>`,
       [['繼續', () => { this.idleShown = false; this.last = Date.now(); S.st.timer.last = Date.now(); }, 'primary'], ['休息 10 分', () => { this.idleShown = false; this.last = Date.now(); Timer.reset('break'); }]]);
     return true;
   },
@@ -9093,7 +9093,7 @@ const App = {
   card() {
     const http = Bridge.mode === 'http', local = Bridge.local !== false;
     const inst = this.standalone() ? '<p class="small good-t">✓ 已經是 App 了</p>'
-      : this.prompt ? '<div class="row"><button class="btn primary" id="appInst">📲 安裝到桌面</button></div>'
+      : this.prompt ? '<div class="row"><button class="btn primary" id="appInst">安裝到桌面</button></div>'
         : `<p class="muted small">${location.protocol === 'file:' ? '用 start.bat 打開時，網址列右側會出現「安裝」圖示。' : '瀏覽器選單 →「安裝應用程式」或「加到主畫面」。'}</p>`;
     const phone = Bridge.mode === 'cloud' ? ''
       : !http ? '<p class="muted small">先用 start.bat 打開網站，才能讓手機連進來。</p>'
@@ -9109,7 +9109,7 @@ const App = {
     const paint = j => {
       box.innerHTML = j && j.on && j.url
         ? `<div class="lan-on"><div class="lan-qr">${QR.svg(j.url, 180)}</div><div><p><b>手機連同一個 Wi-Fi，用相機掃這個 QR code。</b></p><p class="muted small">打開後選「加到主畫面」，就像 App 一樣。手機和電腦的進度會自動合併。</p><p class="muted small"><code>${esc(j.url)}</code></p><div class="row"><button class="btn" id="lanOff">關閉手機連線</button></div></div></div>`
-        : `<p class="muted small">打開後，同一個 Wi-Fi 的手機掃 QR code 就能用；只有掃過碼的手機能看到你的進度。第一次會跳出 Windows 防火牆詢問，請按「允許」。</p>${j && j.error ? `<p class="small bad-t">${esc(j.error)}</p>` : ''}<div class="row"><button class="btn primary" id="lanOn">📱 打開手機連線</button></div>`;
+        : `<p class="muted small">打開後，同一個 Wi-Fi 的手機掃 QR code 就能用；只有掃過碼的手機能看到你的進度。第一次會跳出 Windows 防火牆詢問，請按「允許」。</p>${j && j.error ? `<p class="small bad-t">${esc(j.error)}</p>` : ''}<div class="row"><button class="btn primary" id="lanOn">打開手機連線</button></div>`;
       const on = $('#lanOn'), off = $('#lanOff');
       if (on) on.onclick = async () => { on.disabled = true; on.textContent = '開啟中…'; paint(await this.lan(true)); };
       if (off) off.onclick = async () => { paint(await this.lan(false)); };
@@ -9340,7 +9340,7 @@ ${c.mock ? `【模擬考申論題】\n${(c.qids || []).map(id => { const q = QBA
   },
 
   /* ---------- 會一個字一個字跑出來的回答框 ---------- */
-  /* 🧒 白話講這段：讀不懂的那一段，用小學生的話重講（同一段 5 分鐘內再按不會重複花額度） */
+  /* 白話講這段：讀不懂的那一段，用小學生的話重講（同一段 5 分鐘內再按不會重複花額度） */
   kid(l, src) {
     return this.stream('換個說法', `你是台大資工所考試的家教。${AI_WHO}
 學生讀到下面這一段讀不懂。請用小學生聽得懂的方式重講，照這個順序：
@@ -9366,7 +9366,7 @@ ${String(src).slice(0, 5000)}`, true, { cache: true });
       .catch(e => { if (e && e.text) { last = e.text; paint(); } else wrap.remove(); throw e; });
   },
 
-  /* ---------- 💬 聊天：Claude 一次只問一個小問題，學生只要回一兩句（費曼關卡、晨間回想共用） ---------- */
+  /* ---------- 聊天：Claude 一次只問一個小問題，學生只要回一兩句（費曼關卡、晨間回想共用） ---------- */
   chat({ title, rules, done, onDone, after }) {
     const turns = [{ role: 'user', content: rules + '\n\n（開始。請問第一個問題。）' }], said = [];
     const wrap = h('div', { class: 'modal-wrap', role: 'dialog', 'aria-modal': 'true' });
@@ -9401,7 +9401,7 @@ ${String(src).slice(0, 5000)}`, true, { cache: true });
   /* 費曼關卡：所有關鍵點都由他自己說出來才算過 */
   feynChat(l) {
     this.chat({
-      title: '💬 聊天過關：' + l.title.split(/[：（]/)[0],
+      title: '聊天過關：' + l.title.split(/[：（]/)[0],
       rules: `你在用「費曼學習法」帶學生過關，主題是「${l.title}」。${AI_WHO}
 【關卡題目】${l.feynman}
 【他必須自己說出來的關鍵點】\n${(l.rubric || []).map((r, i) => `${i + 1}. ${r}`).join('\n')}
@@ -9427,7 +9427,7 @@ ${this.lessonText(l.id, 3000)}
   /* 晨間回想：不用打 120 字，Claude 問 4 個小問題 */
   blurtChat(chs) {
     this.chat({
-      title: '💬 回想昨天：' + (chs.map(id => LESSON[id] ? LESSON[id].title.split(/[：（]/)[0] : id).join('、') || '昨天的內容'),
+      title: '回想昨天：' + (chs.map(id => LESSON[id] ? LESSON[id].title.split(/[：（]/)[0] : id).join('、') || '昨天的內容'),
       rules: `你在幫學生做「不看書的回想」（提取練習），內容是他昨天讀的章節。${AI_WHO}
 ${chs.map(id => this.lessonText(id, 2000)).join('\n\n')}
 規則：

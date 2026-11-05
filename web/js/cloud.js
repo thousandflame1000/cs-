@@ -212,7 +212,7 @@ ${c.mock ? `【模擬考申論題】\n${(c.qids || []).map(id => { const q = QBA
   },
 
   /* ---------- 會一個字一個字跑出來的回答框 ---------- */
-  /* 🧒 白話講這段：讀不懂的那一段，用小學生的話重講（同一段 5 分鐘內再按不會重複花額度） */
+  /* 白話講這段：讀不懂的那一段，用小學生的話重講（同一段 5 分鐘內再按不會重複花額度） */
   kid(l, src) {
     return this.stream('換個說法', `你是台大資工所考試的家教。${AI_WHO}
 學生讀到下面這一段讀不懂。請用小學生聽得懂的方式重講，照這個順序：
@@ -238,7 +238,7 @@ ${String(src).slice(0, 5000)}`, true, { cache: true });
       .catch(e => { if (e && e.text) { last = e.text; paint(); } else wrap.remove(); throw e; });
   },
 
-  /* ---------- 💬 聊天：Claude 一次只問一個小問題，學生只要回一兩句（費曼關卡、晨間回想共用） ---------- */
+  /* ---------- 聊天：Claude 一次只問一個小問題，學生只要回一兩句（費曼關卡、晨間回想共用） ---------- */
   chat({ title, rules, done, onDone, after }) {
     const turns = [{ role: 'user', content: rules + '\n\n（開始。請問第一個問題。）' }], said = [];
     const wrap = h('div', { class: 'modal-wrap', role: 'dialog', 'aria-modal': 'true' });
@@ -273,7 +273,7 @@ ${String(src).slice(0, 5000)}`, true, { cache: true });
   /* 費曼關卡：所有關鍵點都由他自己說出來才算過 */
   feynChat(l) {
     this.chat({
-      title: '💬 聊天過關：' + l.title.split(/[：（]/)[0],
+      title: '聊天過關：' + l.title.split(/[：（]/)[0],
       rules: `你在用「費曼學習法」帶學生過關，主題是「${l.title}」。${AI_WHO}
 【關卡題目】${l.feynman}
 【他必須自己說出來的關鍵點】\n${(l.rubric || []).map((r, i) => `${i + 1}. ${r}`).join('\n')}
@@ -299,7 +299,7 @@ ${this.lessonText(l.id, 3000)}
   /* 晨間回想：不用打 120 字，Claude 問 4 個小問題 */
   blurtChat(chs) {
     this.chat({
-      title: '💬 回想昨天：' + (chs.map(id => LESSON[id] ? LESSON[id].title.split(/[：（]/)[0] : id).join('、') || '昨天的內容'),
+      title: '回想昨天：' + (chs.map(id => LESSON[id] ? LESSON[id].title.split(/[：（]/)[0] : id).join('、') || '昨天的內容'),
       rules: `你在幫學生做「不看書的回想」（提取練習），內容是他昨天讀的章節。${AI_WHO}
 ${chs.map(id => this.lessonText(id, 2000)).join('\n\n')}
 規則：

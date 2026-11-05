@@ -22,7 +22,7 @@ const Nudge = {
     const t = S.st.timer; if (!t.running || document.hidden || this.idleShown) return false;
     if (this.idleMin() < this.IDLE_MIN) return false;
     this.idleShown = true;
-    this.overlay(`<div class="nd-ic">👀</div><h2>還在嗎？</h2><p class="muted">計時已暫停</p>`,
+    this.overlay(`<div class="nd-ic"></div><h2>還在嗎？</h2><p class="muted">計時已暫停</p>`,
       [['繼續', () => { this.idleShown = false; this.last = Date.now(); S.st.timer.last = Date.now(); }, 'primary'], ['休息 10 分', () => { this.idleShown = false; this.last = Date.now(); Timer.reset('break'); }]]);
     return true;
   },
