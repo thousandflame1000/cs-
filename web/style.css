@@ -1185,3 +1185,33 @@ body:has(#goPill) main { padding-bottom: 96px; }
 .lab-edit { margin-top: 10px; }
 .lab-edit > summary { cursor: pointer; color: var(--ink-2); font-weight: 600; padding: 4px 0; }
 .play-sec .lab-presets { margin-top: 8px; }
+
+/* ===== 嚴謹排版（教材頁）：正式標題、編號步驟、標籤｜內容兩欄 ===== */
+.lesson .card-h h2, .lesson .card-h h3, .lesson .clip-sec-h h3 { font-family: var(--f-display); font-size: 1.06rem; font-weight: 700; letter-spacing: .06em; color: var(--ink); }
+.lesson .card.intu { border-left: 1px solid var(--line); }
+.lesson .card.intu .card-h h2 { color: var(--ink); }
+.lesson .clip-sec-h h3 { color: var(--ink); }
+dl.kv { margin: .4em 0 0; display: grid; gap: .55em 0; }
+dl.kv .kv-row { display: grid; grid-template-columns: 3.6em 1fr; column-gap: 12px; align-items: baseline; padding: .45em 0; border-top: 1px solid var(--line); }
+dl.kv .kv-row:first-child { border-top: 0; }
+dl.kv dt { font-size: .8rem; font-weight: 700; letter-spacing: .12em; color: var(--sc, var(--accent)); }
+dl.kv dd { margin: 0; }
+dl.kv dd > p { margin: 0 0 .4em; }
+dl.kv dd > p:last-child, dl.kv dd > ul:last-child { margin-bottom: 0; }
+dl.kv dd > ul { margin: .2em 0 0; padding-left: 1.2em; }
+dl.kv .kv-lead { display: block; margin-bottom: .2em; }
+dl.kv .kv-fig { padding: .3em 0; }
+.intu-more > summary { color: var(--ink-2); font-size: .88rem; font-weight: 600; letter-spacing: .04em; }
+.intu-more > summary::before { content: '＋ '; }
+.intu-more[open] > summary::before { content: '－ '; }
+.route { counter-reset: none; }
+.route-arr { width: 14px; height: 1px; background: var(--line); align-self: center; }
+.route-st { border-radius: 8px; }
+.route-ic { font-size: .78rem; font-weight: 700; border: 1px solid currentColor; }
+.route-st.now .route-ic { border-color: var(--accent-ink); }
+.c-label { letter-spacing: .1em; }
+.callout.c-gist { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent); font-size: 1em; }
+.intu-more > summary { list-style: none; }
+.intu-more > summary::-webkit-details-marker { display: none; }
+.lesson .c-key { background: var(--surface); }
+.lesson .sq-h { letter-spacing: .1em; font-size: .8rem; }

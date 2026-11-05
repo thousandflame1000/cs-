@@ -168,8 +168,8 @@ function sExam(c, t) {
   const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
   c.save(); c.globalAlpha *= a;
   S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
-  const rows = [['r(A) = r[A|b] = n → 唯一解', CY, 46], ['r(A) = r[A|b] < n → 無限多（n − r 個自由變數）', AM, 34], ['r(A) < r[A|b] → 無解（出現 0 = 非零）', CO, 38], ['x = xₚ + xₙ（特解 + 零空間）', INK, 44], ['列運算不改變解集合', BL, 40]];
-  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 112 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  const rows = [['秩 = n → 唯一解', CY, 58], ['秩 < n → 無限多解', AM, 58], ['消出 0 = 1 → 無解', CO, 58], ['解 = 特解 + 零空間', INK, 50]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
   c.restore();
 }
 

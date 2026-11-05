@@ -231,8 +231,8 @@ function sExam(c, t) {
   const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
   c.save(); c.globalAlpha *= a;
   S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
-  const rows = [['fork()：父得子 PID，子得 0，失敗 −1', CY, 42], ['連續 fork n 次 → 2ⁿ 個行程', GR, 44], ['迴圈裡 printf：2 + 4 + … + 2ⁿ = 2ⁿ⁺¹ − 2', AM, 38], ['fork() && fork() ∣∣ fork() → 5 個行程', PK, 40], ['exec 成功不返回；COW 寫入才複製', INK, 40]];
-  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .45, Ec.start + .8 + i * .45)); if (p > 0) S.label(c, s, CX, 650 + i * 112 + (1 - p) * 18, { size: sz, w: 600, color: col, a: p }); });
+  const rows = [['父拿 PID，子拿 0', CY, 58], ['fork n 次 → 2ⁿ 個', GR, 58], ['&& ∣∣ 會短路', PK, 58], ['寫入才複製', INK, 54]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
   c.restore();
 }
 

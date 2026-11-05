@@ -77,7 +77,7 @@ function showIntu(ch) {
   const l = LESSON[ch]; if (!l || !l.intuit) return;
   const w = h('div', { class: 'modal-wrap intu-wrap' });
   w.innerHTML = `<div class="modal intu-sheet"><div class="card-h"><h2>${esc(l.title.split(/[：（]/)[0])}</h2><button class="btn ghost" data-x>✕</button></div><div class="prose">${md(l.intuit)}</div></div>`;
-  document.body.appendChild(w);
+  document.body.appendChild(w); if (typeof intuLabels === 'function') intuLabels($('.prose', w));
   const close = () => { w.remove(); document.removeEventListener('keydown', esc1, true); };
   const esc1 = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
   document.addEventListener('keydown', esc1, true);
@@ -172,7 +172,7 @@ function viewStats() {
 function pretestHtml(l) {
   const ls = S.st.lessons[l.id] || {}; if (ls.read || ls.pre) return '';
   const n = QBANK.all().filter(q => q.ch === l.id && q.type !== 'essay' && q.src !== 'agent').length; if (n < 2) return '';
-  return `<div class="pretest row"><button class="btn" id="btnPre">🎯 讀前先猜 3 題</button></div>`;
+  return `<div class="pretest row"><button class="btn" id="btnPre">課前測驗 3 題</button></div>`;
 }
 function wirePretest(l) {
   const b = $('#btnPre'); if (!b) return;

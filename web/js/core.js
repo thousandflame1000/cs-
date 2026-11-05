@@ -225,7 +225,7 @@ const TeX = (() => {
 
 /* ---------- Markdown (subset + study extensions) ---------- */
 const CALLOUT = {
-  key: '考點', trap: '陷阱', proof: '證明', ex: '例題', def: '定義', thm: '定理', tip: '技巧', ntu: '台大考法', why: '為什麼', feyn: '費曼自問', gist: '先記住',
+  key: '考點', trap: '陷阱', proof: '證明', ex: '例題', def: '定義', thm: '定理', tip: '技巧', ntu: '台大考法', why: '為什麼', feyn: '費曼自問', gist: '要點',
 };
 const CALLOUT_ICON = { key: '🎯', trap: '⚠️', proof: '🔍', ex: '✏️', def: '📘', thm: '📐', tip: '💡', ntu: '🏛️', why: '❓', feyn: '🧠', gist: '👉' };
 const CALLOUT_ZH = { 考點: 'key', 重點: 'key', 陷阱: 'trap', 注意: 'trap', 證明: 'proof', 例題: 'ex', 例: 'ex', 定義: 'def', 定理: 'thm', 引理: 'thm', 技巧: 'tip', 台大考法: 'ntu', 台大: 'ntu', 為什麼: 'why', 觀念: 'why', 費曼: 'feyn', 費曼自問: 'feyn', 先記住: 'gist' };
@@ -365,7 +365,7 @@ function md(src, opt) {
       const km = body[0] && body[0].match(/^\[!([^\]]+)\]\s*(.*)$/);
       let label = '';
       if (km) { kind = CALLOUT_ZH[km[1]] || km[1]; label = CALLOUT[kind] || km[1]; title = km[2]; body.shift(); if (title.length > 26) { body.unshift(title); title = ''; } }
-      out.push(`<aside class="callout c-${kind}">${label ? `<div class="c-label">${CALLOUT_ICON[kind] ? `<span class="c-ic" aria-hidden="true">${CALLOUT_ICON[kind]}</span>` : ''}${label}${title ? '｜' + inline(title) : ''}</div>` : ''}${mdBody(body.join('\n'), math, codeBlocks)}</aside>`);
+      out.push(`<aside class="callout c-${kind}">${label ? `<div class="c-label">${label}${title ? '｜' + inline(title) : ''}</div>` : ''}${mdBody(body.join('\n'), math, codeBlocks)}</aside>`);
       continue;
     }
     if (t.startsWith('|') && i + 1 < lines.length && /^\|?\s*:?-{2,}/.test(lines[i + 1].trim())) {
