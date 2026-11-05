@@ -1552,3 +1552,17 @@ svg.lm .lm-ell.ghost { fill: none; stroke: var(--line); stroke-dasharray: 4 4; }
 /* 費曼要求：小標籤，不用｜串起來 */
 .req-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; vertical-align: middle; }
 .req-chips span { padding: 1px 8px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); font-size: .8rem; }
+/* 記憶宮殿：第一人稱 */
+.pz-stage { position: relative; }
+.pz-cross { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; pointer-events: none; }
+.pz-cross::before, .pz-cross::after { content: ''; position: absolute; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, .45); border-radius: 1px; }
+.pz-cross::before { left: 8px; top: 0; width: 2px; height: 18px; } .pz-cross::after { top: 8px; left: 0; height: 2px; width: 18px; }
+.pz-cross.mon::before, .pz-cross.mon::after { background: var(--star); }
+.pz-hint { position: absolute; inset: auto 0 18px 0; margin: auto; width: max-content; max-width: calc(100% - 32px); display: grid; gap: 4px; justify-items: center; text-align: center; padding: 10px 16px; border-radius: 12px; background: rgba(12, 16, 24, .72); color: #fff; font-size: .85rem; pointer-events: none; }
+.pz-hint b { font-size: 1rem; } .pz-hint kbd { font: 600 .75rem var(--f-mono, monospace); padding: 1px 5px; border-radius: 4px; background: rgba(255, 255, 255, .16); color: #fff; border: 0; box-shadow: none; }
+.pz-stage.locked { cursor: none; }
+.pz-joy { position: absolute; left: 18px; bottom: 18px; width: 104px; height: 104px; border-radius: 50%; background: rgba(12, 16, 24, .28); border: 1.5px solid rgba(255, 255, 255, .5); touch-action: none; }
+.pz-joy i { position: absolute; left: 32px; top: 32px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, .85); }
+.pz-jump { position: absolute; right: 18px; bottom: 26px; width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, .6); background: rgba(12, 16, 24, .35); color: #fff; font-weight: 700; touch-action: none; }
+.pz-stage canvas { touch-action: none; }
+.pz-mode { margin-left: auto; }
