@@ -1,0 +1,197 @@
+{
+  "duration": 47.6,
+  "fps": 60,
+  "beats": null,
+  "scenes": [
+    {
+      "id": "o1",
+      "start": 0.3,
+      "end": 2.1,
+      "label": "o1"
+    },
+    {
+      "id": "o2",
+      "start": 2.1,
+      "end": 4,
+      "label": "o2"
+    },
+    {
+      "id": "T",
+      "start": 4,
+      "end": 7.7,
+      "label": "T"
+    },
+    {
+      "id": "a1",
+      "start": 7.7,
+      "end": 12.6,
+      "label": "a1"
+    },
+    {
+      "id": "a2",
+      "start": 12.6,
+      "end": 15.9,
+      "label": "a2"
+    },
+    {
+      "id": "a3",
+      "start": 15.9,
+      "end": 20.8,
+      "label": "a3"
+    },
+    {
+      "id": "b1",
+      "start": 20.8,
+      "end": 24.9,
+      "label": "b1"
+    },
+    {
+      "id": "b2",
+      "start": 24.9,
+      "end": 29,
+      "label": "b2"
+    },
+    {
+      "id": "b3",
+      "start": 29,
+      "end": 33.1,
+      "label": "b3"
+    },
+    {
+      "id": "c1",
+      "start": 33.1,
+      "end": 37.4,
+      "label": "c1"
+    },
+    {
+      "id": "c2",
+      "start": 37.4,
+      "end": 41.5,
+      "label": "c2"
+    },
+    {
+      "id": "E",
+      "start": 41.5,
+      "end": 47.6,
+      "label": "E"
+    }
+  ],
+  "cues": [
+    {
+      "t": 0.3,
+      "sfx": "tick",
+      "gain": -14
+    },
+    {
+      "t": 0.55,
+      "sfx": "tick",
+      "gain": -14
+    },
+    {
+      "t": 0.8,
+      "sfx": "tick",
+      "gain": -14
+    },
+    {
+      "t": 1.05,
+      "sfx": "tick",
+      "gain": -14
+    },
+    {
+      "t": 1.3,
+      "sfx": "tick",
+      "gain": -14
+    },
+    {
+      "t": 1.55,
+      "sfx": "tick",
+      "gain": -14
+    },
+    {
+      "t": 2.3000000000000003,
+      "sfx": "chime",
+      "gain": -11
+    },
+    {
+      "t": 4,
+      "sfx": "riser",
+      "align": "end",
+      "gain": -10
+    },
+    {
+      "t": 4,
+      "sfx": "impact",
+      "gain": -3
+    },
+    {
+      "t": 8,
+      "sfx": "pop",
+      "gain": -12
+    },
+    {
+      "t": 8.55,
+      "sfx": "pop",
+      "gain": -12
+    },
+    {
+      "t": 9.1,
+      "sfx": "pop",
+      "gain": -12
+    },
+    {
+      "t": 9.65,
+      "sfx": "pop",
+      "gain": -12
+    },
+    {
+      "t": 10.2,
+      "sfx": "pop",
+      "gain": -12
+    },
+    {
+      "t": 10.75,
+      "sfx": "pop",
+      "gain": -12
+    },
+    {
+      "t": 12.799999999999999,
+      "sfx": "swish",
+      "gain": -11
+    },
+    {
+      "t": 17.7,
+      "sfx": "chime",
+      "gain": -9
+    },
+    {
+      "t": 21.2,
+      "sfx": "whoosh",
+      "gain": -11
+    },
+    {
+      "t": 25.2,
+      "sfx": "pop",
+      "gain": -10
+    },
+    {
+      "t": 29.2,
+      "sfx": "chime",
+      "gain": -9
+    },
+    {
+      "t": 34.9,
+      "sfx": "pop",
+      "gain": -10
+    },
+    {
+      "t": 37.699999999999996,
+      "sfx": "swish",
+      "gain": -11
+    },
+    {
+      "t": 41.7,
+      "sfx": "chime",
+      "gain": -8
+    }
+  ]
+}
