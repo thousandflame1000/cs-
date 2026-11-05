@@ -391,16 +391,19 @@ def main():
             tot = sum(freq.values()) or 1
             freq = {k: round(v / tot, 4) for k, v in freq.items()}
     print('考古題：%d 題，%d 年，涵蓋 %d 章' % (len(exams), len({e['y'] for e in exams}), len(freq)))
-    # 新版短影音（影片/工程 產出、_lib/webenc.sh 壓成網頁版）：web/media/<clip id>.mp4 ＋ .jpg 海報
-    videos = {}
+    # 新版短影音（影片/工程 產出、_lib/webenc.sh 壓成網頁版）：web/media/<clip id>.mp4 ＋ .jpg 海報 → DATA.shorts
+    # 動畫講解（Manim 影片＋旁白，web/videos/<id>.mp4）的清單在 content/videos.json → DATA.videos
+    shorts = {}
     mdir = C('web', 'media')
     if os.path.isdir(mdir):
         for f in sorted(os.listdir(mdir)):
             if f.endswith('.mp4') and not f.endswith('.tmp.mp4'):
                 k = f[:-4]
-                videos[k] = dict(src='media/' + f, poster='media/' + k + '.jpg' if os.path.exists(os.path.join(mdir, k + '.jpg')) else '')
-    print('影片：%d 支' % len(videos))
-    data = dict(subjects=SUBJECTS, lessons=lessons, quiz=quiz, plan=plan, methods=methods, cards=cards, exams=exams, examFreq=freq, videos=videos, built=__import__('datetime').date.today().isoformat())
+                shorts[k] = dict(src='media/' + f, poster='media/' + k + '.jpg' if os.path.exists(os.path.join(mdir, k + '.jpg')) else '')
+    vpath = C('content', 'videos.json')
+    videos = json.load(open(vpath, encoding='utf-8')) if os.path.exists(vpath) else {}
+    print('新版短影音：%d 支；動畫講解影片：%d 部' % (len(shorts), len(videos)))
+    data = dict(subjects=SUBJECTS, lessons=lessons, quiz=quiz, plan=plan, methods=methods, cards=cards, exams=exams, examFreq=freq, videos=videos, shorts=shorts, built=__import__('datetime').date.today().isoformat())
     js = 'window.CSDATA = ' + json.dumps(data, ensure_ascii=False) + ';\n'
     io.open(C('web', 'js', 'data.js'), 'w', encoding='utf-8').write(js)
     # 自我檢查頁：跟 index.html 同一套腳本，多一個 selftest.js，不連 bridge、不動到真正的進度
@@ -417,20 +420,13 @@ def main():
     html = html.replace('<link rel="stylesheet" href="vendor/katex.min.css">\n', '<style>\n' + kcss + '\n</style>\n')
     html = html.replace('<link rel="stylesheet" href="style.css">', '<style>\n' + css + '\n</style>')
 
-    # 單檔版：影片改用線上資產網址（web/media/remote.json：{clip id: {src, poster}}）；沒有的就不放
-    rpath = C('web', 'media', 'remote.json')
-    remote = json.load(open(rpath, encoding='utf-8')) if os.path.exists(rpath) else {}
-    rv = {k: remote[k] for k in videos if k in remote}
-    single_js = 'window.CSDATA = ' + json.dumps(dict(data, videos=rv), ensure_ascii=False) + ';\n'
-
     def inline(m):
         src = m.group(1)
         if src.startswith('http'):
             return m.group(0)
-        code = (single_js if src == 'js/data.js' else io.open(C('web', src), encoding='utf-8').read()).replace('</script', '<\\/script')
+        code = io.open(C('web', src), encoding='utf-8').read().replace('</script', '<\\/script')
         return '<script>\n' + code + '\n</script>'
     html = re.sub(r'<script src="([^"]+)"></script>', inline, html)
-    print('單檔版影片：%d 支（線上資產）' % len(rv))
     # 單檔版不能安裝、沒有 icons 資料夾：拿掉 manifest，圖示改成內嵌
     import base64
     ico = 'data:image/png;base64,' + base64.b64encode(open(C('web', 'icons', 'icon-192.png'), 'rb').read()).decode()

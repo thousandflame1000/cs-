@@ -58,6 +58,7 @@ const Sync = {
     r.dict = Object.assign({}, r.dict || {}); for (const [k, v] of Object.entries(o.dict || {})) { const a = r.dict[k]; if (!a || (v && (v.date || '') > (a.date || ''))) r.dict[k] = v; }
     for (const [k, v] of Object.entries(o.wrongNotes || {})) if (v && v.length > (r.wrongNotes[k] || '').length) r.wrongNotes[k] = v;
     r.clipSeen = Object.assign({}, o.clipSeen || {}, r.clipSeen || {});
+    r.xpSeen = Object.assign({}, o.xpSeen || {}, r.xpSeen || {});
     r.seen = Object.assign({}, o.seen || {}, r.seen || {});
     for (const [d, list] of Object.entries(o.agentTasks || {})) if (!r.agentTasks[d]) r.agentTasks[d] = list; else list.forEach((t, i) => { if (t.done && r.agentTasks[d][i]) r.agentTasks[d][i].done = true; });
     // 獎勵：兌換紀錄聯集，花費取兩邊與紀錄總和的最大值

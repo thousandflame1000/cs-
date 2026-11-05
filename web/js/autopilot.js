@@ -2,6 +2,7 @@
 'use strict';
 
 /* 短影音看到 90% 就記為看過（clips.js 會呼叫） */
+window.onXpSeen = () => { try { renderGoPill(location.hash.slice(1) || 'go'); } catch (e) { } };
 window.onClipSeen = id => { const cs = S.st.clipSeen || (S.st.clipSeen = {}); if (!cs[id]) { cs[id] = D.today(); S.save(); try { renderGoPill(location.hash.slice(1) || 'go'); } catch (e) { } } };
 
 const Auto = {
@@ -36,7 +37,8 @@ const Auto = {
     DATA.lessons.filter(x => { const s2 = st.lessons[x.id] || {}; return s2.feynLater && s2.feynLater <= today && !['pending', 'pass', 'self'].includes(s2.gate) && !lessons.includes(x.id); }).slice(0, 2).forEach(x => ids.push('feyn:' + x.id));
     for (const lid of lessons) {
       const l = LESSON[lid]; if (!l) continue; const ls = st.lessons[lid] || {};
-      if (typeof Clips !== 'undefined' && Clips.list.some(c => c.lesson === lid)) ids.push('clip:' + lid);
+      if (typeof Explain !== 'undefined' && Explain.forLesson(lid).length) ids.push('xp:' + lid);
+      else if (typeof Clips !== 'undefined' && Clips.list.some(c => c.lesson === lid)) ids.push('clip:' + lid);
       if (!ls.read && !ls.pre && this.chQs(lid).length >= 2) ids.push('pre:' + lid);
       ids.push('read:' + lid);
       if (this.chQs(lid).length) ids.push('quiz:' + lid);
@@ -72,6 +74,7 @@ const Auto = {
       case 'review': { const n = S.dueReviews().length; return { icon: '🔁', title: `到期複習 ${n} 題`, sub: '', why: '在快忘記時再做一次，記憶間隔會被拉長', mins: Math.max(3, Math.ceil(n * 1.5)), done: n === 0, act: () => Practice.start(S.dueReviews(), { title: '到期複習', review: true }) }; }
       case 'pre': return { icon: '🎯', title: `預測驗：${short}`, sub: '先猜 3 題', why: '被問過的問題，讀的時候大腦會主動找答案', mins: 5, done: !!(ls.pre || ls.read), act: () => { const ids = rng(Date.now() & 0xffffffff).shuffle(this.chQs(arg).map(q => q.id)).slice(0, 3); Practice.start(ids, { title: '讀前預測驗：' + l.title, pretest: arg }); } };
       case 'clip': { const cs = Clips.list.filter(c => c.lesson === arg), seen = cs.filter(c => (st.clipSeen || {})[c.id]).length; return { icon: '🎬', title: `短片：${short}`, sub: '', why: '先用畫面抓直覺，讀推導時比較不會迷路', mins: cs.length * 1, done: seen >= cs.length, act: go('#' + arg) }; }
+      case 'xp': { const xs = Explain.forLesson(arg), un = xs.filter(x => !Explain.seen(x.id)), mins = Math.max(2, Math.round(xs.reduce((t, x) => t + (x.dur || 150), 0) / 60)); return { icon: '🎞', title: `動畫：${short}`, sub: xs.length > 1 ? `${xs.length - un.length}/${xs.length}` : '', why: '先看圖動起來，懂「為什麼」，讀推導時才不會迷路', mins, done: !un.length, act: go('#video-' + (un[0] || xs[0]).id) }; }
       case 'read': return { icon: '📖', title: `精讀：${l.title}`, sub: '讀完按「標記讀完」', why: '這是今天的主菜：遇到粗體與「考點」框要停下來自己推一遍', mins: Math.round(l.mins * .5), done: !!ls.read, act: go('#' + arg) };
       case 'quiz': { const cs = chapterStats(arg), need = Math.min(cs.n, 5); return { icon: '✍️', title: `練習：${short}`, sub: `${cs.att}/${need} 題`, why: '讀完馬上提取，才知道是真懂還是看過', mins: 15, done: cs.att >= need, act: () => { const qs = this.chQs(arg), d = Math.min(3, Practice.starGet(arg) + 1), up = qs.filter(q => (q.diff || 2) >= d); Practice.start((up.length ? up : qs).map(q => q.id), { title: l.title, ch: arg, limit: 8 }); } }; }
       case 'cram': return { icon: '🔥', title: '考前總複習 40 張', sub: '最快忘的先複習', why: '', mins: 25, done: !!L.cramDone, act: () => startCram() };

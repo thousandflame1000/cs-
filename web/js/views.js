@@ -13,9 +13,9 @@ function renderRail() {
   const rail = $('#rail');
   const left = S.daysLeft();
   const cur = location.hash.slice(1) || 'go';
-  const nav = [['go', '▶️', '帶我讀'], ['cards', '🃏', '必背卡'], ['practice', '⚔️', '闖關'], ['feed', '🎬', '短影音'], ['wrong', '📕', '錯題本'], ['stats', '📊', '儀表板']];
+  const nav = [['go', '▶️', '帶我讀'], ['cards', '🃏', '必背卡'], ['practice', '⚔️', '闖關'], ['videos', '🎞', '影片'], ['wrong', '📕', '錯題本'], ['stats', '📊', '儀表板']];
   const more = [['rewards', '🎁', '獎勵'], ['today', '📋', '今日總覽'], ['plan', '🗓️', '30 天計畫'], ['gen', '🎲', '隨機題'], ['lab', '🧪', '動畫實驗室'], ['agent', '🤖', Bridge.mode === 'cloud' ? 'Claude' : 'Agent'], ['methods', '📚', '學習法'], ['setup', '⚙️', '設定']];
-  const navA = ([id, ic, t]) => `<a href="#${id}" class="${cur === id || (id === 'lab' && cur.startsWith('lab-')) || (id === 'feed' && cur.startsWith('feed')) ? 'cur' : ''}"><span class="nav-ic" aria-hidden="true">${ic}</span>${t}${id === 'agent' ? '<span class="unread-badge" hidden></span>' : ''}${id === 'wrong' ? `<span class="nav-count">${S.dueReviews().length || ''}</span>` : ''}${id === 'cards' ? `<span class="nav-count">${Learn.cardDue().length || ''}</span>` : ''}</a>`;
+  const navA = ([id, ic, t]) => `<a href="#${id}" class="${cur === id || (id === 'lab' && cur.startsWith('lab-')) || (id === 'videos' && (cur.startsWith('feed') || cur.startsWith('video'))) ? 'cur' : ''}"><span class="nav-ic" aria-hidden="true">${ic}</span>${t}${id === 'agent' ? '<span class="unread-badge" hidden></span>' : ''}${id === 'wrong' ? `<span class="nav-count">${S.dueReviews().length || ''}</span>` : ''}${id === 'cards' ? `<span class="nav-count">${Learn.cardDue().length || ''}</span>` : ''}</a>`;
   const subjHtml = DATA.subjects.map(s => {
     const ls = DATA.lessons.filter(l => l.subject === s.id);
     const st = subjectStats(s.id);
@@ -43,6 +43,7 @@ function route() {
   document.body.classList.remove('rail-open');
   Labs.stopAll && Labs.stopAll();
   typeof Clips !== 'undefined' && Clips.stopAll();
+  typeof Explain !== 'undefined' && Explain.stopAll();
   document.body.classList.toggle('feed-mode', hsh === 'feed' || hsh.startsWith('feed-'));
   renderRail();
   Rewards.sync();
@@ -54,6 +55,8 @@ function route() {
   else if (hsh.startsWith('subj-') && SUBJ[hsh.slice(5)]) viewSubject(hsh.slice(5));
   else if (hsh === 'practice') Practice.view();
   else if (hsh === 'gen') Practice.viewGen();
+  else if (hsh === 'videos') viewVideos();
+  else if (hsh.startsWith('video-')) viewVideo(hsh.slice(6));
   else if (hsh === 'feed' || hsh.startsWith('feed-')) viewFeed(hsh.slice(5));
   else if (hsh === 'lab') viewLabs();
   else if (hsh.startsWith('lab-')) viewLab(hsh.slice(4));
@@ -347,6 +350,7 @@ function viewLesson(id) {
       </div>
     </header>
     ${routeHtml(l)}
+    ${lessonXpHtml(id)}
     ${lessonClipsHtml(id)}
     ${playHtml(id)}
     ${l.intuit ? `<section class="card intu" id="intu"><div class="card-h"><h2>核心概念</h2></div><div class="prose">${md(l.intuit)}</div></section>` : ''}
@@ -365,7 +369,7 @@ function viewLesson(id) {
   chunkLesson(l); intuLabels(); wireRoute(l); wireReading();
   mountPlay(id); compactIntu();
   Labs.mountEmbeds(m);
-  mountLessonClips(id); wirePretest(l); wireWorked(l); kidButtons(l); if (typeof watchClipPast === 'function') watchClipPast(id);
+  mountLessonXp(id); mountLessonClips(id); wirePretest(l); wireWorked(l); kidButtons(l); if (typeof watchClipPast === 'function') watchClipPast(id);
   $$('mark.hl', m).forEach(mk => mk.addEventListener('click', () => mk.classList.add('shown')));
   $('#tgRecall').onclick = () => { S.st.recall = !S.st.recall; S.save(); route(); };
   $('#btnRead').onclick = () => {
@@ -385,7 +389,9 @@ function viewLesson(id) {
 function routeSteps(l) {
   const ls = S.st.lessons[l.id] || {}, out = [];
   const cs = typeof Clips !== 'undefined' ? Clips.list.filter(c => c.lesson === l.id) : [];
-  if (cs.length) out.push({ k: 'clip', ic: '', t: '影片', done: cs.every(c => (S.st.clipSeen || {})[c.id]), to: '.clip-sec' });
+  const xs = typeof Explain !== 'undefined' ? Explain.forLesson(l.id) : [];
+  if (xs.length) out.push({ k: 'xp', ic: '', t: '影片講解', done: xs.every(x => Explain.seen(x.id)), to: '#xpSec' });
+  else if (cs.length) out.push({ k: 'clip', ic: '', t: '短片', done: cs.every(c => (S.st.clipSeen || {})[c.id]), to: '.clip-sec' });
   const lb = lessonLabs(l.id);
   if (lb.length) out.push({ k: 'play', ic: '', t: '互動實驗', done: lb.some(x => labTried(x.id)), to: '#play' });
   else if (l.intuit) out.push({ k: 'intu', ic: '', t: '核心概念', done: !!(ls.read || ls.sec || ls.wk), to: '#intu' });
@@ -574,7 +580,7 @@ function kidButtons(l) {
   const secs = String(l.body || '').split(/^## /m).slice(1);
   $$('#lessonBody h3').forEach((h3, i) => {
     const src = secs[i]; if (!src) return;
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ghost kid-btn'; b.textContent = '🧒 白話講這段';
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm ghost kid-btn'; b.textContent = '換個說法';
     b.onclick = e => { e.preventDefault(); e.stopPropagation(); CloudAgent.kid(l, '## ' + src).catch(() => { }); };
     h3.appendChild(b);
   });
@@ -850,10 +856,56 @@ function clipOrder(list) { // 交錯學習：輪流換科目，不連續刷同�
   while (out.length < list.length) for (const k of keys) if (by[k].length) out.push(by[k].shift());
   return out;
 }
+/* ======================= 動畫講解（影片＋互動） ======================= */
+function lessonXpHtml(id) {
+  if (typeof Explain === 'undefined') return '';
+  const xs = Explain.forLesson(id); if (!xs.length) return '';
+  return `<section class="xp-sec" id="xpSec"><div class="xp-sec-h"><h3>影片講解</h3>${xs.length > 1 ? `<div class="xp-tabs">${xs.map((x, i) => `<button type="button" class="chip${i ? '' : ' on'}" data-xp="${x.id}">${Explain.seen(x.id) ? '✓ ' : ''}${esc(x.title)}</button>`).join('')}</div>` : ''}</div><div id="xpHost"></div></section>`;
+}
+function mountLessonXp(id) {
+  const host = $('#xpHost'); if (!host) return; const xs = Explain.forLesson(id);
+  const nextOf = cur => { const i = xs.findIndex(x => x.id === cur), nx = xs[i + 1]; if (nx) return { label: '下一部：' + nx.title, go: () => show(nx.id, true) }; return { label: '開始讀這章 ↓', go: () => { const el = $('#intu') || $('#lessonBody'); if (el) el.scrollIntoView({ behavior: 'smooth' }); } }; };
+  const show = (xid, auto) => { Explain.stopAll(); Explain.mount(host, xid, { next: nextOf, autoplay: !!auto }); $$('.xp-tabs [data-xp]').forEach(b => b.classList.toggle('on', b.dataset.xp === xid)); };
+  $$('.xp-tabs [data-xp]').forEach(b => b.onclick = () => show(b.dataset.xp, true));
+  show((xs.find(x => !Explain.seen(x.id)) || xs[0]).id, false);
+}
+function xpOrder() {
+  const order = []; for (const p of DATA.plan || []) for (const lid of p.lessons || []) if (!order.includes(lid)) order.push(lid);
+  DATA.lessons.forEach(l => { if (!order.includes(l.id)) order.push(l.id); });
+  return Explain.all().sort((a, b) => order.indexOf(a.lesson) - order.indexOf(b.lesson));
+}
+function xpCard(x, big) {
+  const l = LESSON[x.lesson], seen = Explain.seen(x.id);
+  return `<a class="xp-card${big ? ' big' : ''}${seen ? ' seen' : ''}" href="#video-${x.id}" style="--sc:var(--s-${x.subject})">
+    <div class="xp-thumb">${x.video ? `<img src="videos/${x.id}.jpg" alt="" loading="lazy">` : '<div class="xp-thumb-ph">🎛</div>'}<span class="xp-badge">${x.video ? '▶ ' + Math.round(x.dur / 60 * 10) / 10 + ' 分' : '互動動畫'}</span>${seen ? '<span class="xp-seen">✓ 看過</span>' : ''}</div>
+    <div class="xp-meta"><b>${esc(x.title)}</b><span>${esc(SUBJ[x.subject] ? SUBJ[x.subject].name : '')}${l ? '・' + esc(l.title.split(/[：（]/)[0]) : ''}</span></div></a>`;
+}
+function viewVideos() {
+  const m = main(), list = xpOrder(), next = list.find(x => x.video && !Explain.seen(x.id)) || list.find(x => !Explain.seen(x.id)) || list[0];
+  const subs = DATA.subjects.filter(s => list.some(x => x.subject === s.id));
+  m.innerHTML = `<div class="page-head"><h1>🎞 影片</h1></div>
+    ${next ? `<section class="xp-hero">${xpCard(next, true)}<div class="xp-hero-side"><div class="muted small">推薦下一部</div><h2>${esc(next.title)}</h2><a class="btn primary xp-play-btn" href="#video-${next.id}">▶ 播放</a><div class="muted small">${list.filter(x => Explain.seen(x.id)).length} / ${list.length} 部看過</div></div></section>` : ''}
+    ${subs.map(s => `<h2 class="lab-sec" style="--sc:var(--s-${s.id})"><span class="sdot"></span>${esc(s.name)}</h2><div class="xp-grid">${list.filter(x => x.subject === s.id).map(x => xpCard(x)).join('')}</div>`).join('')}
+    ${typeof Clips !== 'undefined' && Clips.list.length ? `<p class="muted" style="margin-top:28px">還有 ${Clips.list.length} 支 30 秒直式短片：<a href="#feed">去刷短片 →</a></p>` : ''}`;
+}
+function viewVideo(id) {
+  const m = main(), list = xpOrder(), x = list.find(v => v.id === id); if (!x) { location.hash = '#videos'; return; }
+  const l = LESSON[x.lesson], i = list.indexOf(x), more = list.filter(v => v.id !== id && !Explain.seen(v.id)).slice(0, 4);
+  m.innerHTML = `<div class="xp-page"><div class="xp-page-h"><a class="muted" href="#videos">← 影片</a>${l ? `<a class="muted" href="#${l.id}">📖 ${esc(l.title.split(/[：（]/)[0])}</a>` : ''}</div><div id="xpHost"></div>
+    ${more.length ? `<h3 class="xp-more-h">接著看</h3><div class="xp-grid">${more.map(v => xpCard(v)).join('')}</div>` : ''}</div>`;
+  const fromAuto = S.st.auto && (S.st.auto.ids || []).includes('xp:' + x.lesson);
+  Explain.mount($('#xpHost'), id, { autoplay: false, autoNext: fromAuto, next: () => {
+    const c = typeof Auto !== 'undefined' && S.st.onboarded ? Auto.current() : null;
+    if (fromAuto && c) return { label: '下一步：' + c.title, go: () => nextStep() };
+    if (l) return { label: '讀這章：' + l.title.split(/[：（]/)[0], go: () => { location.hash = '#' + l.id; } };
+    const nx = list[i + 1]; return nx ? { label: '下一部 ▶', go: () => { location.hash = '#video-' + nx.id; } } : null;
+  } });
+  const h = $('#xpHost .xp'); if (h) h.focus({ preventScroll: true });
+}
 function lessonClipsHtml(id) {
   if (typeof Clips === 'undefined') return '';
   const cs = Clips.list.filter(c => c.lesson === id); if (!cs.length) return '';
-  return `<section class="clip-sec"><div class="clip-sec-h"><h3>影片</h3><a class="btn sm ghost" href="#feed-${cs[0].id}">全螢幕</a></div><div class="clip-strip" id="clipStrip"></div></section>`;
+  return `<section class="clip-sec"><div class="clip-sec-h"><h3>短片</h3><a class="btn sm ghost" href="#feed-${cs[0].id}">全螢幕</a></div><div class="clip-strip" id="clipStrip"></div></section>`;
 }
 function mountLessonClips(id) {
   const host = $('#clipStrip'); if (!host) return;

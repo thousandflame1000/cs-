@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
   const base = 'http://localhost:' + (process.env.PORT || 8801) + '/index.html#';
   await pg.goto(base + 'ds-heap'); await pg.waitForTimeout(1200);
   const r = await pg.evaluate(() => ({
-    videos: Object.keys(DATA.videos || {}).length,
+    shorts: Object.keys(DATA.shorts || {}).length,
     video: !!document.querySelector('.clip-sec video'),
     route: [...document.querySelectorAll('.route-st .route-t')].map(x => x.textContent).join(' → '),
     play: !!document.querySelector('#play'),

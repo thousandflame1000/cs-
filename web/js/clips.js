@@ -1335,7 +1335,7 @@ const Clips = (() => {
   }
   const players = [];
   /* 新版短影音：有 mp4 就播 mp4（字幕燒在畫面裡），沒有才用即時算的畫面 */
-  const videoOf = id => ((typeof DATA !== 'undefined' && DATA.videos) || {})[id];
+  const videoOf = id => ((typeof DATA !== 'undefined' && DATA.shorts) || {})[id];
   function vplayer(host, clip, vid, opts) {
     const box = document.createElement('div'); box.className = 'clip-player vid' + (opts.feed ? ' feed' : '');
     box.innerHTML = `<video playsinline preload="metadata"${vid.poster ? ` poster="${vid.poster}"` : ''} src="${vid.src}"></video><div class="clip-bar seek"><i></i></div><button class="clip-btn snd-btn ${Sound.on ? 'on' : ''}" aria-label="聲音開關">${Sound.on ? '🔊' : '🔇'}</button>`;

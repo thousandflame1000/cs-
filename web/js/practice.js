@@ -465,7 +465,7 @@ const Practice = {
 
   nextBtn(host, q, qid, resp, reasoning, guard) {
     const s = this.sess;
-    host.insertAdjacentHTML('beforeend', `<div class="row end"><button class="btn ghost" id="askThis">${Bridge.mode === 'cloud' && typeof CloudAgent !== 'undefined' && CloudAgent.ready() ? '🧒 聽不懂，講簡單一點' : '問 Agent'}</button><button class="btn primary" id="qNext">${s.i + 1 >= s.ids.length ? '看結果' : '下一題'}</button></div>`);
+    host.insertAdjacentHTML('beforeend', `<div class="row end"><button class="btn ghost" id="askThis">${Bridge.mode === 'cloud' && typeof CloudAgent !== 'undefined' && CloudAgent.ready() ? '換個說法講解' : '問 Agent'}</button><button class="btn primary" id="qNext">${s.i + 1 >= s.ids.length ? '看結果' : '下一題'}</button></div>`);
     $('#askThis').onclick = async () => {
       if (guard && !guard()) return;
       const note = S.st.wrongNotes[qid] || '';
