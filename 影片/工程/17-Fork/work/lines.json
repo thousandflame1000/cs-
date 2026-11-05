@@ -1,0 +1,29 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "fork() 三次，有幾個行程？", "hook": true},
+  {"id": "o2", "text": "不是 3，也不是 4，是 [8]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "fork 會生幾個行程", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "fork 把整個行程[複製]一份", "scene": true},
+  {"id": "a2", "text": "父拿到子的 PID，子拿到 [0]"},
+  {"id": "a3", "text": "兩個都從 fork 的[下一行]繼續跑", "pause": 0.2},
+
+  {"id": "b1", "text": "迴圈 fork 三次：每輪[所有]行程都分裂", "scene": true},
+  {"id": "b2", "text": "1 → 2 → 4 → 8，排成一個[立方體]"},
+  {"id": "b3", "text": "printf 放迴圈裡：2 + 4 + 8 = [14]", "pause": 0.2},
+
+  {"id": "c1", "text": "fork() && fork() ∣∣ fork()", "scene": true},
+  {"id": "c2", "text": "原行程：兩個都是真，∣∣ [短路]"},
+  {"id": "c3", "text": "子行程拿到 0：&& 短路，改跑[第三個]"},
+  {"id": "c4", "text": "總共 [5] 個行程", "pause": 0.2},
+
+  {"id": "d1", "text": "變數各一份：子改 x，父[看不到]", "scene": true},
+  {"id": "d2", "text": "copy-on-write：[寫入]才真的複製", "hold": 3.0},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

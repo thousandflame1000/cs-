@@ -1,0 +1,198 @@
+window.TIMING = {
+ "total": 61.346,
+ "lines": [
+  {
+   "id": "o1",
+   "start": 0.3,
+   "end": 2.175,
+   "text": "fork() 三次，有幾個行程",
+   "cap": true,
+   "card": false,
+   "n": 11,
+   "scene": false,
+   "hook": true,
+   "font": "sans"
+  },
+  {
+   "id": "o2",
+   "start": 2.475,
+   "end": 4.1,
+   "text": "不是 3，也不是 4，是 [8]",
+   "cap": true,
+   "card": false,
+   "n": 9,
+   "scene": false,
+   "hook": true,
+   "font": "sans"
+  },
+  {
+   "id": "T",
+   "start": 4.5,
+   "end": 7.9,
+   "text": "fork 會生幾個行程",
+   "cap": false,
+   "card": true,
+   "n": 10,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a1",
+   "start": 8.2,
+   "end": 11.7,
+   "text": "fork 把整個行程[複製]一份",
+   "cap": true,
+   "card": false,
+   "n": 13,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a2",
+   "start": 12.0,
+   "end": 15.308,
+   "text": "父拿到子的 PID，子拿到 [0]",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a3",
+   "start": 15.608,
+   "end": 19.492,
+   "text": "兩個都從 fork 的[下一行]繼續跑",
+   "cap": true,
+   "card": false,
+   "n": 15,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b1",
+   "start": 19.992,
+   "end": 24.262,
+   "text": "迴圈 fork 三次：每輪[所有]行程都分裂",
+   "cap": true,
+   "card": false,
+   "n": 17,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b2",
+   "start": 24.562,
+   "end": 28.254,
+   "text": "1 → 2 → 4 → 8，排成一個[立方體]",
+   "cap": true,
+   "card": false,
+   "n": 14,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b3",
+   "start": 28.554,
+   "end": 33.015,
+   "text": "printf 放迴圈裡：2 + 4 + 8 = [14]",
+   "cap": true,
+   "card": false,
+   "n": 18,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c1",
+   "start": 33.515,
+   "end": 37.592,
+   "text": "fork() && fork() ∣∣ fork()",
+   "cap": true,
+   "card": false,
+   "n": 16,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c2",
+   "start": 37.892,
+   "end": 41.2,
+   "text": "原行程：兩個都是真，∣∣ [短路]",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c3",
+   "start": 41.5,
+   "end": 45.385,
+   "text": "子行程拿到 0：&& 短路，改跑[第三個]",
+   "cap": true,
+   "card": false,
+   "n": 15,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c4",
+   "start": 45.685,
+   "end": 47.838,
+   "text": "總共 [5] 個行程",
+   "cap": true,
+   "card": false,
+   "n": 6,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d1",
+   "start": 48.338,
+   "end": 51.646,
+   "text": "變數各一份：子改 x，父[看不到]",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d2",
+   "start": 51.946,
+   "end": 54.946,
+   "text": "copy-on-write：[寫入]才真的複製",
+   "cap": true,
+   "card": false,
+   "n": 18,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "E",
+   "start": 55.246,
+   "end": 59.846,
+   "text": "考試這樣寫",
+   "cap": false,
+   "card": true,
+   "n": 5,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  }
+ ]
+};
+window.L = Object.fromEntries(window.TIMING.lines.map((l) => [l.id, l]));  // L.o1.start / L.o1.end
