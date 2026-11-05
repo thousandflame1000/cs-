@@ -413,8 +413,8 @@ def main():
     io.open(C('web', 'selftest.html'), 'w', encoding='utf-8').write(st)
     # single-file build
     html = io.open(C('web', 'index.html'), encoding='utf-8').read()
-    # 單檔版沒有 media/ 資料夾：短影音拿掉，課程頁就不會出現壞掉的播放器
-    html = html.replace('<script src="js/data.js"></script>', '<script src="js/data.js"></script>\n<script>if (window.CSDATA) window.CSDATA.shorts = {};</script>', 1)
+    # 單檔版直接用 file:// 打開時旁邊沒有 media/：短影音拿掉，免得出現壞掉的播放器（線上版有帶 media/，照常播）
+    html = html.replace('<script src="js/data.js"></script>', '<script src="js/data.js"></script>\n<script>if (window.CSDATA && location.protocol === \'file:\') window.CSDATA.shorts = {};</script>', 1)
     css = io.open(C('web', 'style.css'), encoding='utf-8').read()
     import base64 as _b64
     kcss = io.open(C('web', 'vendor', 'katex.min.css'), encoding='utf-8').read()
