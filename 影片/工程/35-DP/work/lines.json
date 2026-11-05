@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "同一個小問題，算了好多次", "hook": true},
+  {"id": "o2", "text": "[存起來]，每個只算一次", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "動態規劃", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "遞迴算 F5，樹長這樣", "scene": true, "hold": 3.4},
+  {"id": "a2", "text": "F3 算了 2 次，F2 算了 [3 次]", "hold": 3.8},
+  {"id": "a3", "text": "存進表格：每格[只算一次]", "hold": 3.8, "pause": 0.2},
+
+  {"id": "b1", "text": "LCS：兩個字串最長的共同子序列", "scene": true, "hold": 4.0},
+  {"id": "b2", "text": "字一樣，左上加 1；不一樣，取[大的]", "hold": 4.6},
+  {"id": "b3", "text": "右下角就是答案：[3]", "hold": 3.2, "pause": 0.2},
+
+  {"id": "c1", "text": "沿著箭頭倒走，拿到 BCB", "scene": true, "hold": 3.8},
+  {"id": "c2", "text": "路上每一段，也是小問題的最佳解", "hold": 4.0},
+  {"id": "c3", "text": "4 × 5 格，每格 O(1)：[O(mn)]", "hold": 3.6},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
