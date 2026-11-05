@@ -223,6 +223,16 @@
 - **影片工程可本機渲染**：`影片/工程/README.md`；工具包在 `影片/工程/_toolkit/`（字型 `fonts.py --fetch`）；`_lib/*.sh` 用相對路徑，`AUTO_GIT=1` 才自動 commit + push。雲端這邊重啟背景迴圈：`cd 影片/工程 && AUTO_GIT=1 nohup bash _lib/runall.sh > _lib/runall.log 2>&1 &`、`AUTO_GIT=1 nohup bash _lib/spliceall.sh >> _lib/spliceall.log 2>&1 &`。
 - **發布線上版前**：先 `Artifact list scope=files` 看線上版號與檔案；`DATA.shorts` 有幾支，`media/` 就要帶齊幾支（漏帶會變成壞掉的播放器）。目前 version 33（`1793842407-78bb`），13 支短影音。
 
+## 6.11 2026-11-05 早上：43 支影片全部設計完成
+- 28–43 已寫完（B 樹、死結、Union-Find、BFS/DFS、分頁、Karatsuba、暫存器換名、DP、平面圖、Huffman、SVD、RAID 5、最大流、MESI、歸約、雇用問題），全部 3D、接記憶宮殿房號，排在 `_lib/queue.txt`。
+- 章節標（`cs.js` 的 CHAP）從 y 300 移到 y 150，原本會壓到上方計數；01–20 已交付的版本由 `_lib/redo.sh` 在佇列空檔重渲（做完留 `out/.redo_tag150`）。
+- `_toolkit/.../_pw.mjs` 頁面就緒等待 30 → 120 秒（同時預覽時常逾時）。
+- **工作階段重啟後三個迴圈都會停**，要重開：
+  `cd 影片/工程 && AUTO_GIT=1 nohup bash _lib/runall.sh >> _lib/runall.log 2>&1 &`
+  `AUTO_GIT=1 nohup bash _lib/spliceall.sh >> _lib/spliceall.log 2>&1 &`
+  `AUTO_GIT=1 REDO_TAG=tag150 nohup bash _lib/redo.sh 01 02 … 20 >> _lib/redo.log 2>&1 &`
+- 渲染中斷的片子會留下改過的 `film/fonts/*`（finish.sh 重新子集化），直接讓 runall 重跑即可。
+
 ## 7. 接下來可以做的（使用者最新要求：排版要好看、整潔、大量圖示）
 
 1. **整體視覺整理**（教材頁已做完；接下來是首頁「帶我讀」、練習頁、必背卡、儀表板）：
