@@ -31,3 +31,4 @@
 31-Traverse|31-資結-BFS與DFS|45-51.4
 32-Paging|32-OS-分頁與兩層頁表|45-51.2
 33-Karatsuba|33-演算法-Karatsuba乘法|45-51
+34-Rename|34-計組-暫存器換名|44-49.9

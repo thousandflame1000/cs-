@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "名字撞到，不一定要等", "hook": true},
+  {"id": "o2", "text": "[換個名字]，就能先做", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "暫存器換名", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "四條指令，DIV 要算很久", "scene": true, "hold": 3.6},
+  {"id": "a2", "text": "ADD 要用 DIV 的 F0：[真相依]", "hold": 3.8},
+  {"id": "a3", "text": "其他兩條線，只是[名字撞到]", "hold": 3.8, "pause": 0.2},
+
+  {"id": "b1", "text": "換名：每次寫入都給新的暫存器", "scene": true, "hold": 4.2},
+  {"id": "b2", "text": "撞名的線全部[消失]", "hold": 3.2},
+  {"id": "b3", "text": "只剩真相依要等", "hold": 3.2, "pause": 0.2},
+
+  {"id": "c1", "text": "DIV 還在算，SUB、MUL [先做]", "scene": true, "hold": 4.0},
+  {"id": "c2", "text": "總時間從 18 縮到 [12] 週期", "hold": 3.6},
+  {"id": "c3", "text": "Tomasulo：硬體自動換名", "hold": 3.4},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
