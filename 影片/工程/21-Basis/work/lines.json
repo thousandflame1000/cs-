@@ -1,0 +1,28 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "同一個點", "hook": true},
+  {"id": "o2", "text": "換一組基底，座標就[變了]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "基底與座標", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "標準基底：東 3、北 1 → (3, 1)", "scene": true, "hold": 4.2},
+  {"id": "a2", "text": "換一組：b₁ 斜右上、b₂ 斜右下", "hold": 3.6},
+  {"id": "a3", "text": "走 2 步 b₁、1 步 b₂ → [(2, 1)]", "hold": 4.2, "pause": 0.2},
+
+  {"id": "b1", "text": "座標 = 用這組基底量出來的[步數]", "scene": true, "hold": 3.8},
+  {"id": "b2", "text": "步數 → 位置：乘上 [P]（欄 = b₁、b₂）", "hold": 4.0},
+  {"id": "b3", "text": "位置 → 步數：乘上 [P⁻¹]", "hold": 3.4, "pause": 0.2},
+
+  {"id": "c1", "text": "如果 b₂ 轉到跟 b₁ 平行", "scene": true, "hold": 3.6},
+  {"id": "c2", "text": "只走得到一條線：[張不滿]", "hold": 3.4},
+  {"id": "c3", "text": "基底 = [線性獨立] + 張滿空間", "hold": 3.6, "pause": 0.2},
+
+  {"id": "d1", "text": "3D 要 3 根：少一根只剩平面", "scene": true, "hold": 3.8},
+  {"id": "d2", "text": "多一根是多餘的：[維度] = 基底個數", "hold": 3.8},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

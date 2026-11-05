@@ -1,0 +1,186 @@
+window.TIMING = {
+ "total": 59.35,
+ "lines": [
+  {
+   "id": "o1",
+   "start": 0.3,
+   "end": 1.8,
+   "text": "同一個點",
+   "cap": true,
+   "card": false,
+   "n": 4,
+   "scene": false,
+   "hook": true,
+   "font": "sans"
+  },
+  {
+   "id": "o2",
+   "start": 2.1,
+   "end": 3.85,
+   "text": "換一組基底，座標就[變了]",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": true,
+   "font": "sans"
+  },
+  {
+   "id": "T",
+   "start": 4.25,
+   "end": 7.65,
+   "text": "基底與座標",
+   "cap": false,
+   "card": true,
+   "n": 5,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a1",
+   "start": 7.95,
+   "end": 12.15,
+   "text": "標準基底：東 3、北 1 → (3, 1)",
+   "cap": true,
+   "card": false,
+   "n": 11,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a2",
+   "start": 12.45,
+   "end": 16.05,
+   "text": "換一組：b₁ 斜右上、b₂ 斜右下",
+   "cap": true,
+   "card": false,
+   "n": 13,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a3",
+   "start": 16.35,
+   "end": 20.55,
+   "text": "走 2 步 b₁、1 步 b₂ → [(2, 1)]",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b1",
+   "start": 21.05,
+   "end": 24.85,
+   "text": "座標 = 用這組基底量出來的[步數]",
+   "cap": true,
+   "card": false,
+   "n": 14,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b2",
+   "start": 25.15,
+   "end": 29.15,
+   "text": "步數 → 位置：乘上 [P]（欄 = b₁、b₂）",
+   "cap": true,
+   "card": false,
+   "n": 14,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b3",
+   "start": 29.45,
+   "end": 32.85,
+   "text": "位置 → 步數：乘上 [P⁻¹]",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c1",
+   "start": 33.35,
+   "end": 36.95,
+   "text": "如果 b₂ 轉到跟 b₁ 平行",
+   "cap": true,
+   "card": false,
+   "n": 11,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c2",
+   "start": 37.25,
+   "end": 40.65,
+   "text": "只走得到一條線：[張不滿]",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c3",
+   "start": 40.95,
+   "end": 44.55,
+   "text": "基底 = [線性獨立] + 張滿空間",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d1",
+   "start": 45.05,
+   "end": 48.85,
+   "text": "3D 要 3 根：少一根只剩平面",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d2",
+   "start": 49.15,
+   "end": 52.95,
+   "text": "多一根是多餘的：[維度] = 基底個數",
+   "cap": true,
+   "card": false,
+   "n": 14,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "E",
+   "start": 53.25,
+   "end": 57.85,
+   "text": "考試這樣寫",
+   "cap": false,
+   "card": true,
+   "n": 5,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  }
+ ]
+};
+window.L = Object.fromEntries(window.TIMING.lines.map((l) => [l.id, l]));  // L.o1.start / L.o1.end

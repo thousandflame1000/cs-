@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>基底與座標</title>
+<!--
+  資工所衝刺 · 短影音 21：基底與座標——同一個點，換一組格子
+  記憶宮殿：線代館 · 第 4 間。地上兩組格子：白色是標準基底、青／琥珀是新基底 b₁ = (1, 1)、b₂ = (1, −1)。
+  點 p 不動：標準座標 (3, 1)，新座標 (2, 1)（走 2 步 b₁、1 步 b₂）。b₂ 轉到跟 b₁ 平行 → 格子塌成一條線、p 到不了。
+  最後 3D：三根基底撐出一整塊點陣；少一根只剩一片、多一根是多餘的。畫面只放數字與箭頭。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', BL = '#7aa8ff', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', PK = '#ff9ad5', GR = '#6ee7a8';
+const K = Kit({ W, H, stage, duration: DUR, seed: 211, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: BL, accent2: CY } });
+K.warm([BL, CY, AM, CO, PK, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 變了: BL, '(2, 1)': CY, 步數: CY, P: AM, 'P⁻¹': AM, 張不滿: CO, 線性獨立: BL, 維度: BL },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+const add = (a, b) => a.map((v, i) => v + b[i]), mul = (a, k) => a.map((v) => v * k), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: BL, a: .35 * a, major: 3 });
+function counter(c, label, val, col, a, x = CX, y = 300, sz = 76) {
+  if (a <= .003) return;
+  S.label(c, label, x, y - 50, { size: 30, w: 500, color: INK, a: .6 * a, ls: '4px' });
+  S.label(c, val, x, y + 14, { size: sz, w: 700, color: col, a });
+}
+
+// ═════════ 平面格子（地上 z = 0.02）
+const U = .72, O = [-1.25, -.55, .02], P2 = [3, 1];
+const at = (u, v) => [O[0] + u * U, O[1] + v * U, O[2]];
+const B1v = [1, 1], B2v0 = [1, -1];
+const lc = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k)];
+function lattice(c, b1, b2, col1, col2, a, n = 5) {
+  if (a <= .003) return;
+  for (let s = -n; s <= n; s++) {
+    const p0 = [s * b1[0] - n * b2[0], s * b1[1] - n * b2[1]], p1 = [s * b1[0] + n * b2[0], s * b1[1] + n * b2[1]];
+    V.line(c, at(...p0), at(...p1), { color: col2, a: .62 * a, w: 1.8, plain: true });
+    const q0 = [s * b2[0] - n * b1[0], s * b2[1] - n * b1[1]], q1 = [s * b2[0] + n * b1[0], s * b2[1] + n * b1[1]];
+    V.line(c, at(...q0), at(...q1), { color: col1, a: .62 * a, w: 1.8, plain: true });
+  }
+}
+/** 沿一串向量走：segs = [[dx, dy, 顏色], ...]，p = 0..1 */
+function walk(c, segs, p, w = 4) {
+  const n = segs.length, h = clamp(p) * n; let pos = [0, 0];
+  for (let i = 0; i < n; i++) {
+    const [dx, dy, col] = segs[i], k = clamp(h - i); if (k <= 0) break;
+    const nx = [pos[0] + dx * k, pos[1] + dy * k]; V.arrow(c, add(at(...pos), [0, 0, .03]), add(at(...nx), [0, 0, .03]), { color: col, w, head: k > .6 ? 16 : 0 }); pos = [pos[0] + dx, pos[1] + dy];
+  }
+}
+function pointP(c, a = 1) { const p = add(at(...P2), [0, 0, .05]); V.glow(c, p, .7, .5 * a, '#ffffff'); V.core(c, p, .09, a, '#ffffff'); V.label(c, 'p', add(p, [.18, 0, .32]), { size: .3, w: 700, color: INK, a, minPx: 26, maxPx: 80 }); }
+
+// ═════════ 鏡頭
+const TG = [.1, .1, 0];
+V.camKeys([
+  [0, V.orbit(-24, 7.6, 7.2, TG, 44)], [T.start, V.orbit(-8, 8.2, 7.6, TG, 44)],
+  [A1.start, V.orbit(-18, 7.2, 7.0, TG, 44)], [L.a3.end, V.orbit(6, 7.4, 7.2, TG, 44)],
+  [B1.start + .3, V.orbit(-12, 7.4, 6.8, TG, 44)], [L.b3.end, V.orbit(10, 7.6, 7.0, TG, 44)],
+  [C1.start + .3, V.orbit(-14, 7.4, 7.0, TG, 44)], [L.c3.end, V.orbit(8, 7.6, 7.2, TG, 44)],
+  [D1.start + .3, V.orbit(-34, 7.8, 3.6, [0, 0, 1.2], 44)], [DUR, V.orbit(-6, 8.2, 3.8, [0, 0, 1.2], 44)],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c);
+  const k = E.inOutCubic(prog(t, o2.start, o2.start + 1.2));
+  lattice(c, [1, 0], [0, 1], INK, INK, 1 - k); lattice(c, B1v, B2v0, CY, AM, k);
+  pointP(c, prog(t, o1.start, o1.start + .5));
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '線性代數 · 向量空間', big: '基底', size: 200, y: 600, en: 'BASIS  &  COORDINATES', q: '座標是量出來的步數', qGap: 330, color: BL });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); lattice(c, B1v, B2v0, CY, AM, 1); pointP(c, 1); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), BL);
+}
+function sCoords(c, t) {
+  room(c);
+  const sw = E.inOutCubic(prog(t, L.a2.start + .2, L.a2.start + 1.4));
+  lattice(c, [1, 0], [0, 1], INK, INK, prog(t, A1.start - .1, A1.start + .4) * (1 - .7 * sw));
+  lattice(c, B1v, B2v0, CY, AM, sw);
+  // 基底向量本身（原點）
+  const ba = prog(t, L.a2.start + .6, L.a2.start + 1.2);
+  if (ba > 0) { V.arrow(c, add(O, [0, 0, .04]), add(at(...B1v), [0, 0, .04]), { color: CY, a: ba, w: 5, head: 18 }); V.arrow(c, add(O, [0, 0, .04]), add(at(...B2v0), [0, 0, .04]), { color: AM, a: ba, w: 5, head: 18 }); V.label(c, 'b₁', add(at(.55, .9), [0, 0, .2]), { size: .3, w: 700, color: CY, a: ba, minPx: 26, maxPx: 80 }); V.label(c, 'b₂', add(at(.95, -.9), [0, 0, .2]), { size: .3, w: 700, color: AM, a: ba, minPx: 26, maxPx: 80 }); }
+  // 標準走法：東 3、北 1；新走法：b₁ 兩步、b₂ 一步
+  const w1 = prog(t, A1.start + .8, A1.start + 3.0) * (1 - prog(t, L.a3.start, L.a3.start + .4));
+  if (w1 > 0) { c.save(); c.globalAlpha *= 1 - prog(t, L.a3.start, L.a3.start + .4); walk(c, [[1, 0, INK], [1, 0, INK], [1, 0, INK], [0, 1, INK]], prog(t, A1.start + .8, A1.start + 3.0)); c.restore(); }
+  const w2 = prog(t, L.a3.start + .3, L.a3.start + 2.6);
+  if (w2 > 0) walk(c, [[1, 1, CY], [1, 1, CY], [1, -1, AM]], w2, 5);
+  pointP(c, prog(t, A1.start + .2, A1.start + .6));
+  const a = prog(t, A1.start + .3, A1.start + .8);
+  counter(c, '標準座標', '(3, 1)', INK, a, CX - 210);
+  counter(c, '新座標', w2 > .98 ? '(2, 1)' : '?', CY, a * prog(t, L.a2.start + .4, L.a2.start + .9), CX + 210);
+  // b：P 把步數變成位置
+  const pa = prog(t, L.b2.start + .2, L.b2.start + .8), pb = prog(t, L.b3.start + .2, L.b3.start + .8);
+  if (pa > 0) { S.label(c, '[2, 1]', CX - 260, 470, { size: 56, w: 700, color: CY, a: pa }); S.label(c, pb > .5 ? '←  P⁻¹  ←' : '→  P  →', CX, 470, { size: 50, w: 700, color: AM, a: pa }); S.label(c, '(3, 1)', CX + 260, 470, { size: 56, w: 700, color: INK, a: pa }); }
+}
+// c：b₂ 轉到跟 b₁ 平行 → 張不滿
+function sSpan(c, t) {
+  room(c);
+  const k = E.inOutCubic(prog(t, C1.start + .3, C1.start + 2.6)), ang = lerp(-Math.PI / 4, Math.PI / 4, k), len = lerp(Math.SQRT2, Math.SQRT2 * .6, k);
+  const b2 = [Math.cos(ang) * len, Math.sin(ang) * len];
+  lattice(c, B1v, b2, CY, AM, 1 - .85 * prog(t, L.c2.start, L.c2.start + .5));
+  V.arrow(c, add(O, [0, 0, .04]), add(at(...B1v), [0, 0, .04]), { color: CY, w: 5, head: 18 });
+  V.arrow(c, add(O, [0, 0, .04]), add(at(...b2), [0, 0, .04]), { color: AM, w: 5, head: 18 });
+  const sp = prog(t, L.c2.start + .1, L.c2.start + .7);
+  if (sp > 0) { V.line(c, add(at(-3, -3), [0, 0, .04]), add(at(5, 5), [0, 0, .04]), { color: CY, a: sp, w: 4.5 }); V.glow(c, add(at(1, 1), [0, 0, .05]), 2.2, .25 * sp, CY); }
+  pointP(c, 1);
+  if (sp > 0) V.label(c, '到不了 ✗', add(at(...P2), [.15, 0, .7]), { size: .32, w: 700, color: CO, a: sp, minPx: 28, maxPx: 84 });
+  const ia = prog(t, L.c3.start + .2, L.c3.start + .7);
+  if (ia > 0) S.label(c, '兩根不平行 → 才張得滿平面', CX, 340, { size: 48, w: 700, color: BL, a: ia });
+}
+// d：3D
+const B3 = [[1.1, -.3, 0], [.2, 1.0, 0], [.25, .2, 1.0]];
+function sDim(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const O3 = [-1.0, -.7, .3], grow = prog(t, D1.start + .2, D1.start + 1.0), flat = E.inOutCubic(prog(t, D1.start + 1.6, D1.start + 2.6)) * (1 - E.inOutCubic(prog(t, L.d2.start - .2, L.d2.start + .6)));
+  const P3 = (i, j, k) => add(O3, add(add(mul(B3[0], i), mul(B3[1], j)), mul(B3[2], k * (1 - flat))));
+  const items = [];
+  for (let i = 0; i <= 2; i++) for (let j = 0; j <= 2; j++) for (let k = 0; k <= 2; k++) { const g = prog(t, D1.start + .2 + (i + j + k) * .1, D1.start + .6 + (i + j + k) * .1) * grow; if (g <= 0) continue; const p = P3(i, j, k); items.push({ p, draw: () => V.core(c, p, .045, .8 * g, k ? PK : j ? AM : CY) }); }
+  V.sorted(items);
+  const cols = [CY, AM, PK];
+  B3.forEach((b, i) => { const a = prog(t, D1.start + .1, D1.start + .5) * (i === 2 ? 1 - flat : 1); V.arrow(c, O3, add(O3, i === 2 ? mul(b, 1 - flat) : b), { color: cols[i], a, w: 5, head: 18 }); V.label(c, ['b₁', 'b₂', 'b₃'][i], add(add(O3, i === 2 ? mul(b, 1 - flat) : b), [.15, 0, .2]), { size: .28, w: 700, color: cols[i], a, minPx: 24, maxPx: 72 }); });
+  // 多一根：b₄ = b₁ + b₂（虛線，掉進平面裡）
+  const ex = prog(t, L.d2.start + .6, L.d2.start + 1.2);
+  if (ex > 0) { const b4 = add(B3[0], B3[1]); for (let s = 0; s < 10; s++) V.line(c, add(O3, mul(b4, s / 10)), add(O3, mul(b4, (s + .55) / 10)), { color: INK, a: .8 * ex, w: 3 }); V.label(c, 'b₄ = b₁ + b₂', add(add(O3, b4), [.2, 0, .25]), { size: .24, w: 700, color: INK, a: ex, align: 'left', minPx: 22, maxPx: 64 }); }
+  const dimTxt = flat > .5 ? '2' : '3';
+  counter(c, '維度', dimTxt, BL, prog(t, D1.start + .3, D1.start + .8), CX - 200);
+  counter(c, '基底', flat > .5 ? '2 根' : '3 根', CY, prog(t, D1.start + .3, D1.start + .8), CX + 200);
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['座標 = 對這組基底的步數', CY, 50], ['位置 = P × 步數', AM, 54], ['基底：線性獨立 + 張滿', BL, 52], ['維度 = 基底個數', INK, 54]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'coords', start: A1.start, end: C1.start, draw: sCoords, color: BL, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'span', start: C1.start, end: D1.start, draw: sSpan, color: CO, in: { type: 'cut' } },
+  { id: 'dim', start: D1.start, end: DUR, draw: (c, t) => { sDim(c, t); sExam(c, t); }, color: BL, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(C1.start, .06, .3); K.flash(D1.start, .06, .3);
+S.chapters([[A1.start, '記憶宮殿 · 線代館 · 第 4 間  /  01 換格子'], [B1.start, '記憶宮殿 · 線代館 · 第 4 間  /  02 P 與 P⁻¹'], [C1.start, '記憶宮殿 · 線代館 · 第 4 間  /  03 張不滿'], [D1.start, '記憶宮殿 · 線代館 · 第 4 間  /  04 維度'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o1.start + .2, sfx: 'chime', gain: -12 }, { t: o2.start + .1, sfx: 'whoosh', gain: -11 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    ...[0, 1, 2, 3].map((k) => ({ t: A1.start + .8 + k * .55, sfx: 'tick', gain: -12 })),
+    { t: L.a2.start + .2, sfx: 'swish', gain: -10 },
+    ...[0, 1, 2].map((k) => ({ t: L.a3.start + .3 + k * .77, sfx: 'pop', gain: -11 })),
+    { t: L.a3.start + 2.6, sfx: 'chime', gain: -9 },
+    { t: L.b2.start + .2, sfx: 'swish', gain: -11 }, { t: L.b3.start + .2, sfx: 'swish', gain: -11 },
+    { t: C1.start + .3, sfx: 'riser', gain: -14 }, { t: L.c2.start + .1, sfx: 'glitch', gain: -9 },
+    { t: D1.start + .2, sfx: 'whoosh', gain: -11 }, { t: D1.start + 1.6, sfx: 'swish', gain: -11 }, { t: L.d2.start + .6, sfx: 'pop', gain: -11 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
