@@ -13,6 +13,6 @@ for c in d.get('cues', []):
     if c.get('sfx') in soft: c['gain'] = c.get('gain', -10) + soft[c['sfx']]
 json.dump(d, open(p, 'w', encoding='utf-8'), ensure_ascii=False)
 PY
-python3 $SK/mix.py --cues "$CUES" --sfx-dir "$SFX" --duration "$DUR" --out "$OUT.raw.wav" --lufs "$LUFS" --tp -2 | tail -1
-ffmpeg -y -v error -i "$OUT.raw.wav" -af "highpass=f=90,lowpass=f=6500,loudnorm=I=${LUFS}:TP=-2:LRA=9" -ar 48000 "$OUT"
-rm -f "$OUT.raw.wav"
+python3 $SK/mix.py --cues "$CUES" --sfx-dir "$SFX" --duration "$DUR" --out "${OUT%.wav}_raw.wav" --lufs "$LUFS" --tp -2 | tail -1
+ffmpeg -y -v error -i "${OUT%.wav}_raw.wav" -af "highpass=f=90,lowpass=f=6500,loudnorm=I=${LUFS}:TP=-2:LRA=9" -ar 48000 "$OUT"
+rm -f "${OUT%.wav}_raw.wav"
