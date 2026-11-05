@@ -56,7 +56,7 @@ async function loadPage(browser, url, viewport, scale) {
   try {
     // 页面一报错就立刻失败（不要傻等 30 秒）
     await Promise.race([
-      page.waitForFunction(() => window.__MOTION && window.__MOTION_READY, null, { timeout: 30000 }),
+      page.waitForFunction(() => window.__MOTION && window.__MOTION_READY, null, { timeout: 120000 }),
       new Promise((_, rej) => page.on('pageerror', (er) => rej(new Error('页面脚本报错')))),
     ]);
     await page.evaluate(() => window.__MOTION_READY);
