@@ -635,7 +635,7 @@ function feynmanSection(l) {
   return `<section class="card feyn" id="feyn">
     <div class="card-h"><h2>費曼檢核</h2><span class="gate g-${ls.gate}">${gateLabel(ls.gate)}</span></div>
     ${feynPrompt(l.feynman)}
-    ${typeof CloudAgent !== 'undefined' && CloudAgent.ready() && !['pass', 'pending'].includes(ls.gate) ? `<div class="row"><button class="btn primary" id="btnFeynChat">${ICON('chat')} 用聊天過關（一次回一兩句就好）</button></div><p class="muted small">或寫完整版：≥ 200 字｜每步寫因果｜一個例子｜何時不成立</p>` : '<p class="muted small">≥ 200 字｜每步寫因果｜一個例子｜何時不成立</p>'}
+    ${typeof CloudAgent !== 'undefined' && CloudAgent.ready() && !['pass', 'pending'].includes(ls.gate) ? `<div class="row"><button class="btn primary" id="btnFeynChat">${ICON('chat')} 用聊天過關（一次回一兩句就好）</button></div><p class="muted small">或寫完整版：<span class="req-chips"><span>至少 200 字</span><span>每步寫因果</span><span>一個例子</span><span>何時不成立</span></span></p>` : '<p class="muted small"><span class="req-chips"><span>至少 200 字</span><span>每步寫因果</span><span>一個例子</span><span>何時不成立</span></span></p>'}
     ${last && last.gradeText ? `<div class="grade ${last.verdict}"><b>${last.verdict === 'pass' ? '通過' : '退回'}${last.score != null ? `｜${last.score} 分` : ''}</b>${md(last.gradeText)}</div>` : ''}
     ${(window.SpeechRecognition || window.webkitSpeechRecognition) && !['pass', 'pending'].includes(ls.gate) ? '<div class="row"><button class="btn" id="btnMic" type="button">用講的</button></div>' : ''}
     <textarea id="feynText" rows="10" placeholder="用自己的話完整推導……">${esc(ls.draft || '')}</textarea>

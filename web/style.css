@@ -1545,3 +1545,10 @@ svg.lm .lm-ell.ghost { fill: none; stroke: var(--line); stroke-dasharray: 4 4; }
 .tasks .go.chev { border: 0; background: none; padding: 6px; color: var(--ink-2); display: grid; place-items: center; }
 .tasks .go.chev:hover { color: var(--accent); }
 .tasks .go.chev svg.ic { width: 18px; height: 18px; }
+/* 實驗播放鍵：線條圖示，不用 ⏮ ◀ ▶ 這類符號 */
+.lab-ctrl .btn svg.ic { width: 1.05em; height: 1.05em; display: inline-block; vertical-align: -.17em; }
+.lab-ctrl .btn.ic-only { padding-left: 9px; padding-right: 9px; }
+.lab-ctrl .btn.primary svg.ic path { fill: currentColor; }
+/* 費曼要求：小標籤，不用｜串起來 */
+.req-chips { display: inline-flex; flex-wrap: wrap; gap: 6px; vertical-align: middle; }
+.req-chips span { padding: 1px 8px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); font-size: .8rem; }

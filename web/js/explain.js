@@ -183,7 +183,7 @@ const Explain = (() => {
       <div class="xp-bar">
         <button type="button" data-a="prev" title="上一步（←）" aria-label="上一步">⏮</button><button type="button" data-a="play" class="xp-pp" title="播放／暫停（空白鍵）" aria-label="播放">▶</button><button type="button" data-a="next" title="下一步（→）" aria-label="下一步">⏭</button>
         <div class="xp-dots">${X.steps.map((s, i) => `<button type="button" data-k="${i}" class="${s.ask ? 'q' : ''}" title="第 ${i + 1} 步${s.ask ? '（先猜）' : ''}" aria-label="第 ${i + 1} 步"></button>`).join('')}</div>
-        <button type="button" data-a="voice" class="xp-voice" title="旁白開關">${Voice.on() ? '🔊' : '🔇'}</button><button type="button" data-a="speed" title="速度">1×</button>${X.play ? '<button type="button" data-a="lab" class="xp-labbtn" title="自己調參數看看">🎛 自己玩</button>' : ''}<button type="button" data-a="fs" title="全螢幕">⛶</button>
+        <button type="button" data-a="voice" class="xp-voice" title="旁白開關">${Voice.on() ? '🔊' : '🔇'}</button><button type="button" data-a="speed" title="速度">1×</button>${X.play ? '<button type="button" data-a="lab" class="xp-labbtn" title="自己調參數看看">自己玩</button>' : ''}<button type="button" data-a="fs" title="全螢幕">⛶</button>
       </div>
       <div class="xp-play" hidden></div>
     </div>`;
@@ -219,7 +219,7 @@ const Explain = (() => {
     function finish() {
       st.playing = false; ppBtn.textContent = '↺'; markSeen(X.id);
       const nx = typeof opts.next === 'function' ? opts.next(X.id) : null;
-      endEl.innerHTML = `<div class="xp-end-in"><div class="xp-end-h">看完了 ✓</div>${X.take ? `<div class="xp-take prose">${md(X.take)}</div>` : ''}<div class="xp-end-b"><button type="button" class="btn" data-e="again">↺ 再看一次</button>${X.play ? '<button type="button" class="btn" data-e="lab">🎛 自己玩</button>' : ''}${nx ? `<button type="button" class="btn primary" data-e="next">${esc(nx.label || '下一步 ▶')}</button>` : ''}</div></div>`;
+      endEl.innerHTML = `<div class="xp-end-in"><div class="xp-end-h">看完了 ✓</div>${X.take ? `<div class="xp-take prose">${md(X.take)}</div>` : ''}<div class="xp-end-b"><button type="button" class="btn" data-e="again">↺ 再看一次</button>${X.play ? '<button type="button" class="btn" data-e="lab">自己玩</button>' : ''}${nx ? `<button type="button" class="btn primary" data-e="next">${esc(nx.label || '下一步 ▶')}</button>` : ''}</div></div>`;
       endEl.hidden = false;
       endEl.querySelector('[data-e=again]').onclick = () => go(0, true);
       const lb = endEl.querySelector('[data-e=lab]'); if (lb) lb.onclick = () => setMode('lab');
@@ -229,7 +229,7 @@ const Explain = (() => {
     function setMode(m) {
       st.mode = m; const lab = m === 'lab'; playEl.hidden = !lab; capEl.hidden = lab; root.classList.toggle('lab', lab);
       root.querySelector('.xp-start').hidden = true; endEl.hidden = true; askEl.hidden = true;
-      const lbtn = root.querySelector('.xp-labbtn'); if (lbtn) lbtn.textContent = lab ? '◀ 回講解' : '🎛 自己玩';
+      const lbtn = root.querySelector('.xp-labbtn'); if (lbtn) lbtn.textContent = lab ? '◀ 回講解' : '自己玩';
       if (lab) { pause(); renderLab(); }
     }
     function renderLab() {
@@ -309,7 +309,7 @@ const Explain = (() => {
       <div class="xp-bar">
         <button type="button" data-a="prev" title="上一段（←）" aria-label="上一段">⏮</button><button type="button" data-a="play" class="xp-pp" title="播放／暫停（空白鍵）" aria-label="播放">▶</button><button type="button" data-a="next" title="下一段（→）" aria-label="下一段">⏭</button>
         <span class="xp-time">0:00 / ${fmtT(V.dur)}</span><span class="xp-chap"></span>
-        <button type="button" data-a="cc" class="on" title="字幕">字幕</button><button type="button" data-a="speed" title="速度">1×</button>${X.play ? '<button type="button" data-a="lab" class="xp-labbtn" title="自己調參數看看">🎛 自己玩</button>' : ''}<button type="button" data-a="fs" title="全螢幕">⛶</button>
+        <button type="button" data-a="cc" class="on" title="字幕">字幕</button><button type="button" data-a="speed" title="速度">1×</button>${X.play ? '<button type="button" data-a="lab" class="xp-labbtn" title="自己調參數看看">自己玩</button>' : ''}<button type="button" data-a="fs" title="全螢幕">⛶</button>
       </div>
       <div class="xp-play" hidden></div>
     </div>`;
@@ -344,7 +344,7 @@ const Explain = (() => {
     function finish() {
       markSeen(id); pp.textContent = '↺';
       const nx = typeof opts.next === 'function' ? opts.next(id) : null, take = (X && X.take) || V.take;
-      endEl.innerHTML = `<div class="xp-end-in"><div class="xp-end-h">看完了 ✓</div>${take ? `<div class="xp-take prose">${md(take)}</div>` : ''}<div class="xp-end-b"><button type="button" class="btn" data-e="again">↺ 再看一次</button>${X.play ? '<button type="button" class="btn" data-e="lab">🎛 自己玩</button>' : ''}${nx ? `<button type="button" class="btn primary" data-e="next">${esc(nx.label || '下一步 ▶')}</button>` : ''}</div></div>`;
+      endEl.innerHTML = `<div class="xp-end-in"><div class="xp-end-h">看完了 ✓</div>${take ? `<div class="xp-take prose">${md(take)}</div>` : ''}<div class="xp-end-b"><button type="button" class="btn" data-e="again">↺ 再看一次</button>${X.play ? '<button type="button" class="btn" data-e="lab">自己玩</button>' : ''}${nx ? `<button type="button" class="btn primary" data-e="next">${esc(nx.label || '下一步 ▶')}</button>` : ''}</div></div>`;
       endEl.hidden = false;
       endEl.querySelector('[data-e=again]').onclick = () => { vd.currentTime = 0; st.done = {}; play(); };
       const lb = endEl.querySelector('[data-e=lab]'); if (lb) lb.onclick = () => setMode('lab');
@@ -353,7 +353,7 @@ const Explain = (() => {
     }
     function setMode(m) {
       st.mode = m; const lab = m === 'lab'; vd.hidden = lab; lcv.hidden = !lab; playEl.hidden = !lab; capEl.hidden = lab; root.classList.toggle('lab', lab); startB.hidden = true; endEl.hidden = true; askEl.hidden = true;
-      const lbtn = root.querySelector('.xp-labbtn'); if (lbtn) lbtn.textContent = lab ? '◀ 回影片' : '🎛 自己玩';
+      const lbtn = root.querySelector('.xp-labbtn'); if (lbtn) lbtn.textContent = lab ? '◀ 回影片' : '自己玩';
       if (lab) { vd.pause(); renderLab(); labLoop(); }
     }
     function renderLab() {
