@@ -41,12 +41,12 @@ const Practice = {
   },
 
   /* 關卡制：小怪（★）→ 菁英（★★）→ 魔王（★★★），由簡入難，不一上來就開大 */
-  STAGE: { 1: { ic: '🐣', name: '小怪', sub: '先熱身，一步就想得出來' }, 2: { ic: '⚔️', name: '菁英', sub: '要多想幾步' }, 3: { ic: '👹', name: '魔王', sub: '台大難度，慢慢寫沒關係' } },
+  STAGE: { 1: { ic: 'star', name: '小怪', sub: '先熱身，一步就想得出來' }, 2: { ic: 'sword', name: '菁英', sub: '要多想幾步' }, 3: { ic: 'crown', name: '魔王', sub: '台大難度，慢慢寫沒關係' } },
   /* 🎯 推薦：不用自己挑，依序推「快忘的 → 有漏的 → 下一顆星 → 新章 → 卡片」 */
   recs() {
     const out = [], today = D.today();
-    const due = S.dueReviews(); if (due.length >= 3) out.push({ k: 'due', ic: '🔁', t: '快忘的題目', sub: `${Math.min(due.length, 15)} 題`, go: () => this.start(this.rampSort(due).slice(0, 15), { title: '到期複習', review: true }) });
-    this.dictRedo().slice(0, 1).forEach(x => out.push({ k: 'dict:' + x.ch, ic: '✍️', t: LESSON[x.ch].title, sub: `重默 · 上次 ${x.hit}/${x.total}`, go: () => this.renderDictate(x.ch) }));
+    const due = S.dueReviews(); if (due.length >= 3) out.push({ k: 'due', ic: 'review', t: '快忘的題目', sub: `${Math.min(due.length, 15)} 題`, go: () => this.start(this.rampSort(due).slice(0, 15), { title: '到期複習', review: true }) });
+    this.dictRedo().slice(0, 1).forEach(x => out.push({ k: 'dict:' + x.ch, ic: 'pen', t: LESSON[x.ch].title, sub: `重默 · 上次 ${x.hit}/${x.total}`, go: () => this.renderDictate(x.ch) }));
     const pd = S.planDay(), planned = []; (DATA.plan || []).forEach(p => { if (p.day <= Math.max(1, pd)) (p.lessons || []).forEach(x => planned.includes(x) || planned.push(x)); });
     const read = DATA.lessons.filter(l => (S.st.lessons[l.id] || {}).read).map(l => l.id);
     let pool = [...new Set([...read, ...planned])].filter(id => LESSON[id]); if (!pool.length) pool = [DATA.lessons[0].id];
@@ -56,8 +56,8 @@ const Practice = {
       out.push({ k: 'st:' + x.id, ic: this.STAGE[d].ic, t: LESSON[x.id].title, sub: `${this.STAGE[d].name}關 · ${ids.length} 題`, stars: x.id, go: () => this.start(ids, { title: LESSON[x.id].title, ch: x.id, direct: true }) });
     });
     const nx = planned.find(id => !(S.st.lessons[id] || {}).read) || DATA.lessons.map(l => l.id).find(id => !(S.st.lessons[id] || {}).read);
-    if (nx) out.push({ k: 'read:' + nx, ic: '📖', t: LESSON[nx].title, sub: '新章', go: () => { this.sess = null; location.hash = '#' + nx; } });
-    const cd = Learn.cardDue().length; if (cd) out.push({ k: 'cards', ic: '🃏', t: '必背卡', sub: `${cd} 張`, go: () => { this.sess = null; location.hash = '#cards'; } });
+    if (nx) out.push({ k: 'read:' + nx, ic: 'book', t: LESSON[nx].title, sub: '新章', go: () => { this.sess = null; location.hash = '#' + nx; } });
+    const cd = Learn.cardDue().length; if (cd) out.push({ k: 'cards', ic: 'cards', t: '必背卡', sub: `${cd} 張`, go: () => { this.sess = null; location.hash = '#cards'; } });
     return out;
   },
   feedHtml() {
@@ -91,18 +91,18 @@ const Practice = {
     const d = q.diff || 2, st = this.STAGE[d], n = s.ids.filter(id => this.dOf(id) === d).length;
     const hit = s.results.filter(r => !r.skipped && r.ok && this.dOf(r.qid) === d).length, hp = Math.max(0, n - hit);
     return `<header class="page-head slim"><div class="eyebrow">${esc(s.opts.title || '練習')}｜第 ${s.i + 1} / ${total} 題</div>
-      <div class="boss"><span class="boss-n">${st.name}</span><span class="hp" title="怪物血量"><i style="width:${hp / n * 100}%"></i></span><span class="hp-n">${hp}/${n}</span>${(s.combo || 0) >= 2 ? `<span class="combo">🔥×${s.combo}</span>` : ''}</div></header>`;
+      <div class="boss"><span class="boss-n">${st.name}</span><span class="hp" title="怪物血量"><i style="width:${hp / n * 100}%"></i></span><span class="hp-n">${hp}/${n}</span>${(s.combo || 0) >= 2 ? `<span class="combo">${ICON('bolt')}×${s.combo}</span>` : ''}</div></header>`;
   },
   hit(ok, q) {
     const s = this.sess; s.combo = ok ? (s.combo || 0) + 1 : 0;
-    if (ok && s.combo >= 3 && typeof Rewards !== 'undefined') Rewards.float('🔥 ' + s.combo + ' 連擊', 'combo');
+    if (ok && s.combo >= 3 && typeof Rewards !== 'undefined') Rewards.float(s.combo + ' 連擊', 'combo');
     const h = $('.page-head.slim', main()); if (h && s.opts.ramp) { h.outerHTML = this.headHtml(q); const b = $('.boss .hp i', main()); if (b && ok) { b.parentElement.classList.add('hurt'); } }
   },
   store(k, lsKey) {
     if (!S.st[k]) { let o = {}; try { o = JSON.parse(localStorage.getItem(lsKey) || '{}') || {}; } catch (e) { } S.st[k] = o; if (Object.keys(o).length) S.save(); }
     return S.st[k];
   },
-  /* ⭐ 星等：每章 🐣／⚔️／👹 三關，該關答對 ≥ 60% 就拿到那顆星 */
+  /* 星等：每章小怪／菁英／魔王三關，該關答對 ≥ 60% 就拿到那顆星 */
   DAILY_STARS: 3,
   starGet(ch) { return this.store('stars', 'chStars')[ch] || 0; },
   starHtml(ch) { const n = this.starGet(ch); return `<span class="stars3" title="${n}/3 星">${ICON('star', 'on').repeat(n)}${ICON('star', 'off').repeat(3 - n)}</span>`; },
@@ -129,10 +129,10 @@ const Practice = {
     main().innerHTML = `
     <header class="page-head slim"><div class="eyebrow">${esc(s.opts.title || '練習')}</div></header>
     <section class="card stage-card">
-      ${prevRes.length ? `<div class="stage-clear ${weak ? 'weak' : ''}">${weak ? '😵' : '✅'} ${this.STAGE[pd].name}關 ${pOk}/${prevRes.length}${gotStar ? '　⭐ +1' : ''}</div>` : ''}
-      ${weak && prevCh && LESSON[prevCh] ? `<div class="row"><button class="btn" id="stBack">📖 先回教材補血</button></div>` : ''}
-      <div class="stage-trail">${kinds.map(k => `<span class="st-dot${k < d ? ' done' : ''}${k === d ? ' now' : ''}">${this.STAGE[k].ic}</span>`).join('<i></i>')}</div>
-      <div class="stage-ic" aria-hidden="true">${st.ic}</div>
+      ${prevRes.length ? `<div class="stage-clear ${weak ? 'weak' : ''}">${weak ? ICON('close') : ICON('check')} ${this.STAGE[pd].name}關 ${pOk}/${prevRes.length}${gotStar ? '　' + ICON('star') + ' +1' : ''}</div>` : ''}
+      ${weak && prevCh && LESSON[prevCh] ? `<div class="row"><button class="btn" id="stBack">${ICON('book')} 先回教材補血</button></div>` : ''}
+      <div class="stage-trail">${kinds.map(k => `<span class="st-dot${k < d ? ' done' : ''}${k === d ? ' now' : ''}">${icHtml(this.STAGE[k].ic)}</span>`).join('<i></i>')}</div>
+      <div class="stage-ic" aria-hidden="true">${icHtml(st.ic)}</div>
       <h2>${st.name}關</h2>
       <p class="muted">${n} 題</p>
       <div class="row end"><button class="btn primary big" id="stGo">開打</button></div>
@@ -195,7 +195,7 @@ const Practice = {
     this.wireFeed();
     const drawCh = () => {
       $$('.stab').forEach(b => b.classList.toggle('on', b.dataset.sj === this.sj));
-      $('#chList').innerHTML = DATA.lessons.filter(l => l.subject === this.sj).map(l => { const cs = chapterStats(l.id), d = this.dictGet(l.id); return `<div class="ch-row"><div class="ch-t">${esc(l.title)}${this.starHtml(l.id)}</div><div class="ch-act"><button class="btn sm" data-ch="${l.id}" ${cs.n ? '' : 'disabled'}>做題 <small>${cs.att}/${cs.n}${cs.acc != null ? '・' + Math.round(cs.acc * 100) + '%' : ''}</small></button>${(l.rubric || []).length ? `<button class="btn sm" data-dict="${l.id}">✍️ 默寫 <small>${d ? d.hit + '/' + d.total : '—'}</small></button>` : ''}</div></div>`; }).join('');
+      $('#chList').innerHTML = DATA.lessons.filter(l => l.subject === this.sj).map(l => { const cs = chapterStats(l.id), d = this.dictGet(l.id); return `<div class="ch-row"><div class="ch-t">${esc(l.title)}${this.starHtml(l.id)}</div><div class="ch-act"><button class="btn sm" data-ch="${l.id}" ${cs.n ? '' : 'disabled'}>做題 <small>${cs.att}/${cs.n}${cs.acc != null ? '・' + Math.round(cs.acc * 100) + '%' : ''}</small></button>${(l.rubric || []).length ? `<button class="btn sm" data-dict="${l.id}">${ICON('pen')} 默寫 <small>${d ? d.hit + '/' + d.total : '—'}</small></button>` : ''}</div></div>`; }).join('');
       $$('[data-ch]').forEach(b => b.onclick = () => this.start(QBANK.all().filter(q => q.ch === b.dataset.ch).map(q => q.id), { title: LESSON[b.dataset.ch].title, ch: b.dataset.ch }));
       $$('[data-dict]').forEach(b => b.onclick = () => this.renderDictate(b.dataset.dict));
     };
@@ -384,11 +384,11 @@ const Practice = {
     m.innerHTML = `
     <header class="page-head slim"><div class="eyebrow">整頁默寫</div><h1>${esc(l.title)}</h1></header>
     <section class="card qcard paper">
-      <div class="pad-hint">📄 只看題目，把這章記得的全部寫出來</div>
+      <div class="pad-hint">只看題目，把這章記得的全部寫出來</div>
       <ol class="dict-q">${(l.recall || []).map(r => `<li>${md(r).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ol>
       <div id="ansArea" class="pad-wrap"><canvas id="pad"></canvas>
-        <div class="pad-tools"><button class="btn sm on" data-pt="pen">✏️ 筆</button><button class="btn sm" data-pt="eraser">🩹 橡皮擦</button><button class="btn sm" data-pt="clear">🗑 全清</button></div></div>
-      <div class="row end q-act"><button class="btn ghost" id="dQuit">回練習</button><button class="btn primary" id="dDone">✍️ 寫好了，對照要點</button></div>
+        <div class="pad-tools"><button class="btn sm on" data-pt="pen">${ICON('pen')} 筆</button><button class="btn sm" data-pt="eraser">橡皮擦</button><button class="btn sm" data-pt="clear">全清</button></div></div>
+      <div class="row end q-act"><button class="btn ghost" id="dQuit">回練習</button><button class="btn primary" id="dDone">寫好了，對照要點</button></div>
       <div id="feedback"></div>
     </section>`;
     this.initPad(m);
@@ -397,14 +397,14 @@ const Practice = {
       $$('.q-act', m).forEach(x => x.remove()); const cv = $('#pad', m); cv.style.pointerEvents = 'none'; $$('.pad-tools button', m).forEach(x => x.disabled = true);
       const keys = DATA.cards.filter(c => c.kind === 'key' && c.ch === ch);
       $('#feedback').innerHTML = `
-        <div class="expl-box"><div class="expl-h"><span class="h-ic" aria-hidden="true">✅</span>你寫到的打勾</div>
+        <div class="expl-box"><div class="expl-h"><span class="h-ic" aria-hidden="true">${ICON('check')}</span>你寫到的打勾</div>
           <ul class="dict-rub">${(l.rubric || []).map((r, i) => `<li><label><input type="checkbox" data-ri="${i}"><span>${md(r).replace(/^<p>|<\/p>$/g, '')}</span></label></li>`).join('')}</ul></div>
-        ${keys.length ? `<details class="reason"><summary>📌 這章的必背重點（${keys.length}）</summary>${keys.map(k => `<div class="dict-key"><b>${esc(k.front)}</b><div class="prose">${md(k.back)}</div></div>`).join('')}</details>` : ''}
+        ${keys.length ? `<details class="reason"><summary>這章的必背重點（${keys.length}）</summary>${keys.map(k => `<div class="dict-key"><b>${esc(k.front)}</b><div class="prose">${md(k.back)}</div></div>`).join('')}</details>` : ''}
         <div class="row end"><button class="btn primary" id="dSave">存起來</button></div><div id="dAfter"></div>`;
       $('#dSave').onclick = () => {
         const boxes = $$('[data-ri]', m), hit = boxes.filter(b => b.checked).length, miss = boxes.filter(b => !b.checked).map(b => +b.dataset.ri);
         this.dictSet(ch, hit, boxes.length, miss); $('#dSave').disabled = true;
-        $('#dAfter').innerHTML = `<div class="fb ${hit === boxes.length ? 'good' : 'neutral'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${hit === boxes.length ? '🎉' : '🔍'}</span><b>${hit} / ${boxes.length} 條</b></div></div>
+        $('#dAfter').innerHTML = `<div class="fb ${hit === boxes.length ? 'good' : 'neutral'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${hit === boxes.length ? ICON('trophy') : ICON('eye')}</span><b>${hit} / ${boxes.length} 條</b></div></div>
           <div class="row end"><button class="btn ghost" id="dLesson">回教材</button><button class="btn primary" id="dBack">回練習</button></div>`;
         $('#dLesson').onclick = () => { location.hash = '#' + ch; };
         $('#dBack').onclick = () => { this.sess = null; this.view(); };
@@ -454,9 +454,9 @@ const Practice = {
     s.results.push({ qid, ok, conf: s.conf, resp }); this.hit(ok, q);
     // mark options
     if (q.type !== 'fill') $$('.opt', m).forEach((el, k) => { if (q.ans.includes(k)) el.classList.add('right'); else if (resp.includes(k)) el.classList.add('wrong'); });
-    fb.innerHTML = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${ok ? '✅' : '❌'}</span><b>${ok ? '答對了' : '再想一下'}</b></div><div class="fb-ans"><span>正解：<b>${esc(this.fmtAns(q))}</b></span>${ok ? '' : `<span>你選：${esc(this.fmtResp(q, resp))}</span>`}</div>
-      ${!ok && s.conf === 3 ? '<div class="hcw">⚠️ 很確定卻答錯：這題最值得弄懂</div>' : ''}</div>
-      <div class="expl-box"><div class="expl-h"><span class="h-ic" aria-hidden="true">📝</span>為什麼</div><div class="prose expl">${md(fmtExpl(q.expl || ''))}</div></div><div id="afterFb"></div>`;
+    fb.innerHTML = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${ok ? ICON('check') : ICON('close')}</span><b>${ok ? '答對了' : '再想一下'}</b></div><div class="fb-ans"><span>正解：<b>${esc(this.fmtAns(q))}</b></span>${ok ? '' : `<span>你選：${esc(this.fmtResp(q, resp))}</span>`}</div>
+      ${!ok && s.conf === 3 ? '<div class="hcw">很確定卻答錯：這題最值得弄懂</div>' : ''}</div>
+      <div class="expl-box"><div class="expl-h"><span class="h-ic" aria-hidden="true">${ICON('book')}</span>為什麼</div><div class="prose expl">${md(fmtExpl(q.expl || ''))}</div></div><div id="afterFb"></div>`;
     if (!ok) this.causeUI(qid, $('#afterFb'), q, resp, reasoning);
     else this.nextBtn($('#afterFb'), q, qid, resp, reasoning);
   },
@@ -488,7 +488,7 @@ const Practice = {
 
   causeUI(qid, host, q, resp, reasoning) {
     const sp = typeof lessonSpot === 'function' ? lessonSpot(q) : null;
-    host.innerHTML = `${sp ? `<div class="row"><button class="btn spot-btn" id="goSpot">📖 回教材：${sp.i >= 0 ? `第 ${sp.i + 1} 段「${esc(sp.title)}」` : esc(sp.title)}</button></div>` : ''}<div class="cause"><b>錯因</b>
+    host.innerHTML = `${sp ? `<div class="row"><button class="btn spot-btn" id="goSpot">${ICON('book')} 回教材：${sp.i >= 0 ? `第 ${sp.i + 1} 段「${esc(sp.title)}」` : esc(sp.title)}</button></div>` : ''}<div class="cause"><b>錯因</b>
       <div class="row wrap">${CAUSES.map(c => `<button class="cf" data-cause="${c}">${c}</button>`).join('')}</div>
       <details class="cn-d" ${S.st.wrongNotes[qid] ? 'open' : ''}><summary>筆記</summary><textarea id="causeNote" rows="3" placeholder="我原本以為……但其實……">${esc(S.st.wrongNotes[qid] || '')}</textarea></details></div><div id="nb"></div>`;
     if (sp) $('#goSpot', host).onclick = () => { const s = this.sess; if (s) { s.ids = s.ids.slice(0, s.i + 1); } goSpot(sp); };

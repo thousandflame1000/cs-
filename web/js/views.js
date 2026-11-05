@@ -277,7 +277,7 @@ function blurtDialog() {
   const chs = (plan && plan.lessons) || (S.st.log[y] && S.st.log[y].lessons) || [];
   const chatOK = typeof CloudAgent !== 'undefined' && CloudAgent.ready();
   modal('白紙回憶', `<p class="muted">${chs.map(id => LESSON[id] ? LESSON[id].title : id).join('、') || '昨天的內容'}</p>
-    ${chatOK ? '<div class="row"><button class="btn primary" id="blurtChat" type="button">💬 讓 Claude 問我 4 題（不用打長文）</button></div><p class="muted small">或自己寫（至少 120 字）：</p>' : ''}
+    ${chatOK ? '<div class="row"><button class="btn primary" id="blurtChat" type="button">' + ICON('chat') + ' 讓 Claude 問我 4 題（不用打長文）</button></div><p class="muted small">或自己寫（至少 120 字）：</p>' : ''}
     <textarea id="blurtText" rows="12" placeholder=""></textarea>
 `, async (w) => {
     const text = $('#blurtText', w).value.trim();
@@ -333,7 +333,7 @@ function viewSubject(sid) {
   ${s.desc || s.intro ? `<details class="subj-about"><summary>關於這科</summary><p class="lede">${esc(s.desc || '')}</p>${s.intro ? `<div class="prose">${md(s.intro)}</div>` : ''}<p class="muted small">參考：${esc(s.refs || '')}</p></details>` : ''}
   <div class="row"><span class="pill">費曼通過 ${ss.pass}/${ss.total}</span><span class="pill">已讀 ${ss.read}/${ss.total}</span><span class="pill">正確率 ${ss.acc == null ? '—' : Math.round(ss.acc * 100) + '%'}（${ss.att} 題）</span>
   <button class="btn" id="subjQuiz">本科混合練習</button></div></header>
-  <div class="ch-list">${ls.map((l, i) => { const cs = chapterStats(l.id); const g = (S.st.lessons[l.id] || {}).gate || 'none'; return `<a class="ch-row" href="#${l.id}" style="--sc:var(--s-${sid})"><span class="ch-i">${String(i + 1).padStart(2, '0')}</span><span class="ch-t">${esc(l.title)}${Practice.starHtml(l.id)}${Practice.examF(l.id) ? `<span class="exam-f sm">🏛️ ${Math.round(Practice.examF(l.id) * 100)}%</span>` : ''}<small>${esc(l.summary || '')}</small></span><span class="ch-dots" aria-label="本章進度">${routeSteps(l).map(x => `<span class="ch-dot${x.done ? ' done' : ''}" title="${x.t}${x.done ? '：完成' : ''}">${x.ic}</span>`).join('')}</span><span class="ch-m">${l.mins} 分｜${cs.n} 題${cs.acc != null ? '｜' + Math.round(cs.acc * 100) + '%' : ''}</span><span class="gate g-${g}">${gateLabel(g)}</span></a>`; }).join('')}</div>
+  <div class="ch-list">${ls.map((l, i) => { const cs = chapterStats(l.id); const g = (S.st.lessons[l.id] || {}).gate || 'none'; return `<a class="ch-row" href="#${l.id}" style="--sc:var(--s-${sid})"><span class="ch-i">${String(i + 1).padStart(2, '0')}</span><span class="ch-t">${esc(l.title)}${Practice.starHtml(l.id)}${Practice.examF(l.id) ? `<span class="exam-f sm">考頻 ${Math.round(Practice.examF(l.id) * 100)}%</span>` : ''}<small>${esc(l.summary || '')}</small></span><span class="ch-dots" aria-label="本章進度">${routeSteps(l).map(x => `<span class="ch-dot${x.done ? ' done' : ''}" title="${x.t}${x.done ? '：完成' : ''}">${x.ic}</span>`).join('')}</span><span class="ch-m">${l.mins} 分｜${cs.n} 題${cs.acc != null ? '｜' + Math.round(cs.acc * 100) + '%' : ''}</span><span class="gate g-${g}">${gateLabel(g)}</span></a>`; }).join('')}</div>
 `;
   $('#subjQuiz').onclick = () => Practice.start(QBANK.all().filter(q => q.subject === sid && q.src !== 'agent').map(q => q.id), { title: s.name + ' 混合練習', shuffle: true, limit: 15 });
 }
@@ -356,7 +356,7 @@ function viewLesson(id) {
         <button class="btn ${S.st.recall ? 'on' : ''}" id="tgRecall" aria-pressed="${S.st.recall}">回想模式${S.st.recall ? '：開' : ''}</button>
         <button class="btn" id="tgSkim"></button><button class="btn sm" id="fsDown" aria-label="字小一點">A−</button><button class="btn sm" id="fsUp" aria-label="字大一點">A+</button></div></details>
         ${ls.gate && ls.gate !== 'none' ? `<span class="gate g-${ls.gate}">${gateLabel(ls.gate)}</span>` : ''}
-        ${Practice.examF(id) ? `<span class="pill exam-f" title="近年考古題配分占比">🏛️ 考頻 ${Math.round(Practice.examF(id) * 100)}%</span>` : ''}
+        ${Practice.examF(id) ? `<span class="pill exam-f" title="近年考古題配分占比">考頻 ${Math.round(Practice.examF(id) * 100)}%</span>` : ''}
       </div>
     </header>
     ${routeHtml(l)}
@@ -423,7 +423,7 @@ function wireRoute(l) {
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 }
-/* 🎮 動手玩：本章的互動實驗室直接放在影片下面（捲到才載入），正文裡同一個實驗室的入口就拿掉 */
+/* 動手玩：本章的互動實驗室直接放在影片下面（捲到才載入），正文裡同一個實驗室的入口就拿掉 */
 function lessonLabs(id) { return typeof Labs === 'undefined' ? [] : Labs.list.filter(x => (x.lessons || []).includes(id)); }
 function labTried(lid) { return Object.values(S.st.log || {}).some(L => (L.labs || []).includes(lid)); }
 function playHtml(id) {
@@ -440,7 +440,7 @@ function mountPlay(id) {
     cur = lid; host.innerHTML = ''; Labs.mount(lid, host, ''); $$('.play-tabs .chip').forEach(b => b.classList.toggle('on', b.dataset.lab === lid));
     // 先看動畫，輸入表單收進「換數字」；一進來就自動播
     const box = $('.lab', host), form = box && $('.lab-form', box); if (!form) return;
-    const d = document.createElement('details'); d.className = 'lab-edit'; d.innerHTML = '<summary>✏️ 換數字</summary>'; d.appendChild(form);
+    const d = document.createElement('details'); d.className = 'lab-edit'; d.innerHTML = '<summary>' + ICON('pen') + ' 換數字</summary>'; d.appendChild(form);
     ['.lab-stage', '.lab-note', '.lab-ctrl', '.lab-presets'].forEach(q => { const el = $(q, box); if (el) box.appendChild(el); }); box.appendChild(d);
     const pb = $('.lab-ctrl [data-a="play"]', box); if (pb) setTimeout(() => pb.click(), 400);
   };
@@ -495,7 +495,7 @@ function wireReading() {
   const apply = () => {
     const skim = get('lessonSkim', '1') !== '0', fs = +get('lessonFs', '0') || 0;
     body.classList.toggle('skim', skim); body.style.fontSize = (17 + fs * 2) + 'px';
-    const b = $('#tgSkim'); if (b) { b.textContent = skim ? '📖 看完整' : '👀 只看重點'; b.setAttribute('aria-pressed', skim); }
+    const b = $('#tgSkim'); if (b) { b.textContent = skim ? '看完整' : '只看重點'; b.setAttribute('aria-pressed', skim); }
   };
   $('#tgSkim').onclick = () => { set('lessonSkim', get('lessonSkim', '1') !== '0' ? '0' : '1'); apply(); };
   $('#fsDown').onclick = () => { set('lessonFs', Math.max(-1, (+get('lessonFs', '0') || 0) - 1)); apply(); };
@@ -503,7 +503,7 @@ function wireReading() {
   apply();
 }
 
-/* ⚔️ 每段讀完的過關小測：優先考這一段自己的對錯卡；沒有就考前面讀過的段落（隔段回想）；最後一段再加 ★ 單選題。不考還沒讀到的東西 */
+/* 每段讀完的過關小測：優先考這一段自己的對錯卡；沒有就考前面讀過的段落（隔段回想）；最後一段再加 ★ 單選題。不考還沒讀到的東西 */
 /* 字詞重疊：把一段文字（題目、卡片）對到教材的第幾段；最高分夠高、而且明顯贏第二名才算數，否則 -1 */
 function secGrams(t) { t = String(t).replace(/\$[^$]*\$/g, ' ').replace(/[\s，。、：；（）()「」？?！!\-—>|*`]/g, ' '); const g = new Set(); for (const w of t.split(/\s+/)) { if (/^[A-Za-z][A-Za-z0-9-]+$/.test(w)) { g.add(w.toLowerCase()); continue; } for (let i = 0; i < w.length - 1; i++) g.add(w.slice(i, i + 2)); } return g; }
 function secIndex(l) { if (!l._sg) { const secs = String(l.body || '').split(/^## /m).slice(1); l._sg = { secs, SG: secs.map(secGrams), titles: secs.map(x => x.split('\n')[0].replace(/^\d+\.\s*/, '').trim()) }; } return l._sg; }
@@ -535,7 +535,7 @@ function secQuiz(l, i) {
   if (it.rc) {
     box.innerHTML = `<div class="sq-h">回想</div><div class="sq-q prose">${md(it.c.front)}</div><div class="sq-opts"><button class="btn sq-flip">翻答案</button></div><div class="sq-fb"></div>`;
     $('.sq-flip', box).onclick = () => {
-      $('.sq-opts', box).innerHTML = `<div class="prose expl sq-ans">${md(it.c.back || '')}</div><div class="sq-opts tf"><button class="btn sq-o" data-r="3">✅ 記得</button><button class="btn sq-o" data-r="1">❌ 忘了</button></div>`;
+      $('.sq-opts', box).innerHTML = `<div class="prose expl sq-ans">${md(it.c.back || '')}</div><div class="sq-opts tf"><button class="btn sq-o" data-r="3">記得</button><button class="btn sq-o" data-r="1">忘了</button></div>`;
       $$('[data-r]', box).forEach(b => b.onclick = () => { if (box.dataset.done) return; box.dataset.done = 1; const g = +b.dataset.r; Learn.review(it.c.id, g); const L = S.day(); L.cards = (L.cards || 0) + 1; S.save(); $$('[data-r]', box).forEach(x => x.disabled = true); b.classList.add(g > 1 ? 'right' : 'wrong'); if (g > 1 && typeof Rewards !== 'undefined') Rewards.chime('pop'); });
     };
     return box;
@@ -551,7 +551,7 @@ function secQuiz(l, i) {
     if (it.c) { Learn.review(it.c.id, ok ? 3 : 1); const L = S.day(); L.cards = (L.cards || 0) + 1; S.save(); }
     else S.answer(it.q.id, ok, { conf: 2, q: it.q });
     const why = it.c ? it.c.back : it.q.expl;
-    $('.sq-fb', box).innerHTML = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${ok ? '✅' : '❌'}</span><b>${ok ? '過關' : '再看一次'}</b></div>${why ? `<div class="prose expl">${md(fmtExpl(why))}</div>` : ''}</div>`;
+    $('.sq-fb', box).innerHTML = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${ok ? ICON('check') : ICON('close')}</span><b>${ok ? '過關' : '再看一次'}</b></div>${why ? `<div class="prose expl">${md(fmtExpl(why))}</div>` : ''}</div>`;
     if (ok && typeof Rewards !== 'undefined') { Rewards.chime('pop'); Rewards.sync && Rewards.sync(); }
   });
   return box;
@@ -584,7 +584,7 @@ function chunkLesson(l) {
   });
   ds.forEach((d, i) => d.addEventListener('toggle', () => { if (d.open && i > (ls.sec || 0) && !ls.read) { ls.sec = i; S.save(); } }));
 }
-/* 線上版：每一大段旁邊放「🧒 白話講這段」，讀不懂就按 */
+/* 線上版：每一大段旁邊放「白話講這段」，讀不懂就按 */
 function kidButtons(l) {
   if (typeof CloudAgent === 'undefined' || !CloudAgent.ready()) return;
   const secs = String(l.body || '').split(/^## /m).slice(1);
@@ -603,7 +603,7 @@ function workedHtml(l) {
   return `<section class="card wk" id="wk"><div class="card-h"><h2>例題演練</h2><span class="muted small" id="wkProg">${Math.min(k, n)}/${n}</span></div>
     <div class="prose wk-q">${md(w.q, BRK)}</div>
     <ol class="wk-steps">${w.steps.map((s, i) => `<li class="wk-s${i < k ? ' open' : ''}${i === k ? ' cur' : ''}"${i > k ? ' hidden' : ''}><div class="wk-t">${mdLine(s.t)}</div><div class="prose wk-b"${i < k ? '' : ' hidden'}>${md(s.b, BRK)}</div></li>`).join('')}</ol>
-    <div class="wk-end"${done ? '' : ' hidden'}><div class="callout c-key"><div class="c-label"><span class="c-ic" aria-hidden="true">✅</span>答案</div>${md(w.ans, BRK)}</div>${w.err ? `<div class="callout c-trap"><div class="c-label"><span class="c-ic" aria-hidden="true">⚠️</span>常錯</div>${md(w.err)}</div>` : ''}</div>
+    <div class="wk-end"${done ? '' : ' hidden'}><div class="callout c-key"><div class="c-label"><span class="c-ic" aria-hidden="true">${ICON('check')}</span>答案</div>${md(w.ans, BRK)}</div>${w.err ? `<div class="callout c-trap"><div class="c-label"><span class="c-ic" aria-hidden="true">${ICON('close')}</span>常錯</div>${md(w.err)}</div>` : ''}</div>
     <div class="row end"${done ? ' hidden' : ''}><button class="btn primary" id="wkNext">${k < n ? '寫好了，看做法' : '寫好了，看答案'}</button></div>
   </section>`;
 }
@@ -635,11 +635,11 @@ function feynmanSection(l) {
   return `<section class="card feyn" id="feyn">
     <div class="card-h"><h2>費曼檢核</h2><span class="gate g-${ls.gate}">${gateLabel(ls.gate)}</span></div>
     ${feynPrompt(l.feynman)}
-    ${typeof CloudAgent !== 'undefined' && CloudAgent.ready() && !['pass', 'pending'].includes(ls.gate) ? `<div class="row"><button class="btn primary" id="btnFeynChat">💬 用聊天過關（一次回一兩句就好）</button></div><p class="muted small">或寫完整版：≥ 200 字｜每步寫因果｜一個例子｜何時不成立</p>` : '<p class="muted small">≥ 200 字｜每步寫因果｜一個例子｜何時不成立</p>'}
+    ${typeof CloudAgent !== 'undefined' && CloudAgent.ready() && !['pass', 'pending'].includes(ls.gate) ? `<div class="row"><button class="btn primary" id="btnFeynChat">${ICON('chat')} 用聊天過關（一次回一兩句就好）</button></div><p class="muted small">或寫完整版：≥ 200 字｜每步寫因果｜一個例子｜何時不成立</p>` : '<p class="muted small">≥ 200 字｜每步寫因果｜一個例子｜何時不成立</p>'}
     ${last && last.gradeText ? `<div class="grade ${last.verdict}"><b>${last.verdict === 'pass' ? '通過' : '退回'}${last.score != null ? `｜${last.score} 分` : ''}</b>${md(last.gradeText)}</div>` : ''}
-    ${(window.SpeechRecognition || window.webkitSpeechRecognition) && !['pass', 'pending'].includes(ls.gate) ? '<div class="row"><button class="btn" id="btnMic" type="button">🎤 用講的</button></div>' : ''}
+    ${(window.SpeechRecognition || window.webkitSpeechRecognition) && !['pass', 'pending'].includes(ls.gate) ? '<div class="row"><button class="btn" id="btnMic" type="button">用講的</button></div>' : ''}
     <textarea id="feynText" rows="10" placeholder="用自己的話完整推導……">${esc(ls.draft || '')}</textarea>
-    <div class="row end"><span class="muted small" id="feynCount"></span>${['pass', 'pending'].includes(ls.gate) ? '' : '<button class="btn ghost nb-btn" id="btnFeynNB">🆘 寫不出來</button>'}<button class="btn primary" id="btnFeyn">${ls.gate === 'revise' ? '補強後重交' : '送 Agent 審查'}</button></div>
+    <div class="row end"><span class="muted small" id="feynCount"></span>${['pass', 'pending'].includes(ls.gate) ? '' : '<button class="btn ghost nb-btn" id="btnFeynNB">寫不出來</button>'}<button class="btn primary" id="btnFeyn">${ls.gate === 'revise' ? '補強後重交' : '送 Agent 審查'}</button></div>
     ${['pending', 'pass', 'revise', 'self'].includes(ls.gate) ? `<details class="sol" ${ls.gate === 'revise' ? 'open' : ''}><summary>關鍵點</summary><ol class="rubric">${l.rubric.map(r => `<li>${mdLine(r)}</li>`).join('')}</ol>
       ${Bridge.mode === 'offline' && ls.gate !== 'pass' ? '<div class="row"><button class="btn" id="btnSelfPass">自評通過</button></div>' : ''}</details>` : ''}
   </section>`;
@@ -657,7 +657,7 @@ function wireFeynman(l) {
       rec = new SR(); rec.lang = 'zh-TW'; rec.continuous = true; rec.interimResults = false;
       rec.onresult = e => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) ta.value += (ta.value && !/\s$/.test(ta.value) ? '' : '') + e.results[i][0].transcript; ta.dispatchEvent(new Event('input')); };
       rec.onerror = () => { toast('麥克風無法使用（要允許權限，且用 Chrome）', 'bad'); };
-      rec.onend = () => { rec = null; mic.textContent = '🎤 用講的'; mic.classList.remove('primary'); };
+      rec.onend = () => { rec = null; mic.textContent = '用講的'; mic.classList.remove('primary'); };
       try { rec.start(); mic.textContent = '⏹ 講完了（按一下停止）'; mic.classList.add('primary'); } catch (e) { rec = null; }
     };
   }
@@ -674,7 +674,7 @@ function wireFeynman(l) {
   const nb = $('#btnFeynNB'); if (nb) nb.onclick = () => feynScaffold(l);
   const fc = $('#btnFeynChat'); if (fc) fc.onclick = () => CloudAgent.feynChat(l);
 }
-/* 🆘 寫不出來：把關鍵步驟當骨架攤開，逐步用自己的話改寫；完整版明天再挑戰 */
+/* 寫不出來：把關鍵步驟當骨架攤開，逐步用自己的話改寫；完整版明天再挑戰 */
 function feynScaffold(l) {
   const ls = S.lesson(l.id), sec = $('#feyn'); if (!sec) return;
   Rescue.flag(l.id, 'feyn', l.feynman);
@@ -699,7 +699,7 @@ function viewWrong() {
   const items = Object.entries(st.answers).filter(([id, a]) => a.everWrong).map(([id, a]) => ({ id, a, q: id.startsWith('gen:') ? Practice.genQ(id) : QBANK.get(id) })).filter(x => x.q);
   const foes = items.filter(x => !x.a.ok).map(x => x.id);
   main().innerHTML = `
-  ${foes.length ? `<section class="feed-hero"><div class="fh-ic" aria-hidden="true">⚔️</div><h2>復仇戰</h2><div class="fh-sub">還沒打贏的 ${foes.length} 題</div><button class="go-start" id="btnRevenge">▶ 開打</button></section>` : ''}
+  ${foes.length ? `<section class="feed-hero"><div class="fh-ic" aria-hidden="true">${ICON('sword')}</div><h2>復仇戰</h2><div class="fh-sub">還沒打贏的 ${foes.length} 題</div><button class="go-start" id="btnRevenge">▶ 開打</button></section>` : ''}
   <header class="page-head"><h1>錯題本</h1>
   ${items.length ? `<div class="row">${due.length ? `<button class="btn primary" id="btnDue">到期 ${due.length} 題</button>` : ''}<button class="btn" id="btnWeak">練弱章</button>
   ${items.some(x => x.a.hcw) ? '<button class="btn" id="btnHcw">高信心答錯</button>' : ''}</div>` : ''}</header>
@@ -805,7 +805,7 @@ function viewSetup() {
   ${App.card()}
   <section class="card"><div class="card-h"><h2>備份</h2></div>
     <p class="muted small">${Bridge.mode === 'cloud' ? '進度自動存在雲端：同一個 Claude 帳號的每台裝置都同步。想跟電腦上的版本合併，就在電腦版「下載備份檔」，再到這裡按「合併另一台的進度檔」。' : Bridge.mode === 'offline' ? '這個瀏覽器沒有連到專案資料夾：進度只存在這裡，請定期下載備份。' : '進度每天自動備份到 <code>bridge/backups/</code>；另一台電腦（OneDrive 同步）打開時會自動合併。'}${S.st.lastExport ? `　上次下載：${S.st.lastExport}` : ''}</p>
-    <div class="row wrap"><button class="btn primary" id="exp">💾 下載備份檔</button><button class="btn" id="mrg">合併另一台的進度檔</button><button class="btn" id="imp">用檔案覆蓋</button><button class="btn danger" id="rst">全部重來</button></div></section>`;
+    <div class="row wrap"><button class="btn primary" id="exp">下載備份檔</button><button class="btn" id="mrg">合併另一台的進度檔</button><button class="btn" id="imp">用檔案覆蓋</button><button class="btn danger" id="rst">全部重來</button></div></section>`;
   $('#saveSet').onclick = () => {
     s.name = $('#fName').value.trim(); s.examDate = $('#fExam').value || s.examDate; s.startDate = $('#fStart').value || s.startDate;
     s.dailyMinutes = +$('#fMin').value || 360; s.dailyQuestions = +$('#fQ').value || 30; s.pomo = +$('#fPomo').value || 50; s.brk = +$('#fBrk').value || 10; s.retention = +$('#fRet').value || .9; s.studyStart = $('#fSS').value || s.studyStart; s.commitTime = $('#fCT').value || s.commitTime; s.stake = $('#fStake').value.trim(); s.newCards = Math.max(0, +$('#fNew').value || 0); s.rwSound = $('#fRwS').value === '1';
@@ -892,13 +892,13 @@ function xpOrder() {
 function xpCard(x, big) {
   const l = LESSON[x.lesson], seen = Explain.seen(x.id);
   return `<a class="xp-card${big ? ' big' : ''}${seen ? ' seen' : ''}" href="#video-${x.id}" style="--sc:var(--s-${x.subject})">
-    <div class="xp-thumb">${x.video ? `<img src="videos/${x.id}.jpg" alt="" loading="lazy">` : '<div class="xp-thumb-ph">🎛</div>'}<span class="xp-badge">${x.video ? '▶ ' + Math.round(x.dur / 60 * 10) / 10 + ' 分' : '互動動畫'}</span>${seen ? '<span class="xp-seen">✓ 看過</span>' : ''}</div>
+    <div class="xp-thumb">${x.video ? `<img src="videos/${x.id}.jpg" alt="" loading="lazy">` : '<div class="xp-thumb-ph">' + ICON('play') + '</div>'}<span class="xp-badge">${x.video ? '▶ ' + Math.round(x.dur / 60 * 10) / 10 + ' 分' : '互動動畫'}</span>${seen ? '<span class="xp-seen">✓ 看過</span>' : ''}</div>
     <div class="xp-meta"><b>${esc(x.title)}</b><span>${esc(SUBJ[x.subject] ? SUBJ[x.subject].name : '')}${l ? '・' + esc(l.title.split(/[：（]/)[0]) : ''}</span></div></a>`;
 }
 function viewVideos() {
   const m = main(), list = xpOrder(), next = list.find(x => x.video && !Explain.seen(x.id)) || list.find(x => !Explain.seen(x.id)) || list[0];
   const subs = DATA.subjects.filter(s => list.some(x => x.subject === s.id));
-  m.innerHTML = `<div class="page-head"><h1>🎞 影片</h1></div>
+  m.innerHTML = `<div class="page-head"><h1>影片</h1></div>
     ${next ? `<section class="xp-hero">${xpCard(next, true)}<div class="xp-hero-side"><div class="muted small">推薦下一部</div><h2>${esc(next.title)}</h2><a class="btn primary xp-play-btn" href="#video-${next.id}">▶ 播放</a><div class="muted small">${list.filter(x => Explain.seen(x.id)).length} / ${list.length} 部看過</div></div></section>` : ''}
     ${subs.map(s => `<h2 class="lab-sec" style="--sc:var(--s-${s.id})"><span class="sdot"></span>${esc(s.name)}</h2><div class="xp-grid">${list.filter(x => x.subject === s.id).map(x => xpCard(x)).join('')}</div>`).join('')}
     ${typeof Clips !== 'undefined' && Clips.list.length ? `<p class="muted" style="margin-top:28px">還有 ${Clips.list.length} 支 30 秒直式短片：<a href="#feed">去刷短片 →</a></p>` : ''}`;
@@ -906,7 +906,7 @@ function viewVideos() {
 function viewVideo(id) {
   const m = main(), list = xpOrder(), x = list.find(v => v.id === id); if (!x) { location.hash = '#videos'; return; }
   const l = LESSON[x.lesson], i = list.indexOf(x), more = list.filter(v => v.id !== id && !Explain.seen(v.id)).slice(0, 4);
-  m.innerHTML = `<div class="xp-page"><div class="xp-page-h"><a class="muted" href="#videos">← 影片</a>${l ? `<a class="muted" href="#${l.id}">📖 ${esc(l.title.split(/[：（]/)[0])}</a>` : ''}</div><div id="xpHost"></div>
+  m.innerHTML = `<div class="xp-page"><div class="xp-page-h"><a class="muted" href="#videos">← 影片</a>${l ? `<a class="muted" href="#${l.id}">${ICON('book')} ${esc(l.title.split(/[：（]/)[0])}</a>` : ''}</div><div id="xpHost"></div>
     ${more.length ? `<h3 class="xp-more-h">接著看</h3><div class="xp-grid">${more.map(v => xpCard(v)).join('')}</div>` : ''}</div>`;
   const fromAuto = S.st.auto && (S.st.auto.ids || []).includes('xp:' + x.lesson);
   Explain.mount($('#xpHost'), id, { autoplay: false, autoNext: fromAuto, next: () => {
@@ -939,14 +939,14 @@ function viewFeed(startId) {
     <div class="feed" id="feed" tabindex="0">${list.map((c, i) => { const l = LESSON[c.lesson]; const n = QBANK.all().filter(q => q.ch === c.lesson).length; return `<section class="feed-item" data-id="${c.id}">
       <div class="feed-slot"></div>
       <div class="feed-acts">
-        ${l ? `<a href="#${c.lesson}"><span class="ic">📖</span>讀這章</a>` : ''}
-        ${n ? `<button data-quiz="${c.lesson}"><span class="ic">✍️</span>練 ${n} 題</button>` : ''}
-        ${CLIP_LAB[c.id] ? `<a href="#lab-${CLIP_LAB[c.id]}"><span class="ic">🧪</span>動手玩</a>` : ''}
+        ${l ? `<a href="#${c.lesson}"><span class="ic">${ICON('book')}</span>讀這章</a>` : ''}
+        ${n ? `<button data-quiz="${c.lesson}"><span class="ic">${ICON('practice')}</span>練 ${n} 題</button>` : ''}
+        ${CLIP_LAB[c.id] ? `<a href="#lab-${CLIP_LAB[c.id]}"><span class="ic">${ICON('target')}</span>動手玩</a>` : ''}
         <button data-next><span class="ic">⬇</span>${i < list.length - 1 ? '下一支' : '回頂端'}</button>
       </div>
       <div class="feed-cap"><b>${esc(l ? l.title : c.chip)}</b><span>${i + 1} / ${list.length}</span></div>
     </section>`; }).join('')}
-    <section class="feed-item feed-end"><div><h2>刷完了 🎉</h2><p>影片只負責給直覺。真正的分數在推導與題目裡。</p><div class="row wrap" style="justify-content:center"><a class="btn primary" href="#today">回今日督導</a><a class="btn" href="#practice">去練題</a><button class="btn" id="feedTop">從頭再刷</button></div></div></section>
+    <section class="feed-item feed-end"><div><h2>刷完了</h2><p>影片只負責給直覺。真正的分數在推導與題目裡。</p><div class="row wrap" style="justify-content:center"><a class="btn primary" href="#today">回今日督導</a><a class="btn" href="#practice">去練題</a><button class="btn" id="feedTop">從頭再刷</button></div></div></section>
     </div></div>`;
   const feed = $('#feed');
   $$('.feed-item[data-id]', m).forEach(sec => Clips.player($('.feed-slot', sec), sec.dataset.id, { auto: true, feed: true, onEnd: () => {} }));

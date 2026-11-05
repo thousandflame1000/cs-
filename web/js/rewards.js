@@ -4,44 +4,44 @@
 
 const RW_TITLES = [[1, 'Hello World'], [3, '指標不再迷路'], [5, '遞迴會停'], [8, 'Big-O 直覺'], [12, 'DP 填表人'], [16, 'Cache 命中'], [20, '死結終結者'], [25, 'Rank 看穿'], [30, '歸約大師'], [36, '上榜體質'], [42, '台大資工']];
 const RW_SHOP = [
-  { id: 'tea', ic: '🧋', name: '手搖飲', price: 800 },
-  { id: 'ep', ic: '📺', name: '看一集劇', price: 1200 },
-  { id: 'game', ic: '🎮', name: '打一小時遊戲', price: 2000 },
-  { id: 'sleep', ic: '😴', name: '睡到自然醒', price: 3000 },
-  { id: 'feast', ic: '🍖', name: '吃大餐', price: 8000 },
-  { id: 'off', ic: '🏖️', name: '放半天假', price: 10000 },
+  { id: 'tea', ic: 'cup', name: '手搖飲', price: 800 },
+  { id: 'ep', ic: 'screen', name: '看一集劇', price: 1200 },
+  { id: 'game', ic: 'game', name: '打一小時遊戲', price: 2000 },
+  { id: 'sleep', ic: 'moon', name: '睡到自然醒', price: 3000 },
+  { id: 'feast', ic: 'gift', name: '吃大餐', price: 8000 },
+  { id: 'off', ic: 'today', name: '放半天假', price: 10000 },
 ];
 const RW_FREEZE = 1500, RW_FREEZE_MAX = 2;
 const RW_XP = { ok: 10, bad: 4, card: 2, min: 1, full: 100, min_ci: 30, blurt: 20, mock: 150, read: 50, sub: 40, pass: 80, self: 20, clip: 5 };
 const ACH = [
-  { id: 'q1', ic: '🐣', name: '第一題', need: '做 1 題', c: 10, t: s => s.q >= 1 },
-  { id: 'q100', ic: '💯', name: '百題斬', need: '做 100 題', c: 50, t: s => s.q >= 100 },
-  { id: 'q500', ic: '⚔️', name: '五百題', need: '做 500 題', c: 100, t: s => s.q >= 500 },
-  { id: 'q1000', ic: '🏯', name: '千題塔', need: '做 1000 題', c: 200, t: s => s.q >= 1000 },
+  { id: 'q1', ic: 'star', name: '第一題', need: '做 1 題', c: 10, t: s => s.q >= 1 },
+  { id: 'q100', ic: 'practice', name: '百題斬', need: '做 100 題', c: 50, t: s => s.q >= 100 },
+  { id: 'q500', ic: 'sword', name: '五百題', need: '做 500 題', c: 100, t: s => s.q >= 500 },
+  { id: 'q1000', ic: 'crown', name: '千題塔', need: '做 1000 題', c: 200, t: s => s.q >= 1000 },
   { id: 'cd100', ic: '🃏', name: '百卡', need: '複習 100 張卡', c: 40, t: s => s.cards >= 100 },
-  { id: 'cd1000', ic: '🧠', name: '記憶宮殿', need: '複習 1000 張卡', c: 150, t: s => s.cards >= 1000 },
-  { id: 'rd1', ic: '📖', name: '開卷', need: '讀完 1 章', c: 20, t: s => s.read >= 1 },
-  { id: 'subj', ic: '✨', name: '一科到底', need: '讀完一整科', c: 100, t: s => s.subjDone },
-  { id: 'rd21', ic: '📚', name: '半程', need: '讀完 21 章', c: 150, t: s => s.read >= 21 },
-  { id: 'rd42', ic: '🏁', name: '全書制霸', need: '讀完 42 章', c: 300, t: s => s.read >= 42 },
-  { id: 'fy1', ic: '🗣️', name: '開口講', need: '交 1 次費曼', c: 30, t: s => s.sub >= 1 },
-  { id: 'ps1', ic: '✅', name: '講得清楚', need: '費曼通過 1 章', c: 50, t: s => s.pass >= 1 },
-  { id: 'ps10', ic: '🎓', name: '費曼十連', need: '費曼通過 10 章', c: 200, t: s => s.pass >= 10 },
-  { id: 'st3', ic: '🔥', name: '三日不斷', need: '連續 3 天', c: 30, t: s => s.best >= 3 },
-  { id: 'st7', ic: '🔥', name: '一週不斷', need: '連續 7 天', c: 80, t: s => s.best >= 7 },
-  { id: 'st14', ic: '☄️', name: '兩週不斷', need: '連續 14 天', c: 150, t: s => s.best >= 14 },
-  { id: 'st30', ic: '🌋', name: '一個月', need: '連續 30 天', c: 300, t: s => s.best >= 30 },
-  { id: 'pf', ic: '🌟', name: '完美一天', need: '當天全部完成', c: 50, t: s => s.full >= 1 },
+  { id: 'cd1000', ic: 'cards', name: '記憶宮殿', need: '複習 1000 張卡', c: 150, t: s => s.cards >= 1000 },
+  { id: 'rd1', ic: 'book', name: '開卷', need: '讀完 1 章', c: 20, t: s => s.read >= 1 },
+  { id: 'subj', ic: 'star', name: '一科到底', need: '讀完一整科', c: 100, t: s => s.subjDone },
+  { id: 'rd21', ic: 'book', name: '半程', need: '讀完 21 章', c: 150, t: s => s.read >= 21 },
+  { id: 'rd42', ic: 'trophy', name: '全書制霸', need: '讀完 42 章', c: 300, t: s => s.read >= 42 },
+  { id: 'fy1', ic: 'chat', name: '開口講', need: '交 1 次費曼', c: 30, t: s => s.sub >= 1 },
+  { id: 'ps1', ic: 'check', name: '講得清楚', need: '費曼通過 1 章', c: 50, t: s => s.pass >= 1 },
+  { id: 'ps10', ic: 'trophy', name: '費曼十連', need: '費曼通過 10 章', c: 200, t: s => s.pass >= 10 },
+  { id: 'st3', ic: 'bolt', name: '三日不斷', need: '連續 3 天', c: 30, t: s => s.best >= 3 },
+  { id: 'st7', ic: 'bolt', name: '一週不斷', need: '連續 7 天', c: 80, t: s => s.best >= 7 },
+  { id: 'st14', ic: 'bolt', name: '兩週不斷', need: '連續 14 天', c: 150, t: s => s.best >= 14 },
+  { id: 'st30', ic: 'crown', name: '一個月', need: '連續 30 天', c: 300, t: s => s.best >= 30 },
+  { id: 'pf', ic: 'star', name: '完美一天', need: '當天全部完成', c: 50, t: s => s.full >= 1 },
   { id: 'h10', ic: '⏳', name: '十小時', need: '累計專注 10 小時', c: 40, t: s => s.min >= 600 },
-  { id: 'h100', ic: '🕰️', name: '百小時', need: '累計專注 100 小時', c: 300, t: s => s.min >= 6000 },
+  { id: 'h100', ic: 'records', name: '百小時', need: '累計專注 100 小時', c: 300, t: s => s.min >= 6000 },
   { id: 'mk1', ic: '⏱️', name: '上考場', need: '完成 1 場模考', c: 50, t: s => s.mocks >= 1 },
-  { id: 'clip', ic: '🎬', name: '影片全收', need: '看完全部短片', c: 50, t: s => s.clipsAll },
-  { id: 'lv10', ic: '🪜', name: 'Lv 10', need: '升到 10 級', c: 100, t: s => s.lvl >= 10 },
-  { id: 'sr1', ic: '⭐', name: '第一顆星', need: '闖關拿到 1 顆星', c: 10, t: s => s.stars >= 1 },
-  { id: 'sr10', ic: '🌠', name: '十顆星', need: '闖關拿到 10 顆星', c: 60, t: s => s.stars >= 10 },
-  { id: 'sr30', ic: '🌌', name: '星海', need: '闖關拿到 30 顆星', c: 150, t: s => s.stars >= 30 },
-  { id: 'sr3c', ic: '👹', name: '打倒魔王', need: '一章拿滿 3 顆星', c: 40, t: s => s.star3 >= 1 },
-  { id: 'srsub', ic: '👑', name: '一科稱王', need: '一整科每章都 3 顆星', c: 300, t: s => s.starSubj },
+  { id: 'clip', ic: 'play', name: '影片全收', need: '看完全部短片', c: 50, t: s => s.clipsAll },
+  { id: 'lv10', ic: 'records', name: 'Lv 10', need: '升到 10 級', c: 100, t: s => s.lvl >= 10 },
+  { id: 'sr1', ic: 'star', name: '第一顆星', need: '闖關拿到 1 顆星', c: 10, t: s => s.stars >= 1 },
+  { id: 'sr10', ic: 'star', name: '十顆星', need: '闖關拿到 10 顆星', c: 60, t: s => s.stars >= 10 },
+  { id: 'sr30', ic: 'star', name: '星海', need: '闖關拿到 30 顆星', c: 150, t: s => s.stars >= 30 },
+  { id: 'sr3c', ic: 'crown', name: '打倒魔王', need: '一章拿滿 3 顆星', c: 40, t: s => s.star3 >= 1 },
+  { id: 'srsub', ic: 'crown', name: '一科稱王', need: '一整科每章都 3 顆星', c: 300, t: s => s.starSubj },
 ];
 
 const Rewards = {
@@ -49,6 +49,7 @@ const Rewards = {
     const r = S.st.rw || (S.st.rw = { init: 0, xp0: null, lvl: null, bonus: 0, spent: 0, chests: [], freezes: 0, ach: {}, steps: {}, redeem: [], best: 0, shop: null, agent: [], coinV2: 1 });
     if (!r.coinV2) { r.coinV2 = 1; r.bonus = (r.bonus || 0) * 10; r.spent = (r.spent || 0) * 10; (r.shop || []).forEach(x => { x.price *= 10; }); (r.redeem || []).forEach(x => { x.price *= 10; }); }
     if (!r.shop) r.shop = RW_SHOP.map(x => Object.assign({}, x));
+    if (!r.icV2) { r.icV2 = 1; const D0 = Object.fromEntries(RW_SHOP.map(x => [x.id, x.ic])); (r.shop || []).forEach(x => { if (D0[x.id]) x.ic = D0[x.id]; }); (r.redeem || []).forEach(x => { if (D0[x.id]) x.ic = D0[x.id]; }); }
     return r;
   },
   totals() {
@@ -101,7 +102,7 @@ const Rewards = {
   showDrop() {
     const it = this.q.shift(); if (!it) { this.qBusy = false; return; } this.qBusy = true;
     const [tier, res] = it, TN = { common: '寶箱', rare: '稀有寶箱', epic: '史詩寶箱', gold: '金寶箱' };
-    const el = h('div', { class: 'rw-drop t-' + tier }); el.innerHTML = `<span class="rw-dc">🎁</span><span><small>${TN[tier]}</small><b>${COIN} +${res.coins}${res.freeze ? '　凍結卡 +1' : ''}</b></span>`;
+    const el = h('div', { class: 'rw-drop t-' + tier }); el.innerHTML = `<span class="rw-dc">${ICON('gift')}</span><span><small>${TN[tier]}</small><b>${COIN} +${res.coins}${res.freeze ? '　凍結卡 +1' : ''}</b></span>`;
     document.body.appendChild(el); this.chime(tier === 'common' ? 'pop' : 'big'); if (tier !== 'common') this.confetti(tier === 'gold' ? 60 : 30);
     setTimeout(() => el.classList.add('open'), 450); setTimeout(() => el.classList.add('out'), 2400); setTimeout(() => { el.remove(); this.paintRail(); this.showDrop(); }, 2900);
   },
@@ -116,7 +117,7 @@ const Rewards = {
     const c = r.chests.shift(), res = this.roll(c.tier); S.save(); this.paintRail();
     const TN = { common: '寶箱', rare: '稀有寶箱', epic: '史詩寶箱', gold: '金寶箱' };
     const w = h('div', { class: 'nd-wrap rw-open', role: 'dialog', 'aria-modal': 'true' });
-    w.innerHTML = `<div class="nd-box"><div class="rw-chest t-${c.tier}">🎁</div><div class="rw-tier t-${c.tier}">${TN[c.tier]}</div>
+    w.innerHTML = `<div class="nd-box"><div class="rw-chest t-${c.tier}">${ICON('gift')}</div><div class="rw-tier t-${c.tier}">${TN[c.tier]}</div>
       <div class="rw-got" hidden><b>${COIN} +${res.coins}</b>${res.freeze ? '<b>凍結卡 +1</b>' : ''}</div>
       <div class="row center"><button class="btn primary" id="rwNext" disabled>${r.chests.length ? `下一個（${r.chests.length}）` : '收下'}</button></div></div>`;
     document.body.appendChild(w);
@@ -176,10 +177,10 @@ const Rewards = {
   redeem(id) {
     const r = this.st(), it = r.shop.find(x => x.id === id); if (!it) return;
     if (this.coins() < it.price) { toast(`還差 ${it.price - this.coins()} 金幣`, 'bad'); return; }
-    if (!this.unlocked()) { toast('🔒 今天進度過半解鎖', 'bad'); return; }
-    Nudge.overlay(`<div class="nd-ic">${it.ic}</div><h2>${esc(it.name)}</h2><p class="muted">${COIN} −${it.price}</p>`, [['兌換', () => {
+    if (!this.unlocked()) { toast('今天進度過半解鎖', 'bad'); return; }
+    Nudge.overlay(`<div class="nd-ic">${icHtml(it.ic)}</div><h2>${esc(it.name)}</h2><p class="muted">${COIN} −${it.price}</p>`, [['兌換', () => {
       this.spendCoins(it.price); r.redeem.push({ id: it.id, ic: it.ic, name: it.name, price: it.price, ts: new Date().toISOString() }); r.redeem = r.redeem.slice(-50);
-      S.save(); this.chime('big'); this.confetti(36); route(); toast(`${it.ic} 去享受吧`, 'good');
+      S.save(); this.chime('big'); this.confetti(36); route(); toast('去享受吧', 'good');
     }, 'primary'], ['取消', () => { }]]);
   },
   buyFreeze() {
@@ -197,7 +198,7 @@ const Rewards = {
   /* ---------- 呈現 ---------- */
   railHtml() {
     const i = this.info(), n = i.r.chests.length;
-    return `<a class="rw-rail" id="rwRail" href="#rewards" title="${esc(i.title)}"><span class="lv">Lv ${i.lv}</span><span class="bar"><i style="width:${Math.round(i.pct * 100)}%"></i></span><span class="cn">🪙 ${i.coins}</span>${typeof Practice !== 'undefined' ? `<span class="cn" title="闖關星數">⭐ ${Object.values(S.st.stars || {}).reduce((a, b) => a + (b || 0), 0)}/${DATA.lessons.length * 3}</span>` : ''}${n ? `<span class="ch">🎁${n}</span>` : ''}</a>`;
+    return `<a class="rw-rail" id="rwRail" href="#rewards" title="${esc(i.title)}"><span class="lv">Lv ${i.lv}</span><span class="bar"><i style="width:${Math.round(i.pct * 100)}%"></i></span><span class="cn">${COIN} ${i.coins}</span>${typeof Practice !== 'undefined' ? `<span class="cn" title="闖關星數">${ICON('star')} ${Object.values(S.st.stars || {}).reduce((a, b) => a + (b || 0), 0)}/${DATA.lessons.length * 3}</span>` : ''}${n ? `<span class="ch">${ICON('gift')}${n}</span>` : ''}</a>`;
   },
   paintRail() { const el = $('#rwRail'); if (el) el.outerHTML = this.railHtml(); this.paintCoin(this.coins()); },
   /* ---------- 金幣：從剛剛按的地方噴出來、飛進右上角，一枚一聲，數字跟著跳 ---------- */
@@ -244,7 +245,7 @@ const Rewards = {
     setTimeout(() => el.remove(), 1500);
   },
   achToast(a) {
-    const el = h('div', { class: 'rw-ach-t' }); el.innerHTML = `<span class="ic">${a.ic}</span><span><b>${esc(a.name)}</b><small>${COIN} +${a.c * 10}</small></span>`;
+    const el = h('div', { class: 'rw-ach-t' }); el.innerHTML = `<span class="ic">${icHtml(a.ic)}</span><span><b>${esc(a.name)}</b><small>${COIN} +${a.c * 10}</small></span>`;
     document.body.appendChild(el); this.chime('pop'); setTimeout(() => el.classList.add('out'), 2600); setTimeout(() => el.remove(), 3200);
   },
   levelUp(lv) {   // 不擋畫面：2.6 秒自己消失
@@ -283,16 +284,16 @@ function viewRewards() {
     <div class="rw-meta"><div class="rw-title">${esc(i.title)}</div><div class="progress"><i style="width:${Math.round(i.pct * 100)}%"></i></div><div class="muted small">${i.cur} / ${i.span} XP</div></div>
     <div class="rw-wallet"><span>${COIN} <b>${i.coins}</b></span><span title="連勝凍結卡">凍結卡 <b>${r.freezes}</b></span></div>
   </section>
-  ${n ? `<section class="card rw-chests"><span class="rw-cic">🎁</span><b>× ${n}</b><button class="btn primary" id="rwOpen">打開</button></section>` : ''}
-  <div class="sec-h"><h2>兌換</h2>${open ? '' : '<span class="muted small">🔒 今天進度過半解鎖</span>'}</div>
+  ${n ? `<section class="card rw-chests"><span class="rw-cic">${ICON('gift')}</span><b>× ${n}</b><button class="btn primary" id="rwOpen">打開</button></section>` : ''}
+  <div class="sec-h"><h2>兌換</h2>${open ? '' : '<span class="muted small">' + ICON('lock') + ' 今天進度過半解鎖</span>'}</div>
   <div class="rw-shop">
-    ${r.shop.map(it => `<div class="rw-item ${i.coins >= it.price ? '' : 'poor'}"><span class="ic">${it.ic}</span><b>${esc(it.name)}</b><span class="pr">${COIN} ${it.price}</span><button class="btn sm ${i.coins >= it.price && open ? 'primary' : ''}" data-buy="${esc(it.id)}">${open ? '兌換' : '🔒'}</button><button class="x" data-del="${esc(it.id)}" aria-label="刪除">×</button></div>`).join('')}
+    ${r.shop.map(it => `<div class="rw-item ${i.coins >= it.price ? '' : 'poor'}"><span class="ic">${icHtml(it.ic)}</span><b>${esc(it.name)}</b><span class="pr">${COIN} ${it.price}</span><button class="btn sm ${i.coins >= it.price && open ? 'primary' : ''}" data-buy="${esc(it.id)}">${open ? '兌換' : ICON('lock')}</button><button class="x" data-del="${esc(it.id)}" aria-label="刪除">×</button></div>`).join('')}
     <div class="rw-item frz ${i.coins >= RW_FREEZE ? '' : 'poor'}"><b>連勝凍結卡</b><span class="pr">${COIN} ${RW_FREEZE}</span><button class="btn sm" id="rwFreeze" ${r.freezes >= RW_FREEZE_MAX ? 'disabled' : ''}>${r.freezes}/${RW_FREEZE_MAX}</button></div>
-    <form class="rw-item rw-add" id="rwAdd"><input id="rwIc" maxlength="2" placeholder="🎁" aria-label="圖示"><input id="rwName" placeholder="自訂獎勵" maxlength="20" aria-label="獎勵名稱"><input id="rwPrice" type="number" min="10" step="10" placeholder="🪙" aria-label="價格"><button class="btn sm">新增</button></form>
+    <form class="rw-item rw-add" id="rwAdd"><input id="rwIc" maxlength="2" placeholder="字" aria-label="圖示（一個字）"><input id="rwName" placeholder="自訂獎勵" maxlength="20" aria-label="獎勵名稱"><input id="rwPrice" type="number" min="10" step="10" placeholder="價格" aria-label="價格"><button class="btn sm">新增</button></form>
   </div>
-  ${recent.length ? `<ul class="rw-log">${recent.map(x => `<li>${x.ic} ${esc(x.name)}<span class="muted small">${D.fmt(new Date(x.ts)).slice(5)}　−${x.price}</span></li>`).join('')}</ul>` : ''}
+  ${recent.length ? `<ul class="rw-log">${recent.map(x => `<li>${icHtml(x.ic)} ${esc(x.name)}<span class="muted small">${D.fmt(new Date(x.ts)).slice(5)}　−${x.price}</span></li>`).join('')}</ul>` : ''}
   <div class="sec-h"><h2>成就</h2><span class="muted small">${got} / ${ACH.length}</span></div>
-  <div class="rw-ach">${ACH.map(a => `<div class="ach ${r.ach[a.id] ? 'on' : ''}"><span class="ic">${a.ic}</span><b>${esc(a.name)}</b><small>${esc(a.need)}</small></div>`).join('')}</div>
+  <div class="rw-ach">${ACH.map(a => `<div class="ach ${r.ach[a.id] ? 'on' : ''}"><span class="ic">${icHtml(a.ic)}</span><b>${esc(a.name)}</b><small>${esc(a.need)}</small></div>`).join('')}</div>
   <details class="rw-how"><summary>怎麼賺</summary><p class="small muted">答對 10・答錯 4・卡片 2・專注每分鐘 1・讀完一章 50・交費曼 40・通過 +80・打卡 100（保底 30）・白紙回憶 20・模考 150・短片 5｜1 XP = 1 金幣｜完成一步 35% 掉寶箱，全部完成必掉金寶箱｜沒打卡的那天自動用一張凍結卡保住連續天數</p></details>`;
   if ($('#rwOpen')) $('#rwOpen').onclick = () => Rewards.openAll(() => route());
   $$('[data-buy]').forEach(b => b.onclick = () => Rewards.redeem(b.dataset.buy));
@@ -300,6 +301,6 @@ function viewRewards() {
   $('#rwFreeze').onclick = () => Rewards.buyFreeze();
   $('#rwAdd').onsubmit = e => {
     e.preventDefault(); const name = $('#rwName').value.trim(), price = Math.max(10, Math.round(+$('#rwPrice').value || 0)); if (!name || !+$('#rwPrice').value) return;
-    r.shop.push({ id: 'u' + Date.now().toString(36), ic: $('#rwIc').value.trim() || '🎁', name, price }); r.shop.sort((a, b) => a.price - b.price); S.save(); route();
+    r.shop.push({ id: 'u' + Date.now().toString(36), ic: $('#rwIc').value.trim() || 'gift', name, price }); r.shop.sort((a, b) => a.price - b.price); S.save(); route();
   };
 }

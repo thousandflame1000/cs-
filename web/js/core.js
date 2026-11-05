@@ -442,7 +442,28 @@ const ICON_P = {
   star: '<path d="M12 3.9l2.5 5.1 5.6.8-4.05 3.95.95 5.6L12 16.7l-5 2.65.95-5.6L3.9 9.8l5.6-.8z"/>',
   play: '<path d="M8 5.6v12.8L18.4 12z" fill="currentColor"/>',
   close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  /* 卡片用的小圖示（同一套 24 格、1.75 線寬） */
+  review: '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.6 4.5v3.9h-3.9"/>',
+  pen: '<path d="M14.8 5.2l4 4L9 19H5v-4z"/><path d="M12.8 7.2l4 4"/>',
+  book: '<path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11.5H8.5A3.5 3.5 0 0 1 5 16z"/><path d="M5 16a3.5 3.5 0 0 1 3.5-3.5H19"/>',
+  cards: '<rect x="6.5" y="4" width="12" height="15" rx="2"/><path d="M4.5 7.5v11a2 2 0 0 0 2 2h9"/>',
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l6.5-6.5M16 5.5h2.5V8"/>',
+  chat: '<path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8.5A1.5 1.5 0 0 1 19 17h-8l-4.5 3.5V17H5a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 5 5.5z"/>',
+  lock: '<rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
+  bolt: '<path d="M13 3L5.5 13.5H11L10 21l7.5-10.5H12z"/>',
+  sword: '<path d="M14.5 4.5H19.5V9.5L9.5 19.5 4.5 14.5z"/><path d="M7 12l5 5M4 20l2.5-2.5"/>',
+  crown: '<path d="M4 17.5L3 7.5l5 4 4-6.5 4 6.5 5-4-1 10z"/><path d="M4.5 20.5h15"/>',
+  cup: '<path d="M6 7.5h12l-1.4 11.2a2 2 0 0 1-2 1.8H9.4a2 2 0 0 1-2-1.8z"/><path d="M5 7.5h14M12.5 7.5l1.5-4.5"/>',
+  screen: '<rect x="3.5" y="5" width="17" height="11.5" rx="2"/><path d="M8.5 20h7M12 16.5V20"/>',
+  game: '<path d="M7.5 8h9a4.5 4.5 0 0 1 4.3 5.8l-.9 3a2.5 2.5 0 0 1-4.3.9L14 16H10l-1.6 1.7a2.5 2.5 0 0 1-4.3-.9l-.9-3A4.5 4.5 0 0 1 7.5 8z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 13.5h.01"/>',
+  moon: '<path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a7.5 7.5 0 1 0 10 10z"/>',
+  gift: '<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3.5 9h17M12 9v11M12 9c-2-4-6-4-6-1.5S9 9 12 9zM12 9c2-4 6-4 6-1.5S15 9 12 9z"/>',
+  trophy: '<path d="M8 4.5h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13.5V17M8.5 20h7M9.5 17h5v3h-5z"/>',
 };
+/** 卡片圖示：是圖示名就畫線條圖示，否則（例如使用者自己打的字）照原樣顯示 */
+const icHtml = (ic, cls = '') => ICON_P[ic] ? ICON(ic, cls) : esc(String(ic ?? ''));
 const ICON = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_P[name] || ''}</svg>`;
 const COIN = '<svg class="coin" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9.6" fill="var(--star)" stroke="color-mix(in srgb, var(--star) 60%, #000)" stroke-width="1.2"/><circle cx="12" cy="12" r="6.1" fill="none" stroke="#fff7d6" stroke-width="1.5" opacity=".85"/><path d="M10.2 8.6h3.6M12 8.6v6.8" stroke="#fff7d6" stroke-width="1.5" stroke-linecap="round" opacity=".85"/></svg>';
 document.addEventListener('pointerdown', e => { if (typeof Rewards !== 'undefined') Rewards.lastPt = [e.clientX, e.clientY]; }, true);
