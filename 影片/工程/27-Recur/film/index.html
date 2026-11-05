@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>遞迴與特徵方程式</title>
+<!--
+  資工所衝刺 · 短影音 27：遞迴與特徵方程式——兩個等比數列疊起來
+  記憶宮殿：離散館 · 第 6 間。aₙ = aₙ₋₁ + 2aₙ₋₂、a₀ = a₁ = 3：一排塔 3、3、9、15、33、63。
+  猜 rⁿ → r² = r + 2（牆上的拋物線 r² − r − 2 碰到 0 的兩點：2、−1）。塔拆成後排 2·2ⁿ（青）＋前排 (−1)ⁿ（粉，一上一下），加起來就是 aₙ。
+  重根：r² − 4r + 4 剛好碰到 0 一次 → (α + βn)·2ⁿ。最後比值 aₙ₊₁/aₙ → 2。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#06050c', INK = '#eef3fa', VI = '#b48cff', CY = '#5be7ff', PK = '#ff9ad5', AM = '#ffc14d', GR = '#6ee7a8';
+const K = Kit({ W, H, stage, duration: DUR, seed: 271, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: VI, accent2: CY } });
+K.warm([VI, CY, PK, AM, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 一行公式: VI, '2 或 −1': AM, 疊起來: CY, n: PK, '2ⁿ': CY },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1;
+const add = (a, b) => a.map((v, i) => v + b[i]);
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: VI, a: .4 * a, major: 3 });
+function counter(c, label, val, col, a, x = CX, y = 300, sz = 72) {
+  if (a <= .003) return;
+  S.label(c, label, x, y - 50, { size: 30, w: 500, color: INK, a: .6 * a, ls: '4px' });
+  S.label(c, val, x, y + 14, { size: sz, w: 700, color: col, a });
+}
+
+// ═════════ 塔
+const A = [3, 3, 9, 15, 33, 63], G = [2, 4, 8, 16, 32, 64], SG = [1, -1, 1, -1, 1, -1], HZ = .034, NX = n => (n - 2.3) * .48;
+function tower(c, n, y, h, col, a, label, z0 = 0) { if (a <= .003) return; const w = .32; V.pillar(c, [NX(n), y, z0], w, Math.max(.01, h), col, a, { fill: .5 }); if (label != null) V.label(c, String(label), [NX(n), y, z0 + h + .22], { size: .22, w: 700, color: '#ffffff', a, minPx: 20, maxPx: 60 }); }
+function sumRow(c, t, a, grow) { const items = []; A.forEach((v, n) => { const g = grow(n); if (g <= 0) return; items.push({ p: [NX(n), 0, 0], draw: () => tower(c, n, 0, v * HZ * E.outCubic(g), VI, a * g, v) }); }); V.sorted(items); }
+// 牆上的拋物線
+function parabola(c, f, roots, a, col, o = {}) {
+  if (a <= .003) return; const WY = 1.5, RX = r => -1.45 + (r + 2) / 5 * 2.9, ZY = v => 1.35 + v * .16;
+  V.poly(c, [[-1.6, WY, 0], [1.6, WY, 0], [1.6, WY, 2.7], [-1.6, WY, 2.7]], K.rgba('#0d1424', .6 * a), K.rgba(INK, .18 * a), 1);
+  V.line(c, [RX(-2), WY - .01, ZY(0)], [RX(3), WY - .01, ZY(0)], { color: INK, a: .45 * a, w: 1.6, plain: true });
+  const pts = []; for (let i = 0; i <= 50; i++) { const r = -2 + i / 50 * 5, v = f(r); if (Math.abs(v) < 8) pts.push([RX(r), WY - .02, ZY(Math.max(-7, Math.min(7, v)))]); }
+  V.path(c, pts, { p: o.p ?? 1, color: col, w: 3.4 });
+  roots.forEach(r => { V.glow(c, [RX(r), WY - .03, ZY(0)], .5, .6 * a, AM); V.core(c, [RX(r), WY - .03, ZY(0)], .07, a, AM); V.label(c, String(r).replace('-', '−'), [RX(r), WY - .03, ZY(0) - .28], { size: .24, w: 700, color: AM, a, minPx: 22, maxPx: 64 }); });
+}
+
+// ═════════ 鏡頭
+const TG = [0, .2, .9];
+V.camKeys([
+  [0, V.orbit(-24, 6.6, 2.6, TG, 44)], [T.start, V.orbit(-8, 7.2, 3.0, TG, 44)],
+  [A1.start, V.orbit(-18, 6.4, 2.4, TG, 44)], [L.a3.start + .2, V.orbit(-6, 6.8, 2.0, [0, .6, 1.2], 44)], [L.a3.end, V.orbit(4, 6.8, 2.0, [0, .6, 1.2], 44)],
+  [B1.start + .3, V.orbit(-12, 7.4, 4.4, [.15, 0, 1.25], 44)], [L.b3.end, V.orbit(4, 7.6, 4.6, [.15, 0, 1.25], 44)],
+  [C1.start + .3, V.orbit(-6, 6.8, 2.0, [0, .6, 1.2], 44)], [L.c2.start + .3, V.orbit(-20, 6.6, 2.6, TG, 44)], [DUR, V.orbit(-4, 6.8, 2.8, TG, 44)],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c); sumRow(c, t, 1, n => prog(t, o1.start + n * .25, o1.start + .5 + n * .25));
+  const fa = prog(t, o2.start + .2, o2.start + .7); if (fa > 0) S.label(c, 'aₙ = 2·2ⁿ + (−1)ⁿ', CX, 470, { size: 64, w: 700, color: VI, a: fa });
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '離散數學 · 遞迴關係', big: 'rⁿ', size: 220, y: 600, en: 'LINEAR  RECURRENCES', q: '猜一個等比數列', qGap: 330, color: VI });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); sumRow(c, t, 1, () => 1); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), VI);
+}
+function sGuess(c, t) {
+  room(c);
+  const pa = prog(t, L.a3.start, L.a3.start + .6);
+  c.save(); c.globalAlpha *= 1 - .7 * pa; sumRow(c, t, 1, n => prog(t, A1.start + .3 + n * .55, A1.start + .8 + n * .55)); c.restore();
+  // 新的塔出現時，前兩根亮一下（aₙ₋₁ + 2aₙ₋₂）
+  for (let n = 2; n < 6; n++) { const t0 = A1.start + .3 + n * .55, f = prog(t, t0 - .3, t0) * (1 - prog(t, t0 + .3, t0 + .6)); if (f > 0) { V.glow(c, [NX(n - 1), 0, A[n - 1] * HZ], .5, .6 * f, CY); V.glow(c, [NX(n - 2), 0, A[n - 2] * HZ], .5, .6 * f, PK); } }
+  // a2：rⁿ 的形狀（虛線）
+  const ga = prog(t, L.a2.start + .2, L.a2.start + .8) * (1 - pa);
+  if (ga > 0) { const pts = []; for (let i = 0; i <= 50; i++) { const n = i / 10; pts.push([NX(n), -.25, 3 * Math.pow(2, n) * HZ * .55 + .05]); } for (let k = 0; k < pts.length - 1; k += 2) V.line(c, pts[k], pts[k + 1], { color: AM, a: ga, w: 2.5 }); V.label(c, 'rⁿ', [NX(5.2), -.25, 2.1], { size: .34, w: 700, color: AM, a: ga, minPx: 28, maxPx: 90 }); }
+  parabola(c, r => r * r - r - 2, pa > .6 ? [-1, 2] : [], pa, CY, { p: E.inOutCubic(prog(t, L.a3.start + .3, L.a3.start + 1.8)) });
+  if (pa > 0) S.label(c, 'r² = r + 2', CX, 430, { size: 64, w: 700, color: CY, a: pa });
+}
+function sSplit(c, t) {
+  room(c);
+  const k = E.inOutCubic(prog(t, B1.start + .4, B1.start + 2.0));
+  const items = [];
+  A.forEach((v, n) => items.push({ p: [NX(n), 0, 0], draw: () => tower(c, n, 0, v * HZ, VI, 1, v) }));
+  G.forEach((v, n) => items.push({ p: [NX(n), 1.0, 0], draw: () => tower(c, n, lerp(0, 1.0, k), 2 * Math.pow(2, n) * HZ, CY, k, 2 * Math.pow(2, n)) }));
+  SG.forEach((s, n) => items.push({ p: [NX(n), -1.0, 0], draw: () => { if (k <= .01) return; const z0 = .45, h = .22; V.pillar(c, [NX(n), lerp(0, -1.0, k), s > 0 ? z0 : z0 - h], .26, h, PK, k, { fill: .55 }); V.label(c, s > 0 ? '+1' : '−1', [NX(n), lerp(0, -1.0, k), z0 + .45], { size: .2, w: 700, color: PK, a: k, minPx: 18, maxPx: 54 }); } }));
+  V.sorted(items);
+  const la = prog(t, B1.start + 1.6, B1.start + 2.1);
+  const lg = la * (1 - prog(t, L.b3.start, L.b3.start + .4));
+  if (la > 0) { V.line(c, [NX(-.5), -1.0, .45], [NX(5.5), -1.0, .45], { color: PK, a: .5 * la, w: 1.5, plain: true }); S.label(c, '2·2ⁿ', CX - 270, 440, { size: 54, w: 700, color: CY, a: lg }); S.label(c, '+', CX - 150, 440, { size: 54, w: 700, color: INK, a: lg }); S.label(c, '(−1)ⁿ', CX - 20, 440, { size: 54, w: 700, color: PK, a: lg }); S.label(c, '=', CX + 120, 440, { size: 54, w: 700, color: INK, a: lg }); S.label(c, 'aₙ', CX + 230, 440, { size: 54, w: 700, color: VI, a: lg }); }
+  const ca = prog(t, L.b2.start + .3, L.b2.start + .8);
+  counter(c, 'α', ca > 0 ? '2' : '?', CY, prog(t, B1.start + .4, B1.start + .8), CX - 200); counter(c, 'β', ca > 0 ? '1' : '?', PK, prog(t, B1.start + .4, B1.start + .8), CX + 200);
+  const fa = prog(t, L.b3.start + .2, L.b3.start + .7); if (fa > 0) S.label(c, 'aₙ = 2·2ⁿ + (−1)ⁿ', CX, 440, { size: 66, w: 700, color: VI, a: fa });
+}
+function sDouble(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const pa = prog(t, C1.start, C1.start + .5) * (1 - prog(t, L.c2.start, L.c2.start + .5));
+  parabola(c, r => r * r - 4 * r + 4, [2], pa, PK, { p: E.inOutCubic(prog(t, C1.start + .3, C1.start + 1.8)) });
+  if (pa > 0) { S.label(c, 'r² − 4r + 4 = 0 → 只有 r = 2', CX, 400, { size: 46, w: 700, color: PK, a: pa }); S.label(c, '(α + βn)·2ⁿ', CX, 480, { size: 64, w: 700, color: PK, a: pa * prog(t, C1.start + 2.0, C1.start + 2.5) }); }
+  const ra = prog(t, L.c2.start + .3, L.c2.start + .8);
+  if (ra > 0) { sumRow(c, t, ra, () => 1); for (let n = 1; n < 6; n++) { const r = A[n] / A[n - 1]; V.label(c, '×' + (r).toFixed(2).replace(/\.?0+$/, ''), [(NX(n) + NX(n - 1)) / 2, -.35, A[n] * HZ * .5 + .3], { size: .17, w: 700, color: CY, a: ra * prog(t, L.c2.start + .5 + n * .25, L.c2.start + .8 + n * .25), minPx: 16, maxPx: 44 }); } counter(c, '比值 →', '2', CY, ra); }
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['猜 rⁿ → 特徵方程式', VI, 54], ['相異根：α r₁ⁿ + β r₂ⁿ', CY, 52], ['重根：(α + βn) rⁿ', PK, 54], ['用 a₀、a₁ 解 α、β', INK, 52]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'guess', start: A1.start, end: B1.start, draw: sGuess, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'split', start: B1.start, end: C1.start, draw: sSplit, color: CY, in: { type: 'cut' } },
+  { id: 'double', start: C1.start, end: DUR, draw: (c, t) => { sDouble(c, t); sExam(c, t); }, color: PK, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+S.chapters([[A1.start, '記憶宮殿 · 離散館 · 第 6 間  /  01 猜 rⁿ'], [B1.start, '記憶宮殿 · 離散館 · 第 6 間  /  02 疊起來'], [C1.start, '記憶宮殿 · 離散館 · 第 6 間  /  03 重根'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    ...[0, 1, 2, 3, 4, 5].map(n => ({ t: o1.start + n * .25, sfx: 'tick', gain: -14 })), { t: o2.start + .2, sfx: 'chime', gain: -11 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    ...[0, 1, 2, 3, 4, 5].map(n => ({ t: A1.start + .3 + n * .55, sfx: 'pop', gain: -12 })),
+    { t: L.a2.start + .2, sfx: 'swish', gain: -11 }, { t: L.a3.start + 1.8, sfx: 'chime', gain: -9 },
+    { t: B1.start + .4, sfx: 'whoosh', gain: -11 }, { t: L.b2.start + .3, sfx: 'pop', gain: -10 }, { t: L.b3.start + .2, sfx: 'chime', gain: -9 },
+    { t: C1.start + 1.8, sfx: 'pop', gain: -10 }, { t: L.c2.start + .3, sfx: 'swish', gain: -11 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "遞迴式", "hook": true},
+  {"id": "o2", "text": "怎麼變成[一行公式]？", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "遞迴與特徵方程式", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "aₙ = aₙ₋₁ + 2aₙ₋₂：3、3、9、15、33", "scene": true, "hold": 4.6},
+  {"id": "a2", "text": "猜它長得像 rⁿ", "hold": 3.0},
+  {"id": "a3", "text": "代進去：r² = r + 2 → r = [2 或 −1]", "hold": 4.4, "pause": 0.2},
+
+  {"id": "b1", "text": "兩個等比數列[疊起來]", "scene": true, "hold": 3.8},
+  {"id": "b2", "text": "用 a₀、a₁ 解出係數：2 和 1", "hold": 3.8},
+  {"id": "b3", "text": "aₙ = 2·2ⁿ + (−1)ⁿ", "hold": 3.6, "pause": 0.2},
+
+  {"id": "c1", "text": "重根時，多乘一個 [n]", "scene": true, "hold": 4.0},
+  {"id": "c2", "text": "長期看最大的根：成長像 [2ⁿ]", "hold": 3.8},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
