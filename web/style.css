@@ -1462,3 +1462,82 @@ summary svg.ic { width: 1em; height: 1em; vertical-align: -.15em; }
 .muted svg.ic, small svg.ic, .small svg.ic { width: 1em; height: 1em; vertical-align: -.15em; }
 .sec-h .muted { white-space: nowrap; }
 .muted svg.ic, small svg.ic, .small svg.ic, .btn svg.ic, .combo svg.ic, .cn svg.ic, .ch svg.ic, summary svg.ic, .stage-clear svg.ic, .h-ic svg.ic, .fb-ic svg.ic, .c-ic svg.ic { display: inline-block; }
+
+/* ===== 補齊的互動實驗（labs-more.js）：顏色只用語意色——強調 accent、正確 good、錯誤 bad、數值 star ===== */
+svg.lm text { font: 600 14px var(--f-mono, ui-monospace, monospace); fill: var(--ink); }
+svg.lm text:not([text-anchor]) { text-anchor: middle; }
+svg.lm text[text-anchor="end"] { text-anchor: end; } svg.lm text[text-anchor="start"] { text-anchor: start; }
+svg.lm .lm-ln { stroke: var(--ink-2); stroke-width: 1.6; opacity: .7; }
+svg.lm .lm-ln.good { stroke: var(--good); opacity: 1; stroke-width: 2.4; }
+svg.lm .lm-ln.bad { stroke: var(--bad); opacity: 1; stroke-width: 2.4; stroke-dasharray: 5 4; }
+svg.lm .lm-ln.grid { stroke: var(--line); opacity: .6; stroke-width: 1; }
+svg.lm .lm-ln.axis { stroke: var(--ink-2); opacity: .8; stroke-width: 1.2; }
+svg.lm .lm-ln.lat { stroke: var(--accent); opacity: .22; stroke-width: 1; }
+svg.lm .lm-node rect { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.6; }
+svg.lm .lm-node.over rect { stroke: var(--bad); stroke-width: 2.4; fill: color-mix(in srgb, var(--bad) 10%, var(--surface)); }
+svg.lm .lm-node text.hl { fill: var(--accent); font-weight: 800; }
+svg.lm .lm-sep { stroke: var(--line); stroke-width: 1; }
+svg.lm .lm-cell rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+svg.lm .lm-cell.on rect { fill: color-mix(in srgb, var(--accent) 16%, var(--surface)); stroke: var(--accent); }
+svg.lm .lm-cell.on.mid rect { fill: color-mix(in srgb, var(--good) 18%, var(--surface)); stroke: var(--good); }
+svg.lm .lm-cell text.v { font-size: 20px; font-weight: 800; }
+svg.lm .lm-big { fill: none; stroke: var(--star); stroke-width: 2.4; stroke-dasharray: 7 5; }
+svg.lm .lm-t.big { fill: var(--star); font-weight: 800; }
+svg.lm .lm-t.am, svg.lm .lm-t.cy { fill: var(--ink-2); font-size: 13px; }
+svg.lm .lm-v circle { fill: var(--surface); stroke: var(--ink-2); stroke-width: 1.6; }
+svg.lm .lm-v.on circle { fill: color-mix(in srgb, var(--accent) 22%, var(--surface)); stroke: var(--accent); stroke-width: 2.4; }
+svg.lm .lm-seg.ser { fill: color-mix(in srgb, var(--bad) 55%, var(--surface)); }
+svg.lm .lm-seg.par { fill: color-mix(in srgb, var(--accent) 55%, var(--surface)); }
+svg.lm .lm-ghost { fill: none; stroke: var(--line); stroke-dasharray: 4 4; }
+svg.lm .lm-t.co { fill: var(--bad); font-size: 13px; }
+svg.lm .lm-vec line { stroke: var(--ink-2); stroke-width: 2.2; }
+svg.lm .lm-vec path { fill: var(--ink-2); }
+svg.lm .lm-vec text { fill: var(--ink); font-size: 13px; text-anchor: start; }
+svg.lm .lm-vec.b1 line { stroke: var(--accent); } svg.lm .lm-vec.b1 path { fill: var(--accent); }
+svg.lm .lm-vec.b2 line { stroke: var(--star); } svg.lm .lm-vec.b2 path { fill: var(--star); }
+svg.lm .lm-vec.x line { stroke: var(--good); stroke-width: 3; } svg.lm .lm-vec.x path { fill: var(--good); }
+svg.lm .lm-vec.q line { stroke: var(--good); stroke-width: 1.6; stroke-dasharray: 4 3; } svg.lm .lm-vec.q path { fill: var(--good); }
+svg.lm .lm-vec.step line { stroke: var(--ink); stroke-dasharray: 5 4; } svg.lm .lm-vec.step path { fill: var(--ink); }
+svg.lm .lm-vec.ghost line { stroke: var(--ink-2); opacity: .45; stroke-width: 1.4; } svg.lm .lm-vec.ghost path { fill: var(--ink-2); opacity: .45; }
+svg.lm .lm-ell { fill: color-mix(in srgb, var(--accent) 8%, transparent); stroke: var(--accent); stroke-width: 2; }
+svg.lm .lm-ell.ghost { fill: none; stroke: var(--line); stroke-dasharray: 4 4; }
+.lm-cap { text-align: center; color: var(--ink-2); font-size: .9rem; margin: 6px 0 0; }
+.lm-cap b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.lm-bits { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; font: 700 15px var(--f-mono, monospace); margin: 8px 0; }
+.lm-bits i { width: 8px; }
+.lm-bit { display: inline-grid; place-items: center; width: 18px; height: 28px; border-radius: 4px; background: var(--surface-2); color: var(--ink-2); }
+.lm-bit.on.s { background: color-mix(in srgb, var(--bad) 22%, var(--surface)); color: var(--ink); }
+.lm-bit.on.e { background: color-mix(in srgb, var(--star) 26%, var(--surface)); color: var(--ink); }
+.lm-bit.on.m { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); color: var(--ink); }
+.lm-key { display: inline-block; margin: 0 8px; padding-left: 14px; position: relative; }
+.lm-key::before { content: ''; position: absolute; left: 0; top: .35em; width: 10px; height: 10px; border-radius: 3px; }
+.lm-key.s::before { background: var(--bad); } .lm-key.e::before { background: var(--star); } .lm-key.m::before { background: var(--accent); }
+.lm-reg { display: inline-block; padding: 1px 7px; border-radius: 5px; background: var(--surface-2); font: 600 13px var(--f-mono, monospace); }
+.lm-reg.p { background: color-mix(in srgb, var(--accent) 20%, var(--surface)); color: var(--ink); }
+.lm-deps { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 8px; }
+.lm-dep { padding: 2px 9px; border-radius: 999px; font-size: .85rem; border: 1.5px solid; }
+.lm-dep.RAW { border-color: var(--star); color: var(--ink); }
+.lm-dep.WAR, .lm-dep.WAW { border-color: var(--bad); color: var(--bad); border-style: dashed; }
+.lm-mesi { display: flex; gap: 14px; justify-content: center; }
+.lm-core { display: grid; gap: 6px; justify-items: center; padding: 10px 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.lm-st { font: 800 30px var(--f-mono, monospace); width: 56px; height: 48px; display: grid; place-items: center; border-radius: 8px; background: var(--surface-2); color: var(--ink-2); }
+.lm-st.M { background: color-mix(in srgb, var(--star) 30%, var(--surface)); color: var(--ink); }
+.lm-st.E { background: color-mix(in srgb, var(--good) 26%, var(--surface)); color: var(--ink); }
+.lm-st.S { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); color: var(--ink); }
+.lm-bus { margin: 10px auto 0; max-width: 320px; text-align: center; padding: 6px; border-radius: 8px; border: 1.5px dashed var(--line); color: var(--ink-2); font-size: .9rem; }
+.lm-bus.on { border: 1.5px solid var(--bad); color: var(--bad); font-weight: 700; }
+.lm-race { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
+.lm-th { display: grid; gap: 4px; padding: 8px; border-radius: 10px; border: 1px solid var(--line); }
+.lm-th.on { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
+.lm-th span { padding: 2px 8px; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); font-size: .85rem; }
+.lm-th span.done { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); color: var(--ink); }
+.lm-th em { font-style: normal; font-size: .8rem; color: var(--ink-2); }
+.lm-mem { display: grid; justify-items: center; font-size: .85rem; color: var(--ink-2); }
+.lm-mem b { font: 800 34px var(--f-mono, monospace); color: var(--ink); }
+.lm-pg { display: grid; gap: 10px; justify-items: center; }
+.lm-addr { display: flex; font: 800 22px var(--f-mono, monospace); border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+.lm-addr span { padding: 6px 12px; background: var(--surface-2); color: var(--ink-2); }
+.lm-addr .pg.on { background: color-mix(in srgb, var(--star) 28%, var(--surface)); color: var(--ink); }
+.lm-addr .of.on { background: color-mix(in srgb, var(--accent) 20%, var(--surface)); color: var(--ink); }
+.lm-addr .fr.on { background: color-mix(in srgb, var(--good) 26%, var(--surface)); color: var(--ink); }
+.lab-tbl td.hl { background: color-mix(in srgb, var(--accent) 16%, transparent); font-weight: 700; }
