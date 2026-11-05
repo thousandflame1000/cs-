@@ -12,7 +12,7 @@ for MODE in intro outro; do
   [ -s _palace/out/${ID}_$MODE.mp4 ] && [ _palace/out/${ID}_$MODE.mp4 -nt _palace/film/index.html ] && [ _palace/out/${ID}_$MODE.mp4 -nt _palace/film/palace.js ] && continue
   if [ "$MODE" = intro ]; then CUES='[{"t":0.2,"sfx":"whoosh","gain":-10},{"t":1.2,"sfx":"swish","gain":-12},{"t":2.3,"sfx":"chime","gain":-10}]'; else CUES='[{"t":0.4,"sfx":"whoosh","gain":-11},{"t":2.3,"sfx":"chime","gain":-10}]'; fi
   echo "$CUES" > _palace/work/${ID}_$MODE.json
-  python3 $SK/mix.py --cues _palace/work/${ID}_$MODE.json --sfx-dir _palace/work/sfx --duration 3.0 --out _palace/work/${ID}_$MODE.wav --music _palace/work/sfx/bed.wav --music-db -16 --lufs -18 --tp -2 > /dev/null
+  bash "$(dirname "$0")/softmix.sh" _palace/work/${ID}_$MODE.json _palace/work/sfx 3.0 _palace/work/${ID}_$MODE.wav -18 > /dev/null
   node $SK/render.mjs _palace/film/index.html --query "id=$ID&mode=$MODE" --out _palace/out/${ID}_$MODE.mp4 --fps 60 --scale 1 --workers 4 --crf 19 --audio _palace/work/${ID}_$MODE.wav | tail -1
 done
 ffmpeg -y -v error -t $SPLIT -i "$RAW" -i _palace/out/${ID}_intro.mp4 -ss $SPLIT -i "$RAW" -i _palace/out/${ID}_outro.mp4 -filter_complex \

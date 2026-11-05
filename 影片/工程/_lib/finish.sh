@@ -15,7 +15,7 @@ if python3 -c "import sys; sys.exit(0 if float('${HAVE:-0}' or 0) >= $DUR - 0.5 
   echo "成片已存在（$HAVE s），跳過渲染"
 else
   node $SK/cues.mjs film/index.html > work/cues.json
-  python3 $SK/mix.py --cues work/cues.json --sfx-dir work/sfx --duration $DUR --out work/mix.wav --music work/sfx/bed.wav --music-db -16 --lufs -16 --tp -2 | tail -1
+  bash "$(dirname "$0")/softmix.sh" work/cues.json work/sfx $DUR work/mix.wav -16
   node $SK/render.mjs film/index.html --out "out/$NAME.mp4" --fps 60 --scale 1 --workers 4 --crf 19 --audio work/mix.wav | tail -1
 fi
 python3 $SK/qa_video.py "out/$NAME.mp4" --sheet out/final_sheet.png ${HOLDS:+--holds $HOLDS} ${CUTS:+--cuts $CUTS} | grep -E "!|✓|响度|·.*fps" || true
