@@ -96,7 +96,7 @@ function sOpen(c, t) {
   const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
   c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
   room(c); wall(c, (i) => prog(t, o2.start + i * .03, o2.start + .2 + i * .03) * (BITS[i] === '1' ? 1 : 0), 1);
-  S.label(c, '−6.25', CX, 470, { size: 110, w: 800, color: INK, a: prog(t, o1.start, o1.start + .5) });
+  S.label(c, '−6.25', CX, 470, { size: 110, w: 700, color: INK, a: prog(t, o1.start, o1.start + .5) });
   c.restore();
 }
 const title = S.titleCard(T, { kick: '計算機組織 · 數字表示', big: 'IEEE 754', size: 170, y: 600, en: 'FLOATING  POINT', q: '32 格裡的科學記號', qGap: 330, color: AM });
@@ -138,7 +138,7 @@ function sLine(c, t) {
   V.line(c, [ZX(.0625), 0, ZZ], [ZX(.125), 0, ZZ], { color: INK, a: .7 * zm, w: 2 });
   for (let k = 0; k <= 8; k++) { const v = .0625 + k * .0078125, x = ZX(v); box(c, x - .02, x + .02, -.04, .04, ZZ, ZZ + .3 * zm, VI, zm, .7); }
   V.label(c, '1/16', [ZX(.0625), 0, ZZ - .25], { size: .2, w: 700, color: INK, a: .7 * zm, minPx: 18, maxPx: 50 }); V.label(c, '1/8', [ZX(.125), 0, ZZ - .25], { size: .2, w: 700, color: INK, a: .7 * zm, minPx: 18, maxPx: 50 });
-  const x1 = ZX(.1); V.line(c, [x1, -.01, ZZ - .05], [x1, -.01, ZZ + .7], { color: CO, a: zm, w: 3.5 }); V.label(c, '0.1', [x1, 0, ZZ + .95], { size: .3, w: 800, color: CO, a: zm, minPx: 28, maxPx: 80 });
+  const x1 = ZX(.1); V.line(c, [x1, -.01, ZZ - .05], [x1, -.01, ZZ + .7], { color: CO, a: zm, w: 3.5 }); V.label(c, '0.1', [x1, 0, ZZ + .95], { size: .3, w: 700, color: CO, a: zm, minPx: 28, maxPx: 80 });
   const ea = prog(t, L.b3.start + 1.4, L.b3.start + 1.9);
   if (ea > 0) S.label(c, '最近的格子 0.1015625（差 0.0016）', CX, 320, { size: 40, w: 600, color: INK, a: ea });
 }
@@ -151,7 +151,7 @@ function sSpecial(c, t) {
   const on = (i) => { if (i === 0) return 0; if (i < 9) return k2; if (i === 9) return nan; return 0; };
   wall(c, on, prog(t, C1.start - .1, C1.start + .6));
   const lab = k2 > .5 ? (nan > .5 ? 'NaN' : '∞') : k1 > .5 ? '0（次正規）' : '';
-  if (lab) S.label(c, lab, CX, 470, { size: 96, w: 800, color: k2 > .5 ? CO : INK, a: Math.max(k1, k2) });
+  if (lab) S.label(c, lab, CX, 470, { size: 96, w: 700, color: k2 > .5 ? CO : INK, a: Math.max(k1, k2) });
   counter(c, '指數', k2 > .5 ? '全 1' : '全 0', AM, prog(t, C1.start + .2, C1.start + .6), CX - 200, 300, 56);
   counter(c, '尾數', nan > .5 ? '≠ 0' : '0', CY, prog(t, C1.start + .2, C1.start + .6), CX + 200, 300, 56);
   c.restore();

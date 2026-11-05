@@ -1,0 +1,26 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "兩個執行緒各 +1", "hook": true},
+  {"id": "o2", "text": "結果竟然只 [+1]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "競爭條件與 mutex", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "count++ 其實是 3 步：讀、加、寫", "scene": true, "hold": 4.2},
+  {"id": "a2", "text": "A 讀到 0，B 也讀到 0", "hold": 3.8},
+  {"id": "a3", "text": "兩個都寫回 1：[少了一次]", "hold": 4.0, "pause": 0.2},
+
+  {"id": "b1", "text": "結果看交錯順序：這叫[競爭條件]", "scene": true, "hold": 3.8},
+  {"id": "b2", "text": "20 種交錯裡，只有 [2 種]是對的", "hold": 4.0, "pause": 0.2},
+
+  {"id": "c1", "text": "加一把鎖：[mutex]", "scene": true, "hold": 3.4},
+  {"id": "c2", "text": "拿到鎖才能進，另一個在門外[等]", "hold": 4.4},
+  {"id": "c3", "text": "讀加寫一次做完 → [2]", "hold": 3.6, "pause": 0.2},
+
+  {"id": "d1", "text": "臨界區要的三件事：互斥、進展、有限等待", "scene": true, "hold": 4.6},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

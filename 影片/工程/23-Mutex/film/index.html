@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>競爭條件與 mutex</title>
+<!--
+  資工所衝刺 · 短影音 23：競爭條件與 mutex——少掉的那一次 +1
+  記憶宮殿：作業系統館 · 第 4 間。中間的台座是共享變數 count，左右兩顆球是執行緒 A（青）、B（粉），頭上的小格是各自的暫存器。
+  讀＝光點從台座飛到暫存器、加＝暫存器 +1、寫＝光點飛回台座。地上的時間軸記下實際執行順序。
+  交錯「A讀 B讀 A加 B加 A寫 B寫」→ 只剩 1；20 種交錯只有 2 種對。加上 mutex（台座外一圈門）：A 做完 B 才進 → 2。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04080a', INK = '#eef3fa', GR = '#6ee7a8', CY = '#5be7ff', PK = '#ff9ad5', AM = '#ffc14d', CO = '#ff6a5c', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 231, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: GR, accent2: CY } });
+K.warm([GR, CY, PK, AM, CO, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { '+1': CO, 少了一次: CO, 競爭條件: AM, '2 種': GR, mutex: GR, 等: AM, 2: GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+const add = (a, b) => a.map((v, i) => v + b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: GR, a: .4 * a, major: 3 });
+function counter(c, label, val, col, a, x = CX, y = 300, sz = 76) {
+  if (a <= .003) return;
+  S.label(c, label, x, y - 50, { size: 30, w: 500, color: INK, a: .6 * a, ls: '4px' });
+  S.label(c, val, x, y + 14, { size: sz, w: 700, color: col, a });
+}
+
+// ═════════ 舞台
+const PED = [0, .7, 0], TOP = [0, .7, 1.05], TH = { A: [-1.12, -.35, 1.0], B: [1.12, -.35, 1.0] }, TC = { A: CY, B: PK };
+const OPN = { L: '讀', A: '加', S: '寫' };
+/** 一串操作 → 依時間重播出 count、暫存器（純函數） */
+function run(ops, t, TP = TH) {
+  let c = 0; const reg = { A: null, B: null }, out = { c, reg, fly: null, last: null };
+  for (const o of ops) {
+    if (t < o.t) break; const k = clamp((t - o.t) / .45);
+    if (o.op === 'L') { if (k >= 1) reg[o.th] = c; else out.fly = { from: TOP, to: add(TP[o.th], [0, 0, .62]), k, col: TC[o.th], v: c }; }
+    if (o.op === 'A') { if (k >= .5) reg[o.th] = (reg[o.th] ?? 0) + 1; out.pop = { th: o.th, k }; }
+    if (o.op === 'S') { if (k >= 1) c = reg[o.th]; else out.fly = { from: add(TP[o.th], [0, 0, .62]), to: TOP, k, col: TC[o.th], v: reg[o.th] }; }
+    out.last = o;
+  }
+  out.c = c; return out;
+}
+function stageDraw(c, t, ops, o = {}) {
+  room(c);
+  const TP = { A: add(TH.A, (o.pos && o.pos.A) || [0, 0, 0]), B: add(TH.B, (o.pos && o.pos.B) || [0, 0, 0]) };
+  const r = run(ops, t, TP);
+  V.pillar(c, [PED[0], PED[1], 0], .7, 1.0, VI, 1, { fill: .45 });
+  V.label(c, 'count', add(PED, [0, -.4, .3]), { size: .2, w: 600, color: INK, a: .7, minPx: 18, maxPx: 50 });
+  const big = o.final != null && t >= o.final;
+  V.label(c, String(r.c), add(TOP, [0, 0, .45]), { size: .62, w: 700, color: big ? (r.c === 2 ? GR : CO) : '#ffffff', minPx: 40, maxPx: 150 });
+  for (const th of ['A', 'B']) {
+    const p = TP[th], wait = o.wait && o.wait(th);
+    V.glow(c, p, 1.0, .35, TC[th]); V.orb(c, p, .3 * (1 + (r.pop && r.pop.th === th ? .2 * Math.sin(r.pop.k * Math.PI) : 0)), { color: TC[th], atmo: .6, spec: .6, rim: .9, a: wait ? .6 + .4 * Math.abs(Math.sin(t * 4)) : 1 });
+    V.label(c, th, add(p, [0, 0, -.5]), { size: .28, w: 700, color: TC[th], minPx: 24, maxPx: 72 });
+    const rp = add(p, [0, 0, .62]); V.poly(c, [add(rp, [-.22, 0, -.16]), add(rp, [.22, 0, -.16]), add(rp, [.22, 0, .16]), add(rp, [-.22, 0, .16])], K.rgba(TC[th], .15), K.rgba(TC[th], .8), 1);
+    V.label(c, r.reg[th] == null ? '–' : String(r.reg[th]), rp, { size: .26, w: 700, color: '#ffffff', minPx: 22, maxPx: 70 });
+    if (wait) V.label(c, '等', add(p, [0, 0, 1.05]), { size: .26, w: 700, color: AM, minPx: 22, maxPx: 64 });
+  }
+  if (r.fly) { const p = mix3(r.fly.from, r.fly.to, E.inOutCubic(r.fly.k)); p[2] += Math.sin(r.fly.k * Math.PI) * .45; V.glow(c, p, .5, .7, r.fly.col); V.core(c, p, .07, 1, '#ffffff'); }
+  // 地上的時間軸：實際執行順序
+  ops.forEach((op, k) => { const g = prog(t, op.t, op.t + .3); if (g <= 0) return; const x = -1.2 + k * .48, p = [x, -1.45, .02]; V.poly(c, [add(p, [-.21, -.18, 0]), add(p, [.21, -.18, 0]), add(p, [.21, .18, 0]), add(p, [-.21, .18, 0])], K.rgba(TC[op.th], .25 * g), K.rgba(TC[op.th], .9 * g), 1); V.label(c, op.th + OPN[op.op], add(p, [0, 0, .12]), { size: .2, w: 700, color: TC[op.th], a: g, minPx: 20, maxPx: 52 }); });
+  return r;
+}
+const mk = (seq, t0, dt) => seq.map(([th, op], k) => ({ th, op, t: t0 + k * dt }));
+const BAD = [...mk([['A', 'L']], L.a2.start + .3, 0), ...mk([['B', 'L']], L.a2.start + 1.6, 0), ...mk([['A', 'A'], ['B', 'A'], ['A', 'S'], ['B', 'S']], L.a3.start + .2, .75)];
+const GOOD = [{ th: 'A', op: 'L', t: L.c2.start + .5 }, { th: 'A', op: 'A', t: L.c2.start + 1.0 }, { th: 'A', op: 'S', t: L.c2.start + 1.5 }, { th: 'B', op: 'L', t: L.c2.start + 2.4 }, { th: 'B', op: 'A', t: L.c2.start + 2.9 }, { th: 'B', op: 'S', t: L.c2.start + 3.4 }];
+
+// ═════════ 鏡頭
+const TG = [0, -.2, .8];
+V.camKeys([
+  [0, V.orbit(-22, 7.4, 3.6, TG, 44)], [T.start, V.orbit(-8, 8.0, 4.0, TG, 44)],
+  [A1.start, V.orbit(-16, 7.0, 3.6, TG, 44)], [L.a3.end, V.orbit(8, 7.2, 3.8, TG, 44)],
+  [B1.start + .3, V.orbit(-10, 7.4, 4.6, [0, 0, .3], 44)], [L.b2.end, V.orbit(8, 7.6, 4.8, [0, 0, .3], 44)],
+  [C1.start + .3, V.orbit(-18, 7.0, 3.6, TG, 44)], [L.c3.end, V.orbit(6, 7.2, 3.8, TG, 44)],
+  [D1.start + .3, V.orbit(-14, 7.4, 2.8, [0, 0, .9], 44)], [DUR, V.orbit(6, 7.6, 3.0, [0, 0, .9], 44)],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  stageDraw(c, t, mk([['A', 'L'], ['B', 'L'], ['A', 'A'], ['B', 'A'], ['A', 'S'], ['B', 'S']], o1.start + .2, .55), { final: o2.start + .2 });
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '作業系統 · 同步', big: 'mutex', size: 200, y: 600, en: 'RACE  CONDITION', q: '少掉的那一次 +1', qGap: 330, color: GR });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .18; stageDraw(c, 0, []); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), GR);
+}
+function sRace(c, t) {
+  stageDraw(c, t, BAD, { final: BAD[5].t + .45 });
+  // a1：每個執行緒的程式＝讀、加、寫
+  const pa = prog(t, A1.start + .5, A1.start + 1.2) * (1 - prog(t, L.a2.start, L.a2.start + .4));
+  if (pa > 0) ['A', 'B'].forEach(th => ['L', 'A', 'S'].forEach((op, k) => { const p = add(TH[th], [0, 0, 1.4 + (2 - k) * .3]); V.label(c, OPN[op], p, { size: .24, w: 700, color: TC[th], a: pa * prog(t, A1.start + .5 + k * .3, A1.start + .8 + k * .3), minPx: 22, maxPx: 60 }); }));
+  const lost = prog(t, BAD[5].t + .5, BAD[5].t + 1.0);
+  if (lost > 0) S.label(c, '應該是 2', CX, 430, { size: 56, w: 700, color: CO, a: lost });
+}
+// b：20 種交錯，只有 2 種對（A 全做完再 B、或 B 全做完再 A）
+const ILV = (() => { const out = []; const go = (pre, a, b) => { if (a === 3 && b === 3) { out.push(pre); return; } if (a < 3) go(pre + 'A', a + 1, b); if (b < 3) go(pre + 'B', a, b + 1); }; go('', 0, 0); return out; })();
+const okOf = s => s === 'AAABBB' || s === 'BBBAAA';
+function sAll(c, t) {
+  room(c);
+  const items = [];
+  ILV.forEach((s, i) => {
+    const g = prog(t, B1.start + .3 + i * .07, B1.start + .6 + i * .07); if (g <= 0) return;
+    const col = i % 4, row = Math.floor(i / 4), base = [(col - 1.5) * .84, (row - 2) * .6, 0], ok = okOf(s), hl = prog(t, L.b2.start + .4, L.b2.start + 1.0);
+    items.push({ p: base, draw: () => { [...s].forEach((th, k) => { const x = base[0] + (k - 2.5) * .12; V.pillar(c, [x, base[1], 0], .1, .14 + (ok && hl > 0 ? .25 * hl : 0), TC[th], g * (hl > 0 && !ok ? .35 : 1), { fill: .6 }); }); if (hl > 0) V.label(c, ok ? '2' : '1', add(base, [0, 0, .62]), { size: .24, w: 700, color: ok ? GR : CO, a: g * hl * (ok ? 1 : .6), minPx: 20, maxPx: 60 }); } });
+  });
+  V.sorted(items);
+  const a = prog(t, B1.start + .2, B1.start + .6);
+  counter(c, '交錯', '20', AM, a, CX - 200); counter(c, '結果正確', prog(t, L.b2.start + .4, L.b2.start + .9) > 0 ? '2' : '?', GR, a, CX + 200);
+}
+// c：mutex
+function sLock(c, t) {
+  const endDim = 1 - prog(t, D1.start - .2, D1.start + .3);
+  if (endDim > 0) { c.save(); c.globalAlpha *= endDim;
+    const inA = t >= L.c2.start + .3 && t < L.c2.start + 2.0, inB = t >= L.c2.start + 2.2;
+    const r = stageDraw(c, t, GOOD, { final: GOOD[5].t + .45, wait: th => (th === 'B' && t >= L.c2.start + .3 && t < L.c2.start + 2.2) || (th === 'A' && false), pos: { A: inA ? [.35, .45, 0] : [0, 0, 0], B: inB ? [-.35, .45, 0] : [0, 0, 0] } });
+    const ga = prog(t, C1.start + .3, C1.start + 1.0);
+    for (const z of [.15, .6, 1.05]) V.ring(c, [PED[0], PED[1], z], 1.05, { color: GR, a: .8 * ga, w: 2.4 });
+    const owner = inA ? 'A' : inB && t < GOOD[5].t + .5 ? 'B' : null;
+    V.label(c, owner ? '鎖：' + owner : '鎖', add(PED, [0, -1.05, 1.35]), { size: .24, w: 700, color: owner ? TC[owner] : GR, a: ga, minPx: 22, maxPx: 64 });
+    c.restore(); }
+  // d：三件事
+  const da = prog(t, D1.start, D1.start + .5) * (1 - prog(t, Ec.start - .2, Ec.start + .4)); if (da <= 0) return;
+  c.save(); c.globalAlpha *= da; room(c);
+  [['互斥', '一次只進一個', GR], ['進展', '沒人用就要讓人進', CY], ['有限等待', '不能永遠排不到', AM]].forEach(([t1, t2, col], k) => {
+    const g = prog(t, D1.start + .4 + k * .5, D1.start + .9 + k * .5), x = (k - 1) * 1.1;
+    V.pillar(c, [x, .3, 0], .5, 1.2 * g, col, g, { fill: .5 }); V.label(c, t1, [x, .3, 1.6], { size: .3, w: 700, color: col, a: g, minPx: 26, maxPx: 80 }); V.label(c, t2, [x, .3, k === 1 ? -.62 : -.3], { size: .17, w: 600, color: INK, a: .8 * g, minPx: 18, maxPx: 44 });
+  });
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['count++ = 讀 → 加 → 寫', CY, 52], ['20 種交錯，對的只有 2 種', AM, 52], ['mutex：一次只讓一個進', GR, 52], ['互斥、進展、有限等待', INK, 52]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'race', start: A1.start, end: B1.start, draw: sRace, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'all', start: B1.start, end: C1.start, draw: sAll, color: AM, in: { type: 'cut' } },
+  { id: 'lock', start: C1.start, end: DUR, draw: (c, t) => { sLock(c, t); sExam(c, t); }, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+S.chapters([[A1.start, '記憶宮殿 · 作業系統館 · 第 4 間  /  01 少一次'], [B1.start, '記憶宮殿 · 作業系統館 · 第 4 間  /  02 交錯'], [C1.start, '記憶宮殿 · 作業系統館 · 第 4 間  /  03 mutex'], [D1.start, '記憶宮殿 · 作業系統館 · 第 4 間  /  04 三件事'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const opCues = ops => ops.map(o => ({ t: o.t, sfx: o.op === 'A' ? 'pop' : 'tick', gain: -11 }));
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o2.start + .2, sfx: 'glitch', gain: -10 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start, sfx: 'whoosh', gain: -11 },
+    ...opCues(BAD), { t: BAD[5].t + .5, sfx: 'glitch', gain: -8 },
+    { t: B1.start, sfx: 'whoosh', gain: -11 }, { t: L.b2.start + .4, sfx: 'chime', gain: -10 },
+    { t: C1.start + .3, sfx: 'impact', gain: -8 },
+    ...opCues(GOOD), { t: GOOD[5].t + .5, sfx: 'chime', gain: -8 },
+    { t: D1.start, sfx: 'whoosh', gain: -11 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
