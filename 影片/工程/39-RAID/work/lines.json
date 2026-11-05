@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "壞掉一顆硬碟，資料還在", "hook": true},
+  {"id": "o2", "text": "靠的是 [XOR]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "RAID 5", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "四顆硬碟，資料切成一條一條", "scene": true, "hold": 3.6},
+  {"id": "a2", "text": "每一條多存一塊 P：其他三塊的 XOR", "hold": 4.2},
+  {"id": "a3", "text": "P 輪流放在不同碟，寫入[不塞車]", "hold": 3.8, "pause": 0.2},
+
+  {"id": "b1", "text": "第 3 顆壞了", "scene": true, "hold": 2.8},
+  {"id": "b2", "text": "剩下的 XOR 起來，就是[壞掉那塊]", "hold": 4.4},
+  {"id": "b3", "text": "代價：n 顆只能用 [n − 1] 顆", "hold": 3.6, "pause": 0.2},
+
+  {"id": "c1", "text": "RAID 0：只切不備份，壞一顆[全毀]", "scene": true, "hold": 4.0},
+  {"id": "c2", "text": "RAID 1：整顆複製，容量[一半]", "hold": 3.6},
+  {"id": "c3", "text": "RAID 6：兩塊同位元，可以壞[兩顆]", "hold": 3.8},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
