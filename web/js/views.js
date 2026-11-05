@@ -623,10 +623,16 @@ function wireWorked(l) {
     (k < n ? li[k] : $('.wk-end', sec)).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 }
+/** 費曼題目只露出「要做什麼」：第一句太長時切在第一個 ：／；（或 ，）——不切在 $…$ 公式裡面；其餘收進「完整要求」 */
 function feynPrompt(src) {
-  const s = String(src || ''), m = s.match(/^(.+?[。？！?])(.+)$/s);
-  if (!m || m[2].trim().length < 12) return `<div class="feyn-prompt">${md(s)}</div>`;
-  return `<div class="feyn-prompt">${md(m[1])}</div><details class="feyn-more"><summary>完整要求</summary><div class="feyn-prompt">${md(m[2].trim())}</div></details>`;
+  const s = String(src || '');
+  const plainLen = (x) => x.replace(/\$([^$]*)\$/g, (_, m) => m.replace(/\\[a-zA-Z]+/g, '·').replace(/[{}^_\s]/g, '')).replace(/\s+/g, '').length;
+  const cutAt = (x, chars, minPre) => { let inM = false; for (let i = 0; i < x.length; i++) { const c = x[i]; if (c === '$') inM = !inM; else if (!inM && chars.includes(c) && plainLen(x.slice(0, i)) >= minPre && plainLen(x.slice(i + 1)) >= 8) return i; } return -1; };
+  let head = s, rest = '';
+  const m = s.match(/^(.+?[。？！?])(.+)$/s); if (m && m[2].trim().length >= 12) { head = m[1]; rest = m[2].trim(); }
+  if (plainLen(head) > 60) { let i = cutAt(head, '：；', 12); if (i < 0) i = cutAt(head, '，', 20); if (i >= 0) { rest = (head.slice(i + 1).trim() + (rest ? ' ' + rest : '')).trim(); head = head.slice(0, i) + '。'; } }
+  if (!rest) return `<div class="feyn-prompt">${md(head)}</div>`;
+  return `<div class="feyn-prompt">${md(head)}</div><details class="feyn-more"><summary>完整要求</summary><div class="feyn-prompt">${md(rest)}</div></details>`;
 }
 function feynmanSection(l) {
   if (!l.feynman) return '';
