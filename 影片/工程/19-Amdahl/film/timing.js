@@ -1,0 +1,186 @@
+window.TIMING = {
+ "total": 57.55,
+ "lines": [
+  {
+   "id": "o1",
+   "start": 0.3,
+   "end": 2.05,
+   "text": "把 80% 加速 100 倍",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": true,
+   "font": "sans"
+  },
+  {
+   "id": "o2",
+   "start": 2.35,
+   "end": 3.85,
+   "text": "整體只快不到 [5 倍]",
+   "cap": true,
+   "card": false,
+   "n": 8,
+   "scene": false,
+   "hook": true,
+   "font": "sans"
+  },
+  {
+   "id": "T",
+   "start": 4.25,
+   "end": 7.65,
+   "text": "Amdahl 定律",
+   "cap": false,
+   "card": true,
+   "n": 8,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a1",
+   "start": 7.95,
+   "end": 11.55,
+   "text": "時間 = 能加速的 + [不能加速的]",
+   "cap": true,
+   "card": false,
+   "n": 13,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a2",
+   "start": 11.85,
+   "end": 15.65,
+   "text": "把青色那段壓扁 [100 倍]",
+   "cap": true,
+   "card": false,
+   "n": 11,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a3",
+   "start": 15.95,
+   "end": 19.55,
+   "text": "總時間只剩 2.08：快 [4.8 倍]",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b1",
+   "start": 20.05,
+   "end": 23.25,
+   "text": "壓到 0 也一樣",
+   "cap": true,
+   "card": false,
+   "n": 6,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b2",
+   "start": 23.55,
+   "end": 27.15,
+   "text": "上限 = 1 ÷ [不能加速的比例]",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b3",
+   "start": 27.45,
+   "end": 31.25,
+   "text": "曲線怎麼爬，都碰不到 [5]",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c1",
+   "start": 31.75,
+   "end": 35.95,
+   "text": "90% 能平行，開 1000 核",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c2",
+   "start": 36.25,
+   "end": 39.45,
+   "text": "還是不到 [10 倍]",
+   "cap": true,
+   "card": false,
+   "n": 7,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d1",
+   "start": 39.95,
+   "end": 43.95,
+   "text": "Gustafson：題目跟著核數變大",
+   "cap": true,
+   "card": false,
+   "n": 17,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d2",
+   "start": 44.25,
+   "end": 48.05,
+   "text": "時間不變，做的事變 [N 倍]",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d3",
+   "start": 48.35,
+   "end": 51.15,
+   "text": "加速接近[線性]",
+   "cap": true,
+   "card": false,
+   "n": 6,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "E",
+   "start": 51.45,
+   "end": 56.05,
+   "text": "考試這樣寫",
+   "cap": false,
+   "card": true,
+   "n": 5,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  }
+ ]
+};
+window.L = Object.fromEntries(window.TIMING.lines.map((l) => [l.id, l]));  // L.o1.start / L.o1.end

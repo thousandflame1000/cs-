@@ -1,0 +1,28 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "把 80% 加速 100 倍", "hook": true},
+  {"id": "o2", "text": "整體只快不到 [5 倍]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "Amdahl 定律", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "時間 = 能加速的 + [不能加速的]", "scene": true, "hold": 3.6},
+  {"id": "a2", "text": "把青色那段壓扁 [100 倍]", "hold": 3.8},
+  {"id": "a3", "text": "總時間只剩 2.08：快 [4.8 倍]", "hold": 3.6, "pause": 0.2},
+
+  {"id": "b1", "text": "壓到 0 也一樣", "scene": true, "hold": 3.2},
+  {"id": "b2", "text": "上限 = 1 ÷ [不能加速的比例]", "hold": 3.6},
+  {"id": "b3", "text": "曲線怎麼爬，都碰不到 [5]", "hold": 3.8, "pause": 0.2},
+
+  {"id": "c1", "text": "90% 能平行，開 1000 核", "scene": true, "hold": 4.2},
+  {"id": "c2", "text": "還是不到 [10 倍]", "hold": 3.2, "pause": 0.2},
+
+  {"id": "d1", "text": "Gustafson：題目跟著核數變大", "scene": true, "hold": 4.0},
+  {"id": "d2", "text": "時間不變，做的事變 [N 倍]", "hold": 3.8},
+  {"id": "d3", "text": "加速接近[線性]", "hold": 2.8},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
