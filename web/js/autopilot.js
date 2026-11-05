@@ -1,6 +1,16 @@
 /* 資工所衝刺站 — 帶我讀：每天自動排好順序，一次只給你一件事 */
 'use strict';
 
+/* 畫餅：用真實進度算「照這速度哪天讀完」，一行、有數字 */
+function goPie() {
+  const tot = DATA.lessons.length, read = DATA.lessons.filter(l => (S.st.lessons[l.id] || {}).read).length, left = S.daysLeft();
+  const days = Math.max(1, S.planDay()), rate = read / days;
+  if (read >= tot) return `<p class="go-pie">${tot} 章全部讀完，剩 ${left} 天全拿來刷題</p>`;
+  if (!read) return `<p class="go-pie">讀完第一章，倒數就開始：每天 ${Math.max(1, Math.ceil(tot / Math.max(1, left - 21) * 10) / 10)} 章，考前三週就能全部讀完</p>`;
+  const need = Math.ceil((tot - read) / rate), fin = D.add(D.today(), need), spare = left - need;
+  return spare >= 0 ? `<p class="go-pie">照這速度 <b>${fin.slice(5).replace('-', '/')}</b> 讀完 ${tot} 章，比考試早 <b>${spare}</b> 天</p>`
+    : `<p class="go-pie">再快一點：每天多讀 <b>${Math.ceil(((tot - read) / Math.max(1, left) - rate) * 10) / 10}</b> 章，就能在考前讀完</p>`;
+}
 /* 短影音看到 90% 就記為看過（clips.js 會呼叫） */
 window.onXpSeen = () => { try { renderGoPill(location.hash.slice(1) || 'go'); } catch (e) { } };
 window.onClipSeen = id => { const cs = S.st.clipSeen || (S.st.clipSeen = {}); if (!cs[id]) { cs[id] = D.today(); S.save(); try { renderGoPill(location.hash.slice(1) || 'go'); } catch (e) { } } };
@@ -129,6 +139,7 @@ function viewGo() {
     <h2>${esc(cur.title)}</h2>
     <button class="go-start" id="goNow">開始</button>
     <div class="go-meta">${cur.mins} 分</div>
+    ${goPie()}
     <div class="go-links"><button id="goFive">只做 5 分鐘</button>${L.minMode ? '<button id="goFull">完整計畫</button>' : '<button id="goMin">保底</button>'}<button id="goSkip">跳過</button></div>
   </section>`
   : `<section class="go-hero done"><div class="go-ringwrap">${(() => { const R = 52, C = 2 * Math.PI * R, f = n ? done / n : 0; return `<svg class="go-ring" viewBox="0 0 120 120" aria-label="今天 ${done}/${n} 步"><circle cx="60" cy="60" r="${R}" class="gr-bg"/><circle cx="60" cy="60" r="${R}" class="gr-fg" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - f)).toFixed(1)}"/></svg>`; })()}<div class="go-ic go-num"><b>${n}</b><small>/ ${n}</small></div></div><h2>今天完成</h2><button class="go-start" id="goMore">再打一關</button><div class="go-links"><a href="#videos">影片</a><a href="#gen">隨機題</a><a href="#rewards">獎勵</a></div></section>`}
