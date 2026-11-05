@@ -235,6 +235,33 @@
 - **文字密度稽核**（2026-11-05 早上，42 章預設畫面）：可見文字中位數 609 字、最多 805 字；每章都有影片和互動實驗；最大區塊是費曼檢核（題目已只顯示第一句）。
 - 渲染中斷的片子會留下改過的 `film/fonts/*`（finish.sh 重新子集化），直接讓 runall 重跑即可。
 
+## 6.12 交接（2026-11-05 17:00 台灣，雲端工作階段 token 將盡）
+
+**現況**
+- 影片：43 支全部設計完成（`影片/工程/NN-名稱/`，3D＋記憶宮殿房號）。已交付 01–38（`影片/新版短影音/`），39 渲染中，40–43 在 `_lib/queue.txt` 排隊。交付後 spliceall 會自動剪進宮殿片頭片尾、壓 `web/media/` 網頁版並 commit + push。
+- 01–20 等佇列空了由 `_lib/redo.sh` 重渲（章節標 y 300→150 的修正）；做完的留 `out/.redo_tag150`。
+- 線上版：version 35（`1793865093-42b2`），31 支短影音、42 章互動實驗。**還沒上線的**：32–43 短影音、今日頁箭頭、實驗播放鍵圖示、費曼題縮短、第一人稱宮殿。
+- GitHub：分支 `claude/video-remake-buildheap` 全部已推，沒有 PR。
+
+**下一個工作階段先做**
+1. `pgrep -fa "runall|spliceall|redo.sh"`；沒在跑就照 6.11 重開三個迴圈（工作階段重啟一定會停）。
+2. 40–43 交付後：`python3 build.py` → `Artifact list scope=files` 看線上版號（有別人改過先合併）→ 發布 `dist/single.html`，`files` 帶上線上還沒有的 `media/*.mp4/.jpg`（比對 list 結果；`DATA.shorts` 有幾支就要帶齊）。
+3. 我排了一個 send_later（trig_01QxhGzasjDtspjVxM1pdtBC，10:28 UTC）會叫醒這個工作階段做第 1–2 步。
+
+**評分表（7.9/10）指出的待辦，依優先序**
+1. **影片偏暗**：QA 亮度指紋近黑幀 60–83%（目標 17–39%）、均值 13–16（目標 17–20）。試過整支 `eq=gamma=1.15` → 均值 23、近黑 0%（過頭）；建議試 gamma 1.06–1.08，或在 `cs.js`／各片調 `vignette`、`amb haze`。可併入 01–20 重渲；要改 21–43 得全部重渲（約 7 小時）。
+2. 剩約 40 個彩色 emoji：`core.js`（CALLOUT_ICON，可能已不用）、`views-learn.js` 8、`practice.js` 5、`cloud.js` 4、`app.js` 2；`explain*.js` 是另一個工作階段的，別亂動。圖示用 `ICON()`／`icHtml()`（core.js，24 格線條）。
+3. 互動實驗多數是「換數字＋逐步播」，挑幾個做成可直接拖拉（B 樹插入、分頁位址）。
+4. 片中房號（X館第 N 間）還沒跟網站宮殿位置一一對應。
+
+**這次新增的東西**
+- `web/js/labs-more.js`：20 個實驗（每章都有），樣式 `lm-*`；測試腳本在 scratchpad（`labtest.cjs` 跑每個實驗＋範例）。
+- `web/js/palace3d.js`：預設第一人稱（pointer lock、WASD、空白跳、左放右拆、撞牆、手機搖桿）；「俯瞰」切回 OrbitControls；`Palace3D._st()` 是除錯用。注意：鎖定瞬間的大幅 movement 要忽略（已處理 >150px）。
+- 費曼題 `feynPrompt()`：第一句 > 60 字切在 ：／；／，（不切公式）；今日任務標題只留短名、「前往」改箭頭。
+- 單檔版只在 `file://` 開啟時清空 `DATA.shorts`（線上版有 media）。
+- `.gitignore`：`_lib/*.log`、`*/work/cues.json`、`_palace/work/*_intro|outro.json` 都是每次自動產生的。渲染中的片子會改 `film/fonts/*`（子集化），runall 交付時會一起 commit。
+- 測試要先開 `cd web && python3 -m http.server 8801 &`，再在 `tests/` 裡跑。
+
 ## 7. 接下來可以做的（使用者最新要求：排版要好看、整潔、大量圖示）
 
 1. **整體視覺整理**（教材頁已做完；接下來是首頁「帶我讀」、練習頁、必背卡、儀表板）：
