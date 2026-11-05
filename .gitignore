@@ -13,3 +13,6 @@ venv/
 node_modules/
 .DS_Store
 Thumbs.db
+
+# 網頁版影片轉檔中的暫存檔
+web/media/*.tmp.mp4

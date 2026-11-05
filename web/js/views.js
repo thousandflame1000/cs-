@@ -337,16 +337,18 @@ function viewLesson(id) {
       <h1>${esc(l.title)}</h1>
       ${l.summary ? `<p class="lede">${esc(l.summary)}</p>` : ''}
       <div class="row toolbar">
-        <button class="btn ${S.st.recall ? 'on' : ''}" id="tgRecall" aria-pressed="${S.st.recall}">回想模式${S.st.recall ? '：開' : ''}</button>
+        <button class="btn" id="btnChQuiz" ${cs.n ? '' : 'disabled'}>⚔️ 本章練習 ${cs.n} 題</button>
         <button class="btn" id="btnRead">${ls.read ? '已讀 ✓（' + ls.read + '）' : '標記讀完'}</button>
-        <button class="btn" id="btnChQuiz" ${cs.n ? '' : 'disabled'}>本章練習 ${cs.n} 題</button>
-        <button class="btn" id="tgSkim"></button><button class="btn sm" id="fsDown" aria-label="字小一點">A−</button><button class="btn sm" id="fsUp" aria-label="字大一點">A+</button>
+        <details class="tb-more"><summary class="btn sm" aria-label="更多">⋯</summary><div class="tb-pop">
+        <button class="btn ${S.st.recall ? 'on' : ''}" id="tgRecall" aria-pressed="${S.st.recall}">回想模式${S.st.recall ? '：開' : ''}</button>
+        <button class="btn" id="tgSkim"></button><button class="btn sm" id="fsDown" aria-label="字小一點">A−</button><button class="btn sm" id="fsUp" aria-label="字大一點">A+</button></div></details>
         ${ls.gate && ls.gate !== 'none' ? `<span class="gate g-${ls.gate}">${gateLabel(ls.gate)}</span>` : ''}
         ${Practice.examF(id) ? `<span class="pill exam-f" title="近年考古題配分占比">🏛️ 考頻 ${Math.round(Practice.examF(id) * 100)}%</span>` : ''}
       </div>
     </header>
     ${routeHtml(l)}
     ${lessonClipsHtml(id)}
+    ${playHtml(id)}
     ${l.intuit ? `<section class="card intu" id="intu"><div class="card-h"><h2><span class="h-ic" aria-hidden="true">💡</span>先懂直覺</h2></div><div class="prose">${md(l.intuit)}</div></section>` : ''}
     ${workedHtml(l)}
     ${pretestHtml(l)}
@@ -361,6 +363,7 @@ function viewLesson(id) {
     <nav class="pn">${prev ? `<a href="#${prev.id}">← ${esc(prev.title)}</a>` : '<span></span>'}${next ? `<a href="#${next.id}">${esc(next.title)} →</a>` : '<span></span>'}</nav>
   </article>`;
   chunkLesson(l); intuLabels(); wireRoute(l); wireReading();
+  mountPlay(id); compactIntu();
   Labs.mountEmbeds(m);
   mountLessonClips(id); wirePretest(l); wireWorked(l); kidButtons(l); if (typeof watchClipPast === 'function') watchClipPast(id);
   $$('mark.hl', m).forEach(mk => mk.addEventListener('click', () => mk.classList.add('shown')));
@@ -382,11 +385,13 @@ function viewLesson(id) {
 function routeSteps(l) {
   const ls = S.st.lessons[l.id] || {}, out = [];
   const cs = typeof Clips !== 'undefined' ? Clips.list.filter(c => c.lesson === l.id) : [];
-  if (cs.length) out.push({ k: 'clip', ic: '🎬', t: '看短片', done: cs.every(c => (S.st.clipSeen || {})[c.id]), to: '.clip-sec' });
-  if (l.intuit) out.push({ k: 'intu', ic: '💡', t: '懂直覺', done: !!(ls.read || ls.sec || ls.wk), to: '#intu' });
+  if (cs.length) out.push({ k: 'clip', ic: '🎬', t: '看影片', done: cs.every(c => (S.st.clipSeen || {})[c.id]), to: '.clip-sec' });
+  const lb = lessonLabs(l.id);
+  if (lb.length) out.push({ k: 'play', ic: '🎮', t: '動手玩', done: lb.some(x => labTried(x.id)), to: '#play' });
+  else if (l.intuit) out.push({ k: 'intu', ic: '💡', t: '懂直覺', done: !!(ls.read || ls.sec || ls.wk), to: '#intu' });
   if (l.worked) { const n = l.worked.steps.length, k = ls.wk || 0; out.push({ k: 'wk', ic: '✏️', t: '跟著做', sub: k > n ? '' : Math.min(k, n) + '/' + n, done: k > n, to: '#wk' }); }
   const N = (String(l.body || '').match(/^## /gm) || []).length;
-  out.push({ k: 'read', ic: '📖', t: '分段讀', sub: ls.read || !N ? '' : Math.min((ls.sec || 0) + 1, N) + '/' + N, done: !!ls.read, to: '#lessonBody' });
+  out.push({ k: 'read', ic: '📖', t: '讀重點', sub: ls.read || !N ? '' : Math.min((ls.sec || 0) + 1, N) + '/' + N, done: !!ls.read, to: '#lessonBody' });
   if (l.feynman) out.push({ k: 'feyn', ic: '🧠', t: '費曼', done: ['pass', 'self', 'pending'].includes(ls.gate), to: '#feyn' });
   const now = out.findIndex(s => !s.done); if (now >= 0) out[now].now = true;
   return out;
@@ -401,6 +406,40 @@ function wireRoute(l) {
     if (b.dataset.to === '#lessonBody') { const d = $('details.sec[open]') || $('details.sec'); if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; } }
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
+}
+/* 🎮 動手玩：本章的互動實驗室直接放在影片下面（捲到才載入），正文裡同一個實驗室的入口就拿掉 */
+function lessonLabs(id) { return typeof Labs === 'undefined' ? [] : Labs.list.filter(x => (x.lessons || []).includes(id)); }
+function labTried(lid) { return Object.values(S.st.log || {}).some(L => (L.labs || []).includes(lid)); }
+function playHtml(id) {
+  const lb = lessonLabs(id); if (!lb.length) return '';
+  const nm = x => esc(x.title.split(/[：（(]/)[0]);
+  return `<section class="card play-sec" id="play"><div class="card-h"><h2><span class="h-ic" aria-hidden="true">🎮</span>動手玩</h2>${lb.length > 1 ? `<div class="play-tabs">${lb.map((x, i) => `<button type="button" class="chip${i ? '' : ' on'}" data-lab="${x.id}">${nm(x)}</button>`).join('')}</div>` : `<span class="play-name">${nm(lb[0])}</span>`}</div><div class="play-host" id="playHost"></div></section>`;
+}
+function mountPlay(id) {
+  const host = $('#playHost'), lb = lessonLabs(id); if (!host || !lb.length) return;
+  lb.forEach(x => $$(`#lessonBody .lab-embed[data-lab="${x.id}"]`).forEach(el => el.remove()));
+  let cur = null;
+  const mark = () => { const L = S.day(); if (cur && !L.labs.includes(cur)) { L.labs.push(cur); S.save(); const st = $('.route-st[data-to="#play"]'); if (st) { st.classList.add('done'); $('.route-ic', st).textContent = '✓'; } } };
+  const show = lid => {
+    cur = lid; host.innerHTML = ''; Labs.mount(lid, host, ''); $$('.play-tabs .chip').forEach(b => b.classList.toggle('on', b.dataset.lab === lid));
+    // 先看動畫，輸入表單收進「換數字」；一進來就自動播
+    const box = $('.lab', host), form = box && $('.lab-form', box); if (!form) return;
+    const d = document.createElement('details'); d.className = 'lab-edit'; d.innerHTML = '<summary>✏️ 換數字</summary>'; d.appendChild(form);
+    ['.lab-stage', '.lab-note', '.lab-ctrl', '.lab-presets'].forEach(q => { const el = $(q, box); if (el) box.appendChild(el); }); box.appendChild(d);
+    const pb = $('.lab-ctrl [data-a="play"]', box); if (pb) setTimeout(() => pb.click(), 400);
+  };
+  $$('.play-tabs .chip').forEach(b => b.onclick = () => { show(b.dataset.lab); mark(); });
+  host.addEventListener('pointerdown', mark);
+  if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); if (!cur) show(lb[0].id); } }, { rootMargin: '300px' }); io.observe(host); } else show(lb[0].id);
+}
+/* 直覺卡只留「一句話」和圖，其餘收進「再多一點」 */
+function compactIntu() {
+  const pr = $('#intu .prose'); if (!pr) return;
+  const kids = [...pr.children]; if (kids.length < 3) return;
+  const keep = el => el === kids[0] || el.matches('figure, .fgw, .fg-row') || !!el.querySelector('figure, svg');
+  const rest = kids.filter(el => !keep(el)); if (!rest.length) return;
+  const d = document.createElement('details'); d.className = 'intu-more'; d.innerHTML = '<summary>再多一點</summary>';
+  rest.forEach(el => d.appendChild(el)); pr.appendChild(d);
 }
 /* 直覺版的小標（一句話、想像一下…）變成有圖示的獨立一行 */
 function intuLabels() {
@@ -836,6 +875,6 @@ document.addEventListener('keydown', e => {
   if (!document.body.classList.contains('feed-mode')) return; const feed = $('#feed'); if (!feed || /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
   if (e.key === 'ArrowDown' || e.key === 'j' || e.key === 'PageDown') { e.preventDefault(); feed.scrollBy({ top: feed.clientHeight, behavior: 'smooth' }); }
   else if (e.key === 'ArrowUp' || e.key === 'k' || e.key === 'PageUp') { e.preventDefault(); feed.scrollBy({ top: -feed.clientHeight, behavior: 'smooth' }); }
-  else if (e.key === ' ') { e.preventDefault(); const i = Math.round(feed.scrollTop / feed.clientHeight); const cv = $$('.feed-item', feed)[i]?.querySelector('canvas'); if (cv) cv.click(); }
+  else if (e.key === ' ') { e.preventDefault(); const i = Math.round(feed.scrollTop / feed.clientHeight); const cv = $$('.feed-item', feed)[i]?.querySelector('video, canvas'); if (cv) cv.click(); }
   else if (e.key === 'm') { const b = $('.snd-btn'); if (b) b.click(); }
 });

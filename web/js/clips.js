@@ -1334,8 +1334,29 @@ const Clips = (() => {
     ctx.restore(); const f = Math.min(cl(t / .35), cl((clip.dur - t) / .35)); if (f < 1) { c2d.fillStyle = `rgba(5,8,15,${1 - f})`; c2d.fillRect(0, 0, W, H); }
   }
   const players = [];
+  /* 新版短影音：有 mp4 就播 mp4（字幕燒在畫面裡），沒有才用即時算的畫面 */
+  const videoOf = id => ((typeof DATA !== 'undefined' && DATA.videos) || {})[id];
+  function vplayer(host, clip, vid, opts) {
+    const box = document.createElement('div'); box.className = 'clip-player vid' + (opts.feed ? ' feed' : '');
+    box.innerHTML = `<video playsinline preload="metadata"${vid.poster ? ` poster="${vid.poster}"` : ''} src="${vid.src}"></video><div class="clip-bar seek"><i></i></div><button class="clip-btn snd-btn ${Sound.on ? 'on' : ''}" aria-label="聲音開關">${Sound.on ? '🔊' : '🔇'}</button>`;
+    host.appendChild(box);
+    const v = box.querySelector('video'), bar = box.querySelector('.clip-bar i'); v.muted = !Sound.on;
+    const st = { seen: false };
+    v.addEventListener('timeupdate', () => { if (!v.duration) return; bar.style.width = (v.currentTime / v.duration * 100) + '%'; if (!st.seen && v.currentTime >= v.duration * .9) { st.seen = true; if (window.onClipSeen) window.onClipSeen(clip.id); } });
+    v.addEventListener('play', () => { players.forEach(p => p !== api && p.pause()); box.classList.add('playing'); });
+    v.addEventListener('pause', () => box.classList.remove('playing'));
+    v.addEventListener('ended', () => { box.classList.remove('playing'); if (opts.onEnd) opts.onEnd(api); });
+    const api = { box, clip, video: v, play() { if (opts.restart) { v.currentTime = 0; opts.restart = false; } v.muted = !Sound.on; const pr = v.play(); if (pr && pr.catch) pr.catch(() => { v.muted = true; v.play().catch(() => { }); }); },
+      pause() { if (!v.paused) v.pause(); }, stop() { api.pause(); if (api.io) api.io.disconnect(); } };
+    v.addEventListener('click', () => { v.paused ? api.play() : api.pause(); });
+    box.querySelector('.clip-bar').addEventListener('click', e => { if (!v.duration) return; const r = e.currentTarget.getBoundingClientRect(); v.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * v.duration; });
+    box.querySelector('.snd-btn').addEventListener('click', e => { e.stopPropagation(); Sound.wanted = Sound.toggle(); players.forEach(p => { if (p.video) p.video.muted = !Sound.on; }); if (v.paused) api.play(); });
+    if (opts.auto && 'IntersectionObserver' in window) { api.io = new IntersectionObserver(es => es.forEach(en => { if (en.intersectionRatio >= .6) { opts.restart = !!opts.feed; api.play(); } else api.pause(); }), { threshold: [0, .6, 1] }); api.io.observe(box); }
+    players.push(api); return api;
+  }
   function player(host, id, opts = {}) {
     const clip = get(id); if (!clip) return null;
+    const vid = videoOf(id); if (vid) return vplayer(host, clip, vid, opts);
     const box = document.createElement('div'); box.className = 'clip-player' + (opts.feed ? ' feed' : '');
     box.innerHTML = `<canvas width="${W}" height="${H}"></canvas><div class="clip-bar"><i></i></div><button class="clip-btn snd-btn ${Sound.on ? 'on' : ''}" aria-label="聲音開關" title="音樂與音效">${Sound.on ? '🔊' : '🔇'}</button><div class="clip-hint">點一下暫停／播放</div>`;
     host.appendChild(box);
@@ -1355,5 +1376,5 @@ const Clips = (() => {
     players.push(api); return api;
   }
   function stopAll() { players.splice(0).forEach(p => p.stop()); }
-  return { list: LIST, get, render, player, stopAll, W, H, SUBC };
+  return { list: LIST, get, render, player, stopAll, videoOf, W, H, SUBC };
 })();

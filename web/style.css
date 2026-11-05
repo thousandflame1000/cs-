@@ -297,7 +297,8 @@ code.tex { color: var(--ink-2); }
 .stepc { font-size: .82rem; color: var(--ink-2); margin-left: auto; font-variant-numeric: tabular-nums; }
 .lab-note { min-height: 2.6em; padding: 8px 12px; background: var(--surface-2); border-radius: 8px; font-size: .93rem; }
 .lab-note p { margin: 0; }
-.lab-stage { margin-top: 10px; }
+.lab-stage { margin-top: 10px; overflow-x: auto; }
+.play-sec .lab-stage svg { max-width: 100%; height: auto; }
 .lab-teaser { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 14px; border: 1px dashed var(--sc); border-radius: 8px; background: var(--surface); }
 .lab-teaser div { display: flex; flex-direction: column; }
 .lab-teaser span { font-size: .87rem; color: var(--ink-2); }
@@ -420,6 +421,8 @@ text.sub { font-size: 10px; fill: var(--ink-2); }
 /* ---------- 短影音（9:16） ---------- */
 .clip-player { position: relative; aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden; background: #05080f; box-shadow: 0 10px 34px rgba(0, 0, 0, .32); user-select: none; -webkit-user-select: none; }
 .clip-player canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
+.clip-player video { display: block; width: 100%; height: 100%; object-fit: cover; cursor: pointer; background: #05080f; }
+.clip-bar.seek { pointer-events: auto; cursor: pointer; height: 5px; bottom: 8px; }
 .clip-bar { position: absolute; left: 12px; right: 12px; bottom: 9px; height: 3px; background: rgba(255, 255, 255, .16); border-radius: 2px; overflow: hidden; pointer-events: none; }
 .clip-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #2ee6c9, #a98bff); }
 .clip-btn { position: absolute; top: 10px; right: 10px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .25); background: rgba(8, 13, 28, .6); color: #fff; font-size: 17px; cursor: pointer; backdrop-filter: blur(6px); display: grid; place-items: center; padding: 0; }
@@ -1166,3 +1169,19 @@ body:has(#goPill) main { padding-bottom: 96px; }
   .route { margin: 8px 0 12px; }
   .route-st { padding: 6px 10px; }
 }
+
+/* 教材頁：影片 → 動手玩為主，工具列收進 ⋯ */
+.tb-more { position: relative; display: inline-block; }
+.tb-more > summary { list-style: none; cursor: pointer; }
+.tb-more > summary::-webkit-details-marker { display: none; }
+.tb-pop { position: absolute; z-index: 20; top: calc(100% + 6px); right: 0; display: flex; gap: 8px; flex-wrap: wrap; padding: 10px; width: max-content; max-width: min(320px, 80vw); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, .14); }
+.play-sec { margin: 4px 0 24px; }
+.play-sec .card-h { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.play-name { color: var(--ink-2); font-size: .9rem; }
+.play-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.play-host { min-height: 120px; }
+.intu-more > summary { cursor: pointer; color: var(--sc, var(--accent)); font-weight: 600; margin: 6px 0; }
+.lesson .clip-sec .clip-item { width: min(320px, 78vw); }
+.lab-edit { margin-top: 10px; }
+.lab-edit > summary { cursor: pointer; color: var(--ink-2); font-weight: 600; padding: 4px 0; }
+.play-sec .lab-presets { margin-top: 8px; }
