@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "B 樹節點滿了", "hook": true},
+  {"id": "o2", "text": "往[上]分裂，不往下長", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "B 樹分裂", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "每個節點最多放 2 個 key", "scene": true, "hold": 3.6},
+  {"id": "a2", "text": "放進第 3 個：中間的往上[推]", "hold": 4.2},
+  {"id": "a3", "text": "左右各分一半", "hold": 3.0, "pause": 0.2},
+
+  {"id": "b1", "text": "一直插入：葉子滿了就分裂", "scene": true, "hold": 6.0},
+  {"id": "b2", "text": "根也滿了：中間的變成[新根]", "hold": 5.0},
+  {"id": "b3", "text": "所以葉子永遠[一樣深]", "hold": 3.4, "pause": 0.2},
+
+  {"id": "c1", "text": "真的 B 樹，一個節點放上千個 key", "scene": true, "hold": 4.0},
+  {"id": "c2", "text": "10 億筆資料，只要 [3 層]", "hold": 3.6},
+  {"id": "c3", "text": "一層一次讀硬碟：越矮越快", "hold": 3.6},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
