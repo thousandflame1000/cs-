@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "兩個大數相乘，可以少乘一次", "hook": true},
+  {"id": "o2", "text": "4 次乘法變 [3 次]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "Karatsuba", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "12 × 34：拆成十位和個位", "scene": true, "hold": 3.6},
+  {"id": "a2", "text": "面積切四塊：要乘 [4 次]", "hold": 3.8},
+  {"id": "a3", "text": "其實中間兩塊只要[加起來]的值", "hold": 3.8, "pause": 0.2},
+
+  {"id": "b1", "text": "先乘兩個角：ac、bd", "scene": true, "hold": 3.6},
+  {"id": "b2", "text": "再乘一次 (a+b)(c+d)：整塊", "hold": 3.8},
+  {"id": "b3", "text": "整塊減兩角，剩下就是[中間]", "hold": 4.0, "pause": 0.2},
+
+  {"id": "c1", "text": "每一層只分 3 支，不是 4 支", "scene": true, "hold": 3.8},
+  {"id": "c2", "text": "10 層後：59,049 對 1,048,576", "hold": 3.8},
+  {"id": "c3", "text": "所以是 n 的 [1.585] 次方", "hold": 3.4},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

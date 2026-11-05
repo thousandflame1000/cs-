@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>Karatsuba</title>
+<!--
+  資工所衝刺 · 短影音 33：Karatsuba——4 次乘法變 3 次
+  記憶宮殿：演算法館 · 第 3 間。12 × 34 的面積模型平鋪在地板：a=1、b=2 沿 x，c=3、d=4 沿 y；每塊升起的高度＝乘積。
+  01 四塊 ac、ad、bc、bd 要乘 4 次，但中間兩塊只要和；02 先乘 ac、bd，再乘 (a+b)(c+d)＝罩住整片的大塊 21，
+  減掉兩角 3、8 剩 10＝ad+bc → 408；03 遞迴每層 3 支（綠）對 4 支（紅），10 層 59,049 對 1,048,576 → Θ(n^lg3)。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', GR = '#6ee7a8', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 331, vignette: .6, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: GR, accent2: AM } });
+K.warm([CY, AM, CO, GR, VI, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { '3 次': GR, '4 次': CO, 加起來: VI, 中間: VI, '1.585': GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1;
+const add = (a, b) => a.map((v, i) => v + b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: GR, a: .26 * a, major: 3 });
+let tNow = 0;
+function box3(c, p, sz, col, a = 1, fill = .6) {
+  if (a <= .003) return; const [x, y, z] = p, [hx, hy, hz] = sz.map(v => v / 2), cam = V.camAt(tNow).pos;
+  const F = [[[0, -1, 0], [[x - hx, y - hy, z - hz], [x + hx, y - hy, z - hz], [x + hx, y - hy, z + hz], [x - hx, y - hy, z + hz]], .7], [[1, 0, 0], [[x + hx, y - hy, z - hz], [x + hx, y + hy, z - hz], [x + hx, y + hy, z + hz], [x + hx, y - hy, z + hz]], .45], [[-1, 0, 0], [[x - hx, y + hy, z - hz], [x - hx, y - hy, z - hz], [x - hx, y - hy, z + hz], [x - hx, y + hy, z + hz]], .45], [[0, 1, 0], [[x + hx, y + hy, z - hz], [x - hx, y + hy, z - hz], [x - hx, y + hy, z + hz], [x + hx, y + hy, z + hz]], .35], [[0, 0, 1], [[x - hx, y - hy, z + hz], [x + hx, y - hy, z + hz], [x + hx, y + hy, z + hz], [x - hx, y + hy, z + hz]], .95]];
+  for (const [n, q, k] of F) { const d = [cam[0] - x, cam[1] - y, cam[2] - z]; if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] <= 0) continue; V.poly(c, q, K.rgba(K.mix(col, '#ffffff', k * .3), fill * k), K.rgba(K.mix(col, '#ffffff', .4), .9), a); }
+}
+const lab = (c, s, p, col, a, size = .16, ex = {}) => { if (a > .003) V.label(c, s, p, Object.assign({ size, w: 700, color: col, a, minPx: 20, maxPx: 60 }, ex)); };
+/** 地上的方塊：底在 z=0，高 h */
+const tile = (c, x, y, w, h, col, a, fill = .55) => { if (a > .003 && h > .002) box3(c, [x, y, h / 2], [w, w, h], col, a, fill); };
+const wire = (c, x, y, w, h, col, a) => { if (a <= .003) return; const d = w / 2, P = (dx, dy, z) => [x + dx, y + dy, z];
+  [[-d, -d], [d, -d], [d, d], [-d, d]].forEach(([dx, dy], i, A) => { const [ex, ey] = A[(i + 1) % 4]; V.line(c, P(dx, dy, h), P(ex, ey, h), { color: col, a, w: 1.4, plain: true }); V.line(c, P(dx, dy, 0), P(dx, dy, h), { color: col, a: a * .6, w: 1.2, plain: true }); }); };
+
+// ═════════ 面積模型
+const HS = .08;                 // 高度比例：值 × HS
+const TW = .84;                 // 每塊寬
+const XA = -.45, XB = .45, YC = .45, YD = -.45;
+const TL = { ac: [XA, YC, 3, AM], bc: [XB, YC, 6, VI], ad: [XA, YD, 4, VI], bd: [XB, YD, 8, CY] };
+
+// ═════════ 鏡頭
+V.camKeys([
+  [0, V.orbit(-12, 5.6, 3.6, [0, -.35, .1], 44)], [T.start, V.orbit(-6, 6.0, 3.8, [0, -.3, .2], 44)],
+  [A1.start, V.orbit(-8, 5.3, 3.3, [-.12, -.6, .2], 44)], [L.a3.end, V.orbit(0, 5.4, 3.4, [-.12, -.6, .25], 44)],
+  [B1.start + .3, V.orbit(-10, 5.4, 3.1, [-.12, -.6, .35], 44)], [L.b2.start + .6, V.orbit(-6, 5.8, 2.9, [-.12, -.55, .6], 44)], [L.b3.end, V.orbit(0, 5.6, 3.1, [-.12, -.6, .4], 44)],
+  [C1.start + .3, V.orbit(-12, 6.0, 2.0, [0, 0, 1.3], 44)], [L.c2.end, V.orbit(8, 6.1, 2.3, [0, 0, 1.3], 44)], [DUR, V.orbit(-4, 6.4, 2.5, [0, 0, 1.25], 44)],
+]);
+
+function grid(c, a) {
+  if (a <= .003) return;
+  [[-.9, -.9, .9, -.9], [-.9, .9, .9, .9], [-.9, -.9, -.9, .9], [.9, -.9, .9, .9], [0, -.9, 0, .9], [-.9, 0, .9, 0]].forEach(([x0, y0, x1, y1]) => V.line(c, [x0, y0, .005], [x1, y1, .005], { color: INK, a: .45 * a, w: 1.6, plain: true }));
+  lab(c, 'a = 1', [XA, -1.2, 0], AM, a, .17); lab(c, 'b = 2', [XB, -1.2, 0], CY, a, .17);
+  lab(c, 'c = 3', [-1.2, YC, 0], AM, a, .15); lab(c, 'd = 4', [-1.2, YD, 0], CY, a, .15);
+}
+/** 開場也用：四塊全升起 */
+function drawTiles(c, t, up, a = 1, labA = 1) {
+  const items = [];
+  for (const [k, [x, y, v, col]] of Object.entries(TL)) { const u = typeof up === 'number' ? up : up[k] ?? 0, h = v * HS * u; items.push({ p: [x, y, h / 2], draw: () => { tile(c, x, y, TW, h, col, a * clamp(u * 3)); lab(c, k + ' = ' + v, [x, y, h + .12], '#ffffff', a * labA * clamp(u * 2 - 1), .16); } }); }
+  V.sorted(items);
+}
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c); grid(c, 1);
+  const u = { ac: prog(t, .3, .8), ad: prog(t, .6, 1.1), bc: prog(t, .9, 1.4), bd: prog(t, 1.2, 1.7) };
+  const strike = prog(t, o2.start + .2, o2.start + .7);
+  drawTiles(c, t, u, 1 - .55 * strike);
+  if (strike > 0) { tile(c, XA, YD, TW, 0, VI, 0); }
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '演算法 · 分治', big: 'Karatsuba', size: 150, y: 600, en: 'FAST  MULTIPLICATION', q: '4 次乘法變 3 次', qGap: 330, color: GR });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); grid(c, 1); drawTiles(c, t, 1); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), GR);
+}
+function sFour(c, t) {
+  const fade = 1 - prog(t, B1.start - .3, B1.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c);
+  const a1 = A1.start, a2 = L.a2.start, a3 = L.a3.start;
+  const ta = prog(t, a1 + .1, a1 + .5);
+  if (ta > 0) { S.label(c, '12 × 34', CX, 290, { size: 84, w: 700, color: INK, a: ta * (1 - prog(t, a2 - .2, a2 + .1)) }); }
+  grid(c, prog(t, a1 + .8, a1 + 1.6));
+  const beats = [a2 + .3, a2 + 1.0, a2 + 1.7, a2 + 2.4], order = ['ac', 'ad', 'bc', 'bd'], up = {};
+  order.forEach((k, i) => up[k] = E.outCubic(prog(t, beats[i], beats[i] + .5)));
+  drawTiles(c, t, up);
+  const n = beats.filter(b => t >= b + .25).length, na = prog(t, a2 + .55, a2 + .8) * (1 - prog(t, a3 + .1, a3 + .4));
+  if (na > 0) S.label(c, '乘法 ' + n + ' 次', CX, 290, { size: 70, w: 700, color: n === 4 ? CO : AM, a: na });
+  // a3：中間兩塊發紫光，只要和
+  const ma = prog(t, a3 + .3, a3 + .8);
+  if (ma > 0) { const pul = .6 + .4 * Math.sin(t * 6); V.glow(c, [XA, YD, .25], .9, .4 * ma * pul, VI); V.glow(c, [XB, YC, .35], .9, .4 * ma * pul, VI); S.label(c, 'ad + bc = 10', CX, 290, { size: 70, w: 700, color: VI, a: ma }); S.label(c, '只要這個和', CX, 375, { size: 40, a: .7 * prog(t, a3 + .9, a3 + 1.3) }); }
+  c.restore();
+}
+function sThree(c, t) {
+  const fade = 1 - prog(t, C1.start - .3, C1.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c); grid(c, prog(t, B1.start, B1.start + .4));
+  const b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start;
+  const uac = E.outCubic(prog(t, b1 + .4, b1 + .9)), ubd = E.outCubic(prog(t, b1 + 1.1, b1 + 1.6));
+  // 中間兩塊：先是虛框 ?，最後填成紫色
+  const fill = E.outCubic(prog(t, b3 + 2.0, b3 + 2.6));
+  const items = [];
+  const mid = (k) => { const [x, y, v] = TL[k], hw = (k === 'ad' ? 4 : 6) * HS; items.push({ p: [x, y, .2], draw: () => { wire(c, x, y, TW, hw, VI, .7 * (1 - fill)); if (fill > 0) tile(c, x, y, TW, hw * fill, VI, fill); lab(c, fill > .5 ? (k + ' = ' + v) : '?', [x, y, hw + .12], fill > .5 ? '#ffffff' : VI, 1, .18); } }); };
+  mid('ad'); mid('bc');
+  items.push({ p: [XA, YC, .1], draw: () => { tile(c, XA, YC, TW, 3 * HS * uac, AM, clamp(uac * 3)); lab(c, 'ac = 3', [XA, YC, 3 * HS * uac + .12], '#ffffff', clamp(uac * 2 - 1), .16); } });
+  items.push({ p: [XB, YD, .3], draw: () => { tile(c, XB, YD, TW, 8 * HS * ubd, CY, clamp(ubd * 3)); lab(c, 'bd = 8', [XB, YD, 8 * HS * ubd + .12], '#ffffff', clamp(ubd * 2 - 1), .16); } });
+  V.sorted(items);
+  // b2：(a+b)(c+d) = 21 的大塊罩住整片（半透明）
+  const big = E.outCubic(prog(t, b2 + .5, b2 + 1.4)), shrink = E.inOutCubic(prog(t, b3 + .4, b3 + 1.8)), bigOut = prog(t, b3 + 1.8, b3 + 2.3);
+  const val = lerp(21, 10, shrink), bh = val * .03 * big;
+  if (big > 0 && bigOut < 1) { box3(c, [0, 0, .9 + bh / 2], [1.8, 1.8, bh], GR, (1 - bigOut) * .8, .22); lab(c, String(Math.round(val)), [0, -.95, .9 + bh / 2], GR, 1 - bigOut, .24, { maxPx: 80 }); }
+  // 兩角從大塊裡掉出來
+  if (shrink > 0 && shrink < 1) { const k = shrink; [[XA, YC, 3, AM], [XB, YD, 8, CY]].forEach(([x, y, v, col]) => { const z = .9 + 21 * .03 * (1 - k) * .5; box3(c, [x * (1 + k * .4), y * (1 + k * .4), z], [TW * .6, TW * .6, v * HS], col, .8 * Math.sin(Math.PI * k), .5); }); }
+  const counter = [b1 + .5, b1 + 1.2, b2 + .6].filter(x => t >= x).length, ca = prog(t, b1 + .4, b1 + .7) * (1 - prog(t, b3 + .2, b3 + .5));
+  if (ca > 0) S.label(c, '乘法 ' + counter + ' 次', CX, 250, { size: 64, w: 700, color: counter === 3 ? GR : AM, a: ca });
+  const qa = prog(t, b2 + .6, b2 + 1.0) * (1 - prog(t, b3 + .2, b3 + .5));
+  if (qa > 0) S.label(c, '(1+2)(3+4) = 21', CX, 340, { size: 54, w: 700, color: GR, a: qa });
+  const sa = prog(t, b3 + .3, b3 + .7) * (1 - prog(t, b3 + 2.6, b3 + 2.9));
+  if (sa > 0) S.label(c, '21 − 3 − 8 = 10', CX, 290, { size: 70, w: 700, color: VI, a: sa });
+  const ra = prog(t, b3 + 2.7, b3 + 3.1);
+  if (ra > 0) { S.label(c, '300 + 100 + 8', CX, 255, { size: 44, a: .75 * ra }); S.label(c, '= 408', CX, 340, { size: 84, w: 700, color: GR, a: ra }); }
+  c.restore();
+}
+// C：遞迴樹（3 支 vs 4 支）
+function cone(c, base, br, lv, col, a, g) {
+  const R = [0, .2, .38, .54], Z = [2.55, 1.85, 1.15, .45], pts = [[base]];
+  for (let l = 1; l <= 3; l++) { const m = Math.pow(br, l), arr = []; for (let i = 0; i < m; i++) { const th = Math.PI * 2 * i / m + l * .4; arr.push([base[0] + Math.cos(th) * R[l], base[1] + Math.sin(th) * R[l] * .8, Z[l]]); } pts.push(arr); }
+  pts[0][0] = [base[0], base[1], Z[0]];
+  const items = [];
+  for (let l = 0; l <= 3; l++) {
+    const gl = prog(g, l * .25, l * .25 + .3); if (gl <= 0) break;
+    pts[l].forEach((p, i) => {
+      if (l > 0) V.line(c, pts[l - 1][Math.floor(i / br)], p, { color: col, a: .35 * a * gl, w: l === 3 ? .8 : 1.4, plain: true });
+      const r = [.15, .1, .065, .035][l];
+      items.push({ p, draw: () => { if (l < 3) { V.glow(c, p, r * 2.4, .3 * a * gl, col); V.orb(c, p, r, { color: col, a: a * gl }); } else V.core(c, p, .03, a * gl, col); } });
+    });
+  }
+  V.sorted(items);
+  return pts;
+}
+function sTree(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+  const g = prog(t, c1 + .3, c1 + 2.6), two = prog(t, c1 + 1.6, c1 + 2.0);
+  const sideL = lerp(0, -.68, E.inOutCubic(two));
+  cone(c, [sideL, 0, 0], 3, 3, GR, 1, g);
+  if (two > 0) cone(c, [.68, 0, 0], 4, 3, CO, two, prog(t, c1 + 1.8, c1 + 3.2));
+  const la = prog(t, c1 + .6, c1 + 1.0);
+  const lk = la * (1 - prog(t, c2 + .1, c2 + .4)); if (lk > 0) { lab(c, '3 支', [sideL, 0, 2.95], GR, lk, .2); if (two > 0) lab(c, '4 支', [.68, 0, 2.95], CO, two * lk, .2); }
+  const na = prog(t, c2 + .2, c2 + .6) * (1 - prog(t, c3 - .1, c3 + .2));
+  if (na > 0) { S.label(c, '10 層後的小乘法', CX, 220, { size: 36, a: .7 * na, ls: '4px' }); S.label(c, '59,049', 300, 310, { size: 72, w: 700, color: GR, a: na }); S.label(c, '1,048,576', 790, 310, { size: 72, w: 700, color: CO, a: na * prog(t, c2 + .7, c2 + 1.1) }); }
+  const fa = prog(t, c3 + .2, c3 + .6);
+  if (fa > 0) { S.label(c, 'T(n) = 3T(n/2) + O(n)', CX, 250, { size: 50, w: 700, color: INK, a: .85 * fa }); S.label(c, 'Θ(nˡᵍ³)', CX, 350, { size: 80, w: 700, color: GR, a: prog(t, c3 + .8, c3 + 1.2) }); S.label(c, 'lg 3 ≈ 1.585', CX, 440, { size: 44, a: .8 * prog(t, c3 + 1.2, c3 + 1.6) }); }
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['只乘 ac、bd、(a+b)(c+d)', AM, 54], ['中間 = 整塊 − ac − bd', VI, 54], ['T(n) = 3T(n/2) + O(n)', CY, 54], ['Θ(nˡᵍ³)，lg 3 ≈ 1.585', GR, 54]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'four', start: A1.start, end: B1.start, draw: sFour, color: AM, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'three', start: B1.start, end: C1.start, draw: sThree, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'tree', start: C1.start, end: DUR, draw: (c, t) => { sTree(c, t); sExam(c, t); }, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+const TAG = '記憶宮殿 · 演算法館 · 第 3 間  /  ';
+S.chapters([[A1.start, TAG + '01 四塊'], [B1.start, TAG + '02 三次'], [C1.start, TAG + '03 遞迴'], [Ec.start, '']]);
+
+function render(t) {
+  tNow = t;
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const a2 = L.a2.start, a3 = L.a3.start, b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start, c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    ...[.3, .6, .9, 1.2].map(x => ({ t: x, sfx: 'pop', gain: -13 })), { t: o2.start + .2, sfx: 'glitch', gain: -11 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: A1.start + .1, sfx: 'whoosh', gain: -12 },
+    ...[.3, 1.0, 1.7, 2.4].map((x, i) => ({ t: a2 + x, sfx: 'thump', gain: -11 + i })),
+    { t: a3 + .3, sfx: 'chime', gain: -10 },
+    { t: b1 + .4, sfx: 'thump', gain: -10 }, { t: b1 + 1.1, sfx: 'thump', gain: -10 },
+    { t: b2 + .5, sfx: 'riser', gain: -13 }, { t: b2 + 1.4, sfx: 'impact', gain: -8 },
+    { t: b3 + .4, sfx: 'swish', gain: -10 }, { t: b3 + 2.0, sfx: 'pop', gain: -10 }, { t: b3 + 2.7, sfx: 'chime', gain: -7 },
+    { t: c1 + .3, sfx: 'whoosh', gain: -12 }, { t: c1 + 1.8, sfx: 'glitch', gain: -12 },
+    { t: c2 + .2, sfx: 'tick', gain: -10 }, { t: c2 + .7, sfx: 'tick', gain: -10 },
+    { t: c3 + .8, sfx: 'chime', gain: -9 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
