@@ -81,7 +81,7 @@
     };
 
     // ── 章節角標（左上極小，出現 1.8 秒後淡出，避免壓到畫面大字）
-    const CHAP = K.text(over, '', { x: 64, y: 300, size: 22, ls: '.3em' }); CHAP.style.color = K.I(.42);
+    const CHAP = K.text(over, '', { x: 64, y: 150, size: 22, ls: '.3em' }); CHAP.style.color = K.I(.42);
     let CHAPS = [];
     S.chapters = (list) => { CHAPS = list; };
     S.drawChap = (t) => {

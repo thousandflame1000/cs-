@@ -1,3 +1,5 @@
+01-BuildHeap|01-資結-BuildHeap為何是O(n)|
+02-Master|02-演算法-Master定理|
 03-LoadUse|03-計組-LoadUse危障|92-97.5
 04-SRTF|04-OS-SRTF排程|73-76.8
 05-Pigeonhole|05-離散-鴿籠原理|70-74.2

@@ -55,6 +55,9 @@ bash _lib/webenc.sh NN
 
 # 一次跑完佇列（_lib/queue.txt 每行：資料夾|成片名稱|考試卡秒數）
 bash _lib/runall.sh
+
+# 改了共用程式（例如 cs.js）後，把已交付的片重渲一輪（佇列空了才跑，做完的留 out/.redo_<TAG>）
+REDO_TAG=tag150 bash _lib/redo.sh 01 02 03
 ```
 
 - `finish.sh` 的 `--workers 4` 是 4 核心；電腦核心多可以改大，渲染會快很多。
