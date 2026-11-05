@@ -4,7 +4,7 @@
 # 用法：softmix.sh cues.json sfx目錄 長度 輸出.wav [lufs]
 set -e
 SK="${LKA_SCRIPTS:-$(cd "$(dirname "$0")/.." && pwd)/_toolkit/lead-knowledge-animation/scripts}"
-CUES="$1"; SFX="$2"; DUR="$3"; OUT="$4"; LUFS="${5:--16}"
+SRC="$1"; SFX="$2"; DUR="$3"; OUT="$4"; LUFS="${5:--16}"; CUES="${OUT%.wav}_cues.json"; cp "$SRC" "$CUES"
 python3 - "$CUES" <<'PY'
 import json, sys
 p = sys.argv[1]; d = json.load(open(p, encoding='utf-8'))
@@ -15,4 +15,4 @@ json.dump(d, open(p, 'w', encoding='utf-8'), ensure_ascii=False)
 PY
 python3 $SK/mix.py --cues "$CUES" --sfx-dir "$SFX" --duration "$DUR" --out "${OUT%.wav}_raw.wav" --lufs "$LUFS" --tp -2 | tail -1
 ffmpeg -y -v error -i "${OUT%.wav}_raw.wav" -af "highpass=f=90,lowpass=f=6500,loudnorm=I=${LUFS}:TP=-2:LRA=9" -ar 48000 "$OUT"
-rm -f "${OUT%.wav}_raw.wav"
+rm -f "${OUT%.wav}_raw.wav" "$CUES"
