@@ -221,7 +221,7 @@
 - **宮殿**（`web/js/palace3d.js`、`#palace`，three.js r128 在 `web/vendor/`）：六館地塊＋廣場；用金幣蓋 7 種方塊（新手送 40 塊），拆退一半；讀完一章／拿到星得到該章紀念碑，逛模式點紀念碑回到那章。`S.st.palace` 合併取較新。
 - **畫餅**：帶我讀主按鈕下一行「照這速度 MM/DD 讀完 42 章，比考試早 N 天」（`goPie()`）。
 - **影片工程可本機渲染**：`影片/工程/README.md`；工具包在 `影片/工程/_toolkit/`（字型 `fonts.py --fetch`）；`_lib/*.sh` 用相對路徑，`AUTO_GIT=1` 才自動 commit + push。雲端這邊重啟背景迴圈：`cd 影片/工程 && AUTO_GIT=1 nohup bash _lib/runall.sh > _lib/runall.log 2>&1 &`、`AUTO_GIT=1 nohup bash _lib/spliceall.sh >> _lib/spliceall.log 2>&1 &`。
-- **發布線上版前**：先 `Artifact list scope=files` 看線上版號與檔案；`DATA.shorts` 有幾支，`media/` 就要帶齊幾支（漏帶會變成壞掉的播放器）。目前 version 33（`1793842407-78bb`），13 支短影音。
+- **發布線上版前**：先 `Artifact list scope=files` 看線上版號與檔案；`DATA.shorts` 有幾支，`media/` 就要帶齊幾支（漏帶會變成壞掉的播放器）。目前 version 34（`1793864209-241e`），30 支短影音（01–30）。31–43 渲染完、01–20 重渲完後要再發布一次（重渲的 media 會變）。
 
 ## 6.11 2026-11-05 早上：43 支影片全部設計完成
 - 28–43 已寫完（B 樹、死結、Union-Find、BFS/DFS、分頁、Karatsuba、暫存器換名、DP、平面圖、Huffman、SVD、RAID 5、最大流、MESI、歸約、雇用問題），全部 3D、接記憶宮殿房號，排在 `_lib/queue.txt`。
