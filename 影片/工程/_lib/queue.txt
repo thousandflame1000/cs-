@@ -29,3 +29,4 @@
 29-Deadlock|29-OS-死結四條件|45-51.6
 30-UnionFind|30-資結-Union-Find路徑壓縮|45-51.3
 31-Traverse|31-資結-BFS與DFS|45-51.4
+32-Paging|32-OS-分頁與兩層頁表|45-51.2

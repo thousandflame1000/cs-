@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "程式給的位址不是真的位址", "hook": true},
+  {"id": "o2", "text": "[頁號]查表，[位移]照抄", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "分頁", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "記憶體切成一樣大的頁框", "scene": true, "hold": 3.4},
+  {"id": "a2", "text": "位址拆兩半：頁號、頁內位移", "hold": 3.8},
+  {"id": "a3", "text": "頁號查頁表，換成[頁框號]", "hold": 4.2, "pause": 0.2},
+
+  {"id": "b1", "text": "32 位元、4 KB 一頁：頁表要 [4 MB]", "scene": true, "hold": 4.2},
+  {"id": "b2", "text": "切兩層：外層剛好[一頁]", "hold": 3.6},
+  {"id": "b3", "text": "只建用到的內層：[12 KB]", "hold": 3.8, "pause": 0.2},
+
+  {"id": "c1", "text": "代價：每次多讀一次記憶體", "scene": true, "hold": 3.8},
+  {"id": "c2", "text": "所以前面放一個 [TLB]", "hold": 3.4},
+  {"id": "c3", "text": "命中就[跳過]頁表", "hold": 3.6},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
