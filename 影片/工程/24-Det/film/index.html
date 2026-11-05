@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>行列式是面積倍率</title>
+<!--
+  資工所衝刺 · 短影音 24：行列式是面積的放大倍率
+  記憶宮殿：線代館 · 第 5 間。地上的單位正方形隨矩陣連續變形成平行四邊形，上方即時顯示 det 與面積。
+  A = [[3, 1], [1, 2]] → 面積 5，每一格都 ×5；往 [[1, 2], [3, 1]] 變形途中 det 經過 0（壓成線）再變負（L 形記號翻面）；
+  [[1, .5], [2, 1]] 壓成一條線＝不可逆；3D 單位立方體 → 斜方體，體積 3；最後先 ×2 再 ×3 → ×6。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', BL = '#7aa8ff', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', PK = '#ff9ad5', GR = '#6ee7a8';
+const K = Kit({ W, H, stage, duration: DUR, seed: 241, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: BL, accent2: CY } });
+K.warm([BL, CY, AM, CO, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 放大倍率: BL, 5: BL, 翻面: AM, 沒有反矩陣: CO, '6 倍': GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+const add = (a, b) => a.map((v, i) => v + b[i]);
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: BL, a: .35 * a, major: 3 });
+function counter(c, label, val, col, a, x = CX, y = 300, sz = 80) {
+  if (a <= .003) return;
+  S.label(c, label, x, y - 50, { size: 30, w: 500, color: INK, a: .6 * a, ls: '4px' });
+  S.label(c, val, x, y + 14, { size: sz, w: 700, color: col, a });
+}
+const fx = (v, d = 1) => (Math.abs(v) < .05 ? '0' : v.toFixed(d).replace(/\.0$/, ''));
+
+// ═════════ 2D 變換畫在地上
+const U = .58, O = [-1.05, -1.1, .02];
+const ap = (Mx, u, v) => [O[0] + (Mx[0][0] * u + Mx[0][1] * v) * U, O[1] + (Mx[1][0] * u + Mx[1][1] * v) * U, O[2]];
+const det2 = Mx => Mx[0][0] * Mx[1][1] - Mx[0][1] * Mx[1][0];
+const lm = (A, B, k) => A.map((r, i) => r.map((v, j) => lerp(v, B[i][j], k)));
+const I2 = [[1, 0], [0, 1]], A_ = [[3, 1], [1, 2]], AF = [[1, 2], [3, 1]], A0 = [[1, .5], [2, 1]];
+const LSH = [[.2, .2], [.55, .2], [.55, .32], [.32, .32], [.32, .75], [.2, .75]];   // 看方向用的 L 形
+function cell(c, Mx, u, v, a, o = {}) {
+  const d = det2(Mx), col = o.col || (d < -.02 ? AM : BL);
+  const q = [ap(Mx, u, v), ap(Mx, u + 1, v), ap(Mx, u + 1, v + 1), ap(Mx, u, v + 1)];
+  V.poly(c, q, K.rgba(col, (o.fill ?? .22) * a), K.rgba(col, .95 * a), 1);
+  if (o.mark) V.poly(c, LSH.map(([x, y]) => ap(Mx, u + x, v + y)), K.rgba('#ffffff', .85 * a), null, 1);
+}
+function axes(c, Mx, a) {
+  V.arrow(c, ap(Mx, 0, 0), ap(Mx, 1, 0), { color: CY, a, w: 4.5, head: 16 }); V.arrow(c, ap(Mx, 0, 0), ap(Mx, 0, 1), { color: PK, a, w: 4.5, head: 16 });
+}
+function gridLines(c, a) { for (let i = -1; i <= 6; i++) { V.line(c, ap(I2, i, -1), ap(I2, i, 6), { color: INK, a: .14 * a, w: 1, plain: true }); V.line(c, ap(I2, -1, i), ap(I2, 6, i), { color: INK, a: .14 * a, w: 1, plain: true }); } }
+
+// ═════════ 鏡頭
+const TG = [0, 0, 0];
+V.camKeys([
+  [0, V.orbit(-14, 6.4, 6.6, [0, 0, 0], 44)], [T.start, V.orbit(-4, 7.0, 7.0, TG, 44)],
+  [A1.start, V.orbit(-12, 6.2, 6.4, [-.3, -.3, 0], 44)], [L.a4.end, V.orbit(4, 6.8, 6.8, [0, 0, 0], 44)],
+  [B1.start + .3, V.orbit(-10, 6.4, 6.6, [0, 0, 0], 44)], [L.b2.end, V.orbit(6, 6.6, 6.8, [0, 0, 0], 44)],
+  [C1.start + .3, V.orbit(-34, 6.4, 3.2, [0, 0, .7], 44)], [L.c2.end, V.orbit(-6, 6.6, 3.6, [0, 0, .7], 44)],
+  [D1.start + .3, V.orbit(-10, 6.6, 6.8, [0, 0, 0], 44)], [DUR, V.orbit(6, 6.8, 7.0, [0, 0, 0], 44)],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c); gridLines(c, 1);
+  const Mx = lm(I2, A_, E.inOutCubic(prog(t, o2.start, o2.start + 1.4)));
+  cell(c, Mx, 0, 0, 1, { mark: true }); axes(c, Mx, 1);
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '線性代數 · 行列式', big: 'det', size: 220, y: 600, en: 'DETERMINANT  =  AREA  SCALE', q: '變換把面積放大幾倍', qGap: 330, color: BL });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); cell(c, A_, 0, 0, 1, { mark: true }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), BL);
+}
+function sArea(c, t) {
+  room(c); gridLines(c, prog(t, A1.start - .1, A1.start + .4));
+  const k = E.inOutCubic(prog(t, L.a2.start + .3, L.a2.start + 2.4)), Mx = lm(I2, A_, k), d = det2(Mx);
+  // a4：周圍的格子也一起變，每格都是 5
+  const ga = prog(t, L.a4.start + .2, L.a4.start + 1.0);
+  if (ga > 0) for (const [u, v] of [[1, 0], [0, 1], [1, 1]]) cell(c, Mx, u, v, ga * .7, { fill: .12 });
+  cell(c, Mx, 0, 0, 1, { mark: true }); axes(c, Mx, 1);
+  if (ga > .5) for (const [u, v] of [[1, 0], [0, 1], [1, 1]]) { const p = ap(Mx, u + .5, v + .5); V.label(c, '5', add(p, [0, 0, .12]), { size: .3, w: 700, color: BL, a: ga, minPx: 24, maxPx: 70 }); }
+  const a = prog(t, A1.start + .2, A1.start + .6);
+  counter(c, '面積', fx(Math.abs(d)), BL, a, CX - 200); counter(c, 'det', fx(d), INK, a, CX + 200);
+  if (k > .98) V.label(c, 'A = [3 1; 1 2]', ap(Mx, .9, -.9), { size: .22, w: 600, color: INK, a: .7 * prog(t, L.a3.start, L.a3.start + .5), minPx: 20, maxPx: 54 });
+}
+function sFlip(c, t) {
+  room(c); gridLines(c, 1);
+  const k1 = E.inOutCubic(prog(t, B1.start + .4, B1.start + 3.2)), k2 = E.inOutCubic(prog(t, L.b2.start + .2, L.b2.start + 2.0));
+  const Mx = k2 > 0 ? lm(AF, A0, k2) : lm(I2, AF, k1), d = det2(Mx);
+  if (Math.abs(d) < .04) { V.line(c, ap(Mx, 0, 0), ap(Mx, 1.5, 1.5), { color: CO, w: 4 }); } else cell(c, Mx, 0, 0, 1, { mark: true });
+  axes(c, Mx, 1);
+  if (k2 > .98) { V.line(c, ap(Mx, -1, -1), ap(Mx, 2.5, 2.5), { color: CO, w: 4.5 }); V.label(c, '面積 0', ap(Mx, 2.2, 1.4), { size: .28, w: 700, color: CO, minPx: 24, maxPx: 70 }); }
+  counter(c, '面積', fx(Math.abs(d)), d < -.02 ? AM : Math.abs(d) < .04 ? CO : BL, 1, CX - 200); counter(c, 'det', fx(d), d < -.02 ? AM : INK, 1, CX + 200);
+}
+// c：3D 單位立方體 → 斜方體（體積 3）
+const B3 = [[2, 1, 0], [0, 1, 0], [0, .5, 1.5]], C0 = [-.8, -.6, 0], U3 = .6;
+const ap3 = (Mx, p) => [C0[0] + (Mx[0][0] * p[0] + Mx[0][1] * p[1] + Mx[0][2] * p[2]) * U3, C0[1] + (Mx[1][0] * p[0] + Mx[1][1] * p[1] + Mx[1][2] * p[2]) * U3, C0[2] + (Mx[2][0] * p[0] + Mx[2][1] * p[1] + Mx[2][2] * p[2]) * U3];
+const det3 = m => m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+function sCube(c, t) {
+  room(c);
+  const I3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]], k = E.inOutCubic(prog(t, C1.start + .6, C1.start + 2.8)), Mx = I3.map((r, i) => r.map((v, j) => lerp(v, B3[i][j], k)));
+  const P = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]].map(p => ap3(Mx, p));
+  const faces = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]];
+  faces.forEach(f => V.poly(c, f.map(i => P[i]), K.rgba(BL, .1), K.rgba(BL, .8), 1));
+  [[1, CY], [3, PK], [4, AM]].forEach(([i, col]) => V.arrow(c, P[0], P[i], { color: col, w: 4.5, head: 16 }));
+  const a = prog(t, C1.start + .2, C1.start + .6);
+  counter(c, '體積', fx(det3(Mx)), BL, a, CX - 200); counter(c, 'det', fx(det3(Mx)), INK, a, CX + 200);
+}
+// d：先 ×2 再 ×3
+const D2 = [[2, 0], [0, 1]], D3 = [[2, 1], [0, 3]];   // D3 = B·D2，B = [[1, 1], [0, 3]]
+function sChain(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c); gridLines(c, 1);
+  const k1 = E.inOutCubic(prog(t, D1.start + .4, D1.start + 1.6)), k2 = E.inOutCubic(prog(t, D1.start + 2.0, D1.start + 3.4));
+  const Mx = k2 > 0 ? lm(D2, D3, k2) : lm(I2, D2, k1), d = det2(Mx);
+  cell(c, Mx, 0, 0, 1, { mark: true, col: GR }); axes(c, Mx, 1);
+  const seq = ['1', k1 > .98 ? '2' : null, k2 > .98 ? '6' : null].filter(Boolean).join('  →  ');
+  S.label(c, seq, CX, 300, { size: 84, w: 700, color: GR, a: prog(t, D1.start + .2, D1.start + .6) });
+  S.label(c, k2 > .98 ? '×2  再  ×3' : k1 > .98 ? '×2' : '', CX, 400, { size: 44, w: 600, color: INK, a: .7 });
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['det = 面積（體積）倍率', BL, 52], ['負號 = 翻面', AM, 56], ['det = 0 ⇔ 不可逆', CO, 56], ['det(AB) = det A · det B', INK, 50]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'area', start: A1.start, end: B1.start, draw: sArea, color: BL, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'flip', start: B1.start, end: C1.start, draw: sFlip, color: AM, in: { type: 'cut' } },
+  { id: 'cube', start: C1.start, end: D1.start, draw: sCube, color: BL, in: { type: 'cut' } },
+  { id: 'chain', start: D1.start, end: DUR, draw: (c, t) => { sChain(c, t); sExam(c, t); }, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+S.chapters([[A1.start, '記憶宮殿 · 線代館 · 第 5 間  /  01 面積 ×5'], [B1.start, '記憶宮殿 · 線代館 · 第 5 間  /  02 翻面與壓扁'], [C1.start, '記憶宮殿 · 線代館 · 第 5 間  /  03 體積'], [D1.start, '記憶宮殿 · 線代館 · 第 5 間  /  04 相乘'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o2.start, sfx: 'whoosh', gain: -11 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: L.a2.start + .3, sfx: 'swish', gain: -10 }, { t: L.a3.start + .2, sfx: 'chime', gain: -10 }, { t: L.a4.start + .2, sfx: 'pop', gain: -11 },
+    { t: B1.start + .4, sfx: 'swish', gain: -10 }, { t: B1.start + .4 + 2.8 * .45, sfx: 'glitch', gain: -11 },
+    { t: L.b2.start + .2, sfx: 'swish', gain: -10 }, { t: L.b2.start + 2.0, sfx: 'impact', gain: -8 },
+    { t: C1.start + .6, sfx: 'whoosh', gain: -11 }, { t: L.c2.start + .2, sfx: 'chime', gain: -10 },
+    { t: D1.start + .4, sfx: 'swish', gain: -10 }, { t: D1.start + 2.0, sfx: 'swish', gain: -10 }, { t: D1.start + 3.4, sfx: 'chime', gain: -9 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

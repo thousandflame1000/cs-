@@ -1,0 +1,26 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "行列式", "hook": true},
+  {"id": "o2", "text": "其實是面積的[放大倍率]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "行列式", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "單位正方形：面積 1", "scene": true, "hold": 3.2},
+  {"id": "a2", "text": "乘上 A：變成平行四邊形", "hold": 3.8},
+  {"id": "a3", "text": "面積變 [5]：det A = 5", "hold": 3.6},
+  {"id": "a4", "text": "每一格都放大 5 倍", "hold": 3.4, "pause": 0.2},
+
+  {"id": "b1", "text": "det 小於 0：面積照算，但[翻面]了", "scene": true, "hold": 4.6},
+  {"id": "b2", "text": "det = 0：壓成一條線，[沒有反矩陣]", "hold": 4.2, "pause": 0.2},
+
+  {"id": "c1", "text": "3D：單位立方體變斜方體", "scene": true, "hold": 3.6},
+  {"id": "c2", "text": "體積倍率 = det", "hold": 3.2, "pause": 0.2},
+
+  {"id": "d1", "text": "先放大 2 倍，再放大 3 倍 → [6 倍]", "scene": true, "hold": 4.4},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
