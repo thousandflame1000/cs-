@@ -14,14 +14,15 @@
   --good: #1d8a4a;
   --warn: #b26a00;
   --bad: #c62f2f;
+  --star: #d99a12;
   --s-ds: #0e8a8c;
   --s-al: #5b47d1;
   --s-co: #d06a14;
   --s-os: #8a3cb0;
   --s-dm: #2e7d3b;
   --s-la: #c23a68;
-  --f-display: "Noto Serif TC", "Source Han Serif TC", "PMingLiU", serif;
-  --f-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --f-display: "Noto Serif TC", "Source Han Serif TC", "PMingLiU", "Noto Emoji", serif;
+  --f-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Noto Emoji", system-ui, sans-serif;
   --f-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
   --r: 10px;
   color-scheme: light;
@@ -83,7 +84,7 @@ input[type="range"] { padding: 0; accent-color: var(--accent); }
 .rail { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--line); padding: 18px 14px 40px; }
 .brand { display: flex; justify-content: space-between; align-items: center; }
 .brand a { text-decoration: none; color: var(--ink); font-family: var(--f-display); font-weight: 900; font-size: 1.35rem; letter-spacing: .04em; }
-.brand .b2 { color: var(--pen); margin-left: 2px; }
+.brand .b2 { color: var(--ink); margin-left: 2px; }
 .rail-close { display: none; background: none; border: 0; font-size: 1.6rem; color: var(--ink-2); cursor: pointer; }
 .rail-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 10px; }
 .count { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; display: flex; flex-direction: column; }
@@ -1318,3 +1319,38 @@ dl.kv .kv-fig { padding: .3em 0; }
 .xp-hero-side .xp-play-btn { display: inline-flex; align-items: center; gap: 8px; font-size: 1.05rem; padding: 10px 22px; }
 
 .feyn-more > summary { cursor: pointer; color: var(--ink-2); font-size: .88rem; font-weight: 600; margin: 4px 0 8px; }
+
+/* ===== 選單：4 區＋設定（content/DESIGN.md 第 2、4 節） ===== */
+.ic { flex: none; display: block; }
+.nav-main, .nav-foot { display: flex; flex-direction: column; gap: 2px; }
+.nav-foot { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--line); }
+.nav-gh { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 9px; color: var(--ink-2); font-weight: 600; font-size: .98rem; text-decoration: none; }
+.nav-gh:hover { background: var(--surface-2); color: var(--ink); }
+.nav-g.on > .nav-gh { color: var(--ink); }
+.nav-gs { display: flex; flex-direction: column; margin: 2px 0 8px 20px; padding-left: 10px; border-left: 1px solid var(--line); }
+.nav-sub { padding: 6px 10px; border-radius: 7px; color: var(--ink-2); font-size: .92rem; text-decoration: none; }
+.nav-sub:hover { color: var(--ink); background: var(--surface-2); }
+.nav-sub.cur { color: var(--accent); font-weight: 700; background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.nav-gs .nav-subjs { margin-top: 6px; }
+.rail-line { display: flex; gap: 14px; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.rail-close .ic { width: 22px; height: 22px; }
+
+/* 星：線條星，得到＝--star 實心，沒得到＝線色空心（content/DESIGN.md 第 7 節） */
+.stars3 .ic, .fh-daily .ic { display: inline-block; width: 1em; height: 1em; vertical-align: -.14em; }
+.stars3 .ic + .ic { margin-left: 1px; }
+.ic.on { color: var(--star); fill: var(--star); }
+.ic.off { color: var(--line); }
+.fh-daily { background: transparent !important; color: var(--ink-2) !important; border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.go-start, .go-start:hover { box-shadow: none; transform: none; }
+.go-start:active { transform: none; filter: brightness(.94); }
+
+/* 帶我讀：進度圈中間是步數；連續天數只用數字（content/DESIGN.md 第 7 節） */
+.go-num { flex-direction: column; gap: 0; font-family: var(--f-body); font-variant-numeric: tabular-nums; }
+.go-num b { font-size: 1.9rem; line-height: 1; color: var(--ink); }
+.go-num small { font-size: .78rem; color: var(--ink-2); }
+.go-top .n { color: var(--ink); }
+.go-list .gi { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: .85rem; }
+.go-start:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.rw-lv, .rw-card .lv b, .rw-hero .lv b { color: var(--ink) !important; }
+.rw-lvbig b { color: var(--ink) !important; }
+@media (min-width: 821px) { .go-top > span:first-child { display: none; } }

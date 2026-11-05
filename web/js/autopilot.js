@@ -117,23 +117,22 @@ function viewGo() {
   const toMin = x => { const m = String(x || '').match(/^(\d{1,2}):(\d{2})$/); return m ? +m[1] * 60 + +m[2] : null; }, nowM = new Date().getHours() * 60 + new Date().getMinutes(), cm = toMin(commit);
   const behind = day >= 3 && day <= 31 && pc.read < pc.expect ? pc.expect - pc.read : 0;
   main().innerHTML = `
-  ${froze ? '<div class="go-note">🧊 凍結卡保住了連勝</div>' : ''}
-  ${Bridge.mode === 'cloud' && typeof CloudAgent !== 'undefined' && CloudAgent.ready() && !st.aiOK ? '<div class="go-note">🤖 讓 Claude 直接幫你改作業、回答問題 <button class="btn sm primary" id="goAI">開啟</button></div>' : ''}
-  ${Sync.needNudge() ? '<div class="go-note warn">💾 這台的進度只存在瀏覽器裡 <button class="btn sm" id="goBak">下載備份</button></div>' : ''}
+  ${froze ? '<div class="go-note">凍結卡保住了連續天數</div>' : ''}
+  ${Bridge.mode === 'cloud' && typeof CloudAgent !== 'undefined' && CloudAgent.ready() && !st.aiOK ? '<div class="go-note">讓 Claude 直接幫你改作業、回答問題 <button class="btn sm primary" id="goAI">開啟</button></div>' : ''}
+  ${Sync.needNudge() ? '<div class="go-note warn">這台的進度只存在瀏覽器裡 <button class="btn sm" id="goBak">下載備份</button></div>' : ''}
   ${missedY && !L.checkin ? `<div class="go-note bad">昨天沒打卡${st.settings.stake ? `　·　${esc(st.settings.stake)}` : ''}</div>` : ''}
-  <div class="go-top"><span class="${streak ? 'fire' : ''}">🔥 ${streak}</span>${cm != null && !L.checkin ? `<button class="go-t ${nowM > cm ? 'bad-t' : ''}" id="goCommit" title="打卡時間">⏰ ${commit}</button>` : ''}${behind ? `<span class="bad-t">落後 ${behind} 章</span>` : ''}${L.minMode ? '<span>保底</span>' : ''}${Personal.cram() ? '<span class="bad-t">考前衝刺</span>' : ''}${rw.chests.length ? `<button class="go-chest" id="goChest">🎁 ${rw.chests.length}</button>` : ''}<b>${done}/${n}</b></div>
+  <div class="go-top"><span>連續 <b class="n">${streak}</b> 天</span>${cm != null && !L.checkin ? `<button class="go-t ${nowM > cm ? 'bad-t' : ''}" id="goCommit" title="打卡時間">${commit} 打卡</button>` : ''}${behind ? `<span class="bad-t">落後 ${behind} 章</span>` : ''}${L.minMode ? '<span>保底</span>' : ''}${Personal.cram() ? '<span class="bad-t">考前衝刺</span>' : ''}${rw.chests.length ? `<button class="go-chest" id="goChest">寶箱 ${rw.chests.length}</button>` : ''}</div>
 
   ${cur ? `<section class="go-hero">
-    <div class="go-ringwrap">${(() => { const R = 52, C = 2 * Math.PI * R, f = n ? done / n : 0; return `<svg class="go-ring" viewBox="0 0 120 120" aria-label="今天 ${done}/${n} 步"><circle cx="60" cy="60" r="${R}" class="gr-bg"/><circle cx="60" cy="60" r="${R}" class="gr-fg" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - f)).toFixed(1)}"/></svg>`; })()}<div class="go-ic">${cur.icon}</div></div>
+    <div class="go-ringwrap">${(() => { const R = 52, C = 2 * Math.PI * R, f = n ? done / n : 0; return `<svg class="go-ring" viewBox="0 0 120 120" aria-label="今天 ${done}/${n} 步"><circle cx="60" cy="60" r="${R}" class="gr-bg"/><circle cx="60" cy="60" r="${R}" class="gr-fg" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - f)).toFixed(1)}"/></svg>`; })()}<div class="go-ic go-num"><b>${steps.indexOf(cur) + 1}</b><small>/ ${n}</small></div></div>
     <h2>${esc(cur.title)}</h2>
-    <button class="go-start" id="goNow">▶ 開始</button>
+    <button class="go-start" id="goNow">開始</button>
     <div class="go-meta">${cur.mins} 分</div>
-    ${(() => { const ci = steps.indexOf(cur), nx = steps.slice(ci + 1).filter(x => !x.done && !x.skipped).slice(0, 4); return nx.length ? `<div class="go-next" aria-label="接下來"><span class="go-next-l">接下來</span>${nx.map(x => `<span class="go-next-i" title="${esc(x.title)}">${x.icon}</span>`).join('')}${steps.filter(x => !x.done && !x.skipped).length - 1 > nx.length ? '<span class="go-next-more">…</span>' : ''}</div>` : ''; })()}
     <div class="go-links"><button id="goFive">只做 5 分鐘</button>${L.minMode ? '<button id="goFull">完整計畫</button>' : '<button id="goMin">保底</button>'}<button id="goSkip">跳過</button></div>
   </section>`
-  : `<section class="go-hero done"><div class="go-ringwrap">${(() => { const R = 52, C = 2 * Math.PI * R, f = n ? done / n : 0; return `<svg class="go-ring" viewBox="0 0 120 120" aria-label="今天 ${done}/${n} 步"><circle cx="60" cy="60" r="${R}" class="gr-bg"/><circle cx="60" cy="60" r="${R}" class="gr-fg" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - f)).toFixed(1)}"/></svg>`; })()}<div class="go-ic">🏁</div></div><h2>今天完成</h2><button class="go-start" id="goMore">▶ 再打一關</button><div class="go-links"><a href="#feed">短影音</a><a href="#gen">隨機題</a><a href="#rewards">獎勵</a></div></section>`}
+  : `<section class="go-hero done"><div class="go-ringwrap">${(() => { const R = 52, C = 2 * Math.PI * R, f = n ? done / n : 0; return `<svg class="go-ring" viewBox="0 0 120 120" aria-label="今天 ${done}/${n} 步"><circle cx="60" cy="60" r="${R}" class="gr-bg"/><circle cx="60" cy="60" r="${R}" class="gr-fg" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - f)).toFixed(1)}"/></svg>`; })()}<div class="go-ic go-num"><b>${n}</b><small>/ ${n}</small></div></div><h2>今天完成</h2><button class="go-start" id="goMore">再打一關</button><div class="go-links"><a href="#videos">影片</a><a href="#gen">隨機題</a><a href="#rewards">獎勵</a></div></section>`}
   <details class="go-more"><summary>今天 ${n} 步</summary>
-    <ol class="go-list">${steps.map((s, i) => `<li class="${s.done ? 'ok' : s.skipped ? 'sk' : s === cur ? 'cur' : ''}"><button data-step="${i}"><span class="gi">${s.done ? '✓' : s.skipped ? '–' : s.icon}</span><span class="gt">${esc(s.title)}</span><span class="gm">${s.done || s.skipped ? '' : s.mins + ' 分'}</span></button></li>`).join('')}</ol>
+    <ol class="go-list">${steps.map((s, i) => `<li class="${s.done ? 'ok' : s.skipped ? 'sk' : s === cur ? 'cur' : ''}"><button data-step="${i}"><span class="gi">${s.done ? '✓' : s.skipped ? '–' : i + 1}</span><span class="gt">${esc(s.title)}</span><span class="gm">${s.done || s.skipped ? '' : s.mins + ' 分'}</span></button></li>`).join('')}</ol>
     <div class="row end"><button class="btn sm ghost" id="goRe">重新安排</button></div>
   </details>`;
   const q = id => $('#' + id);

@@ -431,6 +431,18 @@ function renderList(items, start, inline) {
 }
 
 /* ---------- data access ---------- */
+/* 線條圖示：24 格、線寬 1.75、跟著文字顏色。只用在選單 5 區與媒體控制（見 content/DESIGN.md） */
+const ICON_P = {
+  today: '<rect x="3.5" y="5" width="17" height="15" rx="2.2"/><path d="M3.5 9.5h17M8 3v4M16 3v4M9 14.6l2.1 2.1 4.1-4.2"/>',
+  course: '<path d="M12 6.6C10.1 5.2 7.6 4.5 4.5 4.5v13c3.1 0 5.6.7 7.5 2.1 1.9-1.4 4.4-2.1 7.5-2.1v-13c-3.1 0-5.6.7-7.5 2.1zM12 6.6v13"/>',
+  practice: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
+  records: '<path d="M4 20h16M7.5 16.5v-5M12 16.5V7M16.5 16.5v-8"/>',
+  settings: '<path d="M4 7h9.5M18.5 7H20M4 17h3.5M12.5 17H20"/><circle cx="16" cy="7" r="2.4"/><circle cx="10" cy="17" r="2.4"/>',
+  star: '<path d="M12 3.9l2.5 5.1 5.6.8-4.05 3.95.95 5.6L12 16.7l-5 2.65.95-5.6L3.9 9.8l5.6-.8z"/>',
+  play: '<path d="M8 5.6v12.8L18.4 12z" fill="currentColor"/>',
+  close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+};
+const ICON = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_P[name] || ''}</svg>`;
 const DATA = window.CSDATA || { subjects: [], lessons: [], quiz: [], plan: [] };
 const SUBJ = Object.fromEntries(DATA.subjects.map(s => [s.id, s]));
 const LESSON = Object.fromEntries(DATA.lessons.map(l => [l.id, l]));

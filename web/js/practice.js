@@ -65,13 +65,12 @@ const Practice = {
     const i = (this.fi || 0) % r.length, c = r[i], rest = r.filter((_, k) => k !== i).slice(0, 3);
     const ts = S.day().stars || 0, goal = this.DAILY_STARS;
     return `<section class="feed-hero">
-      <div class="fh-daily" title="每天拿 ${goal} 顆星開金寶箱">${ts >= goal ? '🎁 今日寶箱已開' : `今天 ⭐ ${ts}/${goal} → 🎁`}</div>
-      <div class="fh-ic" aria-hidden="true">${c.ic}</div>
+      <div class="fh-daily" title="每天拿 ${goal} 顆星開寶箱">${ts >= goal ? '今天的寶箱已開' : `今天 ${ICON('star', 'on')} ${ts} / ${goal}`}</div>
       <h2>${esc(c.t)}</h2>
       <div class="fh-sub">${esc(c.sub)}${c.stars ? this.starHtml(c.stars) : ''}</div>
-      <button class="go-start" id="fhGo">▶ 開打</button>
+      <button class="go-start" id="fhGo">開打</button>
       ${r.length > 1 ? '<button class="btn ghost sm" id="fhSkip">換一個</button>' : ''}
-      ${rest.length ? `<div class="fh-next">${rest.map(x => `<button class="fh-n" data-rk="${esc(x.k)}"><span aria-hidden="true">${x.ic}</span>${esc(x.t.length > 12 ? x.t.slice(0, 12) + '…' : x.t)}</button>`).join('')}</div>` : ''}
+      ${rest.length ? `<div class="fh-next">${rest.map(x => `<button class="fh-n" data-rk="${esc(x.k)}">${esc(x.t.length > 12 ? x.t.slice(0, 12) + '…' : x.t)}</button>`).join('')}</div>` : ''}
     </section>`;
   },
   wireFeed() {
@@ -106,7 +105,7 @@ const Practice = {
   /* ⭐ 星等：每章 🐣／⚔️／👹 三關，該關答對 ≥ 60% 就拿到那顆星 */
   DAILY_STARS: 3,
   starGet(ch) { return this.store('stars', 'chStars')[ch] || 0; },
-  starHtml(ch) { const n = this.starGet(ch); return `<span class="stars3" title="${n}/3 星">${'⭐'.repeat(n)}${'<span class="st-off">☆</span>'.repeat(3 - n)}</span>`; },
+  starHtml(ch) { const n = this.starGet(ch); return `<span class="stars3" title="${n}/3 星">${ICON('star', 'on').repeat(n)}${ICON('star', 'off').repeat(3 - n)}</span>`; },
   stageClear(d, res) {
     const s = this.sess, ch = s.opts.ch; if (!ch || !res.length) return false;
     const ok = res.filter(r => r.ok).length / res.length >= .6; if (!ok) return false;
@@ -530,7 +529,7 @@ const Practice = {
     const m = main();
     m.innerHTML = `<header class="page-head slim exam-head"><div class="eyebrow">${esc(g.name)}｜${s.ids.length} 題</div>
       <div class="row"><b class="exam-clock" id="examClock">--:--</b><button class="btn primary" id="handIn">交卷</button></div>
-      <div class="boss"><span class="boss-ic" aria-hidden="true">👹</span><span class="boss-n">大魔王</span><span class="hp"><i id="mockHp" style="width:100%"></i></span><span class="hp-n" id="mockHpN">${s.ids.length}/${s.ids.length}</span></div></header>
+      <div class="boss"><span class="boss-n">大魔王</span><span class="hp"><i id="mockHp" style="width:100%"></i></span><span class="hp-n" id="mockHpN">${s.ids.length}/${s.ids.length}</span></div></header>
       <ol class="exam">${s.ids.map((id, k) => { const q = this.getQ(id); return `<li class="card qcard" id="eq-${k}"><div class="q-meta">${this.metaLine(q)}</div><div class="q-stem prose">${md(q.stem)}</div>${this.answerUI(q, 'e' + k)}</li>`; }).join('')}</ol>
       <div class="row end"><button class="btn primary" id="handIn2">交卷</button></div>`;
     const tick = () => {
