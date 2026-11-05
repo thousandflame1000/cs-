@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "常出現的字，給它最短的碼", "hook": true},
+  {"id": "o2", "text": "每次合併[最少的兩個]", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "Huffman 編碼", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "六個字，柱子高度是出現次數", "scene": true, "hold": 3.6},
+  {"id": "a2", "text": "最矮的兩根先合併：5 + 9 = 14", "hold": 3.8},
+  {"id": "a3", "text": "一直合併最小的兩個，直到剩[一棵樹]", "hold": 4.6, "pause": 0.2},
+
+  {"id": "b1", "text": "往左是 0，往右是 1", "scene": true, "hold": 3.4},
+  {"id": "b2", "text": "a 只要 [1 位]，f 要 4 位", "hold": 3.4},
+  {"id": "b3", "text": "沒有碼是別人的開頭：[前綴碼]", "hold": 3.8, "pause": 0.2},
+
+  {"id": "c1", "text": "總長 224，固定 3 位要 300", "scene": true, "hold": 3.8},
+  {"id": "c2", "text": "把 a 換到最深處：反而[更長]", "hold": 3.8},
+  {"id": "c3", "text": "所以貪婪合併就是[最佳]", "hold": 3.2},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
