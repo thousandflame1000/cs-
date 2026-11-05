@@ -260,7 +260,7 @@
 - 網站的「動畫講解」已有旁白開關（`explain.js` 的 `Voice`）；短影音播放器目前沒有聲音開關，接旁白後要補。
 
 **學生 17:10 之後的回饋（還沒處理完，下一個工作階段優先）**
-1. **聲音不舒服：低音底噪、高聲的「叮」**。已改流程：`_lib/softmix.sh`（拿掉 bed 底樂、chime −10 dB、impact/thump/riser −5 dB、glitch −3 dB，整條 highpass 90 Hz＋lowpass 6.5 kHz＋loudnorm），`finish.sh` 和 `splice.sh` 都改用它。**41 之後的新片自動套用；已交付的 01–40 還是舊聲音**，要寫 `remixall.sh`：每支 `node cues.mjs film/index.html > work/cues.json` → `softmix.sh` → `ffmpeg -i out/NAME.mp4 -i work/mix.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 160k` 換掉音軌 → 複製到 `影片/新版短影音/` → 刪 `out/.palace_done` 讓 spliceall 重新剪宮殿片頭片尾並重壓 `web/media`。網站自己的音效（`rewards.js` 的 chime、金幣聲）也要一起調柔、降高頻。
+1. **聲音不舒服：低音底噪、高聲的「叮」**。已改流程：`_lib/softmix.sh`（拿掉 bed 底樂、chime −10 dB、impact/thump/riser −5 dB、glitch −3 dB，整條 highpass 90 Hz＋lowpass 6.5 kHz＋loudnorm），`finish.sh` 和 `splice.sh` 都改用它。**41 之後的新片自動套用；已交付的 01–40 由 `_lib/remixall.sh` 換音軌（17:25 開始在背景跑，做完的留 `out/.soft`，log 在 `_lib/remixall.log`；重啟後再跑一次會跳過做完的）**。做法：每支 `node cues.mjs film/index.html > work/cues.json` → `softmix.sh` → `ffmpeg -i out/NAME.mp4 -i work/mix.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 160k` 換掉音軌 → 複製到 `影片/新版短影音/` → 刪 `out/.palace_done` 讓 spliceall 重新剪宮殿片頭片尾並重壓 `web/media`。網站自己的音效（`rewards.js` 的 chime、金幣聲）也要一起調柔、降高頻（還沒做）。注意：`softmix.sh` 改成複製 cues 再調，不會重複壓低；`remixall.sh` 的每支要 `< /dev/null`（ffmpeg 會吃掉 while-read 的輸入）。
 2. **課程頁「右邊部分的 UI 沒整理好」（#ds-amortized 等每章都一樣）**。1440 寬看到的狀況：主內容固定約 780px 寬，右邊留一大片空白；右下浮動的「下一步」藥丸蓋在空白區；左側選單 `aside.rail` 自己有一條捲軸（高 900、內容 1153）。學生說「還要用滑鼠滾輪操作，很不好用」——要避免巢狀捲動：選單改成跟頁面一起捲，或把章節清單收合成只顯示目前科目；寬螢幕把右邊空白用起來（例如目前段落目錄／進度，或讓影片＋實驗並排）。**改之前先請學生截圖確認他說的「右邊」是哪一塊。**
 3. 已完成：網站剩下的彩色 emoji 已清掉（practice、views-learn、cloud、app、nudge）；`explain*.js` 是另一個工作階段的，沒動。
 
