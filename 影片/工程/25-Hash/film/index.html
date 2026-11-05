@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>雜湊與線性探測</title>
+<!--
+  資工所衝刺 · 短影音 25：雜湊與線性探測——塊為什麼越滾越大
+  記憶宮殿：資結館 · 第 5 間。11 個格子圍成一圈（第 10 格的下一格是第 0 格）。key 從上方落下，先到 k mod 11 那格；
+  被占了，探測球就一格一格往後跳。連在一起的格子是一條發光帶（群聚）。41 從 8 開始繞過一圈走 8 格，兩塊併成一大塊。
+  牆上曲線：找不到時的平均探測次數 ½(1 + 1/(1−α)²)，α = 0.9 時約 50。最後：刪除留墓碑。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', GR = '#6ee7a8', VI = '#b48cff', PK = '#ff9ad5';
+const K = Kit({ W, H, stage, duration: DUR, seed: 251, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: AM } });
+K.warm([CY, AM, CO, GR, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 結塊: AM, 下一格: CY, 群聚: AM, '8 格': AM, 越滾越大: CO, '50 次': CO, 墓碑: VI, 找不到: CO },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+const add = (a, b) => a.map((v, i) => v + b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: CY, a: .4 * a, major: 3 });
+function counter(c, label, val, col, a, x = CX, y = 300, sz = 76) {
+  if (a <= .003) return;
+  S.label(c, label, x, y - 50, { size: 30, w: 500, color: INK, a: .6 * a, ls: '4px' });
+  S.label(c, val, x, y + 14, { size: sz, w: 700, color: col, a });
+}
+
+// ═════════ 11 格圍成一圈
+const M11 = 11, RR = 1.22, CEN = [0, .2, 0];
+const slotP = (i, z = 0) => { const a = -Math.PI / 2 + i / M11 * Math.PI * 2; return [CEN[0] + Math.cos(a) * RR, CEN[1] + Math.sin(a) * RR, z]; };
+/** 插入事件：依時間重播（純函數） */
+const KEYS = [[22, A1.start + .6], [7, A1.start + 2.2], [33, L.a2.start + .3], [18, L.a2.start + 1.7], [44, L.a2.start + 3.0], [29, L.a3.start + .2], [13, L.a3.start + 1.6], [30, L.a3.start + 2.7], [41, L.b2.start + .4]];
+const HOP = .32;
+function sim(t, opts = {}) {
+  const tab = Array(M11).fill(null), events = [];
+  for (const [k, t0] of KEYS) { const path = [k % M11]; while (tab[path[path.length - 1]] != null) path.push((path[path.length - 1] + 1) % M11); const dur = .5 + (path.length - 1) * HOP; events.push({ k, t0, path, dur }); if (t >= t0 + dur) tab[path[path.length - 1]] = k; }
+  return { tab, events };
+}
+function ring(c, t, a = 1, o = {}) {
+  const { tab, events } = sim(t);
+  // 群聚發光帶
+  const cl = o.clusters ?? 0;
+  if (cl > 0) for (let i = 0; i < M11; i++) if (tab[i] != null && tab[(i + 1) % M11] != null) { const p0 = slotP(i, .03), p1 = slotP(i + 1, .03); V.line(c, p0, p1, { color: AM, a: cl * a, w: 10 }); }
+  const items = [];
+  for (let i = 0; i < M11; i++) {
+    const p = slotP(i), tomb = o.tomb === i;
+    items.push({ p, draw: () => {
+      const h = .26; V.poly(c, [add(p, [-h, -h, .01]), add(p, [h, -h, .01]), add(p, [h, h, .01]), add(p, [-h, h, .01])], K.rgba(CY, .06 * a), K.rgba(CY, .55 * a), 1);
+      V.label(c, String(i), add(slotP(i), [0, 0, 0]).map((v, j) => j === 2 ? -.15 : CEN[j] + (v - CEN[j]) * 1.28), { size: .18, color: INK, a: .55 * a, minPx: 16, maxPx: 44 });
+      const k = o.empty === i ? null : tab[i]; if (k == null) return;
+      if (tomb) { V.pillar(c, p, .36, .3, '#6b7280', a, { fill: .4 }); V.label(c, '墓碑', add(p, [0, 0, .55]), { size: .18, w: 700, color: VI, a, minPx: 16, maxPx: 44 }); return; }
+      const fresh = events.find(e => e.k === k); const pop = fresh ? prog(t, fresh.t0 + fresh.dur, fresh.t0 + fresh.dur + .25) : 1;
+      V.pillar(c, p, .36, .42 * pop, (k % M11) === i ? CY : AM, a, { fill: .5 }); V.label(c, String(k), add(p, [0, 0, .66]), { size: .22, w: 700, color: '#ffffff', a: a * pop, minPx: 18, maxPx: 56 });
+    } });
+  }
+  V.sorted(items);
+  // 正在插入的 key：先落到 h(k)，再一格一格跳
+  for (const e of events) {
+    if (t < e.t0 || t >= e.t0 + e.dur) continue; const u = t - e.t0;
+    let p; if (u < .5) p = mix3(add(slotP(e.path[0]), [0, 0, 2.2]), add(slotP(e.path[0]), [0, 0, .7]), E.outCubic(u / .5));
+    else { const s = (u - .5) / HOP, i = Math.min(e.path.length - 2, Math.floor(s)), f = s - i; p = mix3(add(slotP(e.path[i]), [0, 0, .7]), add(slotP(e.path[i + 1]), [0, 0, .7]), E.inOutCubic(clamp(f))); p[2] += Math.sin(clamp(f) * Math.PI) * .35; }
+    V.glow(c, p, .6, .6, AM); V.core(c, p, .1, 1, '#ffffff'); V.label(c, String(e.k), add(p, [0, 0, .32]), { size: .26, w: 700, color: AM, minPx: 22, maxPx: 70 });
+  }
+  return { tab, events };
+}
+const hopsOf = (t) => { const { events } = sim(t); let cur = null; for (const e of events) if (t >= e.t0) cur = e; return cur; };
+
+// ═════════ 鏡頭
+const TG = [0, .2, .3];
+V.camKeys([
+  [0, V.orbit(-18, 6.8, 5.0, TG, 44)], [T.start, V.orbit(-6, 7.4, 5.4, TG, 44)],
+  [A1.start, V.orbit(-16, 6.4, 5.0, TG, 44)], [L.a3.end, V.orbit(10, 6.6, 5.4, TG, 44)],
+  [B1.start + .3, V.orbit(-10, 6.8, 5.6, TG, 44)], [L.b3.end, V.orbit(16, 7.0, 5.4, TG, 44)],
+  [C1.start + .3, V.orbit(-8, 7.0, 2.6, [0, .8, 1.2], 44)], [L.c2.end, V.orbit(6, 7.2, 2.8, [0, .8, 1.2], 44)],
+  [D1.start + .3, V.orbit(-14, 6.6, 5.0, TG, 44)], [DUR, V.orbit(6, 6.8, 5.2, TG, 44)],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c); ring(c, 99, 1, { clusters: prog(t, o2.start, o2.start + .8) });
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '資料結構 · 雜湊', big: '線性探測', size: 180, y: 600, en: 'HASHING  ·  LINEAR  PROBING', q: '撞到就往下一格', qGap: 330, color: CY });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); ring(c, 99, 1, { clusters: 1 }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CY);
+}
+function sProbe(c, t) {
+  room(c);
+  ring(c, t, prog(t, A1.start - .1, A1.start + .4), { clusters: prog(t, B1.start + .3, B1.start + 1.0) });
+  const e = hopsOf(t), a = prog(t, A1.start + .4, A1.start + .8);
+  if (e) { const n = Math.min(e.path.length, 1 + Math.max(0, Math.floor((t - e.t0 - .5) / HOP) + 1)); counter(c, `${e.k} mod 11`, String(e.k % M11), CY, a, CX - 210); counter(c, '走了幾格', String(Math.min(n, e.path.length)), e.path.length > 2 ? AM : INK, a, CX + 210); }
+  const big = prog(t, L.b3.start + .2, L.b3.start + .7);
+  if (big > 0) S.label(c, '一大塊：7 → 4（9 格）', CX, 440, { size: 50, w: 700, color: CO, a: big });
+}
+// c：探測次數 vs 裝滿程度
+function sCurve(c, t) {
+  room(c);
+  const a = prog(t, C1.start - .1, C1.start + .4), WY = 1.4, X = al => -1.35 + al * 2.9, ZS = .042;
+  V.poly(c, [[-1.5, WY, 0], [1.55, WY, 0], [1.55, WY, 2.6], [-1.5, WY, 2.6]], K.rgba('#0d1424', .6 * a), K.rgba(INK, .18 * a), 1);
+  for (const al of [0, .5, .9]) V.label(c, String(al), [X(al), WY - .02, -.18], { size: .2, color: INK, a: .7 * a, minPx: 18, maxPx: 50 });
+  const pts = [], ok = []; for (let i = 0; i <= 60; i++) { const al = i / 60 * .92; pts.push([X(al), WY - .03, Math.min(2.5, ZS * .5 * (1 + 1 / (1 - al) ** 2))]); ok.push([X(al), WY - .03, ZS * .5 * (1 + 1 / (1 - al))]); }
+  const pp = E.inOutCubic(prog(t, C1.start + .3, C1.start + 2.8));
+  V.path(c, ok, { p: pp, color: GR, w: 3 }); const end = V.path(c, pts, { p: pp, color: CO, w: 3.6 });
+  if (end) K.core(c, end[0], end[1], 7, a, CO);
+  const la = prog(t, C1.start + 2.6, C1.start + 3.1);
+  V.label(c, '找不到', [X(.8), WY - .03, 2.3], { size: .22, w: 700, color: CO, a: la, align: 'right', minPx: 20, maxPx: 56 });
+  V.label(c, '找得到', [X(.9), WY - .03, .55], { size: .22, w: 700, color: GR, a: la, minPx: 20, maxPx: 56 });
+  const va = prog(t, L.c2.start + .3, L.c2.start + .8);
+  counter(c, '裝滿 α', va > 0 ? '0.9' : '…', INK, a, CX - 200); counter(c, '找不到平均', va > 0 ? '50.5' : '…', CO, a, CX + 200);
+}
+// d：墓碑
+function sTomb(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const del = t >= D1.start + .8, bad = t >= L.d2.start + .2 && t < L.d2.start + 2.0;
+  ring(c, 99, 1, { clusters: .4, tomb: del && !bad ? 1 : -1, empty: del && bad ? 1 : -1 });
+  if (del && bad) { const p = slotP(1); V.label(c, '清空', add(p, [0, 0, .5]), { size: .2, w: 700, color: CO, minPx: 18, maxPx: 50 }); }
+  // 找 44：從 0 開始
+  const s0 = D1.start + 1.6, s1 = L.d2.start + .4;
+  const path = bad ? [0, 1] : [0, 1, 2];
+  const tt = t - (t >= L.d2.start + 2.2 ? L.d2.start + 2.3 : bad ? s1 : s0);
+  if (tt > 0 && tt < path.length * .45 + .8) { const s = Math.min(path.length - 1, tt / .45), i = Math.min(path.length - 2, Math.floor(s)), f = clamp(s - i); const p = mix3(add(slotP(path[i]), [0, 0, .75]), add(slotP(path[i + 1]), [0, 0, .75]), E.inOutCubic(f)); V.glow(c, p, .55, .6, GR); V.core(c, p, .09, 1, '#ffffff'); V.label(c, '找 44', add(p, [0, 0, .3]), { size: .22, w: 700, color: GR, minPx: 20, maxPx: 60 }); }
+  const verdict = bad ? (t > s1 + 1.0 ? ['空格就停 → 找不到 ✗', CO] : null) : t > s0 + 1.1 && t < L.d2.start ? ['墓碑跳過 → 找到 ✓', GR] : t > L.d2.start + 3.3 ? ['留墓碑 → 找到 ✓', GR] : null;
+  if (verdict) S.label(c, verdict[0], CX, 330, { size: 52, w: 700, color: verdict[1] });
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['被占 → 往下一格（繞圈）', CY, 52], ['線性探測會群聚', AM, 56], ['找不到 ≈ ½(1 + 1/(1−α)²)', INK, 46], ['刪除要留墓碑', VI, 56]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'probe', start: A1.start, end: C1.start, draw: sProbe, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'curve', start: C1.start, end: D1.start, draw: sCurve, color: CO, in: { type: 'cut' } },
+  { id: 'tomb', start: D1.start, end: DUR, draw: (c, t) => { sTomb(c, t); sExam(c, t); }, color: VI, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(C1.start, .06, .3); K.flash(D1.start, .06, .3);
+S.chapters([[A1.start, '記憶宮殿 · 資結館 · 第 5 間  /  01 探測'], [B1.start, '記憶宮殿 · 資結館 · 第 5 間  /  02 群聚'], [C1.start, '記憶宮殿 · 資結館 · 第 5 間  /  03 裝滿'], [D1.start, '記憶宮殿 · 資結館 · 第 5 間  /  04 墓碑'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const keyCues = (() => { const out = []; const { events } = sim(0); events.forEach(e => { out.push({ t: e.t0 + .45, sfx: 'pop', gain: -11 }); for (let i = 1; i < e.path.length; i++) out.push({ t: e.t0 + .5 + (i - 1) * HOP + .15, sfx: 'tick', gain: -14 }); }); return out; })();
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o2.start, sfx: 'whoosh', gain: -11 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    ...keyCues,
+    { t: B1.start + .3, sfx: 'swish', gain: -10 }, { t: L.b3.start + .2, sfx: 'impact', gain: -8 },
+    { t: C1.start + .3, sfx: 'riser', gain: -14 }, { t: L.c2.start + .3, sfx: 'glitch', gain: -10 },
+    { t: D1.start + .8, sfx: 'pop', gain: -10 }, { t: L.d2.start + 1.3, sfx: 'glitch', gain: -10 }, { t: L.d2.start + 3.3, sfx: 'chime', gain: -9 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>

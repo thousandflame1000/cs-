@@ -1,0 +1,27 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "雜湊碰撞了", "hook": true},
+  {"id": "o2", "text": "線性探測為什麼會[結塊]？", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "雜湊與線性探測", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "k mod 11：算出要放第幾格", "scene": true, "hold": 4.2},
+  {"id": "a2", "text": "被占了，就往[下一格]找", "hold": 4.6},
+  {"id": "a3", "text": "一格一格往後擠", "hold": 4.4, "pause": 0.2},
+
+  {"id": "b1", "text": "連在一起的格子：[群聚]", "scene": true, "hold": 3.6},
+  {"id": "b2", "text": "41 落在塊裡：繞過一圈，走了 [8 格]", "hold": 5.2},
+  {"id": "b3", "text": "塊越長越容易被打中：[越滾越大]", "hold": 3.8, "pause": 0.2},
+
+  {"id": "c1", "text": "裝越滿，找得越久", "scene": true, "hold": 3.4},
+  {"id": "c2", "text": "裝到 90%，找不到平均要 [50 次]", "hold": 4.2, "pause": 0.2},
+
+  {"id": "d1", "text": "刪除不能清空，要留[墓碑]", "scene": true, "hold": 3.6},
+  {"id": "d2", "text": "不然後面的 key 會被當成[找不到]", "hold": 4.2},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
