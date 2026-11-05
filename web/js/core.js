@@ -443,6 +443,8 @@ const ICON_P = {
   close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
 };
 const ICON = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_P[name] || ''}</svg>`;
+const COIN = '<svg class="coin" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9.6" fill="var(--star)" stroke="color-mix(in srgb, var(--star) 60%, #000)" stroke-width="1.2"/><circle cx="12" cy="12" r="6.1" fill="none" stroke="#fff7d6" stroke-width="1.5" opacity=".85"/><path d="M10.2 8.6h3.6M12 8.6v6.8" stroke="#fff7d6" stroke-width="1.5" stroke-linecap="round" opacity=".85"/></svg>';
+document.addEventListener('pointerdown', e => { if (typeof Rewards !== 'undefined') Rewards.lastPt = [e.clientX, e.clientY]; }, true);
 const DATA = window.CSDATA || { subjects: [], lessons: [], quiz: [], plan: [] };
 const SUBJ = Object.fromEntries(DATA.subjects.map(s => [s.id, s]));
 const LESSON = Object.fromEntries(DATA.lessons.map(l => [l.id, l]));

@@ -1080,7 +1080,7 @@ details.sec:not([open]) > :not(summary) { display: none; }
 .boss-ic { font-size: 22px; line-height: 1; }
 .boss-n { font-weight: 700; font-size: .92rem; }
 .hp { flex: 1; height: 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
-.hp i { display: block; height: 100%; background: linear-gradient(90deg, #ef4444, #f97316); transition: width .45s ease; }
+.hp i { display: block; height: 100%; background: var(--accent); transition: width .45s ease; }
 .hp.hurt { animation: hpShake .35s; }
 @keyframes hpShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 .hp-n { font-variant-numeric: tabular-nums; font-size: .85rem; color: var(--ink-2); min-width: 2.6em; text-align: right; }
@@ -1354,3 +1354,48 @@ dl.kv .kv-fig { padding: .3em 0; }
 .rw-lv, .rw-card .lv b, .rw-hero .lv b { color: var(--ink) !important; }
 .rw-lvbig b { color: var(--ink) !important; }
 @media (min-width: 821px) { .go-top > span:first-child { display: none; } }
+
+/* ===== 金幣（金色只代表獎勵） ===== */
+.coin { flex: none; display: inline-block; vertical-align: -.2em; }
+.rail-coin { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; color: var(--ink); text-decoration: none; font-variant-numeric: tabular-nums; }
+.rail-coin b, .coin-hud b { font-weight: 800; }
+.rail-coin.bump, .coin-hud.bump { animation: coinBump .22s ease-out; }
+@keyframes coinBump { 40% { transform: scale(1.18); } }
+.coin-hud { position: fixed; top: 10px; right: 12px; z-index: 90; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px 7px 9px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); text-decoration: none; font-size: 1.05rem; font-variant-numeric: tabular-nums; opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .2s; pointer-events: none; }
+.coin-hud.on { opacity: 1; transform: none; pointer-events: auto; }
+.coin-hud .coin { width: 22px; height: 22px; }
+.coin-plus { position: absolute; right: 8px; top: 100%; margin-top: 4px; font-weight: 900; color: var(--star); font-size: 1.15rem; animation: coinPlus 1.2s ease-out forwards; }
+@keyframes coinPlus { from { opacity: 0; transform: translateY(-6px); } 20% { opacity: 1; } to { opacity: 0; transform: translateY(10px); } }
+.coin-fly { position: fixed; left: -11px; top: -11px; z-index: 95; pointer-events: none; width: 22px; height: 22px; }
+.coin-fly .coin { width: 22px; height: 22px; }
+@media (min-width: 821px) { .coin-hud { display: none; } }
+
+/* ===== 提示階梯 ===== */
+.hint { margin: 10px 0 4px; }
+.hint-btn .hint-n { color: var(--ink-2); font-variant-numeric: tabular-nums; margin-left: 4px; }
+.hint-btn.pulse { animation: hintPulse 1.6s ease-in-out 3; border-color: var(--accent); color: var(--accent); }
+@keyframes hintPulse { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 18%, transparent); } }
+.hint-steps { display: grid; gap: 8px; margin-top: 8px; }
+.hint-step { display: grid; grid-template-columns: 3.6em 1fr; column-gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); animation: hintIn .25s ease-out; }
+@keyframes hintIn { from { opacity: 0; transform: translateY(-4px); } }
+.hint-k { font-size: .8rem; font-weight: 700; letter-spacing: .12em; color: var(--accent); padding-top: .2em; }
+.hint-t { font-weight: 700; margin-bottom: 2px; }
+.hint-b .prose p { margin: 0; }
+.hint-vid { width: min(240px, 60vw); }
+@media (prefers-reduced-motion: reduce) { .hint-btn.pulse, .hint-step { animation: none; } }
+
+/* ===== 拉霸感：加倍牌、金幣雨、勝利閃光 ===== */
+.coin-hud.win, .rail-coin.win { box-shadow: 0 0 0 3px color-mix(in srgb, var(--star) 45%, transparent), 0 0 24px color-mix(in srgb, var(--star) 55%, transparent); }
+.rail-coin { border-radius: 999px; padding: 2px 6px; transition: box-shadow .25s; }
+.coin-plus.big { font-size: 1.6rem; }
+.coin-rain { position: fixed; left: -11px; top: 0; z-index: 94; pointer-events: none; width: 22px; height: 22px; }
+.coin-rain .coin { width: 22px; height: 22px; }
+.jp { position: fixed; inset: 0; z-index: 96; display: grid; place-items: center; pointer-events: none; }
+.jp-in { text-align: center; padding: 18px 34px 16px; border-radius: 20px; background: color-mix(in srgb, var(--surface) 92%, transparent); border: 2px solid var(--star); box-shadow: 0 0 60px color-mix(in srgb, var(--star) 50%, transparent); animation: jpIn .5s cubic-bezier(.2, 1.6, .4, 1); }
+.jp-in small { display: block; font-weight: 800; letter-spacing: .3em; color: var(--ink-2); }
+.jp-in b { display: block; font-size: 5rem; line-height: 1; font-weight: 900; color: var(--star); font-variant-numeric: tabular-nums; }
+.jp-in span { display: block; font-size: 1.4rem; font-weight: 800; color: var(--ink); }
+.jp.mega .jp-in b { font-size: 7rem; }
+.jp.out .jp-in { transition: opacity .35s, transform .35s; opacity: 0; transform: scale(.8); }
+@keyframes jpIn { from { opacity: 0; transform: scale(.3) rotate(-8deg); } }
+@media (prefers-reduced-motion: reduce) { .jp-in { animation: none; } }

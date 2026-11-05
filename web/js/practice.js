@@ -91,7 +91,7 @@ const Practice = {
     const d = q.diff || 2, st = this.STAGE[d], n = s.ids.filter(id => this.dOf(id) === d).length;
     const hit = s.results.filter(r => !r.skipped && r.ok && this.dOf(r.qid) === d).length, hp = Math.max(0, n - hit);
     return `<header class="page-head slim"><div class="eyebrow">${esc(s.opts.title || '練習')}｜第 ${s.i + 1} / ${total} 題</div>
-      <div class="boss"><span class="boss-ic" aria-hidden="true">${st.ic}</span><span class="boss-n">${st.name}</span><span class="hp" title="怪物血量"><i style="width:${hp / n * 100}%"></i></span><span class="hp-n">${hp}/${n}</span>${(s.combo || 0) >= 2 ? `<span class="combo">🔥×${s.combo}</span>` : ''}</div></header>`;
+      <div class="boss"><span class="boss-n">${st.name}</span><span class="hp" title="怪物血量"><i style="width:${hp / n * 100}%"></i></span><span class="hp-n">${hp}/${n}</span>${(s.combo || 0) >= 2 ? `<span class="combo">🔥×${s.combo}</span>` : ''}</div></header>`;
   },
   hit(ok, q) {
     const s = this.sess; s.combo = ok ? (s.combo || 0) + 1 : 0;
@@ -252,15 +252,17 @@ const Practice = {
     m.innerHTML = `
     ${this.headHtml(q)}
     <section class="card qcard">
-      <div class="q-meta">${this.metaLine(q)}<button class="btn ghost sm paper-tg" id="toPaper" title="考場是手寫，用紙筆練">✍️ 改用紙筆</button></div>
+      <div class="q-meta">${this.metaLine(q)}<button class="btn ghost sm paper-tg" id="toPaper" title="考場是手寫，用紙筆練">改用紙筆</button></div>
       <div class="q-stem prose">${md(q.stem)}</div>
+      ${this.hintHtml(q)}
       <div id="ansArea">${this.answerUI(q)}</div>
       ${q.type !== 'essay' ? `<details class="reason"><summary>思考鏈</summary><textarea id="reasonText" rows="4"></textarea></details>` : ''}
-      <div class="row end q-act">${s.opts.pretest ? '' : '<button class="btn ghost nb-btn" id="qNoBase" title="完全不會（0）">🆘 完全不會</button>'}<button class="btn ghost" id="qSkip">跳過</button>${s.opts.pretest ? '<button class="btn primary" id="qSubmit">提交</button>'
-        : `<span class="cs-l">提交</span>${[[1, '🤔 猜的'], [2, '🙂 有把握'], [3, '😎 很確定']].map(([v, t]) => `<button class="btn cs ${v === 2 ? 'primary' : ''}" data-conf="${v}"><kbd>${v}</kbd>${t}</button>`).join('')}`}</div>
+      <div class="row end q-act">${s.opts.pretest ? '' : '<button class="btn ghost nb-btn" id="qNoBase" title="完全不會（0）">完全不會</button>'}<button class="btn ghost" id="qSkip">跳過</button>${s.opts.pretest ? '<button class="btn primary" id="qSubmit">提交</button>'
+        : `<span class="cs-l">提交</span>${[[1, '猜的'], [2, '有把握'], [3, '很確定']].map(([v, t]) => `<button class="btn cs ${v === 2 ? 'primary' : ''}" data-conf="${v}"><kbd>${v}</kbd>${t}</button>`).join('')}`}</div>
       <div id="feedback"></div>
     </section>
     <div class="row end"><button class="btn ghost" id="qQuit">結束這回</button></div>`;
+    this.wireHints(q); s.hint = 0;
     $$('[data-conf]', m).forEach(b => b.onclick = () => { s.conf = +b.dataset.conf; this.submit(q, qid); });
     if ($('#toPaper')) $('#toPaper').onclick = () => { this.paperSet(true); this.renderCard(); };
     $('#qSkip').onclick = () => { s.results.push({ qid, skipped: true }); this.advance(); };
@@ -301,17 +303,18 @@ const Practice = {
     m.innerHTML = `
     ${this.headHtml(q)}
     <section class="card qcard paper">
-      <div class="q-meta">${this.metaLine(q)}<button class="btn ghost sm paper-tg" id="toKey" title="改回點選／打字">⌨️ 改回點選</button></div>
+      <div class="q-meta">${this.metaLine(q)}<button class="btn ghost sm paper-tg" id="toKey" title="改回點選／打字">改用點選</button></div>
       <div class="q-stem prose">${md(q.stem)}</div>
       ${q.type === 'single' || q.type === 'multi' ? `<div class="paper-opts">${q.opts.map((o, k) => `<div class="po"><span class="ol">${LETTERS[k]}</span><span>${md(o).replace(/^<p>|<\/p>$/g, '')}</span></div>`).join('')}</div>` : ''}
+      ${this.hintHtml(q)}
       <div id="ansArea" class="pad-wrap">
         <canvas id="pad"></canvas>
-        <div class="pad-tools"><button class="btn sm on" data-pt="pen">✏️ 筆</button><button class="btn sm" data-pt="eraser">🩹 橡皮擦</button><button class="btn sm" data-pt="clear">🗑 全清</button></div></div>
-      <div class="row end q-act"><button class="btn ghost nb-btn" id="qNoBase" title="完全不會（0）">🆘 完全不會</button><button class="btn ghost" id="qSkip">跳過</button><button class="btn primary" id="paperDone">✍️ 寫好了，對答案</button></div>
+        <div class="pad-tools"><button class="btn sm on" data-pt="pen">筆</button><button class="btn sm" data-pt="eraser">橡皮擦</button><button class="btn sm" data-pt="clear"> 全清</button></div></div>
+      <div class="row end q-act"><button class="btn ghost nb-btn" id="qNoBase" title="完全不會（0）">完全不會</button><button class="btn ghost" id="qSkip">跳過</button><button class="btn primary" id="paperDone">對答案</button></div>
       <div id="feedback"></div>
     </section>
     <div class="row end"><button class="btn ghost" id="qQuit">結束這回</button></div>`;
-    this.initPad(m);
+    this.initPad(m); this.wireHints(q); s.hint = 0;
     $('#toKey').onclick = () => { this.paperSet(false); this.renderCard(); };
     $('#qSkip').onclick = () => { s.results.push({ qid, skipped: true }); this.advance(); };
     $('#qNoBase').onclick = () => this.noBase(q, qid);
@@ -319,15 +322,48 @@ const Practice = {
     $('#paperDone').onclick = () => this.paperReveal(q, qid);
   },
 
+  /* 提示階梯：沒底子就一層一層打開（觀念 → 30 秒影片 → 第一步），熟的人直接作答、完全不會被擋。
+     卡住 25 秒提示鈕輕輕亮一下；H 鍵打開下一層。用過幾層提示記在作答紀錄裡。 */
+  hints(q) {
+    const out = [], l = LESSON[q.ch];
+    const sp = typeof lessonSpot === 'function' ? lessonSpot(q) : null;
+    if (l) {
+      const secs = String(l.body || '').split(/^## /m).slice(1), sec = sp && sp.i >= 0 ? secs[sp.i] : null;
+      const gm = sec && sec.match(/> \[!(?:先記住|要點)\][^\n]*\n((?:>.*\n?)+)/);
+      const gist = gm ? gm[1].replace(/^>\s?/gm, '').trim() : (String(l.intuit || '').match(/\*\*一句話\*\*[\s\u3000]*([^\n]+)/) || [])[1];
+      if (gist) out.push({ k: '觀念', html: `<div class="hint-t">${esc(sp && sp.title ? sp.title : l.title.split(/[：（]/)[0])}</div><div class="prose">${md(gist)}</div>` });
+    }
+    const clip = typeof Clips !== 'undefined' ? Clips.list.find(c => c.lesson === q.ch && Clips.videoOf && Clips.videoOf(c.id)) : null;
+    if (clip) out.push({ k: '影片', clip: clip.id });
+    const ex = fmtExpl(q.expl || '').split(/\n+/).map(x => x.trim()).filter(Boolean)[0];
+    if (ex) { const first = (ex.match(/^(.+?[。；;])/) || [, ex])[1]; out.push({ k: '第一步', html: `<div class="prose">${md(first)}</div>` }); }
+    return out;
+  },
+  hintHtml(q) {
+    const hs = this.hints(q); if (!hs.length) return '';
+    return `<div class="hint" id="hint"><button type="button" class="btn sm ghost hint-btn" id="hintBtn">提示 <span class="hint-n">0 / ${hs.length}</span></button><div class="hint-steps" id="hintSteps"></div></div>`;
+  },
+  wireHints(q) {
+    const btn = $('#hintBtn'); if (!btn) return; const hs = this.hints(q), host = $('#hintSteps'), s = this.sess; let k = 0;
+    const open = () => {
+      if (k >= hs.length) return; const h0 = hs[k++], el = document.createElement('div'); el.className = 'hint-step';
+      el.innerHTML = `<div class="hint-k">${h0.k}</div>`; const body = document.createElement('div'); body.className = 'hint-b'; el.appendChild(body); host.appendChild(el);
+      if (h0.clip) { const box = document.createElement('div'); box.className = 'hint-vid'; body.appendChild(box); Clips.player(box, h0.clip, {}); } else body.innerHTML = h0.html;
+      $('.hint-n', btn).textContent = k + ' / ' + hs.length; if (k >= hs.length) btn.disabled = true;
+      btn.classList.remove('pulse'); if (s) s.hint = Math.max(s.hint || 0, k);
+    };
+    btn.onclick = open; this._hintOpen = open;
+    clearTimeout(this._hintT); this._hintT = setTimeout(() => { if (k === 0 && btn.isConnected && s && s.state === 'ask') btn.classList.add('pulse'); }, 25000);
+  },
   paperReveal(q, qid) {
     const s = this.sess; if (s.state !== 'ask') return; s.state = 'done';
     const m = main(); $$('.q-act', m).forEach(x => x.remove()); $$('.pad-tools button', m).forEach(x => x.disabled = true);
     const cv = $('#pad', m); if (cv) cv.style.pointerEvents = 'none';
     $('#feedback').innerHTML = `
-      ${q.type !== 'essay' ? `<div class="fb neutral"><div class="fb-top"><span class="fb-ic" aria-hidden="true">🎯</span><b>標準答案</b></div><div class="fb-ans"><span><b>${esc(this.fmtAns(q))}</b></span></div></div>` : ''}
-      <div class="expl-box"><div class="expl-h"><span class="h-ic" aria-hidden="true">📝</span>標準解法</div><div class="prose expl">${md(fmtExpl(q.expl || ''))}</div></div>
+      ${q.type !== 'essay' ? `<div class="fb neutral"><div class="fb-top"><b>標準答案</b></div><div class="fb-ans"><span><b>${esc(this.fmtAns(q))}</b></span></div></div>` : ''}
+      <div class="expl-box"><div class="expl-h">解法</div><div class="prose expl">${md(fmtExpl(q.expl || ''))}</div></div>
       <div class="selfeval">
-        <button class="btn" data-pe="full">✅ 全對，過程也通<kbd>1</kbd></button><button class="btn" data-pe="part">🟡 答案對，過程有洞<kbd>2</kbd></button><button class="btn" data-pe="none">❌ 答案或方法錯<kbd>3</kbd></button></div>
+        <button class="btn" data-pe="full">全對，過程也通<kbd>1</kbd></button><button class="btn" data-pe="part">答案對，過程有洞<kbd>2</kbd></button><button class="btn" data-pe="none">答案或方法錯<kbd>3</kbd></button></div>
       <div id="afterFb"></div>`;
     $$('[data-pe]', m).forEach(b => b.onclick = () => {
       const v = b.dataset.pe, ok = v === 'full'; $$('[data-pe]', m).forEach(x => x.disabled = true);
@@ -590,6 +626,7 @@ function genStats(gid) {
 
 /* 鍵盤連刷：A–E 選項、1/2/3 = 用該信心提交、Enter = 提交／下一題 */
 document.addEventListener('keydown', e => {
+  if ((e.key === 'h' || e.key === 'H') && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') && $('#hintBtn') && !$('#hintBtn').disabled && Practice._hintOpen) { e.preventDefault(); Practice._hintOpen(); return; }
   if (e.key === 'Enter' && location.hash === '#practice' && !Practice.sess && !(e.target.closest && e.target.closest('textarea, input, button'))) { const b = $('#goNextRec') || $('#fhGo'); if (b) { e.preventDefault(); b.click(); return; } }
   const s = Practice.sess; if (!s || location.hash !== '#practice' || e.ctrlKey || e.metaKey || e.altKey || $('.nd-wrap,.modal-wrap')) return;
   const typing = e.target.closest && e.target.closest('textarea, input[type="text"], input:not([type]), input[type="number"]');

@@ -37,7 +37,7 @@ function renderRail() {
   rail.innerHTML = `
     <div class="brand"><a href="#go"><span class="b1">資工所</span><span class="b2">衝刺站</span></a>
       <button class="rail-close" id="railClose" aria-label="關閉選單">${ICON('close')}</button></div>
-    <div class="rail-line"><span>剩 <b>${left >= 0 ? left : 0}</b> 天</span><span>連續 <b>${S.streak()}</b> 天</span></div>
+    <div class="rail-line"><span>剩 <b>${left >= 0 ? left : 0}</b> 天</span><span>連續 <b>${S.streak()}</b> 天</span><a class="rail-coin" id="railCoin" href="#rewards" aria-label="金幣">${COIN}<b data-coin>${Rewards.coins()}</b></a></div>
     <a href="#agent" class="bridge-pill off" data-auto="1" hidden><span class="dot"></span><span>…</span></a>
     <nav class="nav-main">${G.map(grp).join('')}</nav>
     <nav class="nav-foot">${grp(SET)}</nav>`;
