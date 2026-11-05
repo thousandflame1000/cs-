@@ -254,6 +254,11 @@
 3. 互動實驗多數是「換數字＋逐步播」，挑幾個做成可直接拖拉（B 樹插入、分頁位址）。
 4. 片中房號（X館第 N 間）還沒跟網站宮殿位置一一對應。
 
+**配音（學生 17:05 說「目前的配音拉完了」）**
+- GitHub 兩個分支都還沒有配音檔（找過 voice／旁白／配音／.wav／.mp3／.m4a）。先問學生檔案放在哪（他電腦的資料夾，或做「動畫講解」的那個工作階段），拿到後放進 `影片/工程/NN-名稱/work/voice.*`。
+- 接法：`_lib/finish.sh` 第 18 行的 `mix.py` 目前只混音效＋底樂；加一條旁白音軌（旁白放前面、音效壓低 3–6 dB），旁白時間要對齊 `work/lines.json` 每句的 start（`timeline.py` 產生的 `film/timing.js`）。如果旁白比字幕長，改 lines.json 的 `hold` 再跑 timeline.py。
+- 網站的「動畫講解」已有旁白開關（`explain.js` 的 `Voice`）；短影音播放器目前沒有聲音開關，接旁白後要補。
+
 **這次新增的東西**
 - `web/js/labs-more.js`：20 個實驗（每章都有），樣式 `lm-*`；測試腳本在 scratchpad（`labtest.cjs` 跑每個實驗＋範例）。
 - `web/js/palace3d.js`：預設第一人稱（pointer lock、WASD、空白跳、左放右拆、撞牆、手機搖桿）；「俯瞰」切回 OrbitControls；`Palace3D._st()` 是除錯用。注意：鎖定瞬間的大幅 movement 要忽略（已處理 >150px）。
