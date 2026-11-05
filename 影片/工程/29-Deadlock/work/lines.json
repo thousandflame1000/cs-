@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "兩個行程都卡住了", "hook": true},
+  {"id": "o2", "text": "因為它們[繞成一圈]在等", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "死結", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "P1 拿著 R1，還要 R2", "scene": true, "hold": 3.8},
+  {"id": "a2", "text": "P2 拿著 R2，還要 R1", "hold": 3.6},
+  {"id": "a3", "text": "繞成一圈：誰都[等不到]", "hold": 3.6, "pause": 0.2},
+
+  {"id": "b1", "text": "死結要四個條件[同時]成立", "scene": true, "hold": 3.4},
+  {"id": "b2", "text": "互斥、拿著再等、不能搶、繞一圈", "hold": 5.4},
+  {"id": "b3", "text": "少一個，就[不會死結]", "hold": 3.2, "pause": 0.2},
+
+  {"id": "c1", "text": "資源編號：只能由小往大要", "scene": true, "hold": 4.2},
+  {"id": "c2", "text": "一路往上，就[繞不回來]", "hold": 3.8},
+  {"id": "c3", "text": "打破的是[循環等待]", "hold": 3.4},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}
