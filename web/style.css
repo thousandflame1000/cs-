@@ -1399,3 +1399,6 @@ dl.kv .kv-fig { padding: .3em 0; }
 .jp.out .jp-in { transition: opacity .35s, transform .35s; opacity: 0; transform: scale(.8); }
 @keyframes jpIn { from { opacity: 0; transform: scale(.3) rotate(-8deg); } }
 @media (prefers-reduced-motion: reduce) { .jp-in { animation: none; } }
+.rail-coin.warm .coin, .coin-hud.warm .coin { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--star) 80%, transparent)); animation: warmGlow 2.4s ease-in-out infinite; }
+@keyframes warmGlow { 50% { filter: drop-shadow(0 0 9px var(--star)); } }
+@media (prefers-reduced-motion: reduce) { .rail-coin.warm .coin, .coin-hud.warm .coin { animation: none; } }

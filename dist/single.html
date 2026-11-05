@@ -1418,6 +1418,9 @@ dl.kv .kv-fig { padding: .3em 0; }
 .jp.out .jp-in { transition: opacity .35s, transform .35s; opacity: 0; transform: scale(.8); }
 @keyframes jpIn { from { opacity: 0; transform: scale(.3) rotate(-8deg); } }
 @media (prefers-reduced-motion: reduce) { .jp-in { animation: none; } }
+.rail-coin.warm .coin, .coin-hud.warm .coin { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--star) 80%, transparent)); animation: warmGlow 2.4s ease-in-out infinite; }
+@keyframes warmGlow { 50% { filter: drop-shadow(0 0 9px var(--star)); } }
+@media (prefers-reduced-motion: reduce) { .rail-coin.warm .coin, .coin-hud.warm .coin { animation: none; } }
 
 </style>
 <script>
@@ -7809,11 +7812,13 @@ const Rewards = {
     const dx = xq - (r.xp0 == null ? xq : r.xp0); r.xp0 = xq;
     let c1 = this.coins(); const c0 = r.coin0 == null ? c1 : r.coin0;
     if (c1 > c0 && !o.quiet) {
-      // 獎勵預期誤差：基本獎勵小、倍率隨機；越久沒中機率越高，剛中過就變低（驚喜才會一直是驚喜）
-      const dry = r.dry || 0, roll = Math.random();
-      const p10 = Math.min(.03, .002 + dry * .0008), p5 = Math.min(.12, .015 + dry * .004), p2 = Math.min(.4, .07 + dry * .018);
-      const mult = roll < p10 ? 10 : roll < p10 + p5 ? 5 : roll < p10 + p5 + p2 ? 2 : 1;
-      r.dry = mult > 1 ? 0 : dry + 1;
+      /* 倍率：預期誤差才有多巴胺（Schultz 1997），中等不確定最強（Fiorillo 2003）→ 機率適中、隨「多久沒中」慢慢升高；
+         剛中過就回到低機率，驚喜才會一直是驚喜。保底：第 30 次一定 ×5，接近時金幣微微發亮（goal-gradient，Kivetz 2006）。
+         不做假的「差一點」（Clark 2009），不公開機率表；倍率只跟答對、完成綁在一起（Deci 1999）。 */
+      const dry = r.dry || 0, roll = Math.random(), PITY = 30;
+      const p10 = Math.min(.02, .002 + dry * .0005), p5 = Math.min(.08, .01 + dry * .002), p2 = Math.min(.3, .08 + dry * .008);
+      const mult = dry + 1 >= PITY ? 5 : roll < p10 ? 10 : roll < p10 + p5 ? 5 : roll < p10 + p5 + p2 ? 2 : 1;
+      r.dry = mult > 1 ? 0 : dry + 1; $$('.rail-coin, #coinHud').forEach(el => el.classList.toggle('warm', r.dry >= 22));
       if (mult > 1) { r.bonus = (r.bonus || 0) + (c1 - c0) * (mult - 1); c1 = this.coins(); }
       r.coin0 = c1; this.coinBurst(c1 - c0, c0, c1, mult);
     } else { r.coin0 = c1; this.paintCoin(c1); }
