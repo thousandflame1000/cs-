@@ -1,0 +1,198 @@
+window.TIMING = {
+ "total": 65.925,
+ "lines": [
+  {
+   "id": "o1",
+   "start": 0.3,
+   "end": 1.8,
+   "text": "偶爾一次要搬 n 個",
+   "cap": true,
+   "card": false,
+   "n": 8,
+   "scene": false,
+   "hook": true,
+   "font": "sans"
+  },
+  {
+   "id": "o2",
+   "start": 2.1,
+   "end": 3.725,
+   "text": "平均下來每次只要 [3]",
+   "cap": true,
+   "card": false,
+   "n": 9,
+   "scene": false,
+   "hook": true,
+   "font": "sans"
+  },
+  {
+   "id": "T",
+   "start": 4.125,
+   "end": 7.525,
+   "text": "攤銷分析",
+   "cap": false,
+   "card": true,
+   "n": 4,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a1",
+   "start": 7.825,
+   "end": 11.225,
+   "text": "陣列滿了就[加倍]",
+   "cap": true,
+   "card": false,
+   "n": 7,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a2",
+   "start": 11.525,
+   "end": 16.125,
+   "text": "搬家很貴：搬 1、2、4 個",
+   "cap": true,
+   "card": false,
+   "n": 9,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "a3",
+   "start": 16.425,
+   "end": 19.825,
+   "text": "但大部分插入只花 [1]",
+   "cap": true,
+   "card": false,
+   "n": 9,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b1",
+   "start": 20.325,
+   "end": 24.925,
+   "text": "會計法：每次插入付 [3 枚金幣]",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b2",
+   "start": 25.225,
+   "end": 29.625,
+   "text": "1 枚付自己，2 枚[存起來]",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "b3",
+   "start": 29.925,
+   "end": 34.725,
+   "text": "搬家時，存款剛好[付得起]",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c1",
+   "start": 35.225,
+   "end": 38.825,
+   "text": "每次的實際成本長這樣",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c2",
+   "start": 39.125,
+   "end": 42.925,
+   "text": "總和 ＜ n + 2n = [3n]",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "c3",
+   "start": 43.225,
+   "end": 47.025,
+   "text": "攤銷是[最壞情況]的平均，不靠機率",
+   "cap": true,
+   "card": false,
+   "n": 14,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d1",
+   "start": 47.525,
+   "end": 50.925,
+   "text": "如果少於 1/2 就減半",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d2",
+   "start": 51.225,
+   "end": 55.825,
+   "text": "在邊界插、刪交替：每次都 [Θ(n)]",
+   "cap": true,
+   "card": false,
+   "n": 12,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "d3",
+   "start": 56.125,
+   "end": 59.525,
+   "text": "所以等到 [1/4] 才減半",
+   "cap": true,
+   "card": false,
+   "n": 10,
+   "scene": false,
+   "hook": false,
+   "font": "sans"
+  },
+  {
+   "id": "E",
+   "start": 59.825,
+   "end": 64.425,
+   "text": "考試這樣寫",
+   "cap": false,
+   "card": true,
+   "n": 5,
+   "scene": true,
+   "hook": false,
+   "font": "sans"
+  }
+ ]
+};
+window.L = Object.fromEntries(window.TIMING.lines.map((l) => [l.id, l]));  // L.o1.start / L.o1.end

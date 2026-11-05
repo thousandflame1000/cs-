@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>攤銷分析</title>
+<!--
+  資工所衝刺 · 短影音 18：攤銷分析——動態表加倍
+  記憶宮殿：資結館 · 第 3 間。動態表是地上的一排格子（4 欄，往後長）；滿了就在上方浮出兩倍大的新表，
+  方塊一個個飛上去（每飛一個＝成本 1），新表再降回地面。會計法：每次插入付 3 枚金幣，1 枚付自己、2 枚放在方塊上；
+  搬家時每搬一個花掉 1 枚，剛好花光。最後：成本柱狀圖、1/2 減半的來回搬家、改成 1/4。
+  畫面上只放數字（+1、+5、存款），不放算式。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', GOLD = '#ffd27a', CO = '#ff6a5c', GR = '#6ee7a8', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 181, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: AM } });
+K.warm([CY, AM, GOLD, CO, GR, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .47, fogNear: 9, fogFar: 24 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 3: GOLD, 加倍: CY, 1: CY, '3 枚金幣': GOLD, 存起來: GOLD, 付得起: GR, '3n': GOLD, 最壞情況: AM, 'Θ(n)': CO, '1/4': GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1, D1 = L.d1;
+const add = (a, b) => a.map((v, i) => v + b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: CY, a: .6 * a, major: 3 });
+
+// ═════════ 動態表
+const SP = .78, BW = .58, BH = .42, LIFT = 1.7;
+const slot = (i, cap, z = 0) => { const cols = Math.min(cap, 4), rows = Math.ceil(cap / 4), col = i % 4, row = Math.floor(i / 4); return [(col - (cols - 1) / 2) * SP, (row - (rows - 1) / 2) * SP, z]; };
+function table(c, cap, z, a, col = CY) {
+  if (a <= .003) return;
+  for (let i = 0; i < cap; i++) { const [x, y] = slot(i, cap); const h = SP * .46; V.poly(c, [[x - h, y - h, z], [x + h, y - h, z], [x + h, y + h, z], [x - h, y + h, z]], K.rgba(col, .06 * a), K.rgba(col, .55 * a), 1); }
+}
+function coin(c, p, a = 1, glow = 0) {
+  if (a <= .003) return; const pts = []; for (let k = 0; k < 16; k++) { const t = k / 16 * Math.PI * 2; pts.push([p[0] + Math.cos(t) * .15, p[1] + Math.sin(t) * .15, p[2]]); }
+  V.poly(c, pts, K.rgba(GOLD, .9 * a), K.rgba('#fff3c4', a), 1);
+  if (glow > 0) V.glow(c, p, .9, glow * a, GOLD);
+}
+/** 事件：{k:'ins'|'del'|'grow', t, d, pay, cap, spend, cost} → 依時間重播出狀態（純函數） */
+function stateAt(t, init, evs) {
+  let cap = init.cap; const items = init.items.map((id) => ({ id, coins: (init.coins || {})[id] || 0 })); let anim = null, moved = 0;
+  for (const ev of evs) {
+    if (t < ev.t) break;
+    const k = clamp((t - ev.t) / ev.d);
+    if (k < 1) { anim = { ev, k, cap0: cap }; break; }
+    if (ev.k === 'ins') items.push({ id: ev.id, coins: ev.pay ? 2 : 0 });
+    if (ev.k === 'del') items.pop();
+    if (ev.k === 'grow') { moved += items.length; if (ev.spend) { let n = items.length; for (const it of items) { const u = Math.min(it.coins, n); it.coins -= u; n -= u; } } cap = ev.cap; }
+  }
+  return { cap, items, anim, moved };
+}
+function drawTable(c, t, init, evs, a = 1, o = {}) {
+  const { cap, items, anim, moved } = stateAt(t, init, evs);
+  const g = anim && anim.ev.k === 'grow' ? anim : null;
+  const BL = [];
+  let movedNow = moved;
+  if (g) {
+    const k = g.k, n = items.length, nc = g.ev.cap, zN = LIFT * (1 - E.inOutCubic(prog(k, .8, 1)));
+    table(c, cap, 0, a * (1 - prog(k, .72, .9)), o.col);
+    table(c, nc, zN, a * prog(k, 0, .12), o.col);
+    let spent = 0; const coinsLeft = items.map((it) => it.coins);
+    items.forEach((it, j) => {
+      const m0 = .12 + j * (.6 / n), m = E.inOutCubic(prog(k, m0, m0 + Math.min(.25, .6 / n * 1.6)));
+      if (k >= m0) { movedNow++; if (g.ev.spend) spent++; }
+      const p0 = slot(j, cap, 0), p1 = slot(j, nc, zN), p = mix3(p0, p1, m); p[2] += Math.sin(m * Math.PI) * .5;
+      BL.push({ p, it, flash: m > 0 && m < 1 ? 1 : 0 });
+    });
+    if (g.ev.spend) { let n = spent; items.forEach((it, j) => { const u = Math.min(coinsLeft[j], n); BL[j].coins = coinsLeft[j] - u; BL[j].lost = u; n -= u; }); }
+  } else {
+    table(c, cap, 0, a, o.col);
+    items.forEach((it, j) => BL.push({ p: slot(j, cap, 0), it }));
+  }
+  // 插入／刪除中的方塊
+  let pay = null;
+  if (anim && anim.ev.k === 'ins') {
+    const k = anim.k, j = items.length, p = slot(j, cap, 0), dz = (1 - E.outCubic(prog(k, 0, .45))) * 1.8;
+    BL.push({ p: add(p, [0, 0, dz]), it: { id: anim.ev.id, coins: 0 }, fade: prog(k, 0, .15), fresh: 1 });
+    if (anim.ev.pay) pay = { p, k };
+  }
+  if (anim && anim.ev.k === 'del') { const k = anim.k, j = items.length - 1; if (BL[j]) { BL[j].p = add(BL[j].p, [0, 0, k * 1.2]); BL[j].fade = 1 - k; } }
+  V.sorted(BL.map((b) => ({ p: b.p, draw: () => {
+    const f = (b.fade ?? 1) * a; if (f <= .003) return;
+    V.pillar(c, add(b.p, [0, 0, 0]), BW, BH, b.flash ? AM : (o.col || CY), f, { fill: .5 });
+    const nC = b.coins ?? b.it.coins; for (let q = 0; q < nC; q++) coin(c, add(b.p, [0, 0, BH + .03 + q * .07]), f);
+    if (b.lost) for (let q = 0; q < b.lost; q++) coin(c, add(b.p, [0, 0, BH + .3 + q * .1]), f * .5 * (b.flash ? 1 : 0), .6);
+  } })));
+  // 會計法：付 3 枚 → 1 枚燒掉、2 枚落在方塊上
+  if (pay) {
+    const { p, k } = pay, top = add(p, [0, 0, BH + .03]);
+    for (let q = 0; q < 3; q++) {
+      const appear = prog(k, .35, .5); if (appear <= 0) break;
+      const hov = add(p, [(q - 1) * .34, 0, BH + 1.0]);
+      if (q === 0) { const burn = prog(k, .6, .8); coin(c, add(hov, [0, 0, burn * .5]), appear * (1 - burn), burn > 0 ? 1 - burn : .3); continue; }
+      const land = E.inOutCubic(prog(k, .75, 1)); coin(c, mix3(hov, add(top, [0, 0, (q - 1) * .07]), land), appear, land < 1 ? .3 : 0);
+    }
+  }
+  return { cap, n: items.length + (anim && anim.ev.k === 'ins' && anim.k > .3 ? 1 : 0), moved: movedNow, bank: items.reduce((s, it) => s + it.coins, 0) };
+}
+/** 事件列：插入時表滿就先加倍 */
+function buildEvs(t0, ops, o = {}) {
+  const evs = []; let n = o.n ?? 0, cap = o.cap ?? 1, t = t0, id = n;
+  for (const op of ops) {
+    const at = op.t ?? t;
+    if (op.k === 'ins') {
+      let gd = 0;
+      if (n === cap) { gd = Math.min(o.growMax ?? 1.8, .7 + n * .14); evs.push({ k: 'grow', t: at, d: gd, cap: cap * 2, spend: o.pay }); cap *= 2; }
+      evs.push({ k: 'ins', t: at + gd, d: o.pay ? 1.1 : .55, id: ++id, pay: o.pay, cost: 1 + (gd ? n : 0) }); n++;
+      t = at + gd + (o.pay ? 1.2 : .6);
+    } else if (op.k === 'del') {
+      const ev = { k: 'del', t: at, d: .45, cost: 1 }; evs.push(ev); n--; t = at + .5;
+      if (o.shrinkAt && n > 0 && n < cap * o.shrinkAt) { const gd = Math.min(1.6, .7 + n * .14); evs.push({ k: 'grow', t: at + .5, d: gd, cap: cap / 2 }); cap /= 2; t = at + .5 + gd; ev.cost = 1 + n; }
+    }
+  }
+  return evs;
+}
+/** 花費浮字：+1（青）、搬家那次 +n（珊瑚） */
+function costPops(c, t, evs, init) {
+  for (const ev of evs) {
+    if (ev.k !== 'ins' && ev.k !== 'del') continue;
+    const q = prog(t, ev.t + ev.d * .4, ev.t + ev.d * .4 + 1.1); if (q <= 0 || q >= 1) continue;
+    const st = stateAt(ev.t - .001, init, evs.filter((e) => e.t < ev.t)); const j = ev.k === 'ins' ? st.items.length : st.items.length - 1;
+    const p = slot(Math.max(0, j), st.cap, 0), big = ev.cost > 1;
+    V.label(c, '+' + ev.cost, add(p, [0, 0, BH + .55 + q * .6]), { size: big ? .5 : .32, w: 700, color: big ? CO : CY, a: Math.sin(q * Math.PI), minPx: 26, maxPx: big ? 130 : 80 });
+  }
+}
+
+// ═════════ 各段事件
+const OPEN0 = { cap: 8, items: [1, 2, 3, 4, 5, 6, 7, 8] }, EV_OPEN = [{ k: 'grow', t: o1.start + .1, d: 1.6, cap: 16 }, { k: 'ins', t: o1.start + 1.7, d: .5, id: 9, cost: 9 }];
+const A0 = { cap: 1, items: [] };
+const EV_A = buildEvs(A1.start + .3, [{ k: 'ins' }, { k: 'ins', t: A1.start + 1.0 }, { k: 'ins', t: L.a2.start + .1 }, { k: 'ins' }, { k: 'ins' }, { k: 'ins', t: L.a3.start + .2 }, { k: 'ins' }, { k: 'ins' }], { growMax: 1.4 });
+const B0 = { cap: 8, items: [1, 2, 3, 4] };
+const EV_B = buildEvs(B1.start + .5, [{ k: 'ins' }, { k: 'ins' }, { k: 'ins' }, { k: 'ins', t: L.b2.start + .4 }, { k: 'ins', t: L.b3.start + .3 }], { n: 4, cap: 8, pay: true, growMax: 2.6 });
+const D0 = { cap: 8, items: [1, 2, 3, 4, 5, 6, 7, 8] };
+const EV_D = buildEvs(D1.start + .6, [{ k: 'ins' }, { k: 'del', t: L.d2.start + .1 }, { k: 'del' }, { k: 'ins' }, { k: 'ins' }], { n: 8, cap: 8, shrinkAt: .5, growMax: 1.3 });
+const D3a = { cap: 16, items: [1, 2, 3, 4, 5, 6, 7, 8, 9] };
+const EV_D3 = buildEvs(L.d3.start + .3, [{ k: 'del' }, { k: 'del' }, { k: 'ins' }, { k: 'ins' }, { k: 'del' }], { n: 9, cap: 16, shrinkAt: .25 });
+
+// ═════════ 鏡頭
+const TG = [0, .3, .7];
+V.camKeys([
+  [0, V.orbit(-30, 9.4, 6.6, [0, .3, 1.0], 44)], [T.start, V.orbit(-10, 10.2, 7.0, [0, .3, 1.0], 44)],
+  [A1.start, V.orbit(-24, 7.2, 6.6, TG, 44)], [L.a2.start + 2.0, V.orbit(-14, 8.0, 7.2, [0, .3, .9], 44)], [L.a3.end, V.orbit(4, 8.0, 7.0, [0, .3, .9], 44)],
+  [B1.start + .4, V.orbit(-30, 7.4, 6.0, [0, .3, .6], 44)], [L.b2.end, V.orbit(-12, 7.6, 6.2, [0, .3, .6], 44)], [L.b3.start + .2, V.orbit(-18, 8.6, 7.4, [0, .3, 1.0], 44)], [L.b3.end, V.orbit(8, 9.0, 7.6, [0, .3, .9], 44)],
+  [C1.start + .3, V.orbit(-26, 8.8, 3.0, [0, 0, 1.0], 44)], [L.c3.end, V.orbit(-8, 9.2, 3.4, [0, 0, 1.0], 44)],
+  [D1.start + .3, V.orbit(-26, 8.4, 7.4, [0, .3, .9], 44)], [L.d3.end, V.orbit(6, 8.8, 7.6, [0, .3, .9], 44)], [DUR, V.orbit(10, 8.8, 7.6, [0, .3, .9], 44)],
+]);
+
+// ═════════ 2D 小計數（只有數字）
+function counter(c, label, val, col, a, x = CX, y = 300) {
+  if (a <= .003) return;
+  S.label(c, label, x, y - 46, { size: 30, w: 500, color: INK, a: .6 * a, ls: '4px' });
+  S.label(c, String(val), x, y + 14, { size: 84, w: 700, color: col, a });
+}
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c);
+  const st = drawTable(c, t, OPEN0, EV_OPEN, 1);
+  costPops(c, t, EV_OPEN, OPEN0);
+  const ca = prog(t, o2.start + .2, o2.start + .7);
+  for (let q = 0; q < 3; q++) coin(c, [(q - 1) * .5, .3, 2.6], ca * prog(t, o2.start + .2 + q * .15, o2.start + .5 + q * .15), .8);
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '資料結構 · 動態表', big: '攤銷分析', size: 190, y: 600, en: 'AMORTIZED  ANALYSIS', q: '偶爾很貴，平均很便宜', qGap: 330, color: CY });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .18; room(c); drawTable(c, 99, OPEN0, EV_OPEN, 1); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CY);
+}
+function sDouble(c, t) {
+  room(c);
+  const st = drawTable(c, t, A0, EV_A, prog(t, A1.start - .1, A1.start + .3));
+  costPops(c, t, EV_A, A0);
+  counter(c, '容量', st.cap, CY, prog(t, A1.start + .2, A1.start + .6), CX - 200);
+  counter(c, '搬移', st.moved, AM, prog(t, A1.start + .2, A1.start + .6), CX + 200);
+}
+function sBank(c, t) {
+  room(c);
+  const st = drawTable(c, t, B0, EV_B, prog(t, B1.start - .1, B1.start + .3), { col: CY });
+  costPops(c, t, EV_B, B0);
+  const a = prog(t, B1.start + .2, B1.start + .6);
+  if (a > 0) { counter(c, '存款', st.bank, GOLD, a, CX - 200); counter(c, '每次付', 3, GOLD, a, CX + 200); }
+}
+// c：成本柱狀圖（n = 17）
+const NC = 17, COST = Array.from({ length: NC }, (_, i) => { const k = i; return 1 + (k > 0 && (k & (k - 1)) === 0 ? k : 0); }), HS = .14;
+function sBars(c, t) {
+  room(c);
+  const items = [];
+  for (let i = 0; i < NC; i++) {
+    const g = E.outCubic(prog(t, C1.start + .3 + i * .14, C1.start + .7 + i * .14)); if (g <= 0) continue;
+    const x = (i - (NC - 1) / 2) * .22, mv = COST[i] - 1;
+    items.push({ p: [x, 0, 0], draw: () => {
+      V.pillar(c, [x, 0, 0], .16, HS * g, CY, 1, { fill: .55 });
+      if (mv > 0) V.pillar(c, [x, 0, HS * g], .16, mv * HS * g, AM, 1, { fill: .55 });
+      if (mv > 0 && g > .9) V.label(c, String(COST[i]), [x, 0, COST[i] * HS + .25], { size: .22, w: 700, color: AM, minPx: 22, maxPx: 56 });
+    } });
+  }
+  V.sorted(items);
+  const pl = prog(t, L.c2.start + .3, L.c2.start + 1.0);
+  if (pl > 0) { const z = 3 * HS; V.poly(c, [[-1.95, -.3, z], [1.95, -.3, z], [1.95, .3, z], [-1.95, .3, z]], K.rgba(GOLD, .16 * pl), K.rgba(GOLD, .85 * pl), 1); V.label(c, '3', [-1.95, 0, z + .3], { size: .34, w: 700, color: GOLD, a: pl, minPx: 26, maxPx: 80 }); }
+  const sa = prog(t, L.c2.start + 1.2, L.c2.start + 1.7);
+  if (sa > 0) { counter(c, '實際總和', 48, AM, sa, CX - 200); counter(c, '3n', 51, GOLD, sa, CX + 200); S.label(c, '≤', CX, 314, { size: 72, w: 700, color: INK, a: sa }); }
+}
+function sShrink(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const in3 = t >= L.d3.start;
+  const st = in3 ? drawTable(c, t, D3a, EV_D3, prog(t, L.d3.start - .1, L.d3.start + .3)) : drawTable(c, t, D0, EV_D, prog(t, D1.start - .1, D1.start + .3));
+  costPops(c, t, in3 ? EV_D3 : EV_D, in3 ? D3a : D0);
+  // 減半門檻線（表的 1/2 或 1/4 處）
+  const thr = in3 ? .25 : .5, cap = st.cap, rows = Math.ceil(cap / 4), cut = cap * thr, ry = (Math.floor((cut - 1) / 4) - (rows - 1) / 2) * SP + SP / 2;
+  if (cap >= 8) { const la = prog(t, D1.start + .3, D1.start + .8); V.line(c, [-1.8, ry, .02], [1.8, ry, .02], { color: in3 ? GR : CO, a: .9 * la, w: 3 }); V.label(c, in3 ? '1/4' : '1/2', [2.15, ry, .05], { size: .3, w: 700, color: in3 ? GR : CO, a: la, minPx: 24, maxPx: 70 }); }
+  const mv = in3 ? 23 + st.moved : st.moved;
+  counter(c, '搬移', mv, in3 ? GR : CO, prog(t, D1.start + .2, D1.start + .6));
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['滿了加倍 → 攤銷 O(1)', CY, 54], ['每次付 3，存 2', GOLD, 56], ['1/4 才減半', GR, 58], ['攤銷 ≠ 平均情況', INK, 50]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'double', start: A1.start, end: B1.start, draw: sDouble, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 880 } },
+  { id: 'bank', start: B1.start, end: C1.start, draw: sBank, color: GOLD, in: { type: 'cut' } },
+  { id: 'bars', start: C1.start, end: D1.start, draw: sBars, color: AM, in: { type: 'cut' } },
+  { id: 'shrink', start: D1.start, end: DUR, draw: (c, t) => { sShrink(c, t); sExam(c, t); }, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 880 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+S.chapters([[A1.start, '記憶宮殿 · 資結館 · 第 3 間  /  01 加倍'], [B1.start, '記憶宮殿 · 資結館 · 第 3 間  /  02 會計法'], [C1.start, '記憶宮殿 · 資結館 · 第 3 間  /  03 總成本'], [D1.start, '記憶宮殿 · 資結館 · 第 3 間  /  04 縮小門檻'], [Ec.start, '']]);
+
+function render(t) {
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const growCues = (evs) => evs.filter((e) => e.k === 'grow').map((e) => ({ t: e.t, sfx: 'whoosh', gain: -12 }));
+const insCues = (evs) => evs.filter((e) => e.k === 'ins').map((e) => ({ t: e.t + .2, sfx: e.cost > 1 ? 'impact' : 'tick', gain: e.cost > 1 ? -9 : -13 }));
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    ...growCues(EV_OPEN), { t: o2.start + .3, sfx: 'chime', gain: -10 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    ...growCues(EV_A), ...insCues(EV_A),
+    ...growCues(EV_B), ...EV_B.filter((e) => e.k === 'ins').map((e) => ({ t: e.t + e.d * .4, sfx: 'chime', gain: -14 })),
+    { t: C1.start, sfx: 'whoosh', gain: -11 }, { t: L.c2.start + .3, sfx: 'swish', gain: -10 },
+    ...growCues(EV_D), ...growCues(EV_D3),
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
