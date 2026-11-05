@@ -121,6 +121,7 @@ function viewGo() {
   ${Bridge.mode === 'cloud' && typeof CloudAgent !== 'undefined' && CloudAgent.ready() && !st.aiOK ? '<div class="go-note">讓 Claude 直接幫你改作業、回答問題 <button class="btn sm primary" id="goAI">開啟</button></div>' : ''}
   ${Sync.needNudge() ? '<div class="go-note warn">這台的進度只存在瀏覽器裡 <button class="btn sm" id="goBak">下載備份</button></div>' : ''}
   ${missedY && !L.checkin ? `<div class="go-note bad">昨天沒打卡${st.settings.stake ? `　·　${esc(st.settings.stake)}` : ''}</div>` : ''}
+  ${typeof StateLog !== 'undefined' ? StateLog.checkinHtml() : ''}
   <div class="go-top"><span>連續 <b class="n">${streak}</b> 天</span>${cm != null && !L.checkin ? `<button class="go-t ${nowM > cm ? 'bad-t' : ''}" id="goCommit" title="打卡時間">${commit} 打卡</button>` : ''}${behind ? `<span class="bad-t">落後 ${behind} 章</span>` : ''}${L.minMode ? '<span>保底</span>' : ''}${Personal.cram() ? '<span class="bad-t">考前衝刺</span>' : ''}${rw.chests.length ? `<button class="go-chest" id="goChest">寶箱 ${rw.chests.length}</button>` : ''}</div>
 
   ${cur ? `<section class="go-hero">
@@ -136,6 +137,7 @@ function viewGo() {
     <div class="row end"><button class="btn sm ghost" id="goRe">重新安排</button></div>
   </details>`;
   const q = id => $('#' + id);
+  if (typeof StateLog !== 'undefined') StateLog.wireCheckin();
   if (q('goMore')) q('goMore').onclick = () => Practice.goNext();
   if (cur) { q('goNow').onclick = nextStep; q('goSkip').onclick = () => { Auto.skip(cur.id); route(); }; setTimeout(() => { const b = q('goNow'); if (b) b.focus({ preventScroll: true }); }, 30); }
   if (q('goFive')) q('goFive').onclick = () => Nudge.five();

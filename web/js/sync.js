@@ -58,6 +58,8 @@ const Sync = {
     r.dict = Object.assign({}, r.dict || {}); for (const [k, v] of Object.entries(o.dict || {})) { const a = r.dict[k]; if (!a || (v && (v.date || '') > (a.date || ''))) r.dict[k] = v; }
     for (const [k, v] of Object.entries(o.wrongNotes || {})) if (v && v.length > (r.wrongNotes[k] || '').length) r.wrongNotes[k] = v;
     r.clipSeen = Object.assign({}, o.clipSeen || {}, r.clipSeen || {});
+    r.act = Object.assign({}, r.act || {}); for (const [d, row] of Object.entries(o.act || {})) { const a = r.act[d]; r.act[d] = !a ? row : a.map((m, h) => Math.max(m || 0, row[h] || 0)); }
+    r.daily = Object.assign({}, r.daily || {}); for (const [d, v] of Object.entries(o.daily || {})) { const a = r.daily[d]; if (!a || (v && (v.ts || 0) > (a.ts || 0))) r.daily[d] = v; }
     r.xpSeen = Object.assign({}, o.xpSeen || {}, r.xpSeen || {});
     r.seen = Object.assign({}, o.seen || {}, r.seen || {});
     for (const [d, list] of Object.entries(o.agentTasks || {})) if (!r.agentTasks[d]) r.agentTasks[d] = list; else list.forEach((t, i) => { if (t.done && r.agentTasks[d][i]) r.agentTasks[d][i].done = true; });

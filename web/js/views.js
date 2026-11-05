@@ -13,14 +13,14 @@ function renderRail() {
   const rail = $('#rail');
   const left = S.daysLeft();
   const cur = location.hash.slice(1) || 'go';
-  const groupOf = h => /^(go|today)$/.test(h) ? 'today' : /^(practice|cards|wrong|gen)$/.test(h) ? 'practice' : /^(stats|plan|rewards)$/.test(h) ? 'records' : /^(setup|agent|methods)$/.test(h) ? 'settings' : (LESSON[h] || /^(subj-|videos|video-|feed|lab)/.test(h)) ? 'course' : 'today';
+  const groupOf = h => /^(go|today)$/.test(h) ? 'today' : /^(practice|cards|wrong|gen)$/.test(h) ? 'practice' : /^(stats|state|plan|rewards)$/.test(h) ? 'records' : /^(setup|agent|methods)$/.test(h) ? 'settings' : (LESSON[h] || /^(subj-|videos|video-|feed|lab)/.test(h)) ? 'course' : 'today';
   const isCur = id => cur === id || (id === 'lab' && cur.startsWith('lab-')) || (id === 'videos' && (cur.startsWith('feed') || cur.startsWith('video')));
   const sub = ([id, t]) => `<a href="#${id}" class="nav-sub${isCur(id) ? ' cur' : ''}">${t}${id === 'agent' ? '<span class="unread-badge" hidden></span>' : ''}</a>`;
   const G = [
     { id: 'today', t: '今天', items: [['go', '帶我讀'], ['today', '今日總覽']] },
     { id: 'course', t: '課程', items: [['videos', '影片'], ['lab', '實驗室']], subj: true },
     { id: 'practice', t: '練習', items: [['practice', '闖關'], ['cards', '必背卡'], ['wrong', '錯題本'], ['gen', '隨機題']] },
-    { id: 'records', t: '紀錄', items: [['stats', '儀表板'], ['plan', '30 天計畫'], ['rewards', '獎勵']] },
+    { id: 'records', t: '紀錄', items: [['stats', '儀表板'], ['state', '狀態'], ['plan', '30 天計畫'], ['rewards', '獎勵']] },
   ], SET = { id: 'settings', t: '設定', items: [['setup', '設定'], ['agent', Bridge.mode === 'cloud' ? 'Claude' : 'Agent'], ['methods', '學習法']] };
   const curG = groupOf(cur);
   const subjHtml = DATA.subjects.map(s => {
@@ -74,6 +74,7 @@ function route() {
   else if (hsh === 'methods') viewMethods();
   else if (hsh === 'setup') viewSetup();
   else if (hsh === 'rewards') viewRewards();
+  else if (hsh === 'state') StateLog.view();
   else viewToday();
   renderGoPill(hsh);
 }

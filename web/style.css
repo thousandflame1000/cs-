@@ -1402,3 +1402,26 @@ dl.kv .kv-fig { padding: .3em 0; }
 .rail-coin.warm .coin, .coin-hud.warm .coin { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--star) 80%, transparent)); animation: warmGlow 2.4s ease-in-out infinite; }
 @keyframes warmGlow { 50% { filter: drop-shadow(0 0 9px var(--star)); } }
 @media (prefers-reduced-motion: reduce) { .rail-coin.warm .coin, .coin-hud.warm .coin { animation: none; } }
+
+/* ===== 狀態 ===== */
+.st-ask { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 10px 14px; margin: 0 0 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.st-ask .st-q, .st-line .st-q { font-weight: 700; min-width: 6.5em; }
+.st-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+.st-n { margin-left: auto; color: var(--ink-2); font-size: .82rem; font-variant-numeric: tabular-nums; }
+.st-ask.st-done { color: var(--good); }
+.st-grid { display: grid; gap: 10px; }
+.st-line { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; }
+.chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.st-pats { display: grid; gap: 10px; }
+.st-pat { display: grid; grid-template-columns: 7.5em 1fr; gap: 2px 12px; padding: 10px 12px; border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 10px; }
+.st-pat b { grid-row: span 2; }
+.st-pat .st-fix { color: var(--ink-2); font-size: .92rem; }
+.st-pat .btn { grid-column: 2; justify-self: start; margin-top: 4px; }
+.st-bad { border-left-color: var(--bad); }
+.st-warn { border-left-color: var(--ink-2); }
+.st-ok { border-left-color: var(--good); }
+.hm { display: grid; gap: 2px; overflow-x: auto; font-variant-numeric: tabular-nums; }
+.hm-row { display: grid; grid-template-columns: 3.4em repeat(24, minmax(8px, 1fr)); gap: 2px; align-items: center; }
+.hm-row i { height: 12px; border-radius: 2px; background: color-mix(in srgb, var(--accent) calc(var(--a) * 100%), var(--surface-2)); }
+.hm-d { font-size: .72rem; color: var(--ink-2); }
+.hm-ax b { font-size: .7rem; font-weight: 500; color: var(--ink-2); }
