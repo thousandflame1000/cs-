@@ -94,8 +94,8 @@ function todayTasks(date = D.today()) {
     for (const lid of plan.lessons || []) {
       const l = LESSON[lid]; if (!l) continue;
       const ls = S.st.lessons[lid] || {};
-      tasks.push({ id: 'read-' + lid, text: `讀：${l.title}`, done: !!ls.read, go: '#' + lid });
-      tasks.push({ id: 'feyn-' + lid, text: `費曼：${l.title}`, done: ['pending', 'pass', 'self'].includes(ls.gate), go: '#' + lid + '', gate: ls.gate || 'none' });
+      tasks.push({ id: 'read-' + lid, text: `讀：${l.title.split(/[：（(、]/)[0]}`, done: !!ls.read, go: '#' + lid });
+      tasks.push({ id: 'feyn-' + lid, text: `費曼：${l.title.split(/[：（(、]/)[0]}`, done: ['pending', 'pass', 'self'].includes(ls.gate), go: '#' + lid + '', gate: ls.gate || 'none' });
     }
     for (const g of plan.mocks || []) {
       const grp = GROUPS.find(x => x.id === g);
@@ -204,7 +204,7 @@ function viewToday() {
       <ul class="tasks">${tasks.map(t => `<li class="${t.done ? 'done' : ''}">
         ${t.agent != null ? `<input type="checkbox" id="agt-${t.agent}" data-agent="${t.agent}" ${t.done ? 'checked' : ''}>` : `<span class="tick" aria-hidden="true">${t.done ? '✓' : ''}</span>`}
         <label ${t.agent != null ? `for="agt-${t.agent}"` : ''}>${esc(t.text)}${t.gate && t.gate !== 'none' ? ` <span class="gate g-${t.gate}">${gateLabel(t.gate)}</span>` : ''}</label>
-        ${t.go ? `<a class="go" href="${t.go}">前往</a>` : ''}${t.act === 'blurt' && !t.done ? '<button class="go" data-act="blurt">開始</button>' : ''}${t.act === 'mock' && !t.done ? `<button class="go" data-act="mock" data-arg="${t.arg}">開考</button>` : ''}
+        ${t.go ? `<a class="go chev" href="${t.go}" aria-label="前往">${ICON('chev')}</a>` : ''}${t.act === 'blurt' && !t.done ? '<button class="go" data-act="blurt">開始</button>' : ''}${t.act === 'mock' && !t.done ? `<button class="go" data-act="mock" data-arg="${t.arg}">開考</button>` : ''}
       </li>`).join('')}</ul>
       <div class="checkin">
         ${L.checkin ? `<div class="ok-note">今天已打卡（${D.hm(L.checkin.ts)}）${L.checkin.full ? '：達標 ✓' : `：未達標 ${L.checkin.done}/${L.checkin.total}`}</div>`

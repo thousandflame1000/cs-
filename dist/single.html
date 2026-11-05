@@ -1560,6 +1560,10 @@ svg.lm .lm-ell.ghost { fill: none; stroke: var(--line); stroke-dasharray: 4 4; }
 .lm-addr .of.on { background: color-mix(in srgb, var(--accent) 20%, var(--surface)); color: var(--ink); }
 .lm-addr .fr.on { background: color-mix(in srgb, var(--good) 26%, var(--surface)); color: var(--ink); }
 .lab-tbl td.hl { background: color-mix(in srgb, var(--accent) 16%, transparent); font-weight: 700; }
+/* 今日任務：「前往」改成安靜的箭頭，整列不再被七個一樣的按鈕切開 */
+.tasks .go.chev { border: 0; background: none; padding: 6px; color: var(--ink-2); display: grid; place-items: center; }
+.tasks .go.chev:hover { color: var(--accent); }
+.tasks .go.chev svg.ic { width: 18px; height: 18px; }
 
 </style>
 <script>
@@ -2040,6 +2044,7 @@ const ICON_P = {
   game: '<path d="M7.5 8h9a4.5 4.5 0 0 1 4.3 5.8l-.9 3a2.5 2.5 0 0 1-4.3.9L14 16H10l-1.6 1.7a2.5 2.5 0 0 1-4.3-.9l-.9-3A4.5 4.5 0 0 1 7.5 8z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 13.5h.01"/>',
   moon: '<path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a7.5 7.5 0 1 0 10 10z"/>',
   gift: '<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3.5 9h17M12 9v11M12 9c-2-4-6-4-6-1.5S9 9 12 9zM12 9c2-4 6-4 6-1.5S15 9 12 9z"/>',
+  chev: '<path d="M9.5 5.5L16 12l-6.5 6.5"/>',
   trophy: '<path d="M8 4.5h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13.5V17M8.5 20h7M9.5 17h5v3h-5z"/>',
 };
 /** 卡片圖示：是圖示名就畫線條圖示，否則（例如使用者自己打的字）照原樣顯示 */
@@ -10821,8 +10826,8 @@ function todayTasks(date = D.today()) {
     for (const lid of plan.lessons || []) {
       const l = LESSON[lid]; if (!l) continue;
       const ls = S.st.lessons[lid] || {};
-      tasks.push({ id: 'read-' + lid, text: `讀：${l.title}`, done: !!ls.read, go: '#' + lid });
-      tasks.push({ id: 'feyn-' + lid, text: `費曼：${l.title}`, done: ['pending', 'pass', 'self'].includes(ls.gate), go: '#' + lid + '', gate: ls.gate || 'none' });
+      tasks.push({ id: 'read-' + lid, text: `讀：${l.title.split(/[：（(、]/)[0]}`, done: !!ls.read, go: '#' + lid });
+      tasks.push({ id: 'feyn-' + lid, text: `費曼：${l.title.split(/[：（(、]/)[0]}`, done: ['pending', 'pass', 'self'].includes(ls.gate), go: '#' + lid + '', gate: ls.gate || 'none' });
     }
     for (const g of plan.mocks || []) {
       const grp = GROUPS.find(x => x.id === g);
@@ -10931,7 +10936,7 @@ function viewToday() {
       <ul class="tasks">${tasks.map(t => `<li class="${t.done ? 'done' : ''}">
         ${t.agent != null ? `<input type="checkbox" id="agt-${t.agent}" data-agent="${t.agent}" ${t.done ? 'checked' : ''}>` : `<span class="tick" aria-hidden="true">${t.done ? '✓' : ''}</span>`}
         <label ${t.agent != null ? `for="agt-${t.agent}"` : ''}>${esc(t.text)}${t.gate && t.gate !== 'none' ? ` <span class="gate g-${t.gate}">${gateLabel(t.gate)}</span>` : ''}</label>
-        ${t.go ? `<a class="go" href="${t.go}">前往</a>` : ''}${t.act === 'blurt' && !t.done ? '<button class="go" data-act="blurt">開始</button>' : ''}${t.act === 'mock' && !t.done ? `<button class="go" data-act="mock" data-arg="${t.arg}">開考</button>` : ''}
+        ${t.go ? `<a class="go chev" href="${t.go}" aria-label="前往">${ICON('chev')}</a>` : ''}${t.act === 'blurt' && !t.done ? '<button class="go" data-act="blurt">開始</button>' : ''}${t.act === 'mock' && !t.done ? `<button class="go" data-act="mock" data-arg="${t.arg}">開考</button>` : ''}
       </li>`).join('')}</ul>
       <div class="checkin">
         ${L.checkin ? `<div class="ok-note">今天已打卡（${D.hm(L.checkin.ts)}）${L.checkin.full ? '：達標 ✓' : `：未達標 ${L.checkin.done}/${L.checkin.total}`}</div>`

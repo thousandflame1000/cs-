@@ -1541,3 +1541,7 @@ svg.lm .lm-ell.ghost { fill: none; stroke: var(--line); stroke-dasharray: 4 4; }
 .lm-addr .of.on { background: color-mix(in srgb, var(--accent) 20%, var(--surface)); color: var(--ink); }
 .lm-addr .fr.on { background: color-mix(in srgb, var(--good) 26%, var(--surface)); color: var(--ink); }
 .lab-tbl td.hl { background: color-mix(in srgb, var(--accent) 16%, transparent); font-weight: 700; }
+/* 今日任務：「前往」改成安靜的箭頭，整列不再被七個一樣的按鈕切開 */
+.tasks .go.chev { border: 0; background: none; padding: 6px; color: var(--ink-2); display: grid; place-items: center; }
+.tasks .go.chev:hover { color: var(--accent); }
+.tasks .go.chev svg.ic { width: 18px; height: 18px; }
