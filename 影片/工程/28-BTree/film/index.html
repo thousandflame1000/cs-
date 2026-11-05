@@ -125,7 +125,7 @@ function sSplit(c, t) {
   // 每次插入的 key 寫在上方
   const ins = [[A1.start + .4, 10], [A1.start + 1.6, 20], [L.a2.start + .3, 30], [B1.start + .3, 40], [B1.start + 1.5, 50], [B1.start + 4.1, 60], [B1.start + 5.2, 70]];
   let cur = null; for (const x of ins) if (t >= x[0]) cur = x;
-  if (cur && t < L.b3.start) S.label(c, '插入 ' + cur[1], CX, 320, { size: 60, w: 700, color: AM, a: prog(t, cur[0], cur[0] + .3) });
+  if (cur && t < L.b3.start) S.label(c, '插入 ' + cur[1], CX, 215, { size: 60, w: 700, color: AM, a: prog(t, cur[0], cur[0] + .3) });
   const sp = [L.a2.start + 1.9, B1.start + 2.8, L.b2.start + .3, L.b2.start + 2.2].find(x => t >= x && t < x + 1.1);
   if (sp) S.label(c, sp === L.b2.start + 2.2 ? '新根！樹長高一層' : '分裂：中間往上推', CX, 410, { size: 46, w: 700, color: GR, a: prog(t, sp, sp + .2) * (1 - prog(t, sp + .8, sp + 1.1)) });
   // b3：葉子同一層

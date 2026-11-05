@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "找老大，要爬好幾層", "hook": true},
+  {"id": "o2", "text": "爬過一次，就[直接接]到老大", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "路徑壓縮", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "每一群是一棵樹，根是代表", "scene": true, "hold": 3.6},
+  {"id": "a2", "text": "FIND：一路往上找到根", "hold": 3.6},
+  {"id": "a3", "text": "UNION：一個根接到另一個根下", "hold": 3.8, "pause": 0.2},
+
+  {"id": "b1", "text": "矮的接到[高的]下面", "scene": true, "hold": 3.6},
+  {"id": "b2", "text": "rank 加 1，點數至少[翻倍]", "hold": 4.4},
+  {"id": "b3", "text": "所以樹高不超過 [lg n]", "hold": 3.4, "pause": 0.2},
+
+  {"id": "c1", "text": "FIND 時，路上每個點[直接接]到根", "scene": true, "hold": 4.6},
+  {"id": "c2", "text": "下次再找：[一步]就到", "hold": 3.4},
+  {"id": "c3", "text": "兩招一起：幾乎是[常數]", "hold": 3.6},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

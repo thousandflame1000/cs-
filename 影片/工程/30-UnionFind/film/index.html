@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>路徑壓縮</title>
+<!--
+  資工所衝刺 · 短影音 30：Union-Find 路徑壓縮
+  記憶宮殿：資結館 · 第 7 間。每一群是一棵立著的樹，元素是球、指標往上指，根戴一圈琥珀色光環（代表）。
+  01 FIND 沿指標往上爬、UNION 把一個根接到另一個根下；02 按秩合併：同 rank 兩塔疊起來點數翻倍，所以 rank ≤ lg n；
+  03 路徑壓縮：一條長鏈 FIND 一次，路上每個點甩上去掛在根底下的一圈（吊燈），下次一步就到。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', GR = '#6ee7a8', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 301, vignette: .62, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CY, accent2: AM } });
+K.warm([CY, AM, CO, GR, VI, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 直接接: GR, 高的: CY, 翻倍: AM, 'lg n': AM, 一步: GR, 常數: GR },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1;
+const add = (a, b) => a.map((v, i) => v + b[i]), sub3 = (a, b) => a.map((v, i) => v - b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const nrm = (a) => { const l = Math.hypot(...a) || 1; return a.map(v => v / l); };
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: CY, a: .3 * a, major: 3 });
+let tNow = 0;
+function cube(c, p, s, col, a = 1) {
+  if (a <= .003) return; const h = s / 2, [x, y, z] = p, cam = V.camAt(tNow).pos;
+  const F = [[[0, -1, 0], [[x - h, y - h, z - h], [x + h, y - h, z - h], [x + h, y - h, z + h], [x - h, y - h, z + h]], .7], [[1, 0, 0], [[x + h, y - h, z - h], [x + h, y + h, z - h], [x + h, y + h, z + h], [x + h, y - h, z + h]], .45], [[-1, 0, 0], [[x - h, y + h, z - h], [x - h, y - h, z - h], [x - h, y - h, z + h], [x - h, y + h, z + h]], .45], [[0, 0, 1], [[x - h, y - h, z + h], [x + h, y - h, z + h], [x + h, y + h, z + h], [x - h, y + h, z + h]], .95]];
+  for (const [n, q, k] of F) { const d = [cam[0] - x, cam[1] - y, cam[2] - z]; if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] <= 0) continue; V.poly(c, q, K.rgba(K.mix(col, '#ffffff', k * .3), .6 * k), K.rgba(K.mix(col, '#ffffff', .4), .9), a); }
+}
+/** 元素：球；root 時戴琥珀光環 */
+function node(c, p, s, col, a = 1, root = 0, hot = 0, r = .17) {
+  if (a <= .003) return; V.glow(c, p, .45, (.25 + .4 * hot) * a, hot > 0 ? AM : col);
+  V.orb(c, p, r, { color: K.mix(col, AM, hot * .7), a });
+  if (root > 0) { V.ring(c, p, r + .12, { color: AM, a: root * a, w: 3 }); V.glow(c, add(p, [0, 0, .05]), .3, .3 * root * a, AM); }
+  if (s) V.label(c, s, add(p, [0, -.22, 0]), { size: .14, w: 700, color: '#ffffff', a, minPx: 18, maxPx: 40 });
+}
+/** 指標：子 → 父（往上） */
+function ptr(c, from, to, col, p = 1, a = 1, w = 2.6) {
+  if (p <= .003 || a <= .003) return; const d = nrm(sub3(to, from)), s = add(from, d.map(v => v * .21)), e0 = sub3(to, d.map(v => v * .24));
+  V.arrow(c, s, mix3(s, e0, p), { color: col, a, w, head: 14 });
+}
+/** 沿點列走的光點（u 0..1） */
+function pulse(c, pts, u, col, a = 1) {
+  if (a <= .003) return; const n = pts.length - 1, h = clamp(u) * n, i = Math.min(n - 1, Math.floor(h)), f = h - i, p = mix3(pts[i], pts[i + 1], f);
+  V.glow(c, p, .5, .8 * a, col); V.core(c, p, .05, a, col);
+}
+
+// ═════════ A：兩群 a(b, c(d))、e(f)
+const PA0 = { a: [-.55, 0, 2.4], b: [-.95, 0, 1.6], c: [-.15, 0, 1.6], d: [-.15, 0, .8], e: [.8, 0, 2.0], f: [.8, 0, 1.2] };
+const PA1 = { a: [-.25, 0, 2.4], b: [-.95, 0, 1.6], c: [-.25, 0, 1.6], d: [-.25, 0, .8], e: [.45, 0, 1.6], f: [.45, 0, .8] };
+const PAR = { b: 'a', c: 'a', d: 'c', f: 'e' };
+// ═════════ C：長鏈 → 吊燈
+const CR = [0, 0, 2.85], CH = [[-.42, 0, 2.15], [.42, 0, 1.5], [-.42, 0, .9], [.42, 0, .3]];
+const RING = (k, n, r, z) => { const th = Math.PI * 2 * k / n - Math.PI / 2 + .35; return [Math.cos(th) * r, Math.sin(th) * r, z]; };
+const CH2 = [RING(0, 4, .85, 1.95), RING(1, 4, .85, 1.95), RING(2, 4, .85, 1.95), RING(3, 4, .85, 1.95)];
+
+// ═════════ 鏡頭
+V.camKeys([
+  [0, V.orbit(-14, 8.4, 1.3, [0, 0, .55], 44)], [T.start, V.orbit(-6, 8.2, 1.5, [0, 0, .75], 44)],
+  [A1.start, V.orbit(-10, 6.3, 1.0, [0, 0, 1.6], 44)], [L.a3.end, V.orbit(8, 6.4, 1.1, [0, 0, 1.6], 44)],
+  [B1.start + .3, V.orbit(-9, 6.4, 1.2, [0, 0, 1.55], 44)], [L.b2.start + .3, V.orbit(-4, 6.4, 1.2, [0, 0, 1.2], 44)], [L.b3.end, V.orbit(7, 6.5, 1.3, [0, 0, 1.2], 44)],
+  [C1.start + .3, V.orbit(-10, 7.6, 1.3, [0, 0, 1.32], 44)], [L.c1.start + 2.0, V.orbit(-6, 7.0, 1.9, [0, 0, 1.25], 44)], [L.c1.start + 3.6, V.orbit(-4, 6.3, 2.2, [0, 0, 1.7], 44)], [L.c2.end, V.orbit(6, 6.2, 2.4, [0, 0, 1.75], 44)], [DUR, V.orbit(-4, 6.5, 2.6, [0, 0, 1.7], 44)],
+]);
+
+// ═════════ 長鏈場景（開場也用）
+function drawChain(c, t, st) {
+  const { a = 1, sw = [0, 0, 0, 0], climb = -1, hop = -1, extra = 0 } = st;
+  const items = [];
+  const pos = CH.map((p, i) => { const k = E.inOutCubic(sw[i]), q = mix3(p, CH2[i], k); q[1] -= Math.sin(Math.PI * k) * .5; q[2] += Math.sin(Math.PI * k) * .25; return q; });
+  items.push({ p: CR, draw: () => node(c, CR, '', CY, a, 1, 0, .2) });
+  pos.forEach((p, i) => items.push({ p, draw: () => node(c, p, i === 3 ? 'x' : '', CY, a, 0, climb >= 0 && Math.abs(climb * 4 - (3 - i)) < .5 ? 1 : 0) }));
+  // 指標：沒甩之前指向上一個，甩了之後指向根
+  pos.forEach((p, i) => { const par = i === 0 ? CR : pos[i - 1], k = sw[i]; if (i === 0) ptr(c, p, CR, INK, 1, a * .6); else { ptr(c, p, par, INK, 1, a * .6 * (1 - k)); ptr(c, p, CR, GR, k, a * .9 * k); } });
+  if (extra > 0) for (let j = 0; j < 14; j++) { const g = prog(extra, j / 18, j / 18 + .25), p = RING(j + .5, 14, 1.2, 1.7); if (g > 0) { items.push({ p, draw: () => node(c, p, '', CY, a * g, 0, 0, .1) }); V.line(c, p, CR, { color: GR, a: .3 * a * g, w: 1.2, plain: true }); } }
+  V.sorted(items);
+  if (climb >= 0 && climb <= 1) pulse(c, [pos[3], pos[2], pos[1], pos[0], CR], climb, AM, a);
+  if (hop >= 0 && hop <= 1) pulse(c, [pos[3], CR], hop, GR, a);
+  return pos;
+}
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c);
+  const u = ((t - .2) % 1.6) / 1.2, sw = [0, 1, 2, 3].map(i => prog(t, o2.start + .4 + i * .15, o2.start + 1.0 + i * .15));
+  drawChain(c, t, { sw, climb: t < o2.start + .3 ? u : -1 });
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '資料結構 · 互斥集合', big: '路徑壓縮', size: 180, y: 600, en: 'UNION-FIND', q: '找一次，以後都快', qGap: 330, color: CY });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); drawChain(c, t, { sw: [1, 1, 1, 1] }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CY);
+}
+function sTrees(c, t) {
+  const fadeB = 1 - prog(t, B1.start - .3, B1.start); if (fadeB <= 0) return;
+  c.save(); c.globalAlpha *= fadeB;
+  room(c);
+  const a1 = A1.start, a2 = L.a2.start, a3 = L.a3.start;
+  const u = E.inOutCubic(prog(t, a3 + .3, a3 + 1.3)), P = {};
+  for (const k in PA0) { P[k] = mix3(PA0[k], PA1[k], k === 'e' || k === 'f' ? u : u); if (k === 'e' || k === 'f') { P[k][1] -= Math.sin(Math.PI * u) * .5; P[k][2] += Math.sin(Math.PI * u) * .35; } }
+  const order = ['a', 'b', 'c', 'd', 'e', 'f'], app = (k) => prog(t, a1 + .2 + order.indexOf(k) * .18, a1 + .5 + order.indexOf(k) * .18);
+  const recol = prog(t, a3 + 1.2, a3 + 1.6), colOf = (k) => k === 'e' || k === 'f' ? K.mix(VI, CY, recol) : CY;
+  const fu = prog(t, a2 + .3, a2 + 1.7), path = ['d', 'c', 'a'], hotOf = (k) => { const i = path.indexOf(k); if (i < 0 || t < a2 + .3) return 0; const at = fu * 2; return Math.abs(at - i) < .45 ? 1 : (i <= at ? .35 : 0) * (1 - prog(t, a3 - .2, a3 + .2)); };
+  const items = order.map(k => ({ p: P[k], draw: () => node(c, P[k], k, colOf(k), app(k), k === 'a' ? app('a') : k === 'e' ? 1 - u : 0, hotOf(k)) }));
+  for (const [ch, pa] of Object.entries(PAR)) ptr(c, P[ch], P[pa], INK, prog(t, a1 + .8 + order.indexOf(ch) * .18, a1 + 1.2 + order.indexOf(ch) * .18), .6);
+  ptr(c, P.e, P.a, GR, prog(t, a3 + 1.1, a3 + 1.5, E.outCubic), 1, 3.2);
+  V.sorted(items);
+  if (t > a2 + .3 && t < a3) pulse(c, path.map(k => P[k]), fu, AM, 1 - prog(t, a2 + 1.8, a2 + 2.2));
+  const ca = prog(t, a2 + .4, a2 + .7) * (1 - prog(t, a3 - .2, a3 + .1));
+  if (ca > 0) { S.label(c, 'FIND(d)', CX, 270, { size: 40, a: .7 * ca, ls: '2px' }); S.label(c, '爬 ' + Math.min(2, Math.floor(fu * 2 + .02)) + ' 步', CX, 350, { size: 64, w: 700, color: AM, a: ca }); }
+  const ua = prog(t, a3 + .2, a3 + .5) * (1 - prog(t, B1.start - .4, B1.start - .1));
+  if (ua > 0) S.label(c, 'UNION(a, e)', CX, 290, { size: 44, w: 700, color: GR, a: ua, ls: '2px' });
+  c.restore();
+}
+// B：矮的接到高的；然後倍增塔
+const TB = { r: [-.55, 0, 2.4], k1: [-.95, 0, 1.65], k2: [-.15, 0, 1.65], g1: [-.95, 0, .9] }, SB = { s: [.85, 0, 1.9], s1: [.85, 0, 1.15] }, SB1 = { s: [.55, 0, 1.65], s1: [.55, 0, .9] };
+function sRank(c, t) {
+  const fadeC = 1 - prog(t, C1.start - .3, C1.start); if (fadeC <= 0) return;
+  c.save(); c.globalAlpha *= fadeC;
+  room(c);
+  const b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start;
+  const trA = prog(t, b1 + .1, b1 + .5) * (1 - prog(t, b2 - .1, b2 + .3));
+  if (trA > 0) {
+    const u = E.inOutCubic(prog(t, b1 + 1.0, b1 + 2.0)), Sp = {};
+    for (const k in SB) { Sp[k] = mix3(SB[k], SB1[k], u); Sp[k][1] -= Math.sin(Math.PI * u) * .45; Sp[k][2] += Math.sin(Math.PI * u) * .3; }
+    const items = [...Object.entries(TB).map(([k, p]) => ({ p, draw: () => node(c, p, '', CY, trA, k === 'r' ? 1 : 0) })), ...Object.entries(Sp).map(([k, p]) => ({ p, draw: () => node(c, p, '', K.mix(VI, CY, prog(t, b1 + 1.9, b1 + 2.2)), trA, k === 's' ? 1 - u : 0) }))];
+    ptr(c, TB.k1, TB.r, INK, 1, .6 * trA); ptr(c, TB.k2, TB.r, INK, 1, .6 * trA); ptr(c, TB.g1, TB.k1, INK, 1, .6 * trA); ptr(c, Sp.s1, Sp.s, INK, 1, .6 * trA);
+    ptr(c, Sp.s, TB.r, GR, prog(t, b1 + 1.8, b1 + 2.2), trA, 3.2);
+    V.sorted(items);
+    V.label(c, 'rank 2', add(TB.r, [0, 0, .42]), { size: .15, w: 700, color: CY, a: trA * .9, minPx: 20, maxPx: 44 });
+    V.label(c, 'rank 1', add(SB.s, [0, 0, .42]), { size: .15, w: 700, color: VI, a: trA * .9 * (1 - u), minPx: 20, maxPx: 44 });
+    // 左側高度尺：合併前後都是 2
+    const ra = prog(t, b1 + 2.2, b1 + 2.6) * trA;
+    if (ra > 0) { const x = -1.2; V.line(c, [x, 0, .9], [x, 0, 2.4], { color: GR, a: ra, w: 3 }); [.9, 1.65, 2.4].forEach(z => V.line(c, [x - .08, 0, z], [x + .08, 0, z], { color: GR, a: ra, w: 3 })); S.label(c, '高度不變', CX, 300, { size: 56, w: 700, color: GR, a: ra }); }
+  }
+  // b2：同 rank 兩塔疊起來 → 翻倍
+  const tw = prog(t, b2 + .1, b2 + .4) * (1 - prog(t, C1.start - .3, C1.start));
+  if (tw > 0) {
+    const beats = [b2 + .4, b2 + 1.6, b2 + 2.8], CS_ = .24, Z0 = .3;
+    let n = 1; beats.forEach(x => { if (t >= x + .9) n *= 2; });
+    const items = [];
+    for (let i = 0; i < n; i++) { const p = [0, 0, Z0 + CS_ / 2 + i * CS_]; items.push({ p, draw: () => cube(c, p, CS_ * .92, CY, tw) }); }
+    const bi = beats.findIndex(x => t >= x && t < x + .9);
+    if (bi >= 0) { const k = E.inOutCubic(clamp((t - beats[bi]) / .9)); for (let i = 0; i < n; i++) { const p0 = [1.0, 0, Z0 + CS_ / 2 + i * CS_], p1 = [0, 0, Z0 + CS_ / 2 + (n + i) * CS_], p = mix3(p0, p1, k); p[2] += Math.sin(Math.PI * k) * .35; items.push({ p, draw: () => cube(c, p, CS_ * .92, VI, tw * prog(t, beats[bi], beats[bi] + .2)) }); } }
+    V.poly(c, [[-.3, -.3, Z0 - .02], [.3, -.3, Z0 - .02], [.3, .3, Z0 - .02], [-.3, .3, Z0 - .02]], K.rgba(CY, .12 * tw), K.rgba(CY, .6 * tw), 1);
+    V.sorted(items);
+    const r = Math.round(Math.log2(n));
+    V.label(c, 'rank ' + r, [-.55, 0, Z0 + CS_ * n / 2 + .1], { size: .17, w: 700, color: AM, a: tw, minPx: 22, maxPx: 50 });
+    V.label(c, n + ' 個', [.55, 0, Z0 + CS_ * n - .05], { size: .17, w: 700, color: INK, a: tw * .9, minPx: 22, maxPx: 50 });
+    const la = prog(t, b3 + .2, b3 + .6) * tw;
+    if (la > 0) { V.line(c, [-.6, 0, Z0 + CS_ * 8 + .1], [.6, 0, Z0 + CS_ * 8 + .1], { color: AM, a: la, w: 3 }); S.label(c, 'rank ≤ lg n', CX, 300, { size: 64, w: 700, color: AM, a: la }); S.label(c, 'n = 8 → 最多 rank 3', CX, 385, { size: 40, a: .7 * la }); }
+  }
+  c.restore();
+}
+function sCompress(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+  const climb = t > c1 + .3 && t < c1 + 1.9 ? prog(t, c1 + .3, c1 + 1.7) : -1;
+  const sw = [0, 1, 2, 3].map(i => prog(t, c1 + 2.0 + i * .28, c1 + 2.8 + i * .28));
+  const hop = t > c2 + .5 && t < c2 + 1.4 ? prog(t, c2 + .5, c2 + 1.1) : -1;
+  drawChain(c, t, { a: prog(t, c1, c1 + .3), sw, climb, hop, extra: prog(t, c3 + .2, c3 + 1.6) });
+  const ca = prog(t, c1 + .3, c1 + .6) * (1 - prog(t, c1 + 2.0, c1 + 2.3));
+  if (ca > 0) S.label(c, '爬 ' + Math.min(4, Math.floor(prog(t, c1 + .3, c1 + 1.7) * 4 + .02)) + ' 步', CX, 215, { size: 64, w: 700, color: AM, a: ca });
+  const ha = prog(t, c2 + .5, c2 + .8) * (1 - prog(t, c3 - .2, c3 + .1));
+  if (ha > 0) S.label(c, '1 步', CX, 300, { size: 72, w: 700, color: GR, a: ha });
+  const aa = prog(t, c3 + .6, c3 + 1.0);
+  if (aa > 0) { S.label(c, 'O(m · α(n))', CX, 270, { size: 62, w: 700, color: AM, a: aa }); S.label(c, 'α(n) ≤ 4', CX, 360, { size: 48, w: 700, color: GR, a: prog(t, c3 + 1.2, c3 + 1.6) }); }
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['FIND：沿指標爬到根', AM, 56], ['按秩合併 → 高度 ≤ lg n', CY, 54], ['路徑壓縮：路上全接到根', GR, 54], ['兩招一起：O(m α(n))', INK, 54]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'trees', start: A1.start, end: B1.start, draw: sTrees, color: CY, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'rank', start: B1.start, end: C1.start, draw: sRank, color: AM, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'compress', start: C1.start, end: DUR, draw: (c, t) => { sCompress(c, t); sExam(c, t); }, color: GR, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+const TAG = '記憶宮殿 · 資結館 · 第 7 間  /  ';
+S.chapters([[A1.start, TAG + '01 找根'], [B1.start, TAG + '02 按秩合併'], [C1.start, TAG + '03 路徑壓縮'], [Ec.start, '']]);
+
+function render(t) {
+  tNow = t;
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const b2 = L.b2.start, c1 = C1.start;
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: o2.start + .4, sfx: 'whoosh', gain: -11 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    ...[0, 1, 2, 3, 4, 5].map(i => ({ t: A1.start + .2 + i * .18, sfx: 'pop', gain: -13 })),
+    { t: L.a2.start + .3, sfx: 'tick', gain: -10 }, { t: L.a2.start + 1.0, sfx: 'tick', gain: -10 }, { t: L.a2.start + 1.7, sfx: 'chime', gain: -10 },
+    { t: L.a3.start + .3, sfx: 'swish', gain: -10 }, { t: L.a3.start + 1.2, sfx: 'thump', gain: -9 },
+    { t: B1.start + 1.0, sfx: 'swish', gain: -10 }, { t: B1.start + 2.0, sfx: 'thump', gain: -9 }, { t: B1.start + 2.3, sfx: 'chime', gain: -11 },
+    ...[.4, 1.6, 2.8].map(x => ({ t: b2 + x + .85, sfx: 'thump', gain: -8 })), { t: L.b3.start + .2, sfx: 'chime', gain: -9 },
+    ...[0, 1, 2, 3].map(i => ({ t: c1 + .3 + i * .35, sfx: 'tick', gain: -11 })),
+    ...[0, 1, 2, 3].map(i => ({ t: c1 + 2.0 + i * .28, sfx: 'swish', gain: -12 })), { t: c1 + 3.4, sfx: 'chime', gain: -9 },
+    { t: L.c2.start + .5, sfx: 'whoosh', gain: -11 }, { t: L.c2.start + 1.1, sfx: 'impact', gain: -9 },
+    { t: L.c3.start + .3, sfx: 'riser', gain: -14 }, { t: L.c3.start + 1.2, sfx: 'chime', gain: -9 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
