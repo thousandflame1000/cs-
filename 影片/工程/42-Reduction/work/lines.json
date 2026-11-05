@@ -1,0 +1,25 @@
+{
+ "start": 0.3,
+ "tail": 1.5,
+ "font": "sans",
+ "cps": 5.2,
+ "base": 1.0,
+ "lines": [
+  {"id": "o1", "text": "要證明一個新問題很難", "hook": true},
+  {"id": "o2", "text": "把[已知的難題]變成它", "hook": true, "pause": 0.1},
+  {"id": "T", "text": "歸約", "card": true, "hold": 3.4},
+
+  {"id": "a1", "text": "Y 歸約到 X：Y 的題目能翻譯成 X 的題目", "scene": true, "hold": 4.4},
+  {"id": "a2", "text": "會解 X，就會解 Y", "hold": 3.2},
+  {"id": "a3", "text": "所以 X 至少跟 Y 一樣[難]", "hold": 3.4, "pause": 0.2},
+
+  {"id": "b1", "text": "已知 3-SAT 很難：翻譯成頂點覆蓋", "scene": true, "hold": 4.0},
+  {"id": "b2", "text": "頂點覆蓋就是 [NP-hard]", "hold": 3.2},
+  {"id": "b3", "text": "答案又好驗證：[NP 完備]", "hold": 3.6, "pause": 0.2},
+
+  {"id": "c1", "text": "反過來：頂點覆蓋翻譯成 SAT", "scene": true, "hold": 3.8},
+  {"id": "c2", "text": "只說明它不比 SAT 難：[沒用]", "hold": 3.6},
+  {"id": "c3", "text": "證明變難：已知難題 → 新問題", "hold": 3.4},
+  {"id": "E", "text": "考試這樣寫", "card": true, "hold": 4.6}
+ ]
+}

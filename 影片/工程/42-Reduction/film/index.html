@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>歸約與 NP 完備</title>
+<!--
+  資工所衝刺 · 短影音 42：歸約——證明變難要從已知難題出發
+  記憶宮殿：演算法館 · 第 7 間。「難度」畫成柱子高度：左邊 Y（已知難，珊瑚色高柱），右邊 X（虛框問號），中間一個翻譯環 f（多項式時間）。
+  01 Y 的題目方塊穿過 f 變成 X 的題目；X 解完答案（綠）回到 Y；X 的柱子長到至少跟 Y 一樣高。
+  02 Y = 3-SAT、X = 頂點覆蓋 → NP-hard；證書秒驗證 → 在 NP → NP 完備。
+  03 反方向（VC → SAT）：只在 VC 上面畫一條天花板（不比 SAT 難），VC 的高度還是問號 → 沒用。
+-->
+<style>
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Thin.otf'); font-weight: 100; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-ExtraLight.otf'); font-weight: 200; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Light.otf'); font-weight: 300; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Regular.otf'); font-weight: 400; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Text.otf'); font-weight: 450; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Medium.otf'); font-weight: 500; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-SemiBold.otf'); font-weight: 600; }
+  @font-face { font-family: 'Plex'; src: url('fonts/IBMPlexSansTC-Bold.otf'); font-weight: 700; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB.ttf'); font-weight: 100 550; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  @font-face { font-family: 'Plex'; src: url('fonts/MathFB-Bold.ttf'); font-weight: 551 900; unicode-range: U+00B2-00B3, U+00B9, U+00BC-00BE, U+00D7, U+00F7, U+02B0-02FF, U+1D00-1DBF, U+2070-209F, U+2190-21FF, U+2200-22FF, U+2308-230B, U+2713-2717; }
+  html, body { margin: 0; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="stage"><div id="world"></div></div>
+<script src="motion.js"></script>
+<script src="kit.js"></script>
+<script src="cs.js"></script>
+<script src="space.js"></script>
+<script src="timing.js"></script>
+<script>
+const W = 1080, H = 1920, FPS = 60, DUR = TIMING.total, CX = W / 2;
+const stage = document.getElementById('stage');
+const { prog, ease: E, lerp, clamp } = M;
+
+const BG = '#04070d', INK = '#eef3fa', CY = '#5be7ff', AM = '#ffc14d', CO = '#ff6a5c', GR = '#6ee7a8', VI = '#b48cff';
+const K = Kit({ W, H, stage, duration: DUR, seed: 421, vignette: .6, grain: .16, bloom: .95,
+  palette: { bg: BG, ink: INK, sub: '#8a98a6', accent: CO, accent2: VI } });
+K.warm([CY, AM, CO, GR, VI, INK]);
+K.hud.show = false;
+const S = CS(K, { stage });
+const V = Space(K, S, { cy: H * .5, fogNear: 9, fogFar: 26 });
+K.caption.set(TIMING.lines, {
+  y: 1452, size: 54, maxW: W * .88, hookSize: 112, hookY: 1170, hookMaxW: W * .9, shade: .5,
+  colors: { 已知的難題: CO, 難: CO, 'NP-hard': CO, 'NP 完備': AM, 沒用: CO },
+});
+const o1 = L.o1, o2 = L.o2, T = L.T, Ec = L.E, A1 = L.a1, B1 = L.b1, C1 = L.c1;
+const add = (a, b) => a.map((v, i) => v + b[i]), mix3 = (a, b, k) => a.map((v, i) => lerp(v, b[i], k));
+const room = (c, a = 1) => V.floor(c, { n: 10, step: 1, color: CO, a: .2 * a, major: 3 });
+let tNow = 0;
+function box3(c, p, sz, col, a = 1, fill = .6) {
+  if (a <= .003) return; const [x, y, z] = p, [hx, hy, hz] = sz.map(v => v / 2), cam = V.camAt(tNow).pos;
+  const F = [[[0, -1, 0], [[x - hx, y - hy, z - hz], [x + hx, y - hy, z - hz], [x + hx, y - hy, z + hz], [x - hx, y - hy, z + hz]], .7], [[1, 0, 0], [[x + hx, y - hy, z - hz], [x + hx, y + hy, z - hz], [x + hx, y + hy, z + hz], [x + hx, y - hy, z + hz]], .45], [[-1, 0, 0], [[x - hx, y + hy, z - hz], [x - hx, y - hy, z - hz], [x - hx, y - hy, z + hz], [x - hx, y + hy, z + hz]], .45], [[0, 0, 1], [[x - hx, y - hy, z + hz], [x + hx, y - hy, z + hz], [x + hx, y + hy, z + hz], [x - hx, y + hy, z + hz]], .95]];
+  for (const [n, q, k] of F) { const d = [cam[0] - x, cam[1] - y, cam[2] - z]; if (n[0] * d[0] + n[1] * d[1] + n[2] * d[2] <= 0) continue; V.poly(c, q, K.rgba(K.mix(col, '#ffffff', k * .3), fill * k), K.rgba(K.mix(col, '#ffffff', .4), .9), a); }
+}
+const lab = (c, s, p, col, a, size = .15, ex = {}) => { if (a > .003) V.label(c, s, p, Object.assign({ size, w: 700, color: col, a, minPx: 18, maxPx: 90 }, ex)); };
+
+// ═════════ 難度柱與翻譯環
+const YX = -.8, XX = .8, HY = 1.9, PW = .5;
+const ghost = (c, x, h, col, a) => { if (a <= .003) return; const d = PW / 2; [[-d, -d], [d, -d], [d, d], [-d, d]].forEach(([dx, dy], i, A) => { const [ex, ey] = A[(i + 1) % 4]; V.line(c, [x + dx, dy, h], [x + ex, ey, h], { color: col, a: a * .7, w: 1.6, plain: true }); V.line(c, [x + dx, dy, 0], [x + dx, dy, h], { color: col, a: a * .35, w: 1.2, plain: true }); }); };
+function ring(c, a, col = VI) { if (a <= .003) return; const pts = []; for (let i = 0; i <= 48; i++) { const th = i / 48 * Math.PI * 2; pts.push([Math.cos(th) * .3, 0, 1.15 + Math.sin(th) * .3]); } V.path(c, pts, { color: col, a, w: 4 }); V.glow(c, [0, 0, 1.15], .6, .25 * a, col); lab(c, 'f', [0, -.42, 1.55], col, a, .2); lab(c, '多項式時間', [0, -.42, .7], col, a * .8, .11); }
+/** st: hy（Y 柱高）、hx（X 柱實際高）、xg（X 虛框高）、nameY、nameX、cap（天花板高）、hot */
+function drawPillars(c, t, st) {
+  const { a = 1, hy = HY, hx = 0, xg = 1.3, nameY = 'Y', nameX = 'X', subY = '已知很難', subX = '?', colY = CO, colX = CY, cap = 0, ringA = 1, np = 0 } = st;
+  if (np > 0) { const pts = []; for (let i = 0; i <= 64; i++) { const th = i / 64 * Math.PI * 2; pts.push([Math.cos(th) * 1.45, Math.sin(th) * .6, .01]); } V.poly(c, pts, K.rgba(AM, .07 * np * a), null, 1); V.path(c, pts, { color: AM, a: .6 * np * a, w: 2.4 }); lab(c, 'NP', [-1.25, -.55, .05], AM, np * a, .18); }
+  V.pillar(c, [YX, 0, 0], PW, hy, colY, .8 * a);
+  lab(c, nameY, [YX, -.3, hy + .22], '#ffffff', a, .18); lab(c, subY, [YX, -.3, -.12], colY, a * .9, .13);
+  if (hx > .01) V.pillar(c, [XX, 0, 0], PW, hx, colX, .8 * a);
+  ghost(c, XX, Math.max(xg, hx), colX, a * (hx > .01 ? .35 : 1));
+  if (hx < .3) lab(c, '?', [XX, -.3, Math.max(xg, hx) / 2 + .1], colX, a * .9, .3);
+  lab(c, nameX, [XX, -.3, Math.max(xg, hx) + .22], '#ffffff', a, .18); lab(c, subX, [XX, -.3, -.12], colX, a * .9, .13);
+  if (cap > 0) { V.line(c, [XX - .4, -.3, HY], [XX + .4, -.3, HY], { color: AM, a: a * cap, w: 4 }); V.line(c, [YX, -.3, HY], [XX - .4, -.3, HY], { color: AM, a: a * cap * .35, w: 1.4, plain: true }); lab(c, '天花板', [XX + .02, -.3, HY + .22], AM, a * cap, .13); }
+  ring(c, a * ringA);
+}
+/** 題目方塊：沿 Y → 環 → X（dir = 1）或反向 */
+function instance(c, u, dir, colA, colB, a = 1) {
+  if (u <= 0 || u >= 1) return; const P = [[YX + .1, -.05, HY * .75], [0, 0, 1.15], [XX - .1, -.05, 1.1]], pts = dir > 0 ? P : [...P].reverse();
+  const h = u * 2, i = Math.min(1, Math.floor(h)), q = mix3(pts[i], pts[i + 1], h - i); q[2] += Math.sin(Math.PI * (h - i)) * .25;
+  const col = u < .5 ? colA : colB; box3(c, q, [.2, .2, .2], col, a, .7); V.glow(c, q, .35, .5 * a, col);
+}
+
+// ═════════ 鏡頭
+V.camKeys([
+  [0, V.orbit(-12, 7.0, 1.2, [0, 0, .5], 44)], [T.start, V.orbit(-6, 7.2, 1.4, [0, 0, .7], 44)],
+  [A1.start, V.orbit(-14, 6.2, 1.0, [0, 0, .78], 44)], [L.a3.end, V.orbit(4, 6.3, 1.2, [0, 0, .78], 44)],
+  [B1.start + .3, V.orbit(-10, 6.4, 1.4, [0, 0, .72], 44)], [L.b3.end, V.orbit(6, 6.5, 1.6, [0, 0, .72], 44)],
+  [C1.start + .3, V.orbit(-12, 6.3, 1.2, [0, 0, .78], 44)], [L.c3.end, V.orbit(6, 6.4, 1.3, [0, 0, .78], 44)], [DUR, V.orbit(-2, 6.7, 1.4, [0, 0, .75], 44)],
+]);
+
+// ═════════ 場景
+function sOpen(c, t) {
+  const out = 1 - prog(t, T.start - .4, T.start + .05, E.inCubic); if (out <= 0) return;
+  c.save(); c.globalAlpha *= out * prog(t, -.4, .3);
+  room(c);
+  const u = prog(t, .4, 1.8), r = E.inOutCubic(prog(t, o2.start + .4, o2.start + 1.4));
+  drawPillars(c, t, { hx: r * HY, subY: '已知很難', subX: r > .9 ? '也很難' : '?' });
+  instance(c, u, 1, CO, CY);
+  c.restore();
+}
+const title = S.titleCard(T, { kick: '演算法 · NP 完備', big: '歸約', size: 220, y: 600, en: 'REDUCTION', q: '方向別搞反', qGap: 330, color: CO });
+function sTitle(c, t) {
+  const a = prog(t, T.start - .2, T.start + .3) * (1 - prog(t, T.end - .1, T.end + .35)); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a * .2; room(c); drawPillars(c, t, { hx: HY }); c.restore();
+  K.core(c, CX, 700, 9, a * (.6 + .4 * Math.sin(t * 3)), CO);
+}
+function sReduce(c, t) {
+  const fade = 1 - prog(t, C1.start - .3, C1.start); if (fade <= 0) return;
+  c.save(); c.globalAlpha *= fade;
+  room(c);
+  const a1 = A1.start, a2 = L.a2.start, a3 = L.a3.start, b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start;
+  const rise = E.inOutCubic(prog(t, a3 + .3, a3 + 1.4));
+  const named = prog(t, b1 + .2, b1 + .6);
+  drawPillars(c, t, { a: prog(t, a1, a1 + .4), ringA: prog(t, a1 + .6, a1 + 1.1), hx: rise * HY, nameY: named > .5 ? '3-SAT' : 'Y', nameX: named > .5 ? '頂點覆蓋' : 'X', subY: named > .5 ? 'NP 完備' : '已知很難', subX: rise > .9 ? (t > b2 + .3 ? 'NP-hard' : '≥ Y') : '?', np: prog(t, b3 + .2, b3 + .8) });
+  // a1：題目方塊穿過 f；a2：X 解完答案回來
+  instance(c, prog(t, a1 + 1.4, a1 + 3.4), 1, CO, CY);
+  const back = prog(t, a2 + .3, a2 + 1.6); if (back > 0 && back < 1) { const p0 = [XX - .1, -.05, 1.3], p1 = [YX + .1, -.05, HY * .8], q = mix3(p0, p1, E.inOutCubic(back)); q[2] += Math.sin(Math.PI * back) * .5; V.glow(c, q, .4, .9, GR); V.core(c, q, .05, 1, GR); lab(c, '答案', add(q, [0, -.1, .2]), GR, 1, .13); }
+  const sv = prog(t, a2 + 1.6, a2 + 2.0) * (1 - prog(t, a3 + .1, a3 + .4)); if (sv > 0) { V.glow(c, [YX, 0, HY], .8, .6 * sv, GR); S.label(c, '解 Y = f + 解 X', CX, 290, { size: 58, w: 700, color: GR, a: sv }); }
+  const ga = prog(t, a3 + 1.2, a3 + 1.6) * (1 - prog(t, b1 - .1, b1 + .2)); if (ga > 0) S.label(c, 'X ≥ Y', CX, 290, { size: 96, w: 700, color: CO, a: ga });
+  const ba = prog(t, b1 + .6, b1 + 1.0) * (1 - prog(t, b2 - .1, b2 + .2)); if (ba > 0) { S.label(c, '3-SAT ≤p 頂點覆蓋', CX, 290, { size: 56, w: 700, color: INK, a: ba }); }
+  const ha = prog(t, b2 + .3, b2 + .7) * (1 - prog(t, b3 - .1, b3 + .2)); if (ha > 0) S.label(c, '頂點覆蓋：NP-hard', CX, 290, { size: 60, w: 700, color: CO, a: ha });
+  // b3：證書秒驗證
+  const ca = prog(t, b3 + .4, b3 + .8);
+  if (ca > 0) { const cert = [XX + .2, -.55, .45]; box3(c, cert, [.22, .06, .3], GR, ca, .6); lab(c, '✓', add(cert, [0, -.05, .25]), GR, ca * prog(t, b3 + 1.0, b3 + 1.3), .2); S.label(c, '給一組點：O(E) 就能驗', CX, 260, { size: 44, w: 700, color: GR, a: ca }); S.label(c, 'NP 完備 = NP-hard + 在 NP', CX, 345, { size: 46, w: 700, color: AM, a: ca * prog(t, b3 + 1.4, b3 + 1.8) }); }
+  c.restore();
+}
+function sWrong(c, t) {
+  const endDim = 1 - prog(t, Ec.start - .2, Ec.start + .4); if (endDim <= 0) return;
+  c.save(); c.globalAlpha *= endDim;
+  room(c);
+  const c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+  // 反向：VC（左）→ SAT（右，已知高）
+  const flip = c3 + .3;
+  if (t < flip) {
+    const P = [[YX + .1, -.05, .8], [0, 0, 1.15], [XX - .1, -.05, HY * .75]];
+    V.pillar(c, [XX, 0, 0], PW, HY, CO, .8); lab(c, 'SAT', [XX, -.3, HY + .22], '#ffffff', 1, .18); lab(c, 'NP 完備', [XX, -.3, -.12], CO, .9, .13);
+    ghost(c, YX, 1.3, CY, 1); lab(c, '?', [YX, -.3, .75], CY, .9, .3); lab(c, '頂點覆蓋', [YX, -.3, 1.52], '#ffffff', 1, .18); lab(c, '?', [YX, -.3, -.12], CY, .9, .13);
+    ring(c, 1);
+    const u = prog(t, c1 + .5, c1 + 2.4); if (u > 0 && u < 1) { const h = u * 2, i = Math.min(1, Math.floor(h)), q = mix3(P[i], P[i + 1], h - i); q[2] += Math.sin(Math.PI * (h - i)) * .25; box3(c, q, [.2, .2, .2], u < .5 ? CY : CO, 1, .7); }
+    const cap = prog(t, c2 + .2, c2 + .8);
+    if (cap > 0) { V.line(c, [YX - .4, -.3, HY], [YX + .4, -.3, HY], { color: AM, a: cap, w: 4 }); V.line(c, [YX + .4, -.3, HY], [XX, -.3, HY], { color: AM, a: cap * .35, w: 1.4, plain: true }); lab(c, '只有天花板', [YX, -.3, HY + .22], AM, cap, .13); }
+    const wa = prog(t, c1 + .6, c1 + 1.0); if (wa > 0) S.label(c, '頂點覆蓋 ≤p SAT', CX, 260, { size: 56, w: 700, color: INK, a: wa * (1 - prog(t, c2 + 1.6, c2 + 1.9)) });
+    const na = prog(t, c2 + .8, c2 + 1.2); if (na > 0) { S.label(c, '高度還是 ?', CX, 345, { size: 50, w: 700, color: CO, a: na * (1 - prog(t, c2 + 1.6, c2 + 1.9)) }); }
+    const xa = prog(t, c2 + 1.8, c2 + 2.2); if (xa > 0) S.label(c, '✗ 證不出難', CX, 290, { size: 72, w: 700, color: CO, a: xa * (1 - prog(t, flip - .3, flip)) });
+  } else {
+    const k = prog(t, flip, flip + .5);
+    drawPillars(c, t, { a: k, hx: HY * E.inOutCubic(prog(t, flip + .6, flip + 1.6)), nameY: '已知難題', nameX: '新問題', subY: 'NPC', subX: t > flip + 1.6 ? '≥' : '?' });
+    instance(c, prog(t, flip + .2, flip + 1.4), 1, CO, CY);
+    const ra = prog(t, flip + 1.4, flip + 1.8); if (ra > 0) S.label(c, '已知難題 → 新問題', CX, 290, { size: 60, w: 700, color: GR, a: ra });
+  }
+  c.restore();
+}
+function sExam(c, t) {
+  const a = prog(t, Ec.start + .1, Ec.start + .6); if (a <= 0) return;
+  c.save(); c.globalAlpha *= a;
+  S.label(c, '考試這樣寫', CX, 520, { size: 32, a: .6, ls: '6px' });
+  const rows = [['Y ≤p X ⇒ X 至少和 Y 一樣難', CO, 52], ['NP-hard：已知 NPC 歸約到它', AM, 52], ['NPC = NP-hard 且在 NP', GR, 54], ['反方向只給上界', INK, 54]];
+  rows.forEach(([s, col, sz], i) => { const p = E.outCubic(prog(t, Ec.start + .3 + i * .5, Ec.start + .8 + i * .5)); if (p > 0) S.label(c, s, CX, 680 + i * 140 + (1 - p) * 18, { size: sz, w: 700, color: col, a: p }); });
+  c.restore();
+}
+
+K.scenes([
+  { id: 'open', start: 0, end: T.start, draw: sOpen },
+  { id: 'title', start: T.start, end: A1.start, draw: sTitle, in: { type: 'cut' } },
+  { id: 'reduce', start: A1.start, end: C1.start, draw: sReduce, color: CO, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+  { id: 'wrong', start: C1.start, end: DUR, draw: (c, t) => { sWrong(c, t); sExam(c, t); }, color: AM, in: { type: 'iris', dur: .55, x: CX, y: 960 } },
+]);
+function drawAll(t) { if (t < A1.start) { sOpen(K.ctx, t); sTitle(K.ctx, t); return; } K.drawScenes(t); }
+K.amb.keys([
+  [0, { haze: .14, stars: .2, dust: .3, cam: .2 }],
+  [o1.start + 1, { haze: .18, stars: .26, dust: .45, bokeh: .15, cam: .2 }],
+  [T.start, { haze: .2, stars: .3, dust: .5, bokeh: .3, cam: .2 }],
+  [A1.start, { haze: .17, stars: .22, dust: .45, bokeh: .2, cam: .2 }],
+  [DUR, { haze: .18, stars: .26, dust: .45, bokeh: .25, cam: .2 }],
+]);
+K.flash(T.start, .1, .35); K.flare(T.start + .05, CX, 680, .85, 1.6);
+K.flash(B1.start, .06, .3); K.flash(C1.start, .06, .3);
+const TAG = '記憶宮殿 · 演算法館 · 第 7 間  /  ';
+S.chapters([[A1.start, TAG + '01 歸約'], [B1.start, TAG + '02 NP 完備'], [C1.start, TAG + '03 方向'], [Ec.start, '']]);
+
+function render(t) {
+  tNow = t;
+  K.begin(t); V.begin(t);
+  drawAll(t);
+  title(t); S.drawHeroes(t); S.drawChap(t);
+  K.end(t);
+}
+const a1 = A1.start, a2 = L.a2.start, a3 = L.a3.start, b1 = B1.start, b2 = L.b2.start, b3 = L.b3.start, c1 = C1.start, c2 = L.c2.start, c3 = L.c3.start;
+M.film({
+  width: W, height: H, fps: FPS, duration: DUR, stage, render,
+  scenes: TIMING.lines.map((l, i) => ({ id: l.id, start: l.start, end: TIMING.lines[i + 1]?.start ?? DUR, label: l.id })),
+  cues: [
+    { t: .4, sfx: 'whoosh', gain: -12 }, { t: o2.start + .4, sfx: 'riser', gain: -13 }, { t: o2.start + 1.4, sfx: 'thump', gain: -9 },
+    { t: T.start, sfx: 'riser', align: 'end', gain: -10 },
+    { t: T.start, sfx: 'impact', gain: -3 },
+    { t: a1 + .6, sfx: 'chime', gain: -12 }, { t: a1 + 1.4, sfx: 'whoosh', gain: -11 }, { t: a1 + 2.4, sfx: 'swish', gain: -11 },
+    { t: a2 + .3, sfx: 'reverse', gain: -11 }, { t: a2 + 1.6, sfx: 'chime', gain: -9 },
+    { t: a3 + .3, sfx: 'riser', gain: -13 }, { t: a3 + 1.3, sfx: 'impact', gain: -8 },
+    { t: b1 + .2, sfx: 'swish', gain: -11 }, { t: b2 + .3, sfx: 'thump', gain: -9 },
+    { t: b3 + .4, sfx: 'pop', gain: -10 }, { t: b3 + 1.0, sfx: 'chime', gain: -8 },
+    { t: c1 + .5, sfx: 'whoosh', gain: -11 }, { t: c2 + .2, sfx: 'thump', gain: -10 }, { t: c2 + 1.8, sfx: 'glitch', gain: -9 },
+    { t: c3 + .5, sfx: 'whoosh', gain: -11 }, { t: c3 + 1.4, sfx: 'chime', gain: -8 },
+    { t: Ec.start + .2, sfx: 'chime', gain: -8 },
+  ],
+});
+</script>
+</body>
+</html>
