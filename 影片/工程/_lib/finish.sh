@@ -3,7 +3,7 @@
 # 用法：bash _lib/finish.sh <工程資料夾> "<成片名稱>" [holds] [cuts]
 set -euo pipefail
 P="$1"; NAME="$2"; HOLDS="${3:-}"; CUTS="${4:-}"
-SK=/home/user/azenyes/leaderai-media-toolkit/skills/lead-knowledge-animation/scripts
+SK="${LKA_SCRIPTS:-$(cd "$(dirname "$0")/.." && pwd)/_toolkit/lead-knowledge-animation/scripts}"
 cd "$P"
 cp ../_lib/cs.js film/cs.js 2>/dev/null || true
 [ -f film/space.js ] && cp ../_lib/space.js film/space.js

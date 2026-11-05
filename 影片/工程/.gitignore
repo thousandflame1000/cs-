@@ -6,3 +6,6 @@
 _palace/out/
 _palace/work/*.wav
 _palace/work/sfx/
+_toolkit/lead-knowledge-animation/assets/fonts/*.otf
+_toolkit/lead-knowledge-animation/assets/fonts/*.ttf
+_toolkit/**/__pycache__/

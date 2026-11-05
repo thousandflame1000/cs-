@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 P="$1"; NAME="$2"; ID="${P:0:2}"
-SK=/home/user/azenyes/leaderai-media-toolkit/skills/lead-knowledge-animation/scripts
+SK="${LKA_SCRIPTS:-$(cd "$(dirname "$0")/.." && pwd)/_toolkit/lead-knowledge-animation/scripts}"
 RAW="$P/out/$NAME.mp4"; OUT="$P/out/${NAME}_palace.mp4"
 [ -f "$RAW" ] || { echo "沒有成片 $RAW"; exit 1; }
 SPLIT=$(python3 -c "import json;s=open('$P/film/timing.js',encoding='utf-8').read();d=json.loads(s[s.index('{'):s.index(';\n')]);L={l['id']:l for l in d['lines']};print(round(L['a1']['start']-0.02,3))")
