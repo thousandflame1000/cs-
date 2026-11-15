@@ -1,0 +1,142 @@
+英文（A）知識點的練習題（題目都是自己寫的，不是考古題原文）。
+
+@q ken-wf1 | en-reading#1 | 1
+prefix「pre-」最常見的意思是？
+[x] 之前
+[ ] 之後
+[ ] 不
+---
+predict（預先說出）、preview（預覽）。
+
+@q ken-wf2 | en-reading#1 | 2
+「The decision was irreversible.」irreversible 最可能是？
+[x] 無法挽回的、不能倒轉的
+[ ] 可以重複的
+[ ] 很容易的
+---
+ir-（不）＋re-（回）＋vers（轉）＋-ible（可以）。
+
+@q ken-wf3 | en-reading#1 | 2
+下面哪一個字是名詞？
+[x] development
+[ ] develop
+[ ] developing
+---
+-ment 是名詞字尾。
+
+@q ken-wf4 | en-reading#1 | 2
+「The two systems must interact smoothly.」interact 的 inter- 是什麼意思？
+[x] 之間、互相
+[ ] 裡面
+[ ] 再一次
+---
+inter-＝between。
+
+@q ken-ac1 | en-reading#2 | 1
+「The data suggest a significant improvement.」significant 的意思是？
+[x] 顯著的、重要的
+[ ] 微小的
+[ ] 錯誤的
+---
+a significant increase＝顯著增加。
+
+@q ken-ac2 | en-reading#2 | 2
+「Success depends ___ hard work.」
+[x] on
+[ ] of
+[ ] in
+---
+depend on＝取決於。
+
+@q ken-ac3 | en-reading#2 | 2
+下面哪一個和 assume（假設）意思最接近？
+[x] suppose
+[ ] refuse
+[ ] require
+---
+assume＝suppose（假定）。
+
+@q ken-ac4 | en-reading#2 | 2
+「The accident resulted ___ heavy traffic.」（意思：車禍造成大塞車）
+[x] in
+[ ] from
+[ ] of
+---
+result in＝導致；result from＝起因於。
+
+@q ken-ls1 | en-reading#3 | 1
+「The book that I borrowed from the library is very useful.」主要動詞是？
+[x] is
+[ ] borrowed
+[ ] useful
+---
+that I borrowed from the library 是修飾 book 的子句。
+
+@q ken-ls2 | en-reading#3 | 2
+「Written in simple English, the guide is easy to follow.」Written in simple English 修飾誰？
+[x] the guide
+[ ] English
+[ ] 整個句子以外的人
+---
+分詞片語修飾主詞：這本用簡單英文寫的指南。
+
+@q ken-ls3 | en-reading#3 | 2
+「The city, which was founded in 1850, has grown rapidly.」拿掉逗號中間的部分，句子還完整嗎？
+[x] 完整：The city has grown rapidly.
+[ ] 不完整，少了動詞
+---
+which 子句是補充說明。
+
+@q ken-rd1 | en-reading#4 | 1
+閱讀測驗的「主旨題」最先該看哪裡？
+[x] 第一段、最後一段、轉折詞後面的句子
+[ ] 文章中間的數字
+[ ] 選項裡最長的那一個
+---
+主旨要涵蓋全文。
+
+@q ken-rd2 | en-reading#4 | 2
+選項用了原文的字，但把 always 改成 sometimes。這個選項通常是？
+[x] 陷阱，意思被改了
+[ ] 正確答案
+---
+換字之後意思不同。
+
+@q ken-rd3 | en-reading#4 | 2
+推論題的正確選項必須？
+[x] 有文章裡的證據支持
+[ ] 符合你自己的常識
+[ ] 說得比文章更強烈
+---
+不能加入文章沒有的資訊。
+
+@q ken-cz1 | en-reading#5 | 1
+「A number of students ___ absent today.」
+[x] are
+[ ] is
+---
+a number of＝很多，接複數。
+
+@q ken-cz2 | en-reading#5 | 2
+「The results ___ yesterday.」（結果昨天被公布）
+[x] were announced
+[ ] announced
+[ ] are announcing
+---
+被動、過去式。
+
+@q ken-cz3 | en-reading#5 | 2
+「He finished ___ the report.」
+[x] writing
+[ ] to write
+[ ] write
+---
+finish＋V-ing。
+
+@q ken-cz4 | en-reading#5 | 2
+「It was raining. ___, the game continued.」
+[x] However
+[ ] Because
+[ ] So that
+---
+轉折，而且前面是句號。

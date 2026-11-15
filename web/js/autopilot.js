@@ -1,7 +1,17 @@
 /* 資工所衝刺站 — 帶我讀：每天自動排好順序，一次只給你一件事 */
 'use strict';
 
+/* 畫餅：用真實進度算「照這速度哪天讀完」，一行、有數字 */
+function goPie() {
+  const tot = KP.ORDER.length, got = KP.M().length, left = S.daysLeft(), budget = Math.round((S.st.settings.dailyMinutes || 360) * .6);
+  const rest = KP.ORDER.filter(k => !KP.learned(k)).reduce((t, k) => t + (KP.N[k].mins || 30), 0), need = Math.ceil(rest / Math.max(30, budget));
+  if (!rest) return `<p class="go-pie">${tot} 個知識點全部學會，剩 ${left} 天拿來複習和模考</p>`;
+  const fin = D.add(D.today(), need), spare = left - need;
+  return spare >= 21 ? `<p class="go-pie">學會 ${got}/${tot} 個知識點；照每天 ${Math.round((S.st.settings.dailyMinutes || 360) / 60)} 小時，<b>${fin.slice(5).replace('-', '/')}</b> 上完，比考試早 <b>${spare}</b> 天</p>`
+    : `<p class="go-pie">學會 ${got}/${tot} 個知識點；照每天 ${Math.round((S.st.settings.dailyMinutes || 360) / 60)} 小時要到 <b>${fin.slice(5).replace('-', '/')}</b> 才上完，${spare >= 0 ? '只比考試早 ' + spare + ' 天' : '來不及'}：到設定把每天時數調高</p>`;
+}
 /* 短影音看到 90% 就記為看過（clips.js 會呼叫） */
+window.onXpSeen = () => { try { renderGoPill(location.hash.slice(1) || 'go'); } catch (e) { } };
 window.onClipSeen = id => { const cs = S.st.clipSeen || (S.st.clipSeen = {}); if (!cs[id]) { cs[id] = D.today(); S.save(); try { renderGoPill(location.hash.slice(1) || 'go'); } catch (e) { } } };
 
 const Auto = {
@@ -9,9 +19,12 @@ const Auto = {
   plan(force) {
     const today = D.today(), A = S.st.auto || (S.st.auto = {});
     if (!force && A.date === today && A.ids && A.ids.length) return A.ids;
-    const st = S.st, day = S.planDay(), plan = (DATA.plan || []).find(p => p.day === day), ids = [];
-    const yPlan = (DATA.plan || []).find(p => p.day === day - 1), yLog = st.log[D.add(today, -1)];
-    if (day > 1 && ((yPlan && yPlan.lessons && yPlan.lessons.length) || (yLog && yLog.lessons && yLog.lessons.length))) ids.push('blurt');
+    const st = S.st;
+    // 還沒開始上任何一堂課：計畫從今天算（不會一打開就「落後 N 章」）
+    if (!Auto.started() && S.planDay() > 1) { st.settings.startDate = today; }
+    const day = S.planDay(), plan = (DATA.plan || []).find(p => p.day === day), ids = [];
+    // 白紙回憶：只有「昨天真的學過東西」才出現，回想的就是那些內容（以前是看計畫上排了什麼）
+    if (Auto.learnedOn(D.add(today, -1)).length) ids.push('blurt');
     if (Learn.cardDue().length) ids.push('cards-due');
     if (S.dueReviews().length) ids.push('review');
     Personal.fixDue().forEach(c => ids.push('fix:' + c));
@@ -20,37 +33,33 @@ const Auto = {
       ids.push('cram');
       Learn.weakest(2).forEach(w => ids.push('weak:' + w.id));
       if (S.daysLeft() % 2 === 0) ids.push('mock:' + GROUPS[Math.floor(S.daysLeft() / 2) % GROUPS.length].id);
-      const unread = DATA.lessons.filter(l => !(st.lessons[l.id] || {}).read);
-      if (unread.length && S.daysLeft() > 7) ids.push('read:' + unread[0].id);
+      const cur = KP.current();
+      if (cur && S.daysLeft() > 7) ids.push('kp:' + cur);
       ids.push('adaptive'); if (Learn.newCards().length && S.daysLeft() > 7) ids.push('cards-new'); ids.push('checkin');
       S.st.auto = { date: today, ids: [...new Set(ids)], skip: [] }; S.save(); return S.st.auto.ids;
     }
-    // 要讀的章：先補落後的，再讀今天的；依每天可用時數決定讀幾章
-    const behind = []; for (const p of DATA.plan || []) if (p.day < day) for (const lid of p.lessons || []) if (!(st.lessons[lid] || {}).read) behind.push(lid);
-    const todayL = ((plan && plan.lessons) || []).filter(l => !(st.lessons[l] || {}).read);
-    const cap = Math.max(1, Math.min(3, Math.round((st.settings.dailyMinutes || 360) / 150)));
-    const lessons = [...new Set([...behind, ...todayL])].slice(0, cap); // 落後的先補，再讀今天的
-    if (day > 30 || (!plan && !lessons.length)) { const w = Learn.weakest(1)[0]; if (w) ids.push('weak:' + w.id); }
-    // 🆘 標記過「沒基礎」的章：先打底；昨天延後的費曼今天補
-    DATA.lessons.filter(x => { const s2 = st.lessons[x.id] || {}; return s2.base && !s2.baseDone; }).slice(0, 2).forEach(x => ids.push('base:' + x.id));
-    DATA.lessons.filter(x => { const s2 = st.lessons[x.id] || {}; return s2.feynLater && s2.feynLater <= today && !['pending', 'pass', 'self'].includes(s2.gate) && !lessons.includes(x.id); }).slice(0, 2).forEach(x => ids.push('feyn:' + x.id));
-    for (const lid of lessons) {
-      const l = LESSON[lid]; if (!l) continue; const ls = st.lessons[lid] || {};
-      if (typeof Clips !== 'undefined' && Clips.list.some(c => c.lesson === lid)) ids.push('clip:' + lid);
-      if (!ls.read && !ls.pre && this.chQs(lid).length >= 2) ids.push('pre:' + lid);
-      ids.push('read:' + lid);
-      if (this.chQs(lid).length) ids.push('quiz:' + lid);
-      if (l.feynman && !['pending', 'pass', 'self'].includes(ls.gate)) ids.push('feyn:' + lid);
-    }
+    // 新內容：照知識點圖的拓撲順序 π 往下推，塞到每日時數的 60%（課程規格 H3、H12、H17）。一個知識點＝一頁：教 → 例 → 練
+    const kps = KP.todayList();
+    if (!kps.length) { const w = Learn.weakest(1)[0]; if (w) ids.push('weak:' + w.id); }
+    for (const k of kps) ids.push('kp:' + k);
+    // 整章的知識點都學會、還沒交費曼：排一次（每天最多一章）；昨天延後的費曼今天補
+    const fc = DATA.lessons.find(x => { const s2 = st.lessons[x.id] || {}; return KP.ORDER.some(k => KP.N[k].ch === x.id) && KP.ORDER.filter(k => KP.N[k].ch === x.id).every(KP.learned) && !['pending', 'pass', 'self'].includes(s2.gate) && !(s2.feynLater && s2.feynLater > today); });
+    if (fc) ids.push('feyn:' + fc.id);
     if (DATA.lessons.some(l => (st.lessons[l.id] || {}).gate === 'revise')) ids.push('revise');
     for (const g of (plan && plan.mocks) || []) ids.push('mock:' + g);
-    ids.push('adaptive');
+    // 練習與新卡：只有學過至少一章才出現，而且只從學過的章出
+    if (KP.M().length) ids.push('adaptive');
     if (Learn.newCards().length) ids.push('cards-new');
     ids.push('checkin');
     S.st.auto = { date: today, ids, skip: [] }; S.save();
     return ids;
   },
   chQs(lid) { return QBANK.all().filter(q => q.ch === lid && q.type !== 'essay' && q.src !== 'agent'); },
+  /* 有沒有開始上過任何一堂課 */
+  started() { return Object.keys(S.st.kp || {}).length > 0 || DATA.lessons.some(l => { const s = S.st.lessons[l.id] || {}; return s.read || s.stg || s.sec || s.wk; }); },
+  /* 某一天真的學過的章（看當天的學習紀錄，不看計畫） */
+  /* 某一天真的學會的知識點（看當天的紀錄 kpDone，不看計畫）：回想只問這些（H11） */
+  learnedOn(date) { return KP.learnedOn(date); },
   /* 預排某一天（例如明天）的步驟，不動到真正的進度：給每日推播、Agent 督導用 */
   preview(date) {
     const st = S.st, realToday = D.today, realSave = S.save, keepAuto = st.auto, had = Object.prototype.hasOwnProperty.call(st.log, date), keepLog = st.log[date];
@@ -67,28 +76,37 @@ const Auto = {
     const [kind, arg] = id.split(':'), st = S.st, L = S.day(), l = arg ? LESSON[arg] : null, ls = arg ? (st.lessons[arg] || {}) : {}, short = l ? l.title.split(/[：（]/)[0] : '';
     const go = h => () => { location.hash = h; };
     switch (kind) {
-      case 'blurt': return { icon: '📝', title: '晨間白紙回憶', sub: '不看書，寫下昨天讀的', why: '先提取再複習，記得最牢；寫不出來的地方就是今天要補的洞', mins: 10, done: !!L.blurt, act: () => blurtDialog() };
-      case 'cards-due': { const n = Learn.cardDue().length; return { icon: '🃏', title: `到期必背卡 ${n} 張`, sub: '', why: '這些卡依記憶模型算出你快忘了，今天複習一次效益最高', mins: Math.max(3, Math.ceil(n * .3)), done: n === 0, act: () => startCards({ noNew: true, title: '到期必背卡' }) }; }
-      case 'review': { const n = S.dueReviews().length; return { icon: '🔁', title: `到期複習 ${n} 題`, sub: '', why: '在快忘記時再做一次，記憶間隔會被拉長', mins: Math.max(3, Math.ceil(n * 1.5)), done: n === 0, act: () => Practice.start(S.dueReviews(), { title: '到期複習', review: true }) }; }
-      case 'pre': return { icon: '🎯', title: `預測驗：${short}`, sub: '先猜 3 題', why: '被問過的問題，讀的時候大腦會主動找答案', mins: 5, done: !!(ls.pre || ls.read), act: () => { const ids = rng(Date.now() & 0xffffffff).shuffle(this.chQs(arg).map(q => q.id)).slice(0, 3); Practice.start(ids, { title: '讀前預測驗：' + l.title, pretest: arg }); } };
-      case 'clip': { const cs = Clips.list.filter(c => c.lesson === arg), seen = cs.filter(c => (st.clipSeen || {})[c.id]).length; return { icon: '🎬', title: `短片：${short}`, sub: '', why: '先用畫面抓直覺，讀推導時比較不會迷路', mins: cs.length * 1, done: seen >= cs.length, act: go('#' + arg) }; }
-      case 'read': return { icon: '📖', title: `精讀：${l.title}`, sub: '讀完按「標記讀完」', why: '這是今天的主菜：遇到粗體與「考點」框要停下來自己推一遍', mins: Math.round(l.mins * .5), done: !!ls.read, act: go('#' + arg) };
-      case 'quiz': { const cs = chapterStats(arg), need = Math.min(cs.n, 5); return { icon: '✍️', title: `練習：${short}`, sub: `${cs.att}/${need} 題`, why: '讀完馬上提取，才知道是真懂還是看過', mins: 15, done: cs.att >= need, act: () => { const qs = this.chQs(arg), d = Math.min(3, Practice.starGet(arg) + 1), up = qs.filter(q => (q.diff || 2) >= d); Practice.start((up.length ? up : qs).map(q => q.id), { title: l.title, ch: arg, limit: 8 }); } }; }
-      case 'cram': return { icon: '🔥', title: '考前總複習 40 張', sub: '最快忘的先複習', why: '', mins: 25, done: !!L.cramDone, act: () => startCram() };
-      case 'fix': { const n = (Personal.causes()[arg] || []).length; return { icon: '🩹', title: `補救：${arg}`, sub: `最近 7 天 ${n} 題`, why: '', mins: 15, done: (S.st.fixed || {})[arg] === D.today() || n < 3, act: () => Personal.startFix(arg) }; }
-      case 'base': return { icon: '🧱', title: `打底：${short}`, sub: '先看範例，再做同類題', why: '', mins: 20, done: !!ls.baseDone, act: () => { const w = Rescue.warm(arg); if (!w.ids.length) { S.lesson(arg).baseDone = D.today(); S.save(); location.hash = '#' + arg; return; } Practice.start(w.ids, { title: '打底：' + short, base: arg, ex: w.ex }); } };
-      case 'feyn': return { icon: '🧠', title: `費曼：${short}`, sub: '', why: '講得出完整因果鏈才算懂；Agent 會指出你跳步的地方', mins: 20, done: ['pending', 'pass', 'self'].includes(ls.gate) || !!(ls.feynLater && ls.feynLater > D.today()), act: () => { location.hash = '#' + arg; setTimeout(() => { const f = $('#feyn'); if (f) f.scrollIntoView({ behavior: 'smooth' }); }, 300); } };
-      case 'revise': { const r = DATA.lessons.filter(x => (st.lessons[x.id] || {}).gate === 'revise'); return { icon: '🛠️', title: `重交費曼（${r.length} 章）`, sub: r.slice(0, 2).map(x => x.title.split(/[：（]/)[0]).join('、'), why: '被退回的那一步，正是考場上會失分的地方', mins: 20 * Math.max(1, r.length), done: !r.length, act: () => { if (r[0]) { location.hash = '#' + r[0].id; setTimeout(() => { const f = $('#feyn'); if (f) f.scrollIntoView({ behavior: 'smooth' }); }, 300); } } }; }
-      case 'mock': { const g = GROUPS.find(x => x.id === arg); return { icon: '⏱️', title: `模考：${g.name}`, sub: `${g.mins} 分鐘`, why: '在考試條件下提取，練時間分配', mins: g.mins + 15, done: (L.mocks || []).includes(arg), act: () => Practice.startMock(arg) }; }
-      case 'weak': return { icon: '🎯', title: `補弱點：${short}`, sub: '', why: '把分數最容易拉上來的地方先補起來', mins: 25, done: !!(L.weakDone || []).includes(arg), act: () => { (L.weakDone = L.weakDone || []).push(arg); S.save(); Practice.startAdaptive(arg); } };
-      case 'adaptive': { const goal = st.settings.dailyQuestions || 30; return { icon: '⚡', title: `自適應練習 ${L.q}/${goal}`, sub: '', why: '難度剛好的題目學得最多；做到今天的題數目標為止', mins: Math.max(5, Math.ceil(Math.max(0, goal - L.q) * 1.3)), done: L.q >= goal, act: () => Practice.startAdaptive() }; }
-      case 'cards-new': { const n = Math.min(Learn.newLeft(), Learn.newCards().length); return { icon: '🆕', title: `新必背卡 ${n} 張`, sub: '', why: '每天少量加新卡，考前才不會一次爆量', mins: Math.max(3, Math.ceil(n * .4)), done: n === 0, act: () => startCards({ title: '新的必背卡' }) }; }
-      case 'mini-q': return { icon: '⚡', title: `保底 10 題 ${Math.min(L.q, 10)}/10`, sub: '', why: '累的時候也要維持「每天都有碰」：中斷才是最大的損失', mins: Math.max(3, Math.ceil(Math.max(0, 10 - L.q) * 1.3)), done: L.q >= 10, act: () => { Practice.startAdaptive(); Practice.sess.opts.limit = Math.max(1, 10 - L.q); } };
-      case 'checkin': return { icon: '✅', title: '晚間打卡', sub: '', why: '寫下明天第一件事，隔天開機就不會發呆', mins: 5, done: !!L.checkin, act: () => checkinDialog(todayTasks()) };
+      case 'paper': return Papers.dailyTask(arg);
+      case 'blurt': { const ys = Auto.learnedOn(D.add(D.today(), -1)).map(x => KP.shortT(x)); return { icon: 'pen', title: '回想昨天學的', sub: ys.slice(0, 4).join('、') + (ys.length > 4 ? ` 等 ${ys.length} 個` : ''), why: '只問昨天學會的知識點：先想、再作答，想不起來的地方今天補', mins: Math.max(5, ys.length * 2), done: !!L.blurt, act: () => blurtDialog() }; }
+      case 'kp': { const n = KP.N[arg]; if (!n) return { icon: 'book', title: arg, sub: '', why: '', mins: 0, done: true, act: () => { } }; return { icon: 'book', title: `上課：${KP.shortT(arg)}`, sub: `第 ${KP.POS[arg] + 1}/${KP.ORDER.length} 個知識點・${KP.stageLabel(arg)}`, why: '讀一小段就動手做一題；例題要你先寫一步；做到學會才往下', mins: n.mins || 30, done: KP.learned(arg), act: go(KP.href(arg)) }; }
+      case 'class': { const g = Guide.stages(l), cur = Guide.current(l), k = g.indexOf(cur); return { icon: 'book', title: `上課：${short}`, sub: cur ? `第 ${k + 1}/${g.length} 步：${cur.t}` : '', why: '照固定順序：看懂 → 跟著做 → 自己做 → 用自己的話講', mins: Math.max(20, Math.round(g.filter(x => !x.done).reduce((t, x) => t + (x.mins || 10), 0))), done: Guide.allDone(l), act: go('#' + arg) }; }
+      case 'cards-due': { const n = Learn.cardDue().length; return { icon: 'cards', title: `到期必背卡 ${n} 張`, sub: '', why: '這些卡依記憶模型算出你快忘了，今天複習一次效益最高', mins: Math.max(3, Math.ceil(n * .3)), done: n === 0, act: () => startCards({ noNew: true, title: '到期必背卡' }) }; }
+      case 'review': { const n = S.dueReviews().length; return { icon: 'review', title: `到期複習 ${n} 題`, sub: '', why: '在快忘記時再做一次，記憶間隔會被拉長', mins: Math.max(3, Math.ceil(n * 1.5)), done: n === 0, act: () => Practice.start(S.dueReviews(), { title: '到期複習', review: true }) }; }
+      case 'pre': return { icon: 'target', title: `預測驗：${short}`, sub: '先猜 3 題', why: '被問過的問題，讀的時候大腦會主動找答案', mins: 5, done: !!(ls.pre || ls.read), act: () => { const ids = rng(Date.now() & 0xffffffff).shuffle(this.chQs(arg).map(q => q.id)).slice(0, 3); Practice.start(ids, { title: '讀前預測驗：' + l.title, pretest: arg }); } };
+      case 'clip': { const cs = Clips.list.filter(c => c.lesson === arg), seen = cs.filter(c => (st.clipSeen || {})[c.id]).length; return { icon: 'play', title: `短片：${short}`, sub: '', why: '先用畫面抓直覺，讀推導時比較不會迷路', mins: cs.length * 1, done: seen >= cs.length, act: go('#' + arg) }; }
+      case 'xp': { if (typeof Explain === 'undefined') return { icon: 'play', title: '影片', sub: '', why: '', mins: 0, done: true, act: () => { } }; const xs = Explain.forLesson(arg), un = xs.filter(x => !Explain.seen(x.id)), mins = Math.max(2, Math.round(xs.reduce((t, x) => t + (x.dur || 150), 0) / 60)); return { icon: 'play', title: `動畫：${short}`, sub: xs.length > 1 ? `${xs.length - un.length}/${xs.length}` : '', why: '先看圖動起來，懂「為什麼」，讀推導時才不會迷路', mins, done: !un.length, act: go('#video-' + (un[0] || xs[0]).id) }; }
+      case 'read': return { icon: 'book', title: `精讀：${l.title}`, sub: '讀完按「標記讀完」', why: '這是今天的主菜：遇到粗體與「考點」框要停下來自己推一遍', mins: Math.round(l.mins * .5), done: !!ls.read, act: go('#' + arg) };
+      case 'quiz': { const cs = chapterStats(arg), need = Math.min(cs.n, 5); return { icon: 'practice', title: `練習：${short}`, sub: `${cs.att}/${need} 題`, why: '讀完馬上提取，才知道是真懂還是看過', mins: 15, done: cs.att >= need, act: () => { const qs = this.chQs(arg), d = Math.min(3, Practice.starGet(arg) + 1), up = qs.filter(q => (q.diff || 2) >= d); Practice.start((up.length ? up : qs).map(q => q.id), { title: l.title, ch: arg, limit: 8 }); } }; }
+      case 'cram': return { icon: 'bolt', title: '考前總複習 40 張', sub: '最快忘的先複習', why: '', mins: 25, done: !!L.cramDone, act: () => startCram() };
+      case 'fix': { const n = (Personal.causes()[arg] || []).length; return { icon: 'review', title: `補救：${arg}`, sub: `最近 7 天 ${n} 題`, why: '', mins: 15, done: (S.st.fixed || {})[arg] === D.today() || n < 3, act: () => Personal.startFix(arg) }; }
+      case 'base': return { icon: 'book', title: `打底：${short}`, sub: '先看範例，再做同類題', why: '', mins: 20, done: !!ls.baseDone, act: () => { const w = Rescue.warm(arg); if (!w.ids.length) { S.lesson(arg).baseDone = D.today(); S.save(); location.hash = '#' + arg; return; } Practice.start(w.ids, { title: '打底：' + short, base: arg, ex: w.ex }); } };
+      case 'feyn': return { icon: 'chat', title: `費曼：${short}`, sub: '', why: '講得出完整因果鏈才算懂；Agent 會指出你跳步的地方', mins: 20, done: ['pending', 'pass', 'self'].includes(ls.gate) || !!(ls.feynLater && ls.feynLater > D.today()), act: () => { location.hash = '#' + arg; setTimeout(() => { const f = $('#feyn'); if (f) f.scrollIntoView({ behavior: 'smooth' }); }, 300); } };
+      case 'revise': { const r = DATA.lessons.filter(x => (st.lessons[x.id] || {}).gate === 'revise'); return { icon: 'chat', title: `重交費曼（${r.length} 章）`, sub: r.slice(0, 2).map(x => x.title.split(/[：（]/)[0]).join('、'), why: '被退回的那一步，正是考場上會失分的地方', mins: 20 * Math.max(1, r.length), done: !r.length, act: () => { if (r[0]) { location.hash = '#' + r[0].id; setTimeout(() => { const f = $('#feyn'); if (f) f.scrollIntoView({ behavior: 'smooth' }); }, 300); } } }; }
+      case 'mock': { const g = GROUPS.find(x => x.id === arg); return { icon: 'timer', title: `模考：${g.name}`, sub: `${g.mins} 分鐘`, why: '在考試條件下提取，練時間分配', mins: g.mins + 15, done: (L.mocks || []).includes(arg), act: () => Practice.startMock(arg) }; }
+      case 'weak': return { icon: 'target', title: `補弱點：${short}`, sub: '', why: '把分數最容易拉上來的地方先補起來', mins: 25, done: !!(L.weakDone || []).includes(arg), act: () => Practice.startAdaptive(arg, { weakTask: arg }) };
+      case 'adaptive': { const goal = st.settings.dailyQuestions || 30; return { icon: 'bolt', title: `練習學過的 ${L.q}/${goal}`, sub: Learn.learned().map(x => LESSON[x].title.split(/[：（]/)[0]).slice(-3).join('、'), why: '難度剛好的題目學得最多；做到今天的題數目標為止', mins: Math.max(5, Math.ceil(Math.max(0, goal - L.q) * 1.3)), done: L.q >= goal, act: () => Practice.startAdaptive() }; }
+      case 'cards-new': { const n = Math.min(Learn.newLeft(), Learn.newCards().length); return { icon: 'cards', title: `新必背卡 ${n} 張`, sub: '', why: '每天少量加新卡，考前才不會一次爆量', mins: Math.max(3, Math.ceil(n * .4)), done: n === 0, act: () => startCards({ title: '新的必背卡' }) }; }
+      case 'mini-q': return { icon: 'bolt', title: `保底 10 題 ${Math.min(L.q, 10)}/10`, sub: '', why: '累的時候也要維持「每天都有碰」：中斷才是最大的損失', mins: Math.max(3, Math.ceil(Math.max(0, 10 - L.q) * 1.3)), done: L.q >= 10, act: () => Practice.startAdaptive(undefined, { limit: Math.max(1, 10 - L.q) }) };
+      case 'checkin': return { icon: 'check', title: '晚間打卡', sub: '', why: '寫下明天第一件事，隔天開機就不會發呆', mins: 5, done: !!L.checkin, act: () => checkinDialog(todayTasks()) };
     }
     return { icon: '•', title: id, sub: '', why: '', mins: 0, done: true, act: () => { } };
   },
-  list() { const A = S.st.auto || {}, L = S.day(), skip = new Set(A.skip || []); const ids = L.minMode ? (L.minIds || ['mini-q', 'checkin']) : this.plan(); return ids.map(id => Object.assign({ id, skipped: skip.has(id) }, this.def(id))); },
+  list() {
+    const L = S.day(), ids = L.minMode ? (L.minIds || ['mini-q', 'checkin']) : this.plan();
+    const tasks = L.minMode ? [] : [...new Set(Papers.dueCorrections().map(item => 'paper:' + item.kind))];
+    const skip = new Set((S.st.auto || {}).skip || []);
+    return [...tasks, ...ids].map(id => Object.assign({ id, skipped: skip.has(id) }, this.def(id)));
+  },
   minMode(on) { const L = S.day(); L.minMode = on; if (on) L.minIds = [...(Learn.cardDue().length ? ['cards-due'] : []), 'mini-q', 'checkin']; S.save(); },
   /* 照目前速度，考前讀得完幾章 */
   pace() {
@@ -113,27 +131,31 @@ function viewGo() {
   const pc = Auto.pace(), commit = L.commit || st.settings.commitTime;
   const toMin = x => { const m = String(x || '').match(/^(\d{1,2}):(\d{2})$/); return m ? +m[1] * 60 + +m[2] : null; }, nowM = new Date().getHours() * 60 + new Date().getMinutes(), cm = toMin(commit);
   const behind = day >= 3 && day <= 31 && pc.read < pc.expect ? pc.expect - pc.read : 0;
-  main().innerHTML = `
-  ${froze ? '<div class="go-note">🧊 凍結卡保住了連勝</div>' : ''}
-  ${Bridge.mode === 'cloud' && typeof CloudAgent !== 'undefined' && CloudAgent.ready() && !st.aiOK ? '<div class="go-note">🤖 讓 Claude 直接幫你改作業、回答問題 <button class="btn sm primary" id="goAI">開啟</button></div>' : ''}
-  ${Sync.needNudge() ? '<div class="go-note warn">💾 這台的進度只存在瀏覽器裡 <button class="btn sm" id="goBak">下載備份</button></div>' : ''}
+  const notesHtml = `  ${froze ? '<div class="go-note">凍結卡保住了連續天數</div>' : ''}
+  ${Bridge.mode === 'cloud' && typeof CloudAgent !== 'undefined' && CloudAgent.ready() && !st.aiOK ? '<div class="go-note">讓 Claude 直接幫你改作業、回答問題 <button class="btn sm primary" id="goAI">開啟</button></div>' : ''}
+  ${Sync.needNudge() ? '<div class="go-note warn">這台的進度只存在瀏覽器裡 <button class="btn sm" id="goBak">下載備份</button></div>' : ''}
+  ${(() => { const pr = pendingReviews(); if (!pr.length) return ''; return `<details class="go-note pend"><summary>待批改 ${pr.length} 件${agentAway() ? `（${agName()} 不在線，可以先自評）` : ''}</summary><ul>${pr.slice(0, 8).map(x => `<li><a href="${x.href}${x.feyn ? '' : ''}">${esc(x.title)}</a>${x.since ? `<span class="muted small">　${esc(x.since)} 交出</span>` : ''}</li>`).join('')}</ul></details>`; })()}
   ${missedY && !L.checkin ? `<div class="go-note bad">昨天沒打卡${st.settings.stake ? `　·　${esc(st.settings.stake)}` : ''}</div>` : ''}
-  <div class="go-top"><span class="${streak ? 'fire' : ''}">🔥 ${streak}</span>${cm != null && !L.checkin ? `<button class="go-t ${nowM > cm ? 'bad-t' : ''}" id="goCommit" title="打卡時間">⏰ ${commit}</button>` : ''}${behind ? `<span class="bad-t">落後 ${behind} 章</span>` : ''}${L.minMode ? '<span>保底</span>' : ''}${Personal.cram() ? '<span class="bad-t">考前衝刺</span>' : ''}${rw.chests.length ? `<button class="go-chest" id="goChest">🎁 ${rw.chests.length}</button>` : ''}<b>${done}/${n}</b></div>
-
+  ${typeof StateLog !== 'undefined' ? StateLog.checkinHtml() : ''}`;
+  main().innerHTML = `
+  <div class="go-top"><span>連續 <b class="n">${streak}</b> 天</span>${cm != null && !L.checkin ? `<button class="go-t ${nowM > cm ? 'bad-t' : ''}" id="goCommit" title="打卡時間">${commit} 打卡</button>` : ''}${behind ? `<span class="bad-t">落後 ${behind} 章</span>` : ''}${L.minMode ? '<span>保底</span>' : ''}${Personal.cram() ? '<span class="bad-t">考前衝刺</span>' : ''}${rw.chests.length ? `<button class="go-chest" id="goChest">寶箱 ${rw.chests.length}</button>` : ''}</div>
   ${cur ? `<section class="go-hero">
-    <div class="go-ringwrap">${(() => { const R = 52, C = 2 * Math.PI * R, f = n ? done / n : 0; return `<svg class="go-ring" viewBox="0 0 120 120" aria-label="今天 ${done}/${n} 步"><circle cx="60" cy="60" r="${R}" class="gr-bg"/><circle cx="60" cy="60" r="${R}" class="gr-fg" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - f)).toFixed(1)}"/></svg>`; })()}<div class="go-ic">${cur.icon}</div></div>
+    <div class="go-ringwrap">${(() => { const R = 52, C = 2 * Math.PI * R, f = n ? done / n : 0; return `<svg class="go-ring" viewBox="0 0 120 120" aria-label="今天 ${done}/${n} 步"><circle cx="60" cy="60" r="${R}" class="gr-bg"/><circle cx="60" cy="60" r="${R}" class="gr-fg" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - f)).toFixed(1)}"/></svg>`; })()}<div class="go-ic go-num"><b>${steps.indexOf(cur) + 1}</b><small>/ ${n}</small></div></div>
     <h2>${esc(cur.title)}</h2>
-    <button class="go-start" id="goNow">▶ 開始</button>
+    ${cur.sub ? `<p class="go-sub">${esc(cur.sub)}</p>` : ''}${cur.why ? `<p class="go-why">${esc(cur.why)}</p>` : ''}
+    <button class="go-start" id="goNow">開始</button>
     <div class="go-meta">${cur.mins} 分</div>
-    ${(() => { const ci = steps.indexOf(cur), nx = steps.slice(ci + 1).filter(x => !x.done && !x.skipped).slice(0, 4); return nx.length ? `<div class="go-next" aria-label="接下來"><span class="go-next-l">接下來</span>${nx.map(x => `<span class="go-next-i" title="${esc(x.title)}">${x.icon}</span>`).join('')}${steps.filter(x => !x.done && !x.skipped).length - 1 > nx.length ? '<span class="go-next-more">…</span>' : ''}</div>` : ''; })()}
+    ${goPie()}
     <div class="go-links"><button id="goFive">只做 5 分鐘</button>${L.minMode ? '<button id="goFull">完整計畫</button>' : '<button id="goMin">保底</button>'}<button id="goSkip">跳過</button></div>
   </section>`
-  : `<section class="go-hero done"><div class="go-ringwrap">${(() => { const R = 52, C = 2 * Math.PI * R, f = n ? done / n : 0; return `<svg class="go-ring" viewBox="0 0 120 120" aria-label="今天 ${done}/${n} 步"><circle cx="60" cy="60" r="${R}" class="gr-bg"/><circle cx="60" cy="60" r="${R}" class="gr-fg" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - f)).toFixed(1)}"/></svg>`; })()}<div class="go-ic">🏁</div></div><h2>今天完成</h2><button class="go-start" id="goMore">▶ 再打一關</button><div class="go-links"><a href="#feed">短影音</a><a href="#gen">隨機題</a><a href="#rewards">獎勵</a></div></section>`}
-  <details class="go-more"><summary>今天 ${n} 步</summary>
-    <ol class="go-list">${steps.map((s, i) => `<li class="${s.done ? 'ok' : s.skipped ? 'sk' : s === cur ? 'cur' : ''}"><button data-step="${i}"><span class="gi">${s.done ? '✓' : s.skipped ? '–' : s.icon}</span><span class="gt">${esc(s.title)}</span><span class="gm">${s.done || s.skipped ? '' : s.mins + ' 分'}</span></button></li>`).join('')}</ol>
+  : `<section class="go-hero done"><div class="go-ringwrap">${(() => { const R = 52, C = 2 * Math.PI * R, f = n ? done / n : 0; return `<svg class="go-ring" viewBox="0 0 120 120" aria-label="今天 ${done}/${n} 步"><circle cx="60" cy="60" r="${R}" class="gr-bg"/><circle cx="60" cy="60" r="${R}" class="gr-fg" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - f)).toFixed(1)}"/></svg>`; })()}<div class="go-ic go-num"><b>${n}</b><small>/ ${n}</small></div></div><h2>今天完成</h2><button class="go-start" id="goMore">再打一關</button><div class="go-links"><a href="#videos">影片</a><a href="#gen">隨機題</a><a href="#rewards">獎勵</a></div></section>`}
+  <details class="go-more" open><summary>今天 ${n} 步<span class="go-pos">上完 ${DATA.lessons.filter(l => Guide.allDone(l)).length}/${DATA.lessons.length} 堂　<a href="#map">課程地圖</a></span></summary>
+    <ol class="go-list">${steps.map((s, i) => `<li class="${s.done ? 'ok' : s.skipped ? 'sk' : s === cur ? 'cur' : ''}"><button data-step="${i}"><span class="gi">${s.done ? '✓' : s.skipped ? '–' : i + 1}</span><span class="gt">${esc(s.title)}</span><span class="gm">${s.done || s.skipped ? '' : s.mins + ' 分'}</span></button></li>`).join('')}</ol>
     <div class="row end"><button class="btn sm ghost" id="goRe">重新安排</button></div>
-  </details>`;
+  </details>
+  ${notesHtml}`;
   const q = id => $('#' + id);
+  if (typeof StateLog !== 'undefined') StateLog.wireCheckin();
   if (q('goMore')) q('goMore').onclick = () => Practice.goNext();
   if (cur) { q('goNow').onclick = nextStep; q('goSkip').onclick = () => { Auto.skip(cur.id); route(); }; setTimeout(() => { const b = q('goNow'); if (b) b.focus({ preventScroll: true }); }, 30); }
   if (q('goFive')) q('goFive').onclick = () => Nudge.five();
@@ -198,16 +220,28 @@ function goOnboard() {
   $$('[data-h]').forEach(b => b.onclick = () => { $$('[data-h]').forEach(x => x.classList.remove('on')); b.classList.add('on'); hrs = +b.dataset.h; });
   $$('[data-st]').forEach(b => b.onclick = () => { $$('[data-st]').forEach(x => x.classList.remove('on')); b.classList.add('on'); sd = b.dataset.st; });
   $('#obGo').onclick = () => {
-    s.examDate = $('#obExam').value || s.examDate; s.dailyMinutes = hrs * 60; s.dailyQuestions = hrs <= 2 ? 15 : hrs <= 4 ? 25 : 30; s.newCards = hrs <= 2 ? 10 : 20;
+    s.examDate = $('#obExam').value || s.examDate; s.examDateCustom = true; s.dailyMinutes = hrs * 60; s.dailyQuestions = hrs <= 2 ? 15 : hrs <= 4 ? 25 : 30; s.newCards = hrs <= 2 ? 10 : 20;
     if (sd === 'today') s.startDate = D.today();
     s.studyStart = ss; s.commitTime = s.commitTime || '22:00'; s.stake = $('#obStake').value.trim();
     S.st.onboarded = true; S.st.auto = null; S.save(); route();
-    if ('Notification' in window && Notification.permission === 'default') setTimeout(() => Nudge.overlay('<div class="nd-ic">🔔</div><h2>開啟提醒？</h2>', [['開啟', () => Nudge.ask(), 'primary'], ['不用', () => { }]]), 400);
+    if ('Notification' in window && Notification.permission === 'default') setTimeout(() => Nudge.overlay('<div class="nd-ic">' + ICON('today') + '</div><h2>開啟提醒？</h2>', [['開啟', () => Nudge.ask(), 'primary'], ['不用', () => { }]]), 400);
   };
 }
 /* 其他頁面左下角的「下一步」浮鈕 */
 /* 浮動「下一步」：捲動時變淡（不擋字），停下來 0.7 秒再恢復 */
 (() => { let t = null; window.addEventListener('scroll', () => { const p = document.getElementById('goPill'); if (!p) return; p.classList.add('dim'); clearTimeout(t); t = setTimeout(() => p.classList.remove('dim'), 700); }, { passive: true }); })();
+/* 寬螢幕的教材頁有右側欄：「下一步」放進側欄，不再浮在畫面上 */
+function placeGoPill(p) {
+  p = p || document.getElementById('goPill'); if (!p) { document.body.classList.remove('has-dock'); return; }
+  // 2026-11-14：不再浮在內容上。教材頁寬螢幕放側欄；其他桌機放左欄；手機放底部分頁列上方的固定列
+  const side = document.getElementById('sideNext'), wide = window.matchMedia && matchMedia('(min-width: 821px)').matches;
+  const inSide = side && window.matchMedia && matchMedia('(min-width: 1360px)').matches;
+  const host = inSide ? side : (wide ? document.getElementById('railNext') : document.getElementById('mDock')) || document.body;
+  if (p.parentNode !== host) host.appendChild(p);
+  p.classList.toggle('in-side', !!inSide);
+  document.body.classList.toggle('has-dock', !wide && host.id === 'mDock');
+}
+window.addEventListener('resize', () => placeGoPill());
 /* 教材頁：已經捲過短片往下讀，就把「看短片」這步算過，按鈕直接換成下一步 */
 function watchClipPast(id) {
   const sec = document.querySelector('.clip-sec'); if (!sec || typeof IntersectionObserver === 'undefined') return;
@@ -218,11 +252,13 @@ function renderGoPill(cur) {
   cur = cur || location.hash.slice(1) || 'go';
   let p = $('#goPill');
   const inSess = (cur === 'practice' && Practice.sess) || (cur === 'cards' && window.CardSess) || $('#nextGo');
-  if (!S.st.onboarded || cur === 'go' || inSess) { if (p) p.remove(); return; }
+  // 知識點頁只有一個主按鈕（課程規格 H14），不再疊一顆浮動的「下一步」
+  if (!S.st.onboarded || cur === 'go' || inSess || cur.startsWith('k/')) { if (p) p.remove(); document.body.classList.remove('has-dock'); return; }
   const c = Auto.current(), [kind, arg] = c ? c.id.split(':') : [];
   const here = c && arg === cur;   // 這一步就在目前這頁
   const label = !c ? '今天完成 ✓' : here && kind === 'read' ? '✓ 讀完，下一步' : here && kind === 'clip' ? '跳過短片 →' : here && kind === 'feyn' ? '↓ 費曼' : (c.title.length > 16 ? c.title.slice(0, 16) + '…' : c.title) + ' →';
-  if (!p) { p = h('a', { id: 'goPill', class: 'go-pill', href: '#go' }); document.body.appendChild(p); }
+  if (!p) p = h('a', { id: 'goPill', class: 'go-pill', href: '#go' });
+  placeGoPill(p);
   p.onclick = e => {
     const c2 = Auto.current(); if (!c2) return; e.preventDefault();
     const [k2, a2] = c2.id.split(':'), h2 = (location.hash.slice(1) || 'go') === a2;

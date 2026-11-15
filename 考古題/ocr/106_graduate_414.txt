@@ -1,0 +1,94 @@
+=== PAGE p-1.pgm
+AH: 414 BRoeeRMAKS 106 SF RALHBAFRRA
+AA: RF MR: 414
+. fii A # 3 KR2B 1 OG
+
+1. (10%) What is the inverse of the following real matrix?
+
+r—2 —r 1
+—r 1 0
+3-r? r —l
+
+2. (10%) What is the smallest positive integer k such that
+A‘=A
+
+holds for any n-by-n diagonalizable complex matrix A whose eigenval-
+ues are 0 and 1.
+
+3. (10%) Let (x,y) be a point in R? that is not the origin (0,0). Let L
+be the line of R? passing (z,y) and (0,0). What is the matrix repre-
+sentation of the orthogonal projection of R? on L with respect to the
+standard basis of R??
+
+4, (10%) Define function f : R? x R? + R as
+F(z, y) = Ziy ~ Ziy2 — Tay + Azaye,
+
+for any vector x (respectively, y) with standard coordinate (x1, £2) (re-
+
+spectively, (y1,y2)). Let
+u = (1,0).
+
+Find a vector v such that
+f(x,y) = sity + sate,
+
+where (s1, $2) (respectively, (1, #2) is the coordinate of x (respectively,
+y) with respect to the ordered basis of R? consisting of u and v.
+
+5. (10%) Find the pseudo-inverse of
+
+111
+1/3 0 -3
+6{1 -2 1
+111
+
+La a
+=== PAGE p-2.pgm
+Be: 414 ALeBAS 106 RH RALHEBLERRE |
+Hk: A #3 en 2 "s
+
+ 
+
+6. (10%) For | A| =m, how many relations on A are neither reflexive nor .
+
+irreflexive.
+
+. (10%) Please fill in the blanks:
+[(@V4)A(-pVr)] > (_V__).
+
+. (10%) The solution to the recurrence equation
+
+Qnt2 = Anti t+ On
+is of the form:
+= (5) (3) + (a) @)
+av/5/ \2 av5/ \2) ©
+
+A
+B
+Cc
+D
+
+Derive
+
+in terms of (arbitrary initial conditions) a9 and a, .
+. (5%) Prove that n — 1 and n are relatively prime for n > 2.
+
+. (5%) A graph is if and only if all its cycles have an even
+length.
+
+. (5%) For odd n, simplify
+
+()+() +--+ (eh):
+
+. (5%) Consider the following directed graph (first plot). Draw its tran-
+sitive closure in the second plot.
+
+BAA
+=== PAGE p-3.pgm
+me: AL AeA 106 PER AL AS E
+AA: XF . MAH: 14
+fick: A e3 K2m 3 5
+
+ 
+
+SARA ER
+

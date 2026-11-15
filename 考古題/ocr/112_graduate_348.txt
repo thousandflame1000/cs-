@@ -1,0 +1,96 @@
+=== PAGE p-1.pgm
+題 號 : 348 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+FB: 數 學 (A 題 號 : 348
+節 次 : 4 共 之 頁 之 第 | 頁
+
+※ 注意 : 請 用 .28B 鉛筆 作答 於 答案 卡 , 並 先 詳 閱 答案 卡 上 之 「 畫 記 說 明 |
+
+1. (0%) Ss Which one of the following graphs has no Hamiltonian cycles?
+
+oe KD De A
+
+. (10%) Which solves a, = —Q,_1 + 6@y.2 for a, in terms of ag = A and a, =B:
+
+(A) =1(-3)"(@2A — B) +2"(3A +B] (B) £{(-3)"(2A — B) + 2"(3A - BY] (C) F[(-2)"(@GA—B) +
+
+3°(2A + B)] (D) =[(-2)"(GA + B) + 3"(24 + BY] (B) =[(-2)"@GA - B) + 3"(2A - BY]
+
+- (10%) ‘The generating function in partial fraction decomposition for the recurrence equation a, =
+An-1 +6 Gy,-2 for a, in terms of ag = A and a, = B is:
+
+2A+B , 3A~B 2A+B 4 3AtB 2A-B 4342 BAB 2A-B SA+B , 2A4-B
+(A) s+ wal ®) 5 1- 1-3x + (C ) al; ax? 1+2x ©) 5 sEset 2x 1+3x ©); shox a
+
+. (10%) The number of non-negative integer solutions of x, + x2 +--+, <7 equals (A) 210(B)
+330 (C) 35 (D) 7 (E) 120
+
+- (10%) If {A] = 2* and {B| = 23, how many functions from A to B are there? (A) 27 (B) 212 (C)
+232 (D) 248 (E) 23%6
+
+For problems 6-11, each problem may have multiple answers. Credits will be given only if all the answers are”
+selected correctly.
+3 2
+
+. (10%) Given A = | and x = AR If lim atx = [7], what is 2a + b?
+
+nwo
+
+5 5
+
+(A)0 @)l ()2 (D)3 4
+
+. (10%) Given a linear transformation T:P2(R) 一 P2(R) defined by
+T(F(%)) = f°) + 2f'@) - fF),
+where P,(R) represents the real-valued 2"-order polynomials. Assume M is the matrix representation of
+T with respect to the ordered basis. Please find the determinant of (M7! + 21), where J is the identity matrix
+with the same dimensionas M.(A)0 (B)1 (C)2 (@)3 ()4
+
+. (10%) Assume that A, B, and C are n Xn matrices.
+(A) trace((A+B)C) = trace(AC) + trace(BC)
+(B) trace(AB) = trace(A)trace(B)
+(C) trace(AB)=trace(BA)
+
+b+ec
+一 所
+
+(D) Givena 2x2 matrix, Lhe
+
+| with trace zero has real eigenvalues if a? + b? > c?.
+
+(E) Suppose a 2 x 2 matrix other than the identity matrix satisfies A? = J. Then we have trace(A) = 1.
+
+LRG
+
+=== PAGE p-2.pgm
+題 號 : 348 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+科目 : 數 學 (A) 題 號 : 348
+節 次 : 4 #2 頁 之 第 之 頁
+
+9. (5%) Let S, D, and Q € M,(R) represent a symmetric matrix, a diagonal matrix and an orthogonal matrix.
+Assume that their degree of freedom are ds, dp and dg, respectively. Find the value of ds— dp — dg.
+(A)0 (B)1 ()2 (D3 &)4
+
+10. (5%) Let A € Mun, which of the following statements are true?
+(A) The nullspace of A is the same as the nullspace of A’ A.
+
+(B) If A is orthogonal, A+ sf is invertible.
+
+(C) If A has fewer than n distinct eigenvalues, then A is not diagonalizable.
+(D) If A = A’, then its eigenvalues are real and eigenvectors are orthogonal.
+(E) If A is positive definite, we can always find a nonsingular U such that A = U?.
+
+-(10%) Let 了 be a self-adjoint operator on a finite-dimensional inner product space V with distinct
+eigenvalues A,,A2,...,A,. Let E; be the eigenspace of T corresponding to A,, and let 五 be the orthogonal
+projection of Von E;, isisk.
+
+(A) DE aT = 7
+
+(B) V = E,0E,®... BE,
+
+(C) Given any polynomial g, g(T) = g(,)T, 十 9(42)72 + + 9A)TR.
+(D) Ay,A2,..,Ay are all real numbers.
+
+(E) If T(x) = Ax, where x € C”, then A is diagonalizable.
+
+RAMEE
+

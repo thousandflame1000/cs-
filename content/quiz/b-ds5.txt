@@ -1,0 +1,1013 @@
+
+@q bt2-15 | ds-btree#2 | 2 | 追蹤
+$t=2$ 的 B 樹：根 [30]，孩子 [10,20] 和 [40,50]。用 CLRS 的方法刪除 30，結果的根和左孩子？
+== 20,10
+?? 根,左孩子
+---
+30 在內部節點，左孩子 [10,20] 有 $\ge t=2$ 個鍵（情況 2a）：用前驅 20 取代 30，再從左孩子刪掉 20。結果 [20]([10] [40,50])。
+
+@q bt2-16 | ds-btree#2 | 2 | 追蹤
+$t=2$ 的 B 樹：根 [30]，孩子 [10] 和 [40]。刪除 30 後剩幾個節點？
+== 1
+---
+兩個孩子都只有 $t-1=1$ 個鍵（情況 2c）：把 30 和右孩子併進左孩子成 [10,30,40]，再從裡面刪 30 得 [10,40]。根空了，由合併後的節點當新根，樹高減 1。
+
+@q bt2-17 | ds-btree#2 | 3 | 追蹤
+$t=2$ 的 B 樹：根 [20]，孩子 [10] 和 [30,40]。刪除 10，結果的根是？
+== 30
+---
+要往 [10] 走，但它只有 1 個鍵；右兄弟 [30,40] 有 2 個（情況 3a）：20 下來到 [10,20]、30 上去當根，兄弟剩 [40]。再從葉子刪 10，得 [30]([20] [40])。
+
+@q bt2-18 | ds-btree#2 | 3 | 追蹤
+A minimum-degree-two B-tree has root [20,40] and leaf children [10], [30], [50]. Apply CLRS deletion to key 50, merging with the left sibling when neither adjacent sibling can donate. Which statements are correct? Select all that apply.
+[x] The final root is [20].
+[x] The final right leaf is [30,40].
+[x] The final tree still has height one in parent-child steps.
+[ ] The final tree contains five keys.
+[ ] Leaving an empty right leaf attached to root [20,40] satisfies the nonroot key minimum.
+---
+「根 [20]」對：分隔鍵 40 下移。「右葉 [30,40]」對：先合併 [30,40,50]，再刪 50。「高度仍一」對：根還有鍵和兩個孩子，不移除根。「剩五鍵」錯：原有五個，成功刪除後剩四個。「可留空葉」錯：t＝2 的非根至少一鍵，不能把空葉當合法結果。
+
+@q bt2-19 | ds-btree#2 | 3 | 追蹤
+$t=2$ 的 B 樹：根 [50]，孩子 [20,30] 和 [60]。刪除 60，結果的根和右孩子？
+== 30,50
+?? 根,右孩子
+---
+[60] 只有 1 個鍵，左兄弟 [20,30] 有 2 個：從左兄弟借——50 下來、30 上去，右孩子變 [50,60]，再刪 60 得 [50]。
+
+@q bt2-20 | ds-btree#2 | 3 | 觀念
+A minimum-degree-three B-tree has root [30], left leaf [10,20,25], and right leaf [40,50]. Delete internal key 30 by replacing it with its predecessor and then deleting that predecessor from the left subtree. Count stored key slots, including any temporary duplicate during replacement. Which statements are correct? Select all that apply.
+[x] The root replacement key is 25.
+[x] The final left leaf is [10,20].
+[x] The stored key-slot count decreases from six to five when the predecessor is removed from its leaf.
+[ ] Both copies of predecessor 25 must remain forever for the deletion to be correct.
+[ ] The final two-key left leaf is below the stated minimum degree's nonroot key bound.
+---
+「用 25」對：左子樹最大鍵就是前驅。「左葉 [10,20]」對：把原來的 25 從葉子刪除。「實體鍵格六變五」對：內部替換先產生暫時重複，拿掉葉子的那一格才讓鍵格總數少一；這裡不是把暫時重複下的不同鍵集合大小混算。「永遠留兩份」錯：那會多留前驅且未完成標準刪除。「兩鍵太少」錯：t＝3，最少 t−1＝2，正好合法。
+
+@q bt2-21 | ds-btree#2 | 3 | 找錯
+A B-tree with minimum degree $t=2$ has root [20] and two leaf children [10] and [30]. Delete key 10 while preserving the usual occupancy rules. Which statements are correct? Select all that apply.
+[x] Leaving the left child as an empty nonroot leaf violates the minimum key count.
+[x] Merging both children with separator 20 first produces [10,20,30].
+[ ] After removing 10 and discarding the empty old root, the valid result is the single leaf [10,30].
+[ ] An empty nonroot leaf is valid because the root still has one key.
+[ ] The valid final tree must retain four distinct data keys.
+---
+「空的非根葉子違規」對：最少要 t−1＝1 個鍵。「先合併三鍵」對：左鍵、父分隔鍵、右鍵合在一起。「最後 [10,30]」錯：這刪掉的是 20；本題要刪 10，應保留 [20,30]。「根有鍵就允許空孩子」錯：非根的鍵數下限仍適用。「四個鍵」錯：原本三鍵刪一鍵只剩兩鍵。
+
+@q bt2-22 | ds-btree#2 | 3 | 情境
+For disk-resident B-tree deletion, CLRS prepares a minimum-size child by borrowing or merging before descending into it. Let h be the tree height and assume constant-size pages with room for each node. Which statements are correct? Select all that apply.
+[x] The algorithm needs O(h) page operations for one deletion.
+[x] Borrowing or merging can require sibling-page accesses in addition to the search-path pages.
+[ ] Preparing the child guarantees that no modified page needs to be written.
+[ ] Any alternative that repairs after descent must reread every ancestor even when all ancestor pages remain cached.
+[ ] With minimum degree three, preparing a two-key child means ensuring it still has exactly two keys before descent.
+---
+「O(h) 頁面操作」對：每層只涉及固定數量的路徑、兄弟與父頁，前驅或後繼處理也不改階數。「還需兄弟頁」對：借鍵或合併要取得兄弟內容，不能解讀為整個操作恰讀每層一頁。「不必寫回」錯：修改的鍵和指標仍需持久化。「有快取仍必重讀」錯：祖先頁保留在記憶體就能直接修，不能把其他合法作法說成一定多讀磁碟。「仍恰兩鍵」錯：此時原下限 t−1＝2，下降前要使目標孩子至少 t＝3 鍵，給可能的刪除留空間。
+
+@q bt3-13 | ds-btree#3 | 2 | 追蹤
+B+ 樹的葉子最多放 3 個鍵。葉子 [10,20,30] 再插入 25，分裂成 [10,20] 和 [25,30]。往上送到爸爸的鍵是什麼？25 還留在葉子裡嗎？
+== 25,留在葉子
+== 25,是
+?? 往上送,25在葉子
+---
+葉子分裂是「複製」右半第一個鍵上去當分隔，資料仍在葉子（所有資料都在葉子層）。
+
+@q bt3-14 | ds-btree#3 | 3 | 陷阱
+B+ 樹的**內部節點**分裂時，中間的鍵也是「複製」上去、自己留一份嗎？
+[x] 不是：內部節點分裂時中間鍵是「移」上去，不留在任何一半；只有葉子分裂才用複製
+[ ] 是，跟葉子一樣
+[ ] 中間鍵直接丟掉
+[ ] 內部節點不會分裂
+---
+內部節點只是導航用，中間鍵上去之後左右兩半各自由剩下的鍵分隔，不需要重複。
+
+@q bt3-15 | ds-btree#3 | 3 | 陷阱
+B+ 樹刪除葉子裡的 30（沒有發生合併或借）。內部節點剛好有一個分隔鍵 30，一定要一起刪掉或改掉嗎？
+[x] 不一定：它只是用來分左右的，「左邊 < 30 ≤ 右邊」仍然成立，可以留著
+[ ] 一定要刪，不然會找到不存在的資料
+[ ] 一定要換成 0
+[ ] 要把整棵樹重建
+---
+搜尋 30 時會走到葉子才發現沒有，不會出錯。
+
+@q bt3-16 | ds-btree#3 | 2 | 計算
+$10^6$ 筆資料，B+ 樹每個葉子剛好 100 筆、每個內部節點剛好 100 個孩子。總共有幾個內部節點？
+== 101
+---
+葉子 $10^4$ 個；上一層 $10^4/100=100$ 個；再上一層 1 個（根）。內部節點 $100+1$。
+
+@q bt3-17 | ds-btree#3 | 3 | 計算
+B+ 樹 3 層、葉子每個 100 筆。範圍查詢剛好回傳 1000 筆，最多要讀幾個葉子？
+== 11
+---
+1000 筆最少跨 10 個葉子；如果第一筆落在某個葉子的最後面，就會跨到 11 個。
+
+@q bt3-18 | ds-btree#3 | 3 | 找錯
+A B+ tree stores record payloads only at leaves. A successful search for key 30 visits a cached root, one uncached internal page whose separator equals 30, and an uncached leaf containing the record. Ignore all other reads. Which statements are correct? Select all that apply.
+[x] This search requires two disk-page reads.
+[x] The internal separator match does not by itself provide the record payload.
+[x] The leaf must still be accessed to retrieve the stated record.
+[ ] The separator match eliminates the leaf read, so one disk-page read always suffices in this example.
+[ ] The described B+ internal page contains no routing keys at all.
+---
+「兩次」對：根已快取，仍需讀內部頁與葉頁。「比對分隔鍵不等於拿到資料」對：資料只放葉子。「仍讀葉子」對：目標記錄在那裡。「只要一次」錯：漏掉必要的葉讀取。「內部完全無鍵」錯：它包含分隔鍵作路由，沒有記錄內容不等於沒有鍵。
+
+@q bt3-19 | ds-btree#3 | 3 | 觀念
+Insert keys 1 through 10 in increasing order into a B+ leaf structure permitting at most four records per leaf. Whenever a leaf has five records, keep the first two in the left leaf and the last three in the right leaf. Do not redistribute afterward. Count only leaf slots. Which statements are correct? Select all that apply.
+[x] The final leaves are [1,2],[3,4],[5,6],[7,8,9,10].
+[ ] Four leaf pages provide twenty record slots for ten records.
+[x] Overall leaf utilization is 62.5% in this finite example.
+[ ] Overall utilization must be exactly 50% after these ten insertions.
+[ ] Sorted insertion forces the resulting leaves to have different depths in any correctly maintained B+ index.
+---
+「四個列出的葉子」對：在第 5、7、9 筆插入時分裂，之後較大鍵只進最右葉。「二十格」錯：每頁最多四筆，4×4＝16，不是把暫時溢出的五筆當作合法大小。「62.5%」對：10÷16＝0.625。「必恰 50%」錯：已封存的左葉雖半滿，最右葉仍有四筆；大量持續插入時多數舊葉接近半滿，不代表每個有限樣本都剛好一半。「不同深度」錯：正確索引仍須維持葉層平衡。
+
+@q bt3-20 | ds-btree#3 | 3 | 情境
+An idealized B+ index stores $10^9$ records, with 1000 records in every leaf and exactly 1000 children in each full internal page. The arrangement is packed, including the root. Compare a binary index whose specified lookup path visits thirty distinct pages. In both layouts only the root is cached. Ignore all other reads. Which statements are correct? Select all that apply.
+[x] The B+ index has one million leaf pages.
+[x] The B+ lookup reads two uncached pages below its root.
+[x] The specified binary-index lookup reads 29 uncached pages.
+[ ] The B+ index needs one billion leaf pages because it contains one billion records.
+[ ] Large fanout makes the required B+ leaf data available with zero disk reads under these cache assumptions.
+---
+「一百萬葉」對：10^9÷1000＝10^6。「根下兩次」對：百萬葉上方有一千個父頁，再上方一個根，共三層；只根已快取。「二元索引 29 次」對：三十頁路徑扣掉已快取根。「十億葉」錯：每葉可放一千筆，不能一筆當一頁。「零磁碟」錯：仍有內部頁與葉頁要讀。這是題設頁面布局的比較，不宣稱所有二元索引的節點在實作中都必各占一頁。
+
+@q bt3-21 | ds-btree#3 | 3 | 證明
+B+ 樹的扇出為 $f$、有 $n$ 筆資料、每個葉子放 $b$ 筆。說明範圍查詢回傳 $k$ 筆時，讀取的節點數是 $O(\log_f n+k/b)$。
+---
+先從根往下找第一筆所在的葉子，經過的節點數等於樹高 $O(\log_f n)$。之後沿著葉子間的串列往右讀，每個葉子提供最多 $b$ 筆、除了頭尾兩個可能不滿以外都是滿的有效資料，所以讀 $\lceil k/b\rceil+1$ 個葉子就夠了，合計 $O(\log_f n+k/b)$。
+
+@q bt4-13 | ds-btree#4 | 2 | 計算
+把 she、sells、sea、shell、shore 存進 Trie，共有幾個節點（包含根）？
+== 14
+---
+前綴 s、sh、she、shel、shell、sho、shor、shore、se、sel、sell、sells、sea 共 13 個，加根。共同前綴 s、sh、se 只存一次。
+
+@q bt4-14 | ds-btree#4 | 3 | 計算
+同一組 test、team、toast、to，普通 Trie 有幾個節點？把只有一個孩子、又不是字結尾的節點壓縮掉後剩幾個（都含根）？
+== 11,7
+?? 普通,壓縮後
+---
+普通：t、te、tes、test、tea、team、to、toa、toas、toast＋根。壓縮後保留根、t、te、test、team、to、toast（每個要嘛分岔、要嘛是字結尾）。
+
+@q bt4-15 | ds-btree#4 | 2 | 追蹤
+字串 papaya 的後綴陣列（後綴依字典順序排好，記起始位置，從 0 開始）？
+== 5 1 3 0 2 4
+== 5,1,3,0,2,4
+---
+後綴：a(5)、apaya(1)、aya(3)、papaya(0)、paya(2)、ya(4)。
+
+@q bt4-16 | ds-btree#4 | 3 | 計算
+banana 的後綴陣列裡，相鄰兩個後綴的最長共同前綴（LCP）中，最大是多少？這代表什麼？
+== 3,最長重複子字串 ana
+== 3,ana
+?? 最大LCP,意義
+---
+排好的後綴 a、ana、anana、banana、na、nana，相鄰 LCP 為 1、3、0、0、2。最大 3（ana 與 anana），表示 ana 是出現至少兩次的最長子字串。
+
+@q bt4-17 | ds-btree#4 | 3 | 陷阱
+Trie 裡有 app 和 apple，要刪除 app。正確做法？
+[x] 只把 app 那個節點的「字結尾」標記拿掉；節點還在 apple 的路徑上，不能刪
+[ ] 把 a、p、p 三個節點都刪掉
+[ ] 刪掉 app 和 apple
+[ ] Trie 不能刪除
+---
+只有「沒有孩子、也不是別的字結尾」的節點才能從下往上刪掉。
+
+@q bt4-18 | ds-btree#4 | 3 | 計算
+abab 所有後綴放進一個（不壓縮的）Trie，有幾個節點（含根）？abab 有幾個不同的子字串？
+== 8,7
+?? 節點,子字串
+---
+每個子字串都是某個後綴的前綴，所以後綴 Trie 的每個非根節點恰好對應一個不同子字串：a、ab、aba、abab、b、ba、bab 共 7 個，加根 8 個節點。
+
+@q bt4-19 | ds-btree#4 | 3 | 情境
+A binary-prefix routing table contains entries 0,101,1011,11. For destination string 101101, choose the longest prefix match. A binary trie can retain the most recent valid entry while descending. Which statements are correct? Select all that apply.
+[x] Entry 1011 is the longest prefix match.
+[x] The selected prefix has length four.
+[x] Remembering the last valid entry can preserve the answer when deeper traversal finds no further valid prefix.
+[ ] Entry 101 must be selected because no longer stored entry matches the destination.
+[ ] Examining only the destination's first symbol is always sufficient to distinguish these candidates.
+---
+「1011」對：目的字串前四個符號正是 1011，且沒有更長的符合項。「長四」對：1、0、1、1 共四個。「記住最後有效項」對：路徑還可繼續，但找不到更深的有效項時要保留既有答案。「101 最長」錯：它的三個符號雖符合，仍有長四的 1011。「只看第一個就夠」錯：多個候選都以 1 開頭，需要再比較後面的符號。
+
+@q bt4-20 | ds-btree#4 | 3 | 比較
+A trie stores the distinct words `a`,`an`,`ant`,`bat`,`bath`. Enumerate words by visiting a node's end-of-word marker before its children and visiting child labels alphabetically. Compare an ordinary hash table with no ordering guarantee. Which statements are correct? Select all that apply.
+[x] The trie emits `a`,`an`,`ant`,`bat`,`bath` in that order.
+[x] Reporting an end marker before descending puts a word before its longer extensions.
+[ ] Once words are stored in an unordered hash table, their extracted contents cannot be sorted afterward.
+[ ] Ordinary hash-table iteration necessarily produces this same lexical order for every layout.
+[ ] This trie has only seven nodes including the root.
+---
+「列出的次序」對：先報短字，再依孩子標籤往下走。「短字先於延伸」對：例如 a 先於 an，an 先於 ant。「雜湊後不能排序」錯：取出內容仍可另外排序，沒有內建次序不代表絕對做不到。「迭代必字典序」錯：一般雜湊表不保證。「只有七節點」錯：非根前綴為 a、an、ant、b、ba、bat、bath 共七，加根為八。
+
+@q bt4-21 | ds-btree#4 | 3 | 證明
+壓縮後的 Trie 存 $n$ 個字，沒有任何字是另一個字的前綴。證明節點數是 $O(n)$。
+---
+沒有字是別的字的前綴，所以每個字結尾都是葉子，葉子恰好 $n$ 個。壓縮後除了根以外，每個內部節點都至少有 2 個孩子。一棵樹若每個內部節點至少 2 個孩子，內部節點數最多是葉子數減 1，所以總節點數 $\le 2n$（再加根）＝ $O(n)$。
+
+@q bt4-22 | ds-btree#4 | 3 | 計算
+A naive suffix-array search halves the remaining candidate interval after each suffix comparison. In one execution it makes ten candidate comparisons. Each may examine at most 32 pattern characters from the beginning, without reusing prior prefix comparisons. Which statements are correct? Select all that apply.
+[x] This execution can examine up to 320 pattern characters across the ten comparisons.
+[x] Generalizing to pattern length m and $O(\log n)$ candidate comparisons gives the usual $O(m\log n)$ upper bound for this method.
+[ ] The total character work is at most 32 merely because the pattern has length 32.
+[ ] Sorted suffixes make every later candidate comparison free after the first comparison.
+[ ] The estimate for this naive method proves that every possible suffix-index search must require at least $m\log n$ character work.
+---
+「至多 320」對：10×32。「此方法 O(m log n)」對：每次可重比 m 字元，總共對數次。「總量只 32」錯：相同模式字元可能在不同候選比較中重複檢查。「之後免費」錯：題設沒有利用先前公共前綴資訊。「所有方法下界」錯：一個方法的上界不能推成所有方法的下界，額外資訊或不同索引可有不同代價。
+
+@q bt5-11 | ds-btree#5 | 3 | 計算
+A skip list has 1024 independently promoted nodes. The bottom is level one, and each promotion succeeds with chance one half. No height cap applies. A node appears at every level below its own height. Which statements are correct? Select all that apply.
+[x] The expected number of nodes present at level eleven is one.
+[x] The expected number present at level twelve is one half.
+[ ] The chance that at least one of the 1024 nodes reaches level eleven is only $1/1024$.
+[ ] Every realization must have highest occupied level exactly eleven.
+[ ] The expected number present at level twelve is two.
+---
+「第十一層期望一個」對：要連續成功十次，1024×(1/2)^10＝1。「第十二層半個」對：再多一次成功，1024×(1/2)^11＝1/2。「至少一個只有 1/1024」錯：那是單一節點的機率；1024 個至少一個的機率為 1−(1023/1024)^1024。「最高必十一」錯：期望個數不等於每次固定個數，可能更低或更高。「第十二層兩個」錯：往上期望減半，不是加倍。
+
+@q bt5-12 | ds-btree#5 | 3 | 追蹤
+跳躍串列：第 3 層 [10, 40]；第 2 層 [10, 25, 40, 55]；第 1 層 [5, 10, 18, 25, 33, 40, 47, 55, 60]。插入 35，擲出的層數是 3。第 3、2、1 層各是誰的指標要改成指向 35？
+== 10,25,33
+?? 第3層,第2層,第1層
+---
+每一層找「最後一個比 35 小的」：第 3 層 10（下一個 40 > 35）、第 2 層 25、第 1 層 33。搜尋時一路記下這些點，插入只要改它們的指標。
+
+@q bt5-13 | ds-btree#5 | 2 | 計算
+同一個跳躍串列（插入前），刪除 55 要改幾個指標？
+== 2
+---
+55 出現在第 1、2 層，每一層都要讓前一個點（第 2 層的 40、第 1 層的 47）跳過它。
+
+@q bt5-14 | ds-btree#5 | 3 | 陷阱
+「$p=\frac12$ 的跳躍串列存 $n$ 個元素，一定剛好用 $2n$ 個節點。」對嗎？
+[ ] 對
+[x] 不對
+---
+$2n$ 是**期望值**；層數是隨機的，實際節點數會在 $2n$ 附近波動，運氣差時可以更多。
+
+@q bt5-15 | ds-btree#5 | 3 | 比較
+跳躍串列 $p=\frac12$ 和 $p=\frac14$，哪一句對？
+[x] $p=\frac14$ 節點較少（期望 $\frac43n$ 對 $2n$），但每層平均要往右走比較多步；搜尋都是期望 $O(\lg n)$
+[ ] $p=\frac14$ 節點較多
+[ ] $p=\frac14$ 的搜尋變成 $O(n)$
+[ ] 兩者完全一樣
+---
+期望步數約 $\frac1p\log_{1/p}n$：$p=\frac12$ 是 $2\log_2 n$，$p=\frac14$ 是 $4\log_4 n=2\log_2 n$，常數差不多。
+
+@q bt5-16 | ds-btree#5 | 2 | 計算
+跳躍串列 $p=\frac13$。每個元素平均出現在幾層？
+== 1.5
+== 3/2
+---
+層數 $\ge k$ 的機率 $p^{k-1}$，期望 $\sum_{k\ge1}p^{k-1}=\frac1{1-p}=\frac32$。
+
+@q bt5-17 | ds-btree#5 | 3 | 計算
+跳躍串列 $p=\frac12$、16 個元素。把每個元素的機率直接加起來，估「有某個元素到達第 10 層以上」的機率最多是多少？
+== 1/32
+== 0.03125
+---
+單一元素到第 10 層要連續 9 次正面：$2^{-9}$。16 個元素加起來最多 $16/512=1/32$。這就是「層數超過 $c\log n$ 的機率很小」的論證。
+
+@q bt5-18 | ds-btree#5 | 3 | 找錯
+A skip-list node starts at height one. Independent fair coin flips promote it one level for each head, stopping at the first tail; ignore any height cap. Which statements are correct? Select all that apply.
+[x] The node has height one with chance one half.
+[x] The chance of reaching height at least three is one quarter.
+[x] The current element count alone does not determine this node's realized height.
+[ ] The chance of reaching height at least three is one eighth.
+[ ] A numerically larger key must receive a taller node under this promotion rule.
+---
+「高度一機率 1/2」對：第一次就反面。「至少三層 1/4」對：需要前兩次都是正面，(1/2)²；不要求第三次一定反面。「元素數無法單獨決定高度」對：還要看本次硬幣結果。「1/8」錯：那是恰好三層的機率，要再乘第三次反面，不是至少三層。「大鍵必高」錯：規則依獨立硬幣，不依鍵大小分配高度。
+
+@q bt5-19 | ds-btree#5 | 3 | 情境
+After finding all predecessors, inserting a height-three skip-list node sets three forward links in the new node and changes one predecessor's forward link at each of its three levels. Ignore retries and memory reclamation. Consider a concurrent implementation. Which statements are correct? Select all that apply.
+[x] Three existing predecessor-link locations are changed in this insertion model.
+[x] Three forward links are initialized in the new node.
+[ ] Only one existing predecessor-link location changes regardless of the new node's height.
+[x] Balanced trees can also have correctly coordinated concurrent implementations.
+[ ] Local pointer updates alone prove that every unsynchronized implementation is safe under concurrent insertions.
+---
+「三個舊連結」對：每一層改一個，三層共三個。「新節點三個連結」對：對應它出現的三層。「永遠只改一個」錯：忽略了上層連結。「平衡樹也能並行」對：不能把跳躍串列較方便局部修改推成其他結構不能並行。「局部就天然安全」錯：兩個更新仍可能互相覆蓋，必須有正確的協調與發布方式；不能用資料結構名稱代替並行正確性證明。
+
+@q bt5-20 | ds-btree#5 | 3 | 證明
+證明跳躍串列（機率 $p$）存 $n$ 個元素時，期望節點總數是 $\frac{n}{1-p}$。
+---
+令 $L_i$ 為第 $i$ 個元素的層數。它至少有 $k$ 層的機率是 $p^{k-1}$，所以 $E[L_i]=\sum_{k\ge1}P(L_i\ge k)=\sum_{k\ge1}p^{k-1}=\frac1{1-p}$。總節點數 $\sum L_i$，由期望值的線性，期望是 $\frac n{1-p}$。
+
+@q uf1-16 | ds-unionfind#1 | 2 | 追蹤
+Union by size（小的接到大的下面，一樣大時第二個根接到第一個下面）。1～6 依序 UNION(1,2)、(3,4)、(3,5)、(1,3)、(6,1)。最深的點和它的深度？
+== 2,2
+?? 點,深度
+---
+(1,2)：2 接到 1。(3,4)：4 接到 3。(3,5)：3 那組 2 個、5 一個，5 接到 3。(1,3)：1 那組 2 個 < 3 那組 3 個，1 接到 3。(6,1)：6 接到根 3。2 的路徑 2→1→3，深度 2。
+
+@q uf1-17 | ds-unionfind#1 | 2 | 計算
+parent 陣列形成一條鏈：5→4→3→2→1（1 是根）。做一次有路徑壓縮的 FIND(5)，有幾個 parent 指標被改？
+== 3
+---
+5、4、3 都改成直接指向 1；2 本來就指向 1，不用改。
+
+@q uf1-18 | ds-unionfind#1 | 3 | 追蹤
+同一條鏈 5→4→3→2→1，改用「路徑減半」（走的時候讓每隔一個點指向自己的祖父）做 FIND(5)。之後 parent[5] 和 parent[4] 是？
+== 3,3
+?? parent[5],parent[4]
+---
+從 5 開始：parent[5] 改成祖父 3，跳到 3；parent[3] 改成祖父 1，跳到 1，結束。4 沒有被碰到，還是指向 3。路徑減半只走一趟，效果跟完整壓縮同等級。
+
+@q uf1-19 | ds-unionfind#1 | 3 | 情境
+$n=10^6$，沒用 union by rank，資料剛好讓樹變成一條長鏈。用遞迴寫的路徑壓縮 FIND 第一次呼叫就當掉。原因和改法？
+[x] 遞迴深度接近 $10^6$，堆疊溢位；改成兩趟迴圈：先往上找根，再走一次把路上的點都指向根
+[ ] 陣列太大
+[ ] 路徑壓縮本身是錯的
+[ ] 要把 $n$ 改小
+---
+加上 union by rank 讓高度 $\le\lg n$ 也能避免。
+
+@q uf1-20 | ds-unionfind#1 | 2 | 計算
+元素 0～6 的 parent 陣列是 [0, 0, 1, 1, 3, 5, 5]。共有幾組？FIND(4)（不壓縮）會經過幾個點（含 4 和根）？
+== 2,4
+?? 組數,經過點數
+---
+根是 parent 等於自己的點：0 和 5，兩組 {0,1,2,3,4}、{5,6}。4→3→1→0 共 4 個點。
+
+@q uf1-21 | ds-unionfind#1 | 2 | 比較
+Which of the following statements comparing union by size with union by rank are correct?
+?? 複選
+[x] Both keep the height of every tree at most $\lg n$.
+[ ] Only union by rank guarantees the height bound.
+[ ] Union by size cannot report how large a set is.
+[ ] Union by size cannot be combined with path compression.
+[ ] Union by size attaches the larger tree under the smaller one.
+---
+小的接到大的下面，每次被接的點所在的組至少變兩倍大，所以 by size 和 by rank「都讓高度 $\le\lg n$」。by size 存的就是元素數，正好能回答「這組多大」；它搭配路徑壓縮也能得到 $O(\alpha(n))$ 的攤銷時間。大的接到小的下面是反過來的錯誤做法。
+
+@q uf1-22 | ds-unionfind#1 | 3 | 追蹤
+Union by rank（rank 一樣時第二個根接到第一個下面）＋路徑壓縮（UNION 裡的 FIND 也會壓縮）。1～6 依序 UNION(1,2)、(3,4)、(1,3)、(5,6)、(5,4)，再 FIND(6)。最後樹的高度和根的 rank？
+== 1,2
+?? 高度,rank
+---
+(1,3) 後根 1 的 rank 2、4 在深度 2。(5,4) 裡的 FIND(4) 把 4 直接接到 1；5 的 rank 1 < 2，5 接到 1。FIND(6) 把 6 接到 1。全部都直接指向 1，高度 1，但 rank 仍是 2——rank 只是上界。
+
+@q uf2-15 | ds-unionfind#2 | 2 | 觀念
+$\alpha(n)$（反阿克曼函數）對實際會遇到的 $n$（例如 $10^{80}$ 以內）最大是多少？
+[x] 不超過 4
+[ ] 大約 $\lg n$
+[ ] 大約 $\sqrt n$
+[ ] 1
+---
+所以實務上可以當成常數，但理論上它會（極慢地）趨向無限大。
+
+@q uf2-16 | ds-unionfind#2 | 2 | 計算
+$\lg^*$ 是「要取幾次 $\lg$ 才會 $\le 1$」。$\lg^* 65536$ 是多少？
+== 4
+---
+$65536\to16\to4\to2\to1$，共 4 次。較早的分析得到 $O(m\lg^* n)$，Tarjan 再改進到 $O(m\,\alpha(n))$。
+
+@q uf2-17 | ds-unionfind#2 | 3 | 證明
+證明：使用 union by rank（有沒有路徑壓縮都一樣）時，任何非根的點 $x$ 都滿足 rank$(x)<$ rank$(\text{parent}(x))$。
+---
+$x$ 變成非根只發生在 UNION：它被接到 rank 較大的根下面（不等時），或兩者 rank 相同、對方的 rank 加 1，兩種情況都讓 rank$(x)<$ rank$(\text{parent}(x))$。之後 $x$ 的 rank 不再變（只有根的 rank 會增加），parent 的 rank 只會增加；路徑壓縮把 parent 換成更上面的祖先，沿路 rank 遞增，所以不等式仍成立。
+
+@q uf2-18 | ds-unionfind#2 | 2 | 計算
+$n=2^{32}$ 個元素，union by rank。每個點的 rank 最少要用幾個位元存？
+== 6
+---
+rank 最大 $\lfloor\lg n\rfloor=32$，0～32 共 33 種值，要 6 個位元。所以 rank 可以塞進很少的空間。
+
+@q uf2-19 | ds-unionfind#2 | 3 | 觀念
+Union-Find uses path compression but not union by rank, on $n$ elements with $m\ge n$ operations. Which of the following statements are correct?
+[x] The total time is $O(m\lg n)$.
+[x] This is much better than using neither technique, which can cost $\Theta(mn)$.
+[ ] The total time is $O(m\,\alpha(n))$ even without union by rank.
+[ ] Without union by rank, path compression gives no improvement over using neither technique.
+[ ] The total time is $O(m)$, because each node is compressed at most once.
+---
+只用路徑壓縮時上界是「$O(m\lg n)$」等級（精確是 $\Theta(m\log_{1+m/n}n)$），比都不用的 $\Theta(mn)$ 好很多。要兩招一起用才達到 $O(m\,\alpha(n))$。LINK 和 FIND 交錯時，同一個點之後可能又被接到更深的地方、再被壓縮，所以「每個點最多壓縮一次」不成立。
+
+@q uf2-20 | ds-unionfind#2 | 3 | 證明
+說明 union by rank 的高度上界 $\lfloor\lg n\rfloor$ 是做得到的：給出 $n=8$ 時讓高度變成 3 的 UNION 順序。
+---
+先兩兩合併：(1,2)、(3,4)、(5,6)、(7,8)，得到 4 棵 rank 1 的樹；再合併 (1,3)、(5,7)，得到 2 棵 rank 2、高度 2 的樹；最後 (1,5)，兩棵 rank 2 合併成 rank 3，原本在深度 2 的點變成深度 3。每次都讓兩棵一樣高的樹合併，高度才會增加。
+
+@q uf2-21 | ds-unionfind#2 | 2 | 計算
+只用 union by rank，有一棵樹的根 rank 是 5。這棵樹至少有幾個點？如果 $n=40$，rank 5 的根最多有幾個？
+== 32,1
+?? 至少,最多幾個
+---
+rank $r$ 的根至少 $2^r=32$ 個點；兩棵就要 64 個，超過 40，所以最多 1 個。
+
+@q uf2-22 | ds-unionfind#2 | 2 | 找錯
+A student says: "After path compression, a node's rank decreases, because the tree gets shorter." Which of the following statements are correct?
+[x] Ranks never decrease.
+[x] Path compression changes only parent pointers and does not update ranks.
+[ ] Path compression recomputes each moved node's rank as its new height.
+[ ] Path compression increases the rank of the root.
+[ ] With path compression, ranks always equal heights.
+---
+「rank 從不變小」，「壓縮只改 parent、不更新 rank」，所以 rank 變成高度的上界。不更新是故意的：重算高度很花時間，分析只需要上界。壓縮也不會動根的 rank，rank 和高度一般不相等。
+
+@q uf3-13 | ds-unionfind#3 | 2 | 計算
+4×4 的黑白圖（1 是黑）：
+```
+1100
+0101
+1001
+1011
+```
+只算上下左右相連時有幾塊黑色？連斜角也算時呢？
+== 3,2
+?? 四方向,八方向
+---
+四方向：左上 {(0,0),(0,1),(1,1)}、右邊 {(1,3),(2,3),(3,3),(3,2)}、左下 {(2,0),(3,0)}。八方向時 (1,1) 和 (2,0) 斜角相連，左上和左下合成一塊。
+
+@q uf3-14 | ds-unionfind#3 | 2 | 計算
+7 個人，好友關係依序 (1,2)、(3,4)、(5,6)、(2,4)、(6,7)、(1,3)。用 Union-Find 處理，第幾筆 UNION 時發現兩人早就同組？最後幾組？
+== 6,2
+?? 第幾筆,組數
+---
+處理到 (1,3) 時，1–2–4–3 已經相連，FIND(1)＝FIND(3)。最後 {1,2,3,4}、{5,6,7}。
+
+@q uf3-15 | ds-unionfind#3 | 3 | 計算
+點 A～E，邊已照權重排好：(A,B,1)、(C,D,2)、(B,C,3)、(A,D,4)、(B,D,5)、(D,E,6)、(A,E,7)。Kruskal 用 Union-Find 處理到選滿 4 條邊為止，被跳過的邊有幾條？選到的權重和？
+== 2,12
+?? 跳過,權重和
+---
+選 AB、CD、BC；AD、BD 兩端已同組，跳過；選 DE，已有 4 條，停（AE 不用看）。$1+2+3+6=12$。
+
+@q uf3-16 | ds-unionfind#3 | 3 | 陷阱
+To decide whether the constraints $a\ne c$, $a=b$, $b=c$ can all hold, a student handles them in the given order: UNION for each equality, and for each inequality an immediate check of whether the two sides are in the same set. Which of the following statements are correct?
+[x] The student wrongly concludes that the constraints can all hold.
+[x] When $a\ne c$ is checked, $a$ and $c$ have not yet been merged.
+[x] The correct method merges all equalities first and then checks every inequality.
+[x] With the correct method, $a$, $b$, $c$ end up in one set, so $a\ne c$ is violated.
+[x] With both union by rank and path compression, the correct method takes $O(m\,\alpha(n))$ time for $m$ constraints.
+---
+檢查 $a\ne c$ 時「$a$、$c$ 還沒合併」，檢查通過，之後才把三者併成一組，學生「錯判成可以成立」。等式會一路傳下去，要「先合併所有等式、再檢查不等式」，這時三者同組，$a\ne c$ 不成立。每個條件做常數次操作，總共 $O(m\,\alpha(n))$。五句都對。
+
+@q uf3-17 | ds-unionfind#3 | 3 | 計算
+帶權的 Union-Find：每個點存「自己除以 parent 的比值」。已知 $a/b=2$、$b/c=3$、$d/c=4$，查詢 $a/d$？
+== 1.5
+== 3/2
+---
+沿路乘到根 c：$a/c=2\times3=6$、$d/c=4$，所以 $a/d=6/4$。FIND 做路徑壓縮時要順便把比值相乘。
+
+@q uf3-18 | ds-unionfind#3 | 2 | 找錯
+A student counts connected components with Union-Find by returning the number of distinct values in the parent array. Which of the following statements are correct?
+[x] The count can be too large, since uncompressed nodes may have parents that are not roots.
+[x] For the chain $3\to2\to1$, the parent values are 1 and 2, yet there is only one set.
+[x] The number of nodes $i$ with parent$[i]=i$ is the right answer.
+[x] With path compression, calling FIND on every node first makes the number of distinct parent values correct.
+[ ] The number of distinct rank values is the right answer.
+---
+沒壓縮的點 parent 不是根，不同值會多算，例如鏈 $3\to2\to1$ 有 1、2 兩種值但只有一組。「數 parent$[i]=i$ 的點」就是數根；「先對每個點 FIND（有壓縮）」後每個點都直接指向根，不同值就等於根數。四句都對。rank 和組數無關。
+
+@q uf3-19 | ds-unionfind#3 | 3 | 情境
+Edges of a graph are deleted over time while queries ask whether two vertices are connected. All deletions and queries are known in advance. Which of the following statements are correct?
+[x] Handle the operations in reverse order, starting from the graph after all deletions.
+[x] In reverse order, each deletion becomes an edge insertion, that is, a UNION.
+[x] The answers, computed in reverse, are then reported in the original order.
+[ ] Handling the operations in reverse also works when future deletions are not known in advance.
+[ ] In reverse order, every query must be answered before any edge is added back.
+---
+從「全部刪完」的圖開始，倒著把邊加回去、倒著回答查詢，「刪除變成 UNION」，最後把答案照原順序輸出，三句都對。這是離線技巧，必須事先知道所有操作；查詢要依它在倒序中的位置回答，不是全部先答。
+
+@q uf3-20 | ds-unionfind#3 | 2 | 計算
+10 個點、15 條邊，全部用 Union-Find 處理完剩 3 組。有幾次 UNION 是「本來就同組、什麼都沒做」？
+== 8
+---
+從 10 組變 3 組，真正合併了 7 次；其餘 $15-7$ 次都是同組。
+
+@q uf3-21 | ds-unionfind#3 | 2 | 情境
+用 Union-Find 生成 5×5 迷宮：一開始每格四周都是牆，隨機挑相鄰兩格之間的牆，兩格不同組才拆、並 UNION。最後拆了幾道牆？還剩幾道內部牆？
+== 24,16
+?? 拆掉,剩下
+---
+最後 25 格全部相連且沒有環，像一棵樹，拆了 $25-1$ 道。內部牆共 $2\times5\times4=40$ 道，剩 16。任兩格之間恰好一條路。
+
+@q uf3-22 | ds-unionfind#3 | 3 | 證明
+說明為什麼「用 Union-Find 依序加入無向圖的邊，某條邊兩端已在同一組」就表示這條邊會形成環。
+---
+同一組代表兩端在已加入的邊中已經有一條路相連。再加上這條邊，從一端沿原來的路走到另一端、再沿新邊回來，就是一個環。反過來，兩端不同組時沒有任何路相連，加上它不可能形成環。
+
+@q gr7-16 | ds-graph#7 | 3 | 計算
+郵差要走過每一條街至少一次再回到起點。街道：1–2 長 3、2–3 長 4、3–4 長 3、4–1 長 4、1–3 長 5。最短要走多長？
+== 24
+---
+奇度點是 1 和 3（各 3 條），要把它們之間某條路線再走一次；1 到 3 最短是直接那條 5。總長 $19+5=24$。
+
+@q gr7-17 | ds-graph#7 | 3 | 情境
+要找一個最短的「循環」0/1 字串，使所有長度 3 的 0/1 字串都恰好以子字串出現一次。長度是多少？怎麼找？
+== 8
+---
+點是長度 2 的字串（4 個），每個長度 3 的字串是一條邊（8 條），每點入度＝出度＝2 而且連通，有歐拉迴路；沿迴路寫下的字串（de Bruijn 序列）長度 8，例如 00010111。
+
+@q gr7-18 | ds-graph#7 | 3 | 陷阱
+「有向圖要有歐拉迴路，整張圖必須每個點都能互相到達。」對嗎？
+[ ] 對
+[x] 不對
+---
+沒有邊的孤立點不影響。條件是：每個點入度＝出度，而且所有「有邊的點」彼此能互相到達。
+
+@q gr7-19 | ds-graph#7 | 2 | 找錯
+學生找歐拉迴路的方法：「從起點沿沒走過的邊隨便走，走不動就結束，走過的就是答案。」錯在哪？
+[x] 可能提早回到起點而卡住，還有邊沒走；要把沒走完的點當起點繼續走出小環，再把小環接進去（Hierholzer）
+[ ] 沒錯
+[ ] 應該一律走最短的邊
+[ ] 應該從奇度點開始
+---
+例如兩個三角形共用一個點，從共用點出發可能繞完一個三角形就回到起點。
+
+@q gr7-20 | ds-graph#7 | 3 | 計算
+有向圖：1→2、1→3、1→4、2→3、3→4。最少要加幾條有向邊（可以和原有邊重複）才會有歐拉迴路？
+== 3
+---
+出度－入度：點 1 是 $+3$、點 2 是 0、點 3 是 $-1$、點 4 是 $-2$。要補的邊數＝正差的總和 3（例如 3→1、4→1、4→1），補完圖也是連通的。
+
+@q gr7-21 | ds-graph#7 | 3 | 證明
+證明：連通無向圖恰好有 2 個奇度點 $u,v$ 時，存在從 $u$ 到 $v$ 的歐拉路徑。
+---
+加一條新邊 $u$–$v$，所有點都變偶度、圖仍連通，所以有歐拉迴路。這條迴路經過新邊一次；把新邊拿掉，剩下的就是從 $u$ 走到 $v$、每條原有邊恰好走一次的路徑。
+
+@q gr7-22 | ds-graph#7 | 2 | 情境
+DNA sequencing breaks a long sequence into many fragments of length $k$ and reassembles them. A common method treats each fragment as an edge from its first $k-1$ letters to its last $k-1$ letters. Which of the following statements are correct?
+[x] Reassembling the sequence means finding an Euler path that uses every fragment (edge) exactly once.
+[x] If the fragments were vertices instead, the task would become finding a path through every vertex once, for which no polynomial-time algorithm is known.
+[ ] Reassembly only requires sorting the fragments alphabetically.
+[ ] Reassembly is a topological sort.
+[ ] With fragments as edges, reassembly requires visiting every vertex exactly once.
+---
+片段當邊，拼回原序列就是每條邊恰好用一次的歐拉路徑，可以 $O(V+E)$ 解，「Euler path」對；若把片段當點，就變成每點一次的漢米頓路徑，沒有已知的多項式時間演算法，「fragments were vertices」對。片段當邊時同一個 $(k-1)$ 字母的點可能經過很多次，「every vertex exactly once」錯；按字母排序和片段的重疊關係無關；圖也可能有環，不能拓撲排序。
+
+@q gr1-19 | ds-graph#1 | 2 | 計算
+無向圖 $V=10^4$、$E=5\times10^4$。相鄰矩陣有幾格？相鄰串列總共有幾個項目？
+== 100000000,100000
+== 10^8,10^5
+?? 矩陣格數,串列項目
+---
+矩陣 $V^2=10^8$ 格；無向圖每條邊在兩端的串列各出現一次，$2E=10^5$。稀疏圖用串列省了一千倍。
+
+@q gr1-20 | ds-graph#1 | 3 | 計算
+三角形 $K_3$（點 1、2、3 兩兩相連）的相鄰矩陣 $A$。$A^2$ 的 $(1,1)$ 和 $(1,2)$ 元素各是？
+== 2,1
+?? (1;1),(1;2)
+---
+$A^2$ 的 $(i,j)$ 元素是「從 $i$ 走 2 步到 $j$ 的走法數」。1→2→1、1→3→1 兩種；1→3→2 一種。對角線就是度數。
+
+@q gr1-21 | ds-graph#1 | 3 | 情境
+A very sparse graph must support both listing all neighbors of a vertex quickly and testing whether two vertices are adjacent in $O(1)$ time. Which of the following statements are correct?
+[x] Each vertex's neighbors can be kept in a set structure with $O(1)$ average lookup (such as Python's set), which lists neighbors as fast as a list does.
+[x] With such sets, an adjacency test takes $O(1)$ time on average, and the total space stays $O(V+E)$.
+[ ] An adjacency matrix alone achieves $O(V+E)$ space.
+[ ] Plain adjacency lists alone give $O(1)$ adjacency tests.
+[ ] Storing all edges in one sorted array gives $O(1)$ adjacency tests.
+---
+相鄰矩陣查詢快但空間 $V^2$，「matrix alone … $O(V+E)$」錯；串列省空間但查詢要掃度數那麼多，「plain adjacency lists」錯。把每個點的鄰居放進平均 $O(1)$ 查詢的集合，列鄰居和查相鄰都快、空間仍是 $O(V+E)$，「Each vertex's neighbors can…」、「With such sets, an…」對。排序陣列要二分搜尋，$O(\lg E)$，不是 $O(1)$。
+
+@q gr2-20 | ds-graph#2 | 2 | 追蹤
+無向圖：1–2、1–3、2–4、3–4、4–5、5–6、3–6。從 1 做 BFS，距離 2 的點有幾個？點 5 的距離？
+== 2,3
+?? 距離2的點數,5的距離
+---
+第 1 層 {2, 3}；第 2 層 {4, 6}（6 經由 3）；第 3 層 {5}。
+
+@q gr2-21 | ds-graph#2 | 3 | 情境
+用 BFS 判斷一張連通無向圖是不是二分圖。依據是？
+[x] 照層數奇偶塗兩色；若有一條邊兩端在**同一層**，就形成奇數長度的環，不是二分圖
+[ ] 只要有環就不是
+[ ] 層數超過 2 就不是
+[ ] BFS 不能判斷
+---
+BFS 樹上的邊只連相鄰層；非樹邊連相鄰層或同一層，同一層才會造成奇環。
+
+@q gr4-20 | ds-graph#4 | 2 | 計算
+DAG：a→c、b→c、c→d、c→e。有幾種不同的拓撲順序？
+== 4
+---
+a、b 先後隨意（2 種），接著一定是 c，最後 d、e 先後隨意（2 種）。$2\times2$。
+
+@q gr4-21 | ds-graph#4 | 2 | 陷阱
+Kahn's algorithm is run on a directed graph with 5 vertices, and when its queue becomes empty it has output only 3 vertices. Which of the following statements are correct?
+[x] The graph contains a directed cycle.
+[x] The graph has no topological order.
+[ ] The implementation must have a bug.
+[ ] The 2 remaining vertices are isolated vertices.
+[ ] Running the algorithm again from a different starting vertex will output all 5 vertices.
+---
+剩下的 2 個點入度永遠不會降到 0，代表它們在環上（或被環上的點指到），所以「directed cycle」「no topological order」對。這正是 Kahn 用來偵測環的方法，不是寫錯，「bug」錯。孤立點入度是 0，一開始就會進佇列，「isolated」錯。Kahn 一開始就把所有入度 0 的點放進佇列，結果和從哪個點開始無關，「again … all 5」錯。
+
+@q gr5-18 | ds-graph#5 | 2 | 計算
+有向圖：1→2、2→3、3→1、3→4、4→5、5→6、6→4、6→7。有幾個強連通元件？縮點後的圖有幾條邊？
+== 3,2
+?? SCC,邊
+---
+{1,2,3}、{4,5,6}、{7}。縮點後 {1,2,3}→{4,5,6}→{7}。
+
+@q gr5-19 | ds-graph#5 | 3 | 計算
+接上題，最少要加幾條有向邊，才能讓整張圖變成強連通？
+== 1
+---
+縮點後是一條鏈：只有 1 個起點元件、1 個終點元件。加一條 7→1 就形成大環。一般公式：縮點後有多於一個元件時，答案是 max(入度 0 的元件數, 出度 0 的元件數)。
+
+@q gr5-20 | ds-graph#5 | 2 | 情境
+Course prerequisites are drawn as a directed graph, and it turns out some courses require each other (course $X$ requires $Y$ and $Y$ requires $X$), so nobody can take them. We want to list every cluster of mutually blocked courses at once. Which of the following statements are correct?
+[x] Find the strongly connected components; every component with at least 2 vertices is such a cluster.
+[x] A course listed as its own prerequisite is also blocked, even though it forms a 1-vertex component.
+[ ] Computing BFS shortest paths lists these clusters.
+[ ] The courses with in-degree 0 are exactly the blocked ones.
+[ ] A topological sort lists every blocked cluster.
+---
+環上的課彼此互相要求，SCC 把每個環所在的整群點一次找出，「at least 2 vertices」對；自己指向自己的點雖然 SCC 只有一個點，也是環，「own prerequisite」對。BFS 最短路徑和這件事無關；入度 0 的課反而沒有先修、最好修，「in-degree 0」錯。拓撲排序只能告訴你「有環」，不會把環整群列出來，「topological sort lists」錯。
+
+@q gr6-19 | ds-graph#6 | 2 | 計算
+無向圖：1–2、2–3、3–1、3–4、4–5、5–6、6–4、6–7。有幾個關節點、幾座橋？
+== 3,2
+?? 關節點,橋
+---
+關節點 3、4、6；橋 3–4、6–7。兩個三角形內部的邊都在環上，不是橋。
+
+@q gr6-20 | ds-graph#6 | 3 | 計算
+接上題，這張圖有幾個雙連通元件（以邊來分）？
+== 4
+---
+{1,2,3} 的三角形、橋 3–4、{4,5,6} 的三角形、橋 6–7。每座橋自己是一個元件，關節點是元件之間的交界。
+
+@q gr6-21 | ds-graph#6 | 2 | 陷阱
+「沒有關節點的連通圖一定沒有橋。」對嗎？
+[ ] 對
+[x] 不對
+---
+只有兩個點、一條邊的圖：拿掉任一點剩一個點仍連通，沒有關節點；但那條邊是橋。點數 ≥3 時這句才成立。
+
+@q bt1-19 | ds-btree#1 | 2 | 計算
+最小度數 $t=4$、高度 2（根在第 0 層）的 B 樹，最少有幾個鍵？
+== 31
+---
+根至少 1 個鍵、2 個孩子；其他節點至少 $t-1=3$ 個鍵、$t=4$ 個孩子。$1+2\times3+8\times3=31=2t^h-1$。
+
+@q bt1-20 | ds-btree#1 | 3 | 追蹤
+$t=2$ 的 B 樹（CLRS：往下走時遇到滿的節點先分裂），從空樹依序插入 5、15、25、35、45、55、65。最後根有哪些鍵？
+== 15,35
+---
+插 35 時根 [5,15,25] 滿，分裂成 [15]([5] [25])；插 55 時子節點 [25,35,45] 滿，分裂把 35 送上去。最後 [15,35]([5] [25] [45,55,65])。
+
+@q bt1-21 | ds-btree#1 | 3 | 比較
+A search in a B-tree visits 5 nodes on its path from the root to a leaf, and each visited node holds 31 sorted keys. Inside each node, the search must find the first key that is not smaller than the target, and two local methods are compared, where each key examined costs one comparison. The linear method scans the keys from left to right and may examine all 31 of them. The second method repeatedly halves the interval of candidate positions, so it needs at most 5 probes for 31 keys, since $2^5 = 32$. Neither method changes which child the search follows next. A student counts the comparisons along the whole path for both methods and generalizes the result to a tree with minimum degree $t$ and $n$ keys, to see which part of the cost grows with $n$. Which of the following statements are correct? Select all that apply.
+[x] The linear scans may use 155 probes across the path.
+[x] The second method uses at most 25 probes across the path.
+[x] In general, $O(\log t)$ probes per node across $O(\log_t n)$ nodes give $O(\log n)$ probes.
+[ ] Linear scanning uses at most 31 probes across all five nodes combined.
+[ ] Switching the local search method alone necessarily changes the number of tree nodes on this same search path.
+---
+「155」對：5×31。「至多 25」對：5×5。「整體 O(log n)」對：log t×log_t n＝log n，對數底數固定只差常數。「總共至多 31」錯：那只算一個節點，可能五個都掃到末端。「必改路徑節點數」錯：題設路由不變，差別在每個已讀節點內如何比較，不能混成磁碟頁數必定減少。
+
+@q hs1-20 | ds-hash#1 | 2 | 計算
+乘法法 $h(k)=\lfloor m(kA\bmod1)\rfloor$，$m=1024$、$A=\frac{\sqrt5-1}2\approx0.6180339887$，$k=1000$。$h(k)$ 是？
+== 34
+---
+$1000A\approx618.0339887$，小數部分 $0.0339887$，乘 1024 得 34.8，取整 34。$m$ 取 2 的次方也沒問題，這是乘法法的優點。
+
+@q hs1-21 | ds-hash#1 | 2 | 計算
+字串雜湊 $h(s)=(s_0\cdot31^2+s_1\cdot31+s_2)\bmod1000$，字元用 ASCII（a=97、b=98、c=99）。$h(\text{"abc"})$ 是？
+== 354
+---
+$97\times961+98\times31+99=93217+3038+99=96354$。把每個字元都乘上不同的次方，"abc" 和 "cba" 才不會一樣。
+
+@q bt1-22 | ds-btree#1 | 3 | 追蹤
+$t=2$ 的 B 樹（CLRS：往下走遇到滿的節點先分裂），從空樹依序插入 1～10。最後根是什麼？樹高（根在第 0 層）？
+== 4,2
+?? 根,樹高
+---
+遞增插入讓右邊一直分裂。最後是 [4]([2]([1] [3]) [6,8]([5] [7] [9,10]))。左邊的節點都只剩最少的 1 個鍵——遞增插入對 B 樹來說是很「浪費」的順序。
+
+@q bt1-23 | ds-btree#1 | 2 | 計算
+$t=200$ 的 B 樹存 $10^8$ 個鍵。樹高（根在第 0 層）最多是多少？
+== 3
+---
+$h\le\log_t\frac{n+1}2=\log_{200}(5\times10^7)\approx3.35$，取整數 3。搜尋最多讀 4 個節點；根常駐記憶體時只要 3 次磁碟讀取。
+
+@q bt1-24 | ds-btree#1 | 3 | 比較
+Two valid B-tree insertion procedures for minimum degree $t = 2$ are compared on distinct keys. The CLRS procedure splits a full child before descending into it, while the other procedure first inserts the key into a leaf and then splits overflowing nodes on the way back up. A student inserts the keys 1, 2, 3, 4 in this order into an empty tree with both procedures and draws the 2 resulting trees, then tries several longer sequences of 10 keys to see whether the two procedures always build the same tree. Which of the following statements are correct? Select all that apply.
+[x] Splitting a full child before descending can let its nonfull parent accept the promoted separator.
+[x] Repairing overflow afterward can propagate structural changes toward the root.
+[x] Correct implementations need not produce identical internal shapes for every sequence and permitted split choice.
+[ ] An implementation that repairs overflow afterward is necessarily incorrect.
+[ ] After inserting 1,2,3,4 into an empty tree, every valid implementation must have root [3], including the CLRS procedure.
+---
+「先拆可準備容納」對：在非滿的父節點下處理滿孩子，可讓上推的鍵放得下。「溢出修復可往上傳」對：父也可能跟著溢出。「形狀不必完全相同」對：只要排序、占用量與同深度等不變量成立，合法策略可有不同形狀。「事後修復必錯」錯：那也是可行策略。「一定根 [3]」錯：CLRS 插 1、2、3 後根滿，插 4 前提升中鍵 2，得到根 [2]、葉子 [1] 和 [3,4]。
+
+@q bt3-22 | ds-btree#3 | 3 | 情境
+範圍查詢回傳 1000 筆，資料每頁 100 筆。索引的葉子順序和資料在磁碟上的順序一致（叢集），和不一致（非叢集，每筆可能在不同頁），大約各要讀幾頁資料？
+== 10,1000
+?? 叢集,非叢集
+---
+叢集時符合的資料剛好連在一起，約 $1000/100$ 頁；非叢集時最壞每筆都在不同頁。所以非叢集索引做大範圍查詢，有時還不如整個表掃一遍。
+
+@q gr1-22 | ds-graph#1 | 1 | 計算
+無向圖 5 個點、7 條邊，用「關聯表」（二維表：每列一個點、每行一條邊，點是邊的端點就填 1）表示。表裡共有幾個 1？
+== 14
+---
+每條邊恰好兩個端點，每行兩個 1：$2\times7$。每列的 1 的個數就是那個點的度數。
+
+@q gr2-22 | ds-graph#2 | 1 | 計算
+$4\times4$ 的格子點，只能上下左右走。從左上角做 BFS，距離剛好 3 的點有幾個？
+== 4
+---
+距離就是 $i+j$（列號加行號）：$(0,3),(1,2),(2,1),(3,0)$。
+
+@q gr2-23 | ds-graph#2 | 3 | 情境
+邊的權重只有 0 或 1，要求單一起點最短距離。比一般帶權最短路徑演算法更簡單的做法？
+[x] 用雙端佇列：走權重 0 的邊把點放到前面、權重 1 的放到後面，像 BFS 一樣一層一層處理，$O(V+E)$
+[ ] 一般 BFS 就對
+[ ] 把所有權重 1 的邊都拆成兩條
+[ ] 把權重 0 的邊刪掉
+---
+佇列裡的距離永遠只有兩種值（$d$ 和 $d+1$），用雙端佇列就能維持順序。
+
+@q gr2-24 | ds-graph#2 | 2 | 情境
+A map has several fire stations, and for every intersection we want the number of roads to the nearest fire station. Which of the following statements are correct?
+[x] Put all fire stations into the queue at distance 0 and run a single BFS.
+[x] That single BFS takes $O(V+E)$ time in total.
+[ ] Running one BFS per fire station and taking the minimum is the fastest way.
+[ ] One BFS must be run from every intersection.
+[ ] The single BFS can give some intersection a larger distance than its true distance to the nearest station.
+---
+多起點 BFS 等於加一個虛擬起點連到所有消防局，再從它跑一次 BFS，「single BFS」「$O(V+E)$」對。每家各跑一次要 $k$ 倍時間，「fastest」錯；從每個路口跑更慢。多起點 BFS 仍然一層一層往外，每個路口第一次被碰到時就是到最近消防局的距離，「larger distance」錯。
+
+@q gr3-92 | ds-graph#3 | 3 | 追蹤
+有向圖 1→2、1→4、2→3、3→1、4→3、4→5。從 1 做 DFS，鄰居照編號小到大。邊 4→3 是哪一種邊？1 的完成時間？
+== 交叉邊,10
+?? 4→3,f[1]
+---
+d/f：1 (1/10)、2 (2/5)、3 (3/4)、4 (6/9)、5 (7/8)。3→1 是回邊（有環）。走到 4→3 時 3 已經完成、而且 3 比 4 早發現，是交叉邊。
+
+@q gr3-93 | ds-graph#3 | 1 | 計算
+無向圖 12 個點、3 個連通塊。對整張圖做 DFS（每塊各開一棵樹），共有幾條樹邊？
+== 9
+---
+每塊是一棵 $k$ 個點的樹，有 $k-1$ 條樹邊；加總 $12-3$。
+
+@q gr3-94 | ds-graph#3 | 3 | 找錯
+學生用堆疊寫非遞迴 DFS：把起點推入；每次彈出一個點，標記「已拜訪」並把所有鄰居推入。可是有些點被處理兩次。錯在哪？
+[x] 同一個點可能在被拜訪前被推入很多次；彈出時要先檢查是否已拜訪過，已拜訪就跳過
+[ ] 應該用佇列
+[ ] 應該推入時不檢查任何東西
+[ ] 沒錯
+---
+推入時標記的寫法則會變成「不是真正的 DFS 順序」，兩種寫法要分清楚。
+
+@q gr4-22 | ds-graph#4 | 2 | 計算
+DAG：3→1、2→1、4→2。Kahn 演算法每次從入度 0 的點中挑**編號最小**的。拓撲順序是？
+== 3,4,2,1
+---
+一開始入度 0 的是 3、4，挑 3（1 的入度變 1）；剩 4，挑 4（2 的入度變 0）；挑 2；最後 1。用最小堆積代替佇列，就得到字典序最小的拓撲順序。
+
+@q gr4-23 | ds-graph#4 | 3 | 證明
+證明：有限的 DAG 至少有一個入度為 0 的點。
+---
+假設每個點入度都 ≥1。從任一點出發，一直沿著「指向自己的邊」往回走，每一步都走得下去。點只有有限個，走 $V+1$ 步必定重複經過某個點，形成一個有向環，和 DAG 矛盾。
+
+@q gr6-22 | ds-graph#6 | 1 | 計算
+7 個點的路徑 1–2–3–4–5–6–7。有幾座橋、幾個關節點？
+== 6,5
+?? 橋,關節點
+---
+樹的每條邊都是橋；路徑中間的 2～6 拿掉都會斷開，兩端不會。
+
+@q gr6-23 | ds-graph#6 | 3 | 追蹤
+無向圖 1–2、2–3、3–1、3–4。從 1 做 DFS（1→2→3→4），發現時間 d 依序 1、2、3、4。low[4] 和 low[3] 各是？3–4 是橋嗎？
+== 4,1,是
+?? low[4],low[3],橋
+---
+4 沒有回邊，low[4]＝d[4]＝4。3 有回邊 3–1，low[3]＝1。low[4] > d[3]，表示 4 的子樹除了經過 3–4 之外到不了上面，3–4 是橋。
+
+@q hs1-22 | ds-hash#1 | 1 | 計算
+除法法 $h(k)=k\bmod97$。$h(12345)$ 是多少？
+== 26
+---
+$97\times127=12319$，$12345-12319=26$。$m$ 取不靠近 2 的次方的質數比較好。
+
+@q hs1-23 | ds-hash#1 | 2 | 比較
+A web service uses hash functions in two places. Its in-memory response store maps request URLs to stored responses with a hash table that must handle about $10^5$ lookups per second. Its login system stores, for each user, the output of a password hash such as SHA-256 applied to a random 16-byte salt followed by the password, and it compares hashes when the user logs in. A new engineer proposes using the response store's fast hash function in the login system as well, to save code. Which of the following statements comparing these two kinds of hash functions are correct? Select all that apply.
+[x] A hash function for a hash table must be fast and spread keys evenly.
+[x] A password hash must be hard to invert and hard to find collisions for.
+[x] A password hash may be made deliberately slow to resist brute-force guessing.
+[x] Hash functions designed for hash tables usually make poor password hashes.
+[ ] A password hash must be reversible, so that a forgotten password can be recovered.
+---
+雜湊表「要快、分布均勻」；密碼雜湊「要難反推、難找碰撞」，甚至「故意算得慢」，所以「雜湊表用的函數不適合保護密碼」。能還原就失去保護的意義，忘記密碼是重設而不是還原。
+
+@q hs2-22 | ds-hash#2 | 2 | 追蹤
+鏈結法，$m=5$、$h(k)=k\bmod5$，新元素插在串列最前面。依序插入 12、7、22、3、17。第 2 格的串列從頭到尾是？
+== 17,22,7,12
+---
+12、7、22、17 都落在第 2 格，最後插入的在最前面。插在頭是 $O(1)$，不用走到尾。
+
+@q hs2-23 | ds-hash#2 | 2 | 計算
+鏈結法、簡單均勻雜湊，負載因子 $\alpha=4$。成功搜尋平均大約要比較幾個元素？
+== 3
+---
+成功搜尋約 $1+\frac\alpha2=3$；失敗搜尋要走完整條，約 $\alpha=4$（加上算雜湊的 1）。
+
+@q hs2-24 | ds-hash#2 | 2 | 情境
+A chained hash table doubles its size and rehashes everything whenever $\alpha>1$. Which of the following statements are correct?
+[x] Over any sequence of insertions, the average cost per insertion is $O(1)$.
+[x] A rehash costs $O(n)$, but about $n$ more insertions happen before the next one.
+[x] Growing by a fixed number of slots would make the average cost $O(n)$.
+[ ] Every insertion costs $O(n)$, since any insertion may trigger a rehash.
+[ ] No bound on the average cost can be given, since the rehash times are unpredictable.
+---
+跟動態陣列加倍一樣：「重新雜湊 $O(n)$，但要再插入約 $n$ 次才會再發生」，「平攤 $O(1)$」。每次只加固定格數，搬家次數和元素數成正比，「平攤變成 $O(n)$」。大部分插入不會觸發重建；什麼時候重建是確定的。
+
+@q hs4-22 | ds-hash#4 | 2 | 計算
+Bloom filter：$m=2000$ 位元、$n=200$ 個元素、$k=5$ 個雜湊函數。誤判率約 $(1-e^{-kn/m})^k$，大約多少 %？
+== 0.94
+== 0.9
+---
+$e^{-0.5}\approx0.607$，$1-0.607=0.393$，$0.393^5\approx0.0094$。
+
+@q hs4-23 | ds-hash#4 | 2 | 計算
+Bloom filter 每個元素分到 10 個位元（$m/n=10$）。讓誤判率最低的雜湊函數個數 $k$ 大約是？
+== 7
+---
+最佳 $k=\frac mn\ln2\approx6.93$。$k$ 太少每次只檢查幾個位元，太多又把位元陣列填得太滿。
+
+@q hs4-24 | ds-hash#4 | 1 | 計算
+FKS 完美雜湊：第一層有一格分到 3 個鍵。這一格的第二層表開幾格？
+== 9
+---
+第二層用 $n_j^2$ 格，才能讓隨機選的雜湊函數有至少一半機率沒有碰撞。各格加總的期望值仍是 $O(n)$。
+
+
+@q bt5-21 | ds-btree#5 | 2 | 計算
+跳躍串列 $p=\frac12$、$n=2^{20}$。搜尋的期望比較次數大約是多少？
+== 40
+---
+約 $\frac1p\log_{1/p}n=2\times20$：每層平均往右走約 $1/p$ 步，共約 $\log_2n$ 層。
+
+
+@q bt5-22 | ds-btree#5 | 2 | 追蹤
+跳躍串列：第 3 層 [10, 40]；第 2 層 [10, 25, 40, 55]；第 1 層 [5, 10, 18, 25, 33, 40, 47, 55, 60]。搜尋 47，依序停留在哪些節點（不含開頭）？
+== 10,40,47
+---
+第 3 層：10、40，下一個沒了往下；第 2 層在 40，下一個 55 > 47 往下；第 1 層在 40，下一個就是 47。只碰到 3 個節點。
+
+
+@q bt5-23 | ds-btree#5 | 3 | 陷阱
+Ten skip-list nodes independently stop at height one with chance one half each. Let event E mean that all ten stop there. For this event, searching for the largest stored key follows all ten bottom-level nodes. Which statements are correct? Select all that apply.
+[x] The specified event has chance $1/1024$.
+[x] The specified event gives a concrete linear-traversal outcome.
+[ ] The specified event has chance $1/10$.
+[x] The probability of this one specified bad event does not by itself give the probability of every possible costly promotion arrangement combined.
+[ ] An expected logarithmic bound makes the specified event impossible.
+---
+「1/1024」對：(1/2)^10。「線性例子」對：沒有高層捷徑時會沿十個底層節點走；一般 n 個同樣可走 n 個。「1/10」錯：十個獨立不提升事件要相乘。「不能直接等於所有壞結果機率」對：還可能有其他昂貴的提升配置，需要另外分析其聯集。「期望對數就不可能」錯：期望保證不會排除低機率的慢案例。
+
+
+@q gr5-21 | ds-graph#5 | 3 | 證明
+證明：有向圖中，如果 $u$、$v$ 互相可達，$v$、$w$ 也互相可達，那 $u$、$w$ 也互相可達；並說明為什麼這表示強連通元件不會互相重疊。
+---
+$u\to v\to w$ 和 $w\to v\to u$ 都存在，接起來就是 $u$、$w$ 互相可達。若兩個 SCC 有共同點 $v$，兩邊的任意點都經由 $v$ 互相可達，應該是同一個 SCC，所以不會重疊。（「互相可達」是自反、對稱、遞移的等價關係，SCC 就是它的等價類。）
+
+
+@q gr5-22 | ds-graph#5 | 3 | 陷阱
+5 個點繞成一個有向環（1→2→3→4→5→1）。拿掉其中一條邊後，有幾個強連通元件？
+== 5
+---
+原本整個是一個 SCC；拿掉一條邊變成一條路徑，誰都回不到前面的點，每個點自己一組。一條邊就可能讓 SCC 數從 1 變成 $n$。
+
+
+@q srt2-25 | ds-sort#2 | 2 | 計算
+用兩兩比較排序 7 個不同的數，最壞情況至少要比幾次？
+== 13
+---
+$7!=5040$ 種排列，決策樹高度至少 $\lceil\lg5040\rceil=13$（$2^{12}=4096<5040\le8192$）。
+
+@q srt2-26 | ds-sort#2 | 2 | 計算
+100 個數同時找最大和最小，用「先兩兩比、大的跟目前最大比、小的跟目前最小比」，共要比幾次？
+== 148
+---
+50 對各比 1 次；第一對直接當初始的最大最小，其餘 49 對各再比 2 次：$50+98=148=\frac32n-2$。分開找要 $2(n-1)=198$ 次。
+
+@q srt2-27 | ds-sort#2 | 3 | 計算
+用錦標賽法找 64 個數中第二小的，最少要比幾次？
+== 68
+---
+找最小要 63 次；第二小一定曾輸給冠軍，冠軍比過 $\lg64=6$ 場，在這 6 個人裡找最小再 5 次。$n+\lceil\lg n\rceil-2=68$。
+
+@q srt5-25 | ds-sort#5 | 3 | 追蹤
+在 `[7, 2, 9, 4, 1, 8]` 找第 3 小。每次用最後一個元素當 pivot（Lomuto）。共做了幾次 partition？答案是？
+== 3,4
+?? partition次數,第3小
+---
+第 1 次 pivot 8，它是第 5 小，往左找；左邊 [7,2,4,1] 用 pivot 1，是第 1 小，往右找；右邊 [7,2,4] 用 pivot 4，剛好是第 3 小。
+
+@q srt5-26 | ds-sort#5 | 1 | 計算
+median of medians 處理 35 個數：每 5 個一組。有幾組？pivot 是這些組中位數裡的第幾小？
+== 7,4
+?? 組數,第幾小
+---
+$35/5=7$ 組，7 個中位數再取中位數，是第 4 小。這樣選的 pivot 保證兩邊都至少有約 $\frac3{10}n$ 個元素。
+
+@q hp2-28 | ds-heap#2 | 2 | 計算
+4 元堆積用陣列存、**從 0 開始編號**：節點 $i$ 的孩子是 $4i+1$～$4i+4$。節點 10 的父親是幾號？
+== 2
+---
+父親是 $\lfloor(i-1)/4\rfloor=\lfloor9/4\rfloor=2$；節點 2 的孩子是 9～12，10 在其中。從 0 或從 1 開始編號，公式不一樣。
+
+@q bt2-23 | ds-btree#2 | 3 | 追蹤
+$t=3$ 的 B 樹（非根節點至少 2 個鍵）：根 [50]，孩子 [10,20,30] 和 [60,70]。用 CLRS 的方法刪除 60，結果的根？
+== 30
+---
+要往 [60,70] 走，它只有 $t-1=2$ 個鍵；左兄弟有 3 個（≥ $t$），向它借：50 下來、30 上去，右孩子變 [50,60,70]，再刪 60 得 [50,70]。最後 [30]([10,20] [50,70])。
+
+@q bt2-24 | ds-btree#2 | 3 | 追蹤
+$t=2$ 的 B 樹 [20]([10]([5] [15]) [30]([25] [35]))，高度 2。刪除 5 之後根是什麼？樹高？
+== 20 30,1
+?? 根,樹高
+---
+在根就發現孩子 [10] 和兄弟 [30] 都只有 1 個鍵，合併成 [10,20,30]，根空了，樹高減 1。往下到 [5]，它和兄弟 [15] 也都只有 1 個鍵，合併成 [5,10,15] 再刪 5。最後 [20,30]([10,15] [25] [35])。
+
+@q bt3-23 | ds-btree#3 | 3 | 情境
+A specified B+ variant permits at most four records per leaf and requires at least two in every nonroot leaf, including the rightmost. An overflowing leaf holds keys 1 through 5. Future inserted keys are all greater than 5, and no later redistribution into the old left leaf is performed. Which statements are correct? Select all that apply.
+[x] Splitting into [1,2] and [3,4,5] meets the stated leaf-size bounds.
+[x] Later larger keys initially belong on the right side of this split.
+[ ] The unchanged left leaf is three quarters full immediately after the split into [1,2] and [3,4,5].
+[ ] Splitting into [1,2,3,4] and [5] meets the stated two-record minimum for both nonroot leaves.
+[ ] Splitting a leaf necessarily gives the two resulting leaves different depths.
+---
+「二與三合法」對：兩邊都在二到四筆範圍。「較大鍵走右」對：它們大於目前最大的 5。「舊左四分之三滿」錯：只有兩筆，2÷4＝1/2，且題設不再把鍵搬回左葉。「四與一合法」錯：右葉只有一筆，違反最少二筆；若要採特殊右側偏斜分裂，必須另有相容規則，不能直接套到本模型。「深度不同」錯：兩片葉子仍在原來的葉層。
+
+@q bt4-23 | ds-btree#4 | 2 | 追蹤
+字串 abcab 的後綴陣列（起始位置，從 0 開始）？
+== 3 0 4 1 2
+== 3,0,4,1,2
+---
+後綴依字典順序：ab(3)、abcab(0)、b(4)、bcab(1)、cab(2)。ab 是 abcab 的前綴，所以排在前面。
+
+@q bt4-24 | ds-btree#4 | 1 | 計算
+把 0、01、011、1、10 存進以 0/1 為字母的 Trie，共幾個節點（含根）？
+== 6
+---
+節點就是所有不同的前綴加根：0、01、011、1、10，共 5 個，加根 6 個。這裡每個節點剛好都是一個字的結尾。
+
+@q gr1-23 | ds-graph#1 | 1 | 計算
+有向圖的相鄰矩陣 $\left[\begin{smallmatrix}0&1&1\\0&0&1\\1&0&0\end{smallmatrix}\right]$（第 $i$ 列第 $j$ 行為 1 表示 $i\to j$）。點 3 的入度？
+== 2
+---
+入度看第 3 行（column）的和：1→3、2→3，共 2。出度看第 3 列（row）：3→1，1 條。
+
+@q gr7-23 | ds-graph#7 | 2 | 計算
+$3\times3$ 的格子點（9 個點，上下左右相鄰的連邊）。有沒有歐拉路徑？最少要幾筆才能畫完所有邊？
+== 沒有,2
+?? 歐拉路徑,最少幾筆
+---
+四個角度數 2、中心 4、四個邊中點度數 3。奇度點有 4 個，一筆畫不完；每一筆最多「用掉」2 個奇度點，所以至少 2 筆。
+
+@q uf1-23 | ds-unionfind#1 | 2 | 追蹤
+Union by rank（rank 一樣時第二個根接到第一個下面）＋路徑壓縮。1～5 依序 UNION(1,2)、(3,4)、(4,5)、(2,5)。最後 parent[1..5]？
+== 1,1,1,3,3
+---
+(1,2)：2 接到 1，rank(1)=1。(3,4)：4 接到 3。(4,5)：根 3 的 rank 1 > 5 的 0，5 接到 3。(2,5)：兩個根 1、3 rank 都是 1，3 接到 1，rank(1)=2。FIND(5) 只走一步到 3，路徑壓縮沒有改到 4、5。
+
+@q uf2-23 | ds-unionfind#2 | 2 | 比較
+Which of the following statements about $\alpha(n)$ and $\lg^*n$ are correct?
+?? 複選
+[x] $\alpha(n)$ grows even more slowly than $\lg^*n$.
+[ ] $\lg^*n$ grows more slowly than $\alpha(n)$.
+[ ] For practical $n$, $\alpha(n)$ can reach about 20.
+[ ] $\lg^*n$ grows about as fast as $\lg\lg n$.
+[ ] The $O(m\lg^*n)$ bound is tighter than the $O(m\,\alpha(n))$ bound.
+---
+兩者都是「幾乎常數」，但「$\alpha(n)$ 比 $\lg^*n$ 還慢」；實際的 $n$ 中 $\lg^*n\le5$、$\alpha(n)\le4$，到不了 20。$\lg^*n$ 比 $\lg\lg n$ 慢得多。既然 $\alpha$ 比較小，$O(m\,\alpha(n))$ 才是比較緊的界。
+
+@q uf3-23 | ds-unionfind#3 | 1 | 計算
+Kruskal 處理 4 個點的邊（已排序）：(2,3,1)、(1,4,2)、(3,4,3)、(1,2,4)、(1,3,5)。選出的邊總權重？
+== 6
+---
+2–3、1–4、3–4 都把不同組接起來，已經 3 條邊，後面兩條不用看。$1+2+3$。
+
+@q uf3-24 | ds-unionfind#3 | 1 | 計算
+8 個點，依序加入邊 (1,2)、(3,4)、(2,3)、(5,6)、(7,8)、(6,7)。最後有幾個連通塊？
+== 2
+---
+{1,2,3,4} 和 {5,6,7,8}。每次真正合併就少一塊：8 塊經過 6 次合併剩 2 塊。
+
+
+@q bt3-24 | ds-btree#3 | 2 | 計算
+$10^9$ 筆資料，B+ 樹每個葉子放 128 筆、每個內部節點最多 256 個孩子（都填滿）。從根到葉子共幾層？
+== 4
+---
+葉子約 $7.8\times10^6$ 個；上一層 $\lceil7812500/256\rceil=30518$；再上一層 120；再上一層 1（根）。根和第二層常駐記憶體時，查一筆只要 2 次磁碟讀取。
+
+
+@q gr5-23 | ds-graph#5 | 2 | 情境
+A build system draws "module $X$ depends on module $Y$" as an edge $X\to Y$. Some modules turn out to depend on one another, so no build order can be chosen for them. Which of the following statements are correct?
+[x] Every SCC with at least 2 vertices is a cluster of mutually dependent modules.
+[x] After contracting each SCC to a single vertex, the remaining graph has no cycle.
+[ ] Building any one module of such a cluster first always works.
+[ ] Deleting all dependencies is the only fix.
+[ ] BFS shortest paths reveal a valid build order.
+---
+點數至少 2 的 SCC 就是循環依賴的模組群，「at least 2 vertices」對。縮點後的圖一定沒有環，所以「有環的部分整群處理、其他照拓撲順序」成為可能，「no cycle」對。群裡的模組互相依賴，先建哪一個都缺東西，「any one … first」錯；只要處理環裡的依賴，不必刪掉全部，「only fix」錯；BFS 最短路徑和建置順序無關。
+

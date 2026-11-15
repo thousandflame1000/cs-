@@ -34,7 +34,7 @@ function viewCards() {
   const due = Learn.cardDue(today).length, newN = Math.min(Learn.newLeft(), Learn.newCards().length), learned = all.filter(c => srs[c.id]).length;
   main().innerHTML = `
   ${due + newN ? `<section class="feed-hero"><div class="fh-ic" aria-hidden="true">🃏</div><h2>今日卡片</h2><div class="fh-sub">${due ? `快忘的 ${due} 張` : ''}${due && newN ? ' · ' : ''}${newN ? `新的 ${newN} 張` : ''}</div><button class="go-start" id="cToday">▶ 開始</button></section>`
-    : `<section class="feed-hero"><div class="fh-ic" aria-hidden="true">✅</div><h2>今天的卡片清空了</h2><button class="go-start" id="cTf">▶ 陷阱判斷</button></section>`}
+    : `<section class="feed-hero"><div class="fh-ic" aria-hidden="true"></div><h2>今天的卡片清空了</h2><button class="go-start" id="cTf">▶ 陷阱判斷</button></section>`}
   <details class="self-pick"><summary>自己挑</summary>
   <section class="kpis kpis3">
     <div class="kpi"><span class="k">${due}</span><span class="l">到期</span></div>
@@ -59,7 +59,7 @@ function renderCardItem() {
   <header class="page-head slim"><div class="eyebrow">${s.i + 1} / ${s.list.length}</div><div class="progress"><i style="width:${s.i / s.list.length * 100}%"></i></div></header>
   <section class="card fcard k-${c.kind}" style="--sc:var(--s-${c.subject})">
     <div class="q-meta"><span class="chip sm" style="--sc:var(--s-${c.subject})"><span class="sdot"></span>${esc(l ? l.title : c.ch)}</span></div>
-    <div class="f-front prose"><div class="f-kind"><span class="f-kind-ic" aria-hidden="true">${({ key: '🎯', tf: '⚖️', recall: '💭' })[c.kind] || '🃏'}</span>${({ key: '考點：想一下答案再翻面', tf: '對還是錯？', recall: '先在心裡講一遍，再翻面' })[c.kind] || ''}</div><div class="f-q">${md(c.front)}</div></div>
+    <div class="f-front prose"><div class="f-kind"><span class="f-kind-ic" aria-hidden="true">${({ key: '', tf: '', recall: '' })[c.kind] || '🃏'}</span>${({ key: '考點：想一下答案再翻面', tf: '對還是錯？', recall: '先在心裡講一遍，再翻面' })[c.kind] || ''}</div><div class="f-q">${md(c.front)}</div></div>
     <div id="fAct">${c.kind === 'tf' ? `<div class="tf-btns"><button class="btn tf no" data-tf="0">✗ <kbd>←</kbd></button><button class="btn tf yes" data-tf="1">✓ <kbd>→</kbd></button></div>` : `<div class="row center"><button class="btn primary" id="flip">翻面 <kbd>空白</kbd></button></div>`}</div>
     <div id="fBack"></div>
   </section>
@@ -69,7 +69,7 @@ function renderCardItem() {
   $('#cQuit').onclick = () => { s.list = s.list.slice(0, s.i); route(); };
 }
 function backHtml(c) {
-  const l = LESSON[c.ch], pic = l && l.intuit ? `<button class="btn sm ghost intu-btn" data-intu="${c.ch}">📖 這章圖解</button>` : '';
+  const l = LESSON[c.ch], pic = l && l.intuit ? `<button class="btn sm ghost intu-btn" data-intu="${c.ch}">這章圖解</button>` : '';
   return `${c.back ? `<div class="prose f-b">${md(c.back)}</div>` : ''}<div class="f-more">${pic}<a class="small muted" href="#${c.ch}">${esc(l ? l.title : c.ch)}</a></div>`;
 }
 /* 任何地方都能叫出某章的「先懂直覺」圖解 */
@@ -77,7 +77,7 @@ function showIntu(ch) {
   const l = LESSON[ch]; if (!l || !l.intuit) return;
   const w = h('div', { class: 'modal-wrap intu-wrap' });
   w.innerHTML = `<div class="modal intu-sheet"><div class="card-h"><h2>${esc(l.title.split(/[：（]/)[0])}</h2><button class="btn ghost" data-x>✕</button></div><div class="prose">${md(l.intuit)}</div></div>`;
-  document.body.appendChild(w);
+  document.body.appendChild(w); if (typeof intuLabels === 'function') intuLabels($('.prose', w));
   const close = () => { w.remove(); document.removeEventListener('keydown', esc1, true); };
   const esc1 = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
   document.addEventListener('keydown', esc1, true);
@@ -92,7 +92,16 @@ function cardTF(pick) {
   const s = CardSess; if (s.state !== 'front') return; s.state = 'back'; const c = s.list[s.i], ok = pick === c.ans; s.pick = pick;
   $$('[data-tf]').forEach(b => { b.disabled = true; if ((b.dataset.tf === '1') === c.ans) b.classList.add('right'); else if ((b.dataset.tf === '1') === pick) b.classList.add('wrong'); });
   const fc = $('.fcard'); if (fc) fc.classList.add('flipped');
-  $('#fBack').innerHTML = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${ok ? '✅' : '❌'}</span><b>${ok ? '答對了' : '答錯了'}：這句是「${c.ans ? '對' : '錯'}」的</b></div></div>${backHtml(c)}${rateBtns(c, ok ? 3 : 1)}`;
+  const verdict = `<div class="fb ${ok ? 'good' : 'bad'}"><div class="fb-top"><span class="fb-ic" aria-hidden="true">${ok ? '' : ''}</span><b>${ok ? '答對了' : '答錯了'}：這句是「${c.ans ? '對' : '錯'}」的</b></div></div>`;
+  if (!c.back) { $('#fBack').innerHTML = `${verdict}${backHtml(c)}${rateBtns(c, ok ? 3 : 1)}`; wireRate(ok ? 3 : 1); return; }
+  // 先追問為什麼（elaborative interrogation）：說得出理由才算懂，說不出來的那一步就是要補的
+  s.state = 'why';
+  $('#fBack').innerHTML = `${verdict}<div class="why-ask"><div class="why-q">${ICON('chat')}<b>為什麼${c.ans ? '對' : '錯'}？</b><span class="muted small">先用一句話講出理由${c.ans ? '' : '，或舉一個反例'}，再看</span></div><div class="row end"><button class="btn primary" id="whyGo">講好了，看理由 <kbd>空白</kbd></button></div></div>`;
+  $('#whyGo').onclick = () => cardWhy(ok);
+}
+function cardWhy(ok) {
+  const s = CardSess; if (!s || s.state !== 'why') return; s.state = 'back'; const c = s.list[s.i];
+  const w = $('.why-ask'); if (w) w.outerHTML = `<div class="why-self"><span class="muted small">你的理由跟下面一樣嗎？不一樣就按「忘了／困難」</span></div>${backHtml(c)}${rateBtns(c, ok ? 3 : 1)}`;
   wireRate(ok ? 3 : 1);
 }
 function cardFlip() {
@@ -105,7 +114,7 @@ function cardRate(g) {
   const s = CardSess; if (s.state !== 'back') return; s.state = 'done'; const c = s.list[s.i], isNew = !Learn.card(c.id);
   Learn.review(c.id, g); const L = S.day(); L.cards = (L.cards || 0) + 1; if (isNew) L.newCards = (L.newCards || 0) + 1; S.save();
   const ok = c.kind === 'tf' ? s.pick === c.ans : g > 1; s.res.push({ id: c.id, g, ok });
-  s.combo = ok ? (s.combo || 0) + 1 : 0; if (s.combo >= 3 && typeof Rewards !== 'undefined') Rewards.float('🔥 ' + s.combo + ' 連擊', 'combo');
+  s.combo = ok ? (s.combo || 0) + 1 : 0; if (s.combo >= 3 && typeof Rewards !== 'undefined') Rewards.float('' + s.combo + ' 連擊', 'combo');
   if (g === 1 && (s.requeue[c.id] || 0) < 2) { s.requeue[c.id] = (s.requeue[c.id] || 0) + 1; s.list.splice(Math.min(s.list.length, s.i + 6), 0, c); }
   s.i++; route();
 }
@@ -122,6 +131,7 @@ document.addEventListener('keydown', e => {
   if (!CardSess || (location.hash.slice(1) || '') !== 'cards' || /INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) return;
   const s = CardSess, c = s.list[s.i]; if (!c) return;
   if (s.state === 'front') { if (c.kind === 'tf' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); cardTF(e.key === 'ArrowRight'); } else if (c.kind !== 'tf' && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); cardFlip(); } }
+  else if (s.state === 'why') { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); const b = $('#whyGo'); if (b) b.click(); } }
   else if (s.state === 'back') { if (/^[1-4]$/.test(e.key)) { e.preventDefault(); cardRate(+e.key); } else if ((e.key === ' ' || e.key === 'Enter') && s.def) { e.preventDefault(); cardRate(s.def); } }
 });
 
@@ -156,12 +166,13 @@ function viewStats() {
   <header class="page-head"><h1>儀表板</h1></header>
   ${Personal.status() ? `<p class="muted small">${Personal.status()}</p>` : ''}
   <section class="kpis kpis3">
-    <div class="kpi"><span class="k">${ents.length ? pct(fc.now) : '—'}</span><span class="l">現在記得</span></div>
-    <div class="kpi"><span class="k ${fc.n >= 10 && fc.atExam < .6 ? 'bad-t' : ''}">${fc.n >= 10 ? pct(fc.atExam) : '—'}</span><span class="l">考試日記得</span></div>
+    <div class="kpi"><span class="k">${ents.length ? pct(fc.now) : '—'}</span><span class="l">目前記憶估計</span></div>
+    <div class="kpi"><span class="k ${fc.n >= 10 && fc.atExam < .6 ? 'bad-t' : ''}">${fc.n >= 10 ? pct(fc.atExam) : '—'}</span><span class="l">考試日記憶估計</span></div>
     <div class="kpi"><span class="k">${fc.due}</span><span class="l">今天到期</span></div>
   </section>
   ${pair(curve, calib)}
-  <section class="card"><div class="card-h"><h2>章節掌握度</h2></div>
+  <p class="muted small">記憶與掌握度依練習及自評估算。考試日記憶估計假設從此停止複習。</p>
+  <section class="card"><div class="card-h"><h2>章節掌握度估計</h2></div>
     <div class="mgrid">${DATA.subjects.map(sb => `<div class="mrow"><span class="ms" style="--sc:var(--s-${sb.id})"><span class="sdot"></span>${esc(sb.short)}</span>${DATA.lessons.filter(l => l.subject === sb.id).map(l => { const m = Learn.mastery(l.id), n = ((S.st.elo || {})[l.id] || {}).n || 0; const lv = m == null ? 'na' : m < .5 ? 'm0' : m < .7 ? 'm1' : m < .85 ? 'm2' : 'm3'; return `<button class="mc ${lv}" data-adapt="${l.id}" title="${esc(l.title)}｜${m == null ? '還沒做題' : pct(m) + '（' + n + ' 題）'}"><span>${esc(l.title.split(/[：、，（ ]/)[0].slice(0, 6))}</span><b>${m == null ? '' : Math.round(m * 100)}</b></button>`; }).join('')}</div>`).join('')}</div>
   </section>
   ${pair(causeC, daysC)}`;
@@ -172,7 +183,7 @@ function viewStats() {
 function pretestHtml(l) {
   const ls = S.st.lessons[l.id] || {}; if (ls.read || ls.pre) return '';
   const n = QBANK.all().filter(q => q.ch === l.id && q.type !== 'essay' && q.src !== 'agent').length; if (n < 2) return '';
-  return `<div class="pretest row"><button class="btn" id="btnPre">🎯 讀前先猜 3 題</button></div>`;
+  return `<div class="pretest row"><button class="btn" id="btnPre">課前測驗 3 題</button></div>`;
 }
 function wirePretest(l) {
   const b = $('#btnPre'); if (!b) return;

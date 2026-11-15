@@ -163,6 +163,23 @@ const Bridge = {
       CloudAgent.process(clean).catch(e => { const r = S.st.msgs.find(x => x.id === clean.id); if (r && !(e && e.code === 'cancelled')) { r.queued = true; S.save(); } });
     } else throw new Error('offline');
   },
+  /* 手寫板或拍照的作答：圖片存進 bridge/work/，再送一則 type: work 給 Agent 批改（電腦版：start.bat 或授權資料夾） */
+  async sendWork(blob, ctx) {
+    const id = uid('wk').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 60);
+    const type = blob.type === 'image/jpeg' ? 'image/jpeg' : 'image/png', ext = type === 'image/jpeg' ? 'jpg' : 'png';
+    let file = '';
+    if (this.mode === 'http') {
+      const data = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(blob); });
+      const r = await this.api('work', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, type, data }) });
+      if (!r.ok) throw new Error('server ' + r.status);
+      file = (await r.json()).file;
+    } else if (this.mode === 'fs') {
+      const d = await this.dir.getDirectoryHandle('work', { create: true });
+      const fh = await d.getFileHandle(id + '.' + ext, { create: true }); const w = await fh.createWritable(); await w.write(blob); await w.close();
+      file = 'work/' + id + '.' + ext;
+    } else throw new Error(this.mode === 'cloud' ? 'cloud' : 'offline');
+    return this.send({ type: 'work', text: '手寫作答（圖片：' + file + '）', ctx: Object.assign({}, ctx, { file }) });
+  },
   async flushQueued() {
     for (const m of S.st.msgs) if (m.dir === 'out' && m.queued) { try { await this._deliver(m); m.queued = false; } catch (e) { break; } }
     S.save();
@@ -291,7 +308,7 @@ const Bridge = {
     } catch (e) { /* retry next change */ }
   },
   async maybeRestore() {
-    const fresh = !Object.keys(S.st.answers).length && !Object.keys(S.st.log).length;
+    const fresh = !Object.keys(S.st.answers).length && !Object.keys(S.st.log).length && !S.st.papers114.runs.length && !S.st.practiceDraft.session;
     if (!fresh) return;
     try {
       let txt = '';
@@ -299,7 +316,7 @@ const Bridge = {
       else if (this.mode === 'fs') txt = await this.fsRead('state.json');
       if (txt && txt.trim().startsWith('{')) {
         const st = JSON.parse(txt);
-        if (st && st.v === 1) { S.st = Object.assign(defaultState(), st); S.saveNow(); QBANK.build(); toast('已從 bridge/state.json 還原進度', 'good'); }
+        if (st && st.v === 1) { Sync.replace(st); toast('已從 bridge/state.json 還原進度', 'good'); }
       }
     } catch (e) { /* ignore */ }
   },
@@ -394,5 +411,11 @@ function buildProgress() {
     rewards: (() => { try { const i = Rewards.info(), r = i.r; return { level: i.lv, title: i.title, xp: i.xp, coins: i.coins, freezes: r.freezes, unopenedChests: r.chests.length, achievements: Object.keys(r.ach).length + '/' + ACH.length, frozenDays: Object.keys(st.log).filter(d => st.log[d].frozen), recentRedeem: r.redeem.slice(-5).map(x => ({ name: x.name, price: x.price, date: x.ts ? D.fmt(new Date(x.ts)) : null })), agentBonusToday: (r.agent || []).filter(x => x.ts && D.fmt(new Date(x.ts)) === today).reduce((a, x) => a + x.coins, 0) }; } catch (e) { return null; } })(),
     habits: { studyStart: st.settings.studyStart || null, commitToday: (st.log[today] || {}).commit || st.settings.commitTime || null, stake: st.settings.stake || null, minModeToday: !!(st.log[today] || {}).minMode, missedYesterday: S.planDay() > 1 && !((st.log[D.add(today, -1)] || {}).checkin), autopilot: (() => { try { const l = Auto.list(); return { done: l.filter(x => x.done).length, total: l.length, next: (l.find(x => !x.done && !x.skipped) || {}).title || null, skipped: l.filter(x => x.skipped).map(x => x.title) }; } catch (e) { return null; } })(), pace: (() => { try { return Auto.pace(); } catch (e) { return null; } })() },
     forecast: Bridge.forecast(),
+    kp: (() => { try {
+      const O = KP.ORDER, L = O.filter(KP.learned), nx = KP.current(), td = KP.todayList(), y = KP.learnedOn(D.add(today, -1));
+      const stuck = O.filter(k => !KP.learned(k) && (st.kp || {})[k] && KP.prog(k).m >= 3 && KP.prog(k).acc < .6).map(k => ({ id: k, title: KP.title(k), acc: +KP.prog(k).acc.toFixed(2) }));
+      const left = O.filter(k => !KP.learned(k)).reduce((a, k) => a + ((KP.N[k] || {}).mins || 30), 0), per = Math.round((st.settings.dailyMinutes || 360) * .6);
+      return { total: O.length, learned: L.length, next: nx ? { id: nx, title: KP.title(nx) } : null, today: td.map(k => ({ id: k, title: KP.title(k), done: KP.learned(k) })), yesterday: y.map(k => ({ id: k, title: KP.title(k) })), stuck, daysToFinish: per ? Math.ceil(left / per) : null };
+    } catch (e) { return null; } })(),
   };
 }

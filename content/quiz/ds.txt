@@ -82,10 +82,10 @@ $z_i$ 與 $z_j$ 被比較 ⇔ $\{z_i,\dots,z_j\}$ 中第一個被選為 pivot �
 [ ] Fibonacci heap 的 Extract-Min 最壞情況為 $O(\lg n)$
 [x] Fibonacci heap 中度數為 $k$ 的節點，其子樹至少有 $F_{k+2}$ 個節點
 [x] Leftist heap 的最右路徑長度至多 $\lfloor\lg(n+1)\rfloor$
-[ ] 用 binary heap 實作 Dijkstra 在稠密圖上（$E=\Theta(V^2)$）比用陣列快
+[ ] Binomial heap 的 Insert 最壞情況為 $O(1)$
 [x] Binomial heap 的 Union 類似二進位加法
 ---
-B 錯：$O(\lg n)$ 是攤銷界，剛插入 $n$ 個元素後第一次 Extract-Min 要 consolidate $n$ 棵樹。E 錯：binary heap 為 $O(E\lg V)=O(V^2\lg V)$，陣列版 $O(V^2)$ 較快。C 是最大度數 $O(\lg n)$ 的關鍵。
+B 錯：$O(\lg n)$ 是攤銷界，剛插入 $n$ 個元素後第一次 Extract-Min 要 consolidate $n$ 棵樹。E 錯：最壞要一路「進位」合併，是 $O(\lg n)$；攤銷才是 $O(1)$。C 是最大度數 $O(\lg n)$ 的關鍵。
 
 @q ds-12 | ds-heap | 3
 設計一個資料結構，支援 Insert、Delete-Min、Delete-Max，每個操作最壞 $O(\lg n)$，Find-Min 與 Find-Max 為 $O(1)$。寫出結構、每個操作的做法與時間分析。
@@ -120,7 +120,7 @@ $N(h)=N(h-1)+N(h-2)+1$，$N(0)=1,N(1)=2$：2→4→7→12→**20**。也等於 $
 [ ] 任何紅黑樹都是 AVL 樹
 [x] 紅黑樹插入的修正最多 2 次旋轉；刪除最多 3 次旋轉
 [ ] AVL 樹刪除一個節點後最多只需要一次（單或雙）旋轉
-[x] 紅黑樹中，從某節點出發到葉子的最長路徑不超過最短路徑的兩倍
+[x] 紅黑樹中，從某節點出發到葉子的最長路徑，不超過最短的那條的兩倍
 [x] 有 $n$ 個內部節點的紅黑樹，高度至多 $2\lg(n+1)$
 ---
 B 錯：紅黑樹允許左右子樹高度差到接近兩倍。D 錯：AVL 刪除後旋轉可能讓子樹變矮，失衡往上傳，最多 $O(\lg n)$ 次旋轉；插入才保證一次。A 的構造：依「高度」決定顏色，讓每個節點的黑高度一致。

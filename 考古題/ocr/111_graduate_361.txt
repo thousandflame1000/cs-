@@ -1,0 +1,315 @@
+=== PAGE p-1.pgm
+AAR: 361 AUueRrASR 111] SH RRALHBALFRRA
+AB: RSME KCA) MAR: 361
+1
+
+       
+                  
+    
+   
+   
+   
+   
+   
+   
+   
+   
+   
+    
+      
+   
+   
+ 
+      
+   
+   
+   
+   
+   
+   
+   
+   
+   
+      
+    
+
+ 
+
+CEES WA BREESE HLMMERE LS Ctra)
+
+. For each of the following algorithms in the next five problems, what is the tightest asymptotic upper bound
+for its runtime complexity for n numbers? Please use the following table of (A)-(E) choices when answering.
+
+(A) | (B) (C)_ | @) (E)
+O(1) | Olgn) | O(n) | O(nlgn) | O(n?)
+
+(3 points) Selection sort: expected time?
+. (3 points) Merge sort: expected time?
+. (3 points) MAX-HEAPIFY for a max-heap: expected time?
+. (3 points) Quick sort: worst-case time?
+. (3 points) Bucket sort when there are @(n) buckets: expected time?
+
+. (5 points) Which of the following is NOT an in-place sorting algorithm (in their standard implementations)?
+(A) bubble sort
+
+(B) insertion sort
+
+(C) merge sort
+
+(D) heap sort
+
+(E) all choices are in-place sorting algorithms
+
+. (5 points) In a maz-heap stored in an array, after these 6 numbers have been inserted in this exact sequence:
+5, 4, 2, 6, 1, 3, what is the value of the node at index 2 (with the root being the node at index 1)?
+
+(A) 1
+(B) 2
+(C) 4
+(D) 5
+
+(E) none of the other choices
+
+. (5 points) Following the previous problem, what is the value of the left child of the node with value 3?
+(A) 1
+
+(B) 2
+
+(C) 4
+
+(D) 5
+
+(E) none of the other choices
+
+9. (5 points) Consider an array of 8 elements being sorted using quicksort. It has just finished the first pass of
+partitioning and pivot swapping, thus changing the original array into the following array:
+
+[7, 11, 16, 10, 17, 1, 18, 30]
+How many elements could have been the pivot?
+(A) 1
+(B) 2
+(C) 3
+(D) 4
+(E) none of the other choices
+=== PAGE p-2.pgm
+: 361 AUSePrAS 111] QR Gite sean
+> Ft SHR BEA) S43: 361
+1 » Ogee 7x
+
+10. (5 points) Consider an integer array A of size n > 0 with elements A[l],..., Alm], where the first p elements
+are positive and the other (n ~ p) elements are negative. The following algorithm calculates p correctly by
+calling COMPUTE-P(A,n). What loop invariant is maintained for the while loop of the algorithm?
+
+ComputTeE-P(A, len)
+
+1 if A[l] <0 return 0
+2 left = l,right = len
+3 while left < right
+
+4 m= ceiling (Jef right ae ht)
+5 if A[m] >0
+
+6 left =m
+
+7 else
+
+8 right =m—1
+
+9 return left
+
+(A) left+1<p< right
+
+(B) left +1<p<right—1
+(C) left <p < right
+
+(D) left< p< right —1
+
+(E) none of the other choices
+
+11. (5 points) Consider a string of length n, e.g., cbaabcba. We want to add the smallest number of characters
+to the front of the string to make it a palindrome, e.g., abcbaabcba. This problem can be solved by first
+concatenating the string with its inverse with a delimiter #, e.g. cbaabcba#abcbaabc. Then, run the pre-
+processing routine of the Knuth-Morris-Pratt algorithm on the new string sosi--- Sn of length (2n + 1) to
+get a failure function f,(j), which computes the length of the longest prefix of the string sos1...s; that
+is also a suffix. After running the pre-processing algorithm, how can we calculate the smallest number of
+characters that should be added to the front of the original string to make a palindrome?
+
+(A) n—- fs(n-1) +1
+
+(B) n— fs(n)
+(C) n— max (fs(9))
+(D) n— | max, (fs(9))
+
+(E) none of the other choices
+12. (5 points) Which of the following statement has been proved to be true?
+
+(A) An NP problem of size n must take more than poly(n) time to solve.
+(B) Any NP problem is polnomial-reducible to any NP-complete problem.
+(C) Any NP-complete problem is polnomial-reducible to any NP problem.
+
+(D) If an NP-complete problem can be solved by an approximation algorithm with ratio 2, any other
+NP-complete problem can also be solved by an approximation algorithm with a constant ratio.
+
+(E) none of the other choices
+
+13. (5 points) Consider a hash table with f(n) entries with a hash function that can uniformly dispatch items
+to those entries. Which property below ensures that a successful search can be done in O(1)?
+
+(A) f(m) = O(n)
+(B) f(r) = O(n)
+(C) Fim) = Q( vn)
+(D) f(r) = Qn)
+
+(E) none of the other choices
+
+HRA
+=== PAGE p-3.pgm
+: 361 BUSOre 111 QR Gt HAF RRS
+PARRA we:
+
+: x 4 go S
+
+14. (5 points) Consider a red-black tree with n internal nodes, where n is even. At most how many of them can
+be a black node with one red child?
+
+(A) F
+(B) n
+(C) [loga(n+)J-1
+(D) Loge(n + 1)J
+(E) none of the other choices
+15. (5 points) In the red-black tree with 26 nodes that reaches the solution of the problem above, what is the
+maximum height of the tree? A tree with one node is assumed to have height 1.
+(A) 5
+(B) 6
+(C) 7
+(D) 8
+(E) 9
+
+16. (5 points) Dynamic programming can be used to solve the matrix-chain multiplication problem. Suppose
+we hope to compute the matrix product A;A9...Ag with the matrix dimensions as follows.
+
+matrix Ay Ao Ag Ag Ags Ag
+dimension 30x35 85x15 15x5 5x10 10x20 20x25
+
+Let mfi, j] be the minimum number of scalar multiplications needed to compute the matrix A;Aj,1...A;.
+What is m[2, 5]?
+(A) 4375
+(B) 7125
+(C) 5375
+(D) 8500
+(E) none of the other choices
+17. (5 points) What is the time complexity of finding the minimum number of scalar multiplications needed for
+AiA2...An using dynamic programming?
+(A) O(n?*)
+(B) O(n’)
+(C) O(n?)
+(D) O(n)
+(E) none of the other choices
+18. (5 points) When using Dijkstra’s algorithm to solve the single-source shortest problem for a graph having
+V vertices and & edges, which is INCORRECT?
+(A) The search principle is breadth-first.
+(B) It is a greedy algorithm.
+(C) When using an array to implement the min-priority queue, the time complexity is O(V?).
+
+(D) For a dense graph where E = @(V?), the algorithm can run in O(V?) when using the binary min-heap
+to implement the min-priority queue.
+
+(E) none of the other choices
+
+Lt
+
+361
+R
+=== PAGE p-4.pgm
+AAR :
+
+19. (5 points) Consider the following undirected
+
+20.
+
+21.
+
+22.
+
+361 HUsRAS 11] #4 R Gt eewg
+SSR RH (A)
+
+#
+
+graph G. Let T be the minimum spanning tree (MST) of the
+graph. Which is INCORRECT?
+
+ 
+
+(A) Edge (Vi, V4) is in T
+(B) Edge (Vi, Vs) is in T
+
+(C) Let was be the weight of (V1, Vs). If we decrease wa,s by 16 (i.e., was becomes 5), then T remains to
+be the MST of G
+
+(D) Let we,3 be the weight of (V2, V3). If we decrease wa;3 by 10 (i.e., wag becomes 4), then T remains to
+be the MST of G
+
+(E) none of the other choices
+
+(5 points) Given a graph G = (V,E) with the adjacent matrix W = wi with W an n xn matrix. The
+following algorithm can compute the All-Pairs Shortest Path of G.
+FLOYD-WARSHALL (W)
+
+1 D=W
+
+2 fork =1,2,...,n
+
+3 for 7 = 1,2,...,n
+
+4 for j = 1,2,...,n
+
+5 di; = min(di;, dix + dj)
+
+What is the SPACE complexity of this algorithm?
+
+(A) O(n?)
+
+(B) O(n’)
+
+(C) O(n)
+
+(D) O(n‘)
+
+(E) none of the other choices
+
+(5 points) When using the Edmonds-Karp algorithm to find the maximum flow of a flow network G = (V, E),
+which is CORRECT?
+
+(A) The time complexity is O(E|f*|), where f* denotes 2 maximum flow in the network.
+(B) The algorithm uses the depth-first search principle.
+
+(C) The time complexity is O(V E).
+
+(D) The time complexity is O(V E|f*|).
+
+(E) none of the other choices
+
+(5 points) Consider a fractional knapsack problem of 6 items. The é-th item is worth v; dollars and weights
+w; pounds. .
+
+item z 12 3 4 5 6
+pondsw, 42 8 5 5 8
+dollorsu; 3 8 16 7 9 20
+
+Suppose that at most W=20 pounds can be carried in the knapsack. The sequence of picking the items is
+(A) 2, 6, 3,5 ,
+
+(B) 2, 6, 5,3
+
+(C) 2, 6, 5, 4,3
+
+(D) 6, 3, 5, 2,4
+
+(E) none of the other choices
+
+RRMA
+
+AAR: 361
+2% 4
+

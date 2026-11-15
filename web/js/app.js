@@ -15,7 +15,7 @@ const App = {
   card() {
     const http = Bridge.mode === 'http', local = Bridge.local !== false;
     const inst = this.standalone() ? '<p class="small good-t">✓ 已經是 App 了</p>'
-      : this.prompt ? '<div class="row"><button class="btn primary" id="appInst">📲 安裝到桌面</button></div>'
+      : this.prompt ? '<div class="row"><button class="btn primary" id="appInst">安裝到桌面</button></div>'
         : `<p class="muted small">${location.protocol === 'file:' ? '用 start.bat 打開時，網址列右側會出現「安裝」圖示。' : '瀏覽器選單 →「安裝應用程式」或「加到主畫面」。'}</p>`;
     const phone = Bridge.mode === 'cloud' ? ''
       : !http ? '<p class="muted small">先用 start.bat 打開網站，才能讓手機連進來。</p>'
@@ -31,7 +31,7 @@ const App = {
     const paint = j => {
       box.innerHTML = j && j.on && j.url
         ? `<div class="lan-on"><div class="lan-qr">${QR.svg(j.url, 180)}</div><div><p><b>手機連同一個 Wi-Fi，用相機掃這個 QR code。</b></p><p class="muted small">打開後選「加到主畫面」，就像 App 一樣。手機和電腦的進度會自動合併。</p><p class="muted small"><code>${esc(j.url)}</code></p><div class="row"><button class="btn" id="lanOff">關閉手機連線</button></div></div></div>`
-        : `<p class="muted small">打開後，同一個 Wi-Fi 的手機掃 QR code 就能用；只有掃過碼的手機能看到你的進度。第一次會跳出 Windows 防火牆詢問，請按「允許」。</p>${j && j.error ? `<p class="small bad-t">${esc(j.error)}</p>` : ''}<div class="row"><button class="btn primary" id="lanOn">📱 打開手機連線</button></div>`;
+        : `<p class="muted small">打開後，同一個 Wi-Fi 的手機掃 QR code 就能用；只有掃過碼的手機能看到你的進度。第一次會跳出 Windows 防火牆詢問，請按「允許」。</p>${j && j.error ? `<p class="small bad-t">${esc(j.error)}</p>` : ''}<div class="row"><button class="btn primary" id="lanOn">打開手機連線</button></div>`;
       const on = $('#lanOn'), off = $('#lanOff');
       if (on) on.onclick = async () => { on.disabled = true; on.textContent = '開啟中…'; paint(await this.lan(true)); };
       if (off) off.onclick = async () => { paint(await this.lan(false)); };

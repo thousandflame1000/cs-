@@ -1,0 +1,212 @@
+=== PAGE p-1.pgm
+WHR: 413 HoOeRAS 108 SRG ieee
+Aa: RRA) asa
+mR: 1 RARLHIK
+
+Note: NO partial score will be given for partially correct answer for subprobiems in each problem (or for a single problem without subproblems).
+
+Unless otherwise noted, only the final solution is needed.
+
+. 1. (10%) Let b, be the number of different permutations obtainable by passing the numbers 1, 2, 3, ..., n through a stack and deleting in all
+possible ways. (a) Give the recursive formula for b,.(b) Give the analytic formula for b,.
+(5%) Convert the expression "(a/(c*(b+d))})/(e-a)*c" into a postfix form.
+(10%) Draw the final min-heap tree after the following operations: insert 7, insert 4, insert 3, insert 1, delete min, insert 9, insert 2, insert 5,
+delete min, delete min.
+(8%) Describe how you can construct a heap of n keys with O(n) complexity. You can simply use n = 15 as an example to explain your
+idea. (You don’t need to prove the complexity.) .
+(20%) Quicksort is a fast and commonly used comparison-based sorting algorithm. Below you can find a version of quicksort algorithm in
+
+pseudo code format.
+
+QuicksortT(A, p, r)
+
+1 ifp<r
+
+9 q = Partirion(A,p,r)
+3 QuicksorT(A, p,q — 1)
+4 Quicksort(A,q+ 1,7)
+
+PARTITION(A, p, 1)
+a = Afr]
+7=p-l1
+for j =ptor-1
+if Ajj] <a
+a=t4+1-
+exchange A[?] with A[j]
+exchange A[i + 1] with Afr]
+returni+1 -
+
+(a) (6%) True or false:
+(1) The output of Quicksort() above is a non-increasing sorted sequence. (2%)
+(2) The Quicksort() above is a stable sorting algorithm. (2%)
+(3) The QuicksorT() above is an in-place sorting algorithm. (2%)
+(b) (4%) The given version of QuicksorT above cannot efficiently process the cases where in the input array there are a large number of
+repeated elements. Analyze the worst-case running time which occurs when all n keys in the input array A are identical. Please give
+it in big-O notation in terms of n. .
+(10%) To address the previously mentioned problematic case, we will now develop a new partition algorithm PaRITITIONTHREE() that
+separates the input keys into three groups, the ones that are smaller than, that are identical to, and that are larger than the pivot
+key x. The return values g1 and g2 represent the indices of the first and the last keys of the group that equals the pivot key,
+respectively. Fill the blanks (A), (B), (C) in PARITIONTHREE() below to complete the implementation, such that QUICKSORTTHREE() runs in
+
+O(n)-time when the input array has all n elements identical.
+
+ 
+
+jun
+=== PAGE p-2.pgm
+FE: A13 ALMA 108 SERGE eR
+Fa: FRABRRBRKA ER: 413
+Rd . RARZBQE
+
+QUICKSORTTHREE(A, p, r)
+
+1 ifp<r
+
+2 (q1,q2) = PARTITIONTHREE(A, p,r)
+3 QUICKSORTTHREE(A, p, g1 — 1)
+
+4 QUICKSORTTHREE(A, g2 + 1,7)
+
+PARTITION THREE(A, p, 1)
+1 2 = Afr]
+gl =p
+g2=r
+j=p
+while j < q2
+if A[j] <x
+exchange A[j] with A[g1]
+4 (A)
+j=ujtl
+10 elseif A[j] > x
+11 exchange A[j] with A[g2]
+12 4 {B)
+13 else
+14 #{(C)
+15 return (q1, q2)
+
+(13%) When implementing a hash table, one of the commonly used collision resolution methods is open addressing. Let k be the key,
+
+and m be the size of the hash table. Assume each table entry can hold one key.
+
+(a) (3%) The simplest open addressing method is called linear probing, where if a slot is already occupied, the following slots are
+“probed” sequentially. Assume an auxiliary hash function h’(k) = k mod m. Please give the hash function hk, i) of linear
+probing with the given auxiliary function, where i is the number of times the hash table has been probed with this key (and thus
+starting from 0). . ,
+
+(b) (5%) Linear probing is easy to implement but suffers from the problem of primary clustering. A more complex open addressing
+method which can mitigate this problem is double hashing, using a hash function in the form of Ak, i) = (hy (k) +
+ih2(k)) mod m, with two auxiliary hash functions hy(k) and h2(k). iis the number of times the hash table has been probed
+with key x, Assume two auxiliary hash functions hy(k) = k mod 16,h,(k) = 1+ (k mod 15), and m = 16. Show the final hash
+table content after inserting all of the following keys to an initially empty hash table in the given order: {16, 3, 35, 67, 51, 1, 15, 31,
+19, 17}.
+
+(c) (5%) Prof. Alpha proposes a different double hashing method, using two auxiliary hash functions h,(k) = k mod 16,h2(k) =
+
+2(k mod 8), respectively. Assume the table size m= 16. Use an example to briefly explain how Prof. Alpha’s method is
+problematic.
+
+(6%) True or false:
+(a) (2%) The Dijkstra's algorithm (single run) solves the single-source shortest path problem with positive, zero, or negative edge
+weights, if there is no negative cycle.
+(b) (2%) The Beliman-Ford algorithm (single run) solves the all-pairs shortest path problem with non-negative edge weights.
+(c) (2%) The Floyd-Warshall algorithm (single run) solves the all-pairs shortest path with positive, zero, or negative edge weights, even
+if there are negative cycles. .
+(8%) Given a directed graph G where vertex u (in G) has at least one path to any other vertex {in G), the following pseudocode is designed
+to output an acyclic graph. However, in Lines 8, 10, 11, and 14, each of A, B, C, and D should be 0, 1, or 2. Write down the correct values of
+A, B, C, and D so that the pseudocode can successfully output an acyclic graph.
+
+tik A
+
+ 
+=== PAGE p-3.pgm
+Ge: 413 AceOAS 108 S2R GLE SR
+
+Fa: We ewe RBA) MA + A13
+Bi 2k : 1 | KH4R2ZROF
+
+Cycle-Removal (G,u)
+Initialize S as a stack
+Label all vertices in G as Type-0
+Label u as Type-1
+S.push(u)
+while S is not empty
+v = the top vertex of S // Comment: not S.pop() here
+if v has a Type-A neighbor w in G
+Remove (v,w) from G
+else if v a Type-B neighbor w in G
+Label w as Type-C
+S.push (w)
+else
+Label v as Type-D
+S.pop()
+end if
+end while
+
+output G
+
+ 
+
+(10%) At 9am, 14 ships are leaving for the other side as shown below, where the English alphabets mean the types of those ships. For
+safety reasons, each ship can only stop at a pier having the same alphabet, and, if the routes of two ships cross each other, one ship needs
+
+to wait 15 minutes before leaving.
+
+JHNPPSSEPEASE
+
+river
+
+ship _[E] [F] [B] JE] [G]_[E] [cl] JA] [El] 1B] [DI] JA] [BI ID
+indexnumberr D1 2 3 4 5 6 7 8 9 10 11 12 13 14
+
+(a) (4%) Write down the maximum number of ships which can leave at 9am.
+(b) (6%) Following (a), write down the index numbers (between 1 and 14) of the ships which can leave at 9am.
+
+Lt a
+
+ 
+=== PAGE p-4.pgm
+we: 413 AceRAF 108 PRG LEM EERRM
+Ha: FHeRRRHEKA ER 413
+aR: 1 RARZBAR
+
+10. (10%) The goal of this problem is to transform the following sequence of shapes into another sequence of shapes so that the total cost is
+
+minimized.
+
+LOLA FO
+
+The rules of transformation are shown below. For example, if you do not replace anything, the total cost is6+3+2+6+24+6+2+6+3+
+2 = 38. If you replace the last two shapes (circle and triangle) by the rule #3, the total cost is6+3+2+6+2+6+2+4+6+4 = 37. Note that
+
+you can choose not to replace a shape if the total cost can be minimized. Also, a rule of transformation can be applied more than once.
+
+shape cost before rule of cost after
+cost transformation transformation transformation
+
+& 9g g
+9 ies
+(643)
+#2
+8
+(642) -H> ?
+5
+(342) (> ?
+#4
+8 7
+oo tL}?
+
+in
+(6+3+2)
+14
+(6+24+6)
+10
+(24642) tH ?
+
+(a) (4%) Write down the minimum total cost after transforming the given sequence.
+
+(b) (6%) Following (a), write down the applied rules of transformation from left of the sequence to right of the sequence.
+
+RRMERA
+
+ 
+

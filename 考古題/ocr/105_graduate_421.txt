@@ -1,0 +1,111 @@
+=== PAGE p-1.pgm
+MH: 421 國 立 臺灣 大 學 105 學 年 度 碩士 班 招生 考試 試題
+
+科目 : 數 學 HAR: 421
+fick: 4 共 之 頁 之 第 / 頁
+as
+
+※ 注意 : 請 於 試卷 內 之 「 非 選擇 題 作 答 區 」 作 答 , 並 應 註明 作答 之 題 號 。
+
+From Problem 1 to Problem 4, your answer will be considered correct only if all the true statements are
+
+selected.
+
+1. (5%) Let A,B € Myxn(F), where F = C or R. Which of the following statements are true?
+(a) tr(AB) = tr(BA)
+(b) tr(AB) = tr(A)er(®)
+(c) tr(B-1AB) = tr(A)
+(d) tr(A*) = (tr(A))*
+(e) tr(A+B) = tr(A) £tr(B)
+
+2. (5%) Let A,B € M,x,(F), where F = C or R. Which of the following statements are true?
+(a) det (AB) = det(BA)
+(b) det(AB) = det(A)det(B)
+(c) det(B7*AB) = det(A)
+(d) det(A*) = (det (A))*
+(ce) det(A + B) = det(A) + det(B)
+
+3. (5%) Which of the following statements are true?
+(a) IfA and B are invertible matrices, then the matrix C = A~1 + B™} is also invertible.
+(b) If. 及 is a rectangular matrix, then A = R'R is positive definite.
+(co Every orthogonal set is linearly independent.
+
+Ty, T; . , , 。 ,
+(d) T= ( 3 7), where T,, is a pXp matrix, Ty is a qXq matrix, and T,z isa pxq matrix. The
+
+set of eigenvalues of 了 is the union of the sets of eigenvalues of 五 1 and To.
+(e) If T:V > W is a linear transformation with V and W are vector spaces over a field 五 Then, ker(T) is a
+
+vector space.
+
+4, (10%) Let vectors x € R” be represented as x = (x1, Xz, ...,%»)". Which of the following sets is a subspace
+of R"?
+(@) (x E RT, x? = 07}
+Gb) fe ER" |x, =
+(c) (x € R"| S2, ax; = min;(a;)} for some known constants a & R.
+(d) {x € R"|xq; = x2;-1, Vi = 1,...,n/2}, where n is assumed to be even in this case.
+
+(e) {x € R"|x2i — X21-1 = LVi = 1,...,n/2}, where n is assumed to be even in this case.
+
+5. (5%) Let N be an nxn matrix over R or C such that N* = 0 for some integer k. Is I+-N invertible? If yes,
+find its inverse. If not, provide the reason why.
+
+6. (8%) Define an inner product in R? as (u,v) = sy, + 5 U2V2. What is the equation of the unit circle?
+
+7. (5%) Please find the eigenvectors of (J + 4)'°° given A= [ro ul
+
+LAG
+
+=== PAGE p-2.pgm
+題 號 : 421 國 立 臺 灣 大 學 105 學 年 度 碩士 班 招生 考試 試題
+科目 : 數 學 MRE 421
+
+Bik: 4 共 > 頁 之 第 2- 頁
+
+8. (10%) Please find the determinant of A.
+
+Lt x, X2 X3 ot Xn
+
+圖 xy 1+x, X3 人 Xn
+
+A= i H 1+x3 i
+xy X2 X3  T4X,
+
+9. (10%) Consider
+x +x, +L +x, <r,
+
+where x,20 for lsisn.When n=4 and r=8, the number of nonnegative integer solutions is
+
+10. (6%) The cycle decomposition of the permutation
+1234567 8
+26583174
+
+is
+
+11. (10%) The solution to the recurrence equation
+a,=2a,,+n
+
+with a=4 is a,=
+
+12. (10%) The generating function in partial fraction decomposition for the above recurrence equation is
+. (Note that expressions like
+x-8 9
+(x- 3y x-1
+
+are not partial fraction decompositions.)
+
+13. (6%) Let p(m) denote the number of partitions of m € Z"* . For example, the number of partitions of
+m=5 is p(5)=7:
+5,441, 342, 34141, 24241, 2414141, 141414141
+
+The generating function for { PO} ix 38
+
+14. (5%) A Boolean function fis self-dual if
+FX Xqoeee%q) = LOX 7X yy 7%) +
+
+There are self-dual Boolean functions of m variables.
+
+15. (5%) For any binary tree with » nodes and 7 internal nodes, the relation between n and iis si.
+
+試題 隨 卷 繳 回
+

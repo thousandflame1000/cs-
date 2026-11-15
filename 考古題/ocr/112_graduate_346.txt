@@ -1,0 +1,431 @@
+=== PAGE p-01.pgm
+題 號 : 346 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+科目 : 計算 機 結構 與 作業 系 統 (B》 FAR: 346
+fick: 2 HID 頁 之 第 [ 頁
+
+K 注意 : 請 用 28 鉛筆 作答 於 答案 卡 。 並 先 詳 閱 答案 卡 上 之 「 畫 記 說 明 >
+答題 注意 事項 / Instructions
+
+1) 考題 分 為 「 單 選 題 」 與 「 複 選 題 」, 各 題 配分 不 完全 相 同 , 分 別 標示 。
+There are two types of questions: Multiple Choices and Multiple Choices with at
+Least One Correction Choice --- each question has its individual score.
+
+2) BEM: 只 有 一 個 選項 為 正確 答案 。 不 倒 扣 。
+Multiple Choices: Only one among the four or five choices is the correct answer.
+No penalty for incorrect answer.
+
+3) MRM: SDH-MERALRSR  H-MEADMHD: BME A> AY
+題 零 分 。
+Multiple Choices with at Least One Correction Choice: At least one among the
+four or five choices is the correct answer. Each choice is graded individually. No
+penalty for incorrect selection. Zero point for not selecting any choice.
+=== PAGE p-02.pgm
+題 號 : 346 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+Ft: EMERY EA HB) HAR: 346
+節 次 : 2 共 2 頁 之 第 之 頁
+
+BEM: 只 有 一 個 選項 為 正確 答案 。 不 倒 扣 。
+Multiple Choices: Only one among the four or five choices is the correct answer. No
+penaity for incorrect answer.
+
+Q1 (pts) As shown below, the function "compute_distance" runs through a list of 2D
+points and computes the distance between each pair of them. Note that each point is
+
+represented by single precision float-point numbers. Please answer the following
+questions.
+
+void compute_distance(float x{], float y{], int N, float distancef]) {
+for (int i = 0; i< N; i++) {
+for (int j = 0; j <.N; j++) {
+float x_dist = xiJ- x[j];
+float y_dist = y[i] - y[j];
+distance[j + i * N] = sqrt(x_dist*x_dist + y_dist*y_dist);
+
+Let us observe the data access pattern first. For each iteration in the inner loop, the
+function loads 4 floating-point numbers and store 1 floating-point number. Assume
+N=1024, and the processor cache is too small to hold all the data points. The cache is
+configured with a write-back/write-allocate policy, with 32-bytes blocks. What would
+be the average cache miss rate?
+
+(A) Less than 1%.
+
+(B) Between 1% and 5%.
+(C) Between 5% and 10%.
+(D) Between 10% and 20%.
+(E) More than 20%.
+=== PAGE p-03.pgm
+題 號 : «346 國 立 臺灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+和 科目: 計算機 結構 與 作業 系 統 (B) 題 號 : 346
+Bick: 2 共 【〔 之 頁 之 第 多 頁
+
+Q2 (2pts) Following the previous question, let us calculate the arithmetic intensity,
+which is defined as the ratio between the number of executed operations and the number
+of bytes transferred between the processor and the memory. For the compute_distance
+
+function, we focus on floating-point operations only. What is the arithmetic intensity
+of this function?
+
+(A) Less than 0.35.
+
+(B) Between 0.35 and 0.7.
+(C) Between 0.7 and 1.
+(D) Between 1 and 2.
+
+(E) More than 2.
+
+Q3 (2pts) Following the previous question, suppose we make the processor large
+enough to store all the 2D points, so that all the x[] and y[] are already in the cache
+
+before the function is called. What is the arithmetic intensity of this function in thi
+case? ;
+
+(A) Less than 0.35.
+(B) Between 0.35 and 0.7.
+(C) Between 0.7 and 1.
+
+(D) Between 1 and 2.
+(E) More than 2.
+=== PAGE p-04.pgm
+題 號 : 346 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+科目 ; 對 自 機 結構 與 作業 人 系統 (B) MR: 346
+
+Wak:
+
+共 t>- 頁 之 第 4 頁
+
+04 (2pts) Suppose the compute_distance function above is executed on an Intel Core
+i7 960 processor. The roofline model for the processor is shown as the figure below.
+The processor has 4 cores, and the capacity of Level 1 data cache on each core is 32KB.
+Assume N=1024. Based on the roofline model, how long does it take to finish the
+function when the processor cache is too small to store all the data points?
+
+102.4 GF/s
+Single Precision
+
+4
+We 1/4 12 1
+Arithmetic intensity
+
+(A) Less than 1,000 seconds.
+
+(B) Between 1,000 and 10,000 seconds.
+
+(C) Between 10,000 and 100,000 seconds.
+(D) Between 100,000 and 1,000,000 seconds.
+(E) More than 1,000,000 seconds.
+
+Q5 (2pts) Following the previous question, if we wish to improve the performance,
+which of the following method is most effective?
+
+(A) Increase the associativity of the cache.
+(B) Increase the memory bandwidth.
+
+(C) Enable data prefetch.
+
+(D) Make the processor pipeline deeper
+(E) Enable multithreading.
+=== PAGE p-05.pgm
+題 號 : 346 國 立 臺灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+和 科目: 計算機 結構 與 作業 人 系統 (B) FAH: 346
+Hick: 2 共 > 頁 之 第 S 頁
+
+Q6 (6pts) Consider two hardware threads, Proc0 and Procl, that interact with a shared
+memory that maps addresses to values. Both memory locations, A and B, have an initial
+value of 0. x0 and x1 are CPU registers. Each of the hardware threads has a store buffer.
+The hardware threads support out-of-order execution. Assume the following code in
+two cases runs on Proc0 and Proc] concurrently. Which of the following is true about
+the final state of x0 and x1 after the code finishes executing?
+
+store #1, Ab store #1, [B]; |‘load x0, [A]; | load x1, [B]; | store ss [A]; —_ x0, [B];
+(A) In case 0, x0 on Proc0 and x1 on Procl can be either both 0 or 1.
+(B) In case 0, suppose the threads support total store order (TSO); x0 on Proc0 and x1
+on Procl can never be both 0.
+(C) In case 1, suppose the threads support TSO; x0 on Proc and x1 on Procl can be
+both 1.
+
+(D) In case 2, suppose the threads support TSO; x0 and xlon Procl can be 1 and 0,
+respectively.
+
+Q7 Gpts) Consider the following instruction sequence. Assume that the instructions
+are executed on a pipeline datapath with five stages.
+
+or x10, x3, x4
+Id x5, 8(x10)
+ld x4, 0(x2)
+add x5, x10, x5
+sd x5, 4(x10)
+
+Assume that the processor has neither implemented hazard detection nor forwarding.
+How many NOP instructions should be added to ensure the execution is correct?
+
+(A) 0
+(B) 3
+(C)5
+(D) 6
+(E)8
+=== PAGE p-06.pgm
+題 號 : 346 國 立 臺灣 大 學 112 學 年 度 碩士 班 招生 考試 試
+科目 : 計 算 機 結構 與 作業 系 統 (B》 * a 題 號 : 346
+HA: 2 #\> 頁 之 第 6 頁
+
+Q8 (Spts) Which of the following statement is true?
+
+(A) Introducing support of a new complex instruction will improve performance for all
+programs.
+
+(B) Reducing the number of registers in the ISA will decrease the instructions per
+program for all programs.
+
+(C) Introducing support for instructions with shorter lengths (e.g., 16-bit instructions in
+RISC-V) in the ISA will improve all programs’ performance.
+
+(D) Increasing cache associativity will result in an increase in cache hit time for all
+
+programs. :
+(E) Reducing cache block size will result in a reduction of capacity misses.
+
+MM: 至少 有 一 個 選項 為 正確 答案 。 每 一 個 選項 分 列 計 分 , 不 倒 扣 。 整 題 空白 ,
+則 該 題 零 分 。
+
+Multiple Choices with at Least One Correction Choice: At least one among the four
+or five choices is the correct answer. Each choice is graded individually. No penalty for
+incorrect selection. Zero point for not selecting any choice.
+
+Q9 (8pts) Modem CPU architectures provide nested page tables (NPTs) to support
+virtualization. The MMU hardware performs two-stage memory translation. In the first
+stage, it translates virtual addresses (VAs) using the virtual machine (VM)’s page tables
+(PTs) to intermediate physical addresses (IPAs). The VM’s PTs are specified in IPAs.
+In the second stage, the hardware translates the IPAs using the NPTs to physical
+addresses (PAs). All page tables are 4K bytes, and a page table entry is 8 bytes. All
+VAs and IPAs are 39 bits, and the PTs and NPTs include 2M or 4K byte mappings.
+Assume the TLB or cache is not implemented on the hardware. Considering both PTs
+and NPTs are enabled, which of the following could be the number of memory accesses
+taken for the hardware to perform the two-stage memory translation (e.g., VA ofa VM
+to a PA)?
+
+(A) 10
+(B) 11
+(C) 12
+@) 13
+
+=== PAGE p-07.pgm
+題 號 : 946 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+和 科目: 計算機 結構 與 作業 人 系統 (B) _ 題 號: 346
+節 次 : 2 共 |2 一 頁 之 第
+
+Q10 (8pts) Which of the following are possible values stored in the memory location
+A after the following sequence of instructions has been executed, each on a different
+processor? Assume each processor has its own cache, memory location A initially
+contains value 0.
+
+store #4, (A); load reg, (A); store #6, (A);
+load reg, (A); add reg, reg, #1; load reg, (A);
+add reg, reg, #4; store reg, (A); add reg, reg, reg;
+store reg, (A); load reg, (A); store reg, (A);
+add reg, reg, reg;
+store reg, (A);
+=== PAGE p-08.pgm
+題 號 : 346 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+
+科目 : 計算 機 結構 與 作業 系 統 (B) MAH: 346
+
+RR: 2 yr 頁 之 第 全 頁
+
+Q11 (8pts) Assume the system has the following properties:
+e The memory is byte-addressable, and memory accesses are to 1-byte words.
+‧ Addresses are 13 bits wide.
+
+e The cache is 4-way set associative, with 4-byte block size, and 8 sets.
+
+eer ee ee be
+bef fone lf [omwm [x [ [room [oem
+Ee ee
+PP [ower [mm [ne [x [ [om
+Pf few ff [ovo [of [rvom fe [ose
+ff me [= [Poe [Posen en
+ff [fms [nvm [> [owe [| oo |
+國 EE
+Ee cr
+
+Suppose a program running on the machine references a 1-byte word at address addr.
+Select the true statements.
+
+(A) Read from the addr:0x71A results in a cache hit. The return byte value is OxDB.
+(B) Read from the addr:0x16E8 results in a cache hit. The return byte value is 0x74.
+(C) Read from the addr: 0x178B results in a cache hit. The return byte value is OxFA.
+(D) Read from the address 0xA73 results in a cache miss.
+
+Q12 (Spts) Regarding allocating secondary storage space, select correct description(s).
+
+(A) Contiguous allocation suffers from the problem of external fragmentation more
+than linked allocation and indexed allocation.
+
+(B) Linked allocation is good if files are large and usually accessed randomly.
+
+(C) Indexed allocation is good if files are large and usually accessed sequentially.
+
+(D) File-allocation table (FAT) is one variation of linked allocation.
+
+(E) If a linked list is used for free-space management, although traversing the whole
+list is not efficient, traversing the whole list is not a frequent action of an operating
+system.
+
+RRA
+=== PAGE p-09.pgm
+題 號 : 346 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+科目 : 計 算 機 結構 與 作業 系 統 (B》 _ SABE 346
+fick: 2 ; #(D KR2BEA 頁
+
+Q13 (Spts) Regarding security, select correct description(s).
+
+(A) Recursively and continuously calling forkQ is a denial of service (DoS) attack.
+(B) A message authentication code (MAC) is computed by F(M, K), where F is a MAC-
+computation algorithm, M is a message, and K is a shared secret key. The message
+authentication code is able to verify the authenticity of a message sender.
+
+(C) The message authentication code above is able to verify that a message has not been
+modified.
+
+(D) The message authentication code above is able to protect against replay attacks.
+(E) A buffer overflow may cause a code-injection attack.
+
+Q14 (10pts) Consider two-level paging without virtual memory. Assume
+‧ Asystem uses a W-bit logical address space.
+e The page size is 2* bytes.
+e The size of an entry in the outer page table is 2Y bytes.
+‧ The size of an entry in the inner page table is 27 bytes.
+e We also assume that the size of each entry in each page table is long enough to
+store all information needed.
+Given the following (W, X, Y, Z), which can fit the outer page table into one page?
+
+(A) (W, X, Y, Z)=(16, 8, 6, 6).
+(B) (W, X, Y, Z) =(16, 12, 16, 8).
+(C) (W, X, Y, Z) = (32, 16, 8, 4).
+(D) (W, X, Y, Z) = (32, 24, 6, 10).
+(E) (W, X, Y, Z) = (64, 32, 20, 20).
+
+=== PAGE p-10.pgm
+題 號 : 346 國 立 臺灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+科目 : 二 寺 機 結構 與 作業 系 統 (B) MAH: 346
+
+fick: 2 共 | 二 頁 之 第 / 0 頁
+
+Q15 (10pts) Given 3 pages (P1, P2, P3) and 2 frames, the page reference has the
+following features:
+
+‧ The frames are initially empty.
+
+‧ There will be 4 page references.
+
+e The first page reference is P1.
+
+‧ At the time of a page reference, a page replacement algorithm only knows the
+
+probability of the page of the next page reference, and it does NOT know the
+
+exact page of the next page reference.
+
+‧ After a page reference of P1, the next page reference is P2 with 0.8 probability or
+P3 with 0.2 probability.
+
+e After a page reference of P2, the next page reference is P3 with 0.4 probability o or
+PI with 0.6 probability.
+
+‧ After a page reference of P3, the next page reference is P1 with 0.9 probability or
+P2 with 0.1 probability.
+
+‧ An optimal page replacement algorithm minimizes the expected number of page
+faults for the total 4 page references.
+
+Regarding the expected number of page faults of the optimal page replacement
+algorithm, select correct description(s).
+
+(A) E [ Number of page faults for the 2nd page reference ] = 1.
+(B) 0.275 <E { Number of page faults for the 3rd page reference ]< 0.325.
+(C) 0.300 < E [ Number of page faults for the 3rd page reference ]< 0.350.
+(D) 0.275 <E [ Number of page faults for the 4th page reference ] < 0.325.
+(E) 0.300 <E [ Number of page faults for the 4th page reference ] < 0.350.
+=== PAGE p-11.pgm
+題 號 : 346 國 立 臺灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+qe : FRE R & ACB) 題 號 : 346
+
+共 | 當 頁 之 第 〔| 頁
+|
+
+Q16 (10pts) Given 2 periodic processes in the following table:
+
+i Deadline | Processing (Burst)
+Process . Softness
+(msec) Time (msec)
+
+af
+
+The softness is a positive integer, meaning that 1 deadline needs to be met for any Si
+
+consecutive instances of Pi. For example:
+e IfSi= 1, then each instance needs to meet its deadline.
+e IfSi=2, then 1 deadline needs to be met for any 2 consecutive instances. (If an
+instance misses its deadline, then the next instance must meet its deadline.)
+Note that, if Si > 1, then Pi does not need all instances to be processed. The real-time
+scheduling problem has the following features:
+e For each i, Ci < Di < Ti.
+e The time of context switching and interrupt handling can be ignored.
+e The scheduling is preemptive.
+e The scheduling is based on dynamic priority assignment.
+e Ascheduling algorithm is optimal in that if a problem cannot be scheduled by the
+scheduling algorithm, then it cannot be scheduled by any other scheduling
+algorithm.
+
+Select correct description(s).
+
+(A) If S1 = S2 = 1 and (C1 / Ti) + (C2 / T2) > 1, then the problem must be non-
+schedulable.
+
+(B) If S1 =S2= 1 and (C1 /T1)+(C2/T2) <1, then the problem must be schedulable.
+(C) If S1 = 1 and $2 = 2 and (C1 /T1) + (C2 / 12) > I, then the problem must be non-
+schedulable.
+
+(D) If S1 = 1 and $2 = 2 and (C1 /T1)+(C2/ 72/2) <1, then the problem must be
+schedulable.
+
+(E) If S1 = 1 and S2 =2 and (C1 /T1) + (C2 /T2/2) <1, then an optimal scheduling
+algorithm must interleavingly (..., meet, miss, meet, miss, meet, miss, meet, ...) meet
+and miss the deadlines of 82.
+
+FG
+=== PAGE p-12.pgm
+題 號 : 346 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+科目 : 計算 機 結構 與 作業 系 統 (B) 題 號 : 346
+Hick: 2 共 之 頁 之 第 lp A
+
+Q17 (10pts) A state is "safe" if the system can allocate resources to each thread in some
+order and still avoid a deadlock. A system is in a safe state only if there exists a "safe
+sequence" of threads. Given 7 threads (TO, T1, T2, T3, T4, T5, T6) and 3 resource types
+(RO, R1, R2), the follow tables show the current state of the system:
+
+¢ Available: the number of currently-available resources of each type.
+
+‧ Max: the maximum demand of each thread.
+
+‧ Allocation: the number of resources of each type currently allocated to each
+
+thread.
+
+Available Allocation
+Ro | Ri | Ra |
+(3 fo |e |
+
+How many safe sequences of threads are there? Note that there are 7! = 5,040 possible
+sequences. Assume that the answer is 1000W + 100X + 10Y + Z, where W, X, Y, Z
+are integers and 0 < W, X, Y, Z <9. Select correct description(s).
+
+(A) W+X+Y+Z=9.
+
+(B) W - 2X -3Y + 4Z=15.
+
+(C) WX + YZ = 32.
+
+(D) (W+Y+1)/K+Z+4+1)=0.5.
+(E) W2 + KX? + Y? + 272 =20.
+
+試題 隨 卷 繳 回

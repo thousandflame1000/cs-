@@ -1,0 +1,385 @@
+=== PAGE p-1.pgm
+題 號 : 396 國 立 臺灣 大 學 110 學 年 度 碩士 班 招生 考試 試題
+HA: 計算 機 結構 與 作業 人 系統 (B) ASE © 596
+BR: 2 共 6 頁 之 第 1 買
+
+| - 一 一 一 ~
+
+xb SS
+
+ES a8 SS JA /instructions te answer the questions
+
+1) 2S SSN es} B-RBCAR , 其 餘 為 草稿 用 , 不 計 分
+Only the first page of Answer Sheet is used to record the final answers and all ihe other pages are used for sketch.
+
+2) FEE WA RD SR 48 Pb ap SS AY ESE BRIA B MEUL- RRIAMIAB—-RGRH BI | 不 計 分 ,
+Before answering tne questions, you have to duplicate the following table to Page 1 and only Page 1. The content
+i outside of this table are considered as sketch.
+
+FH (6) Fe @ L Fie)
+
+a
+
+(此 慮 不 作答
+
+Ube RES)
+
+| ORR a)
+Mere 須 完 整 複製 於 答 中 作答 區 1 第 一 俱 , 超 出 第 a ) 也 視 為 計 息 過 各
+
+The above table musi be completed duplicated on Page 1 of Answer Sheet. The table not on Page 1 of Answer Sheet is
+considered as sketch.
+
+(aba ORES)
+
+a (10 pts) Operating systems can be classified into several types according to the architecture of sub-systems. The
+| following figure shows the architecture of operating systems. Four dashed rectangies (marked by A, B, C, D) are
+' located at applications layer, system services layer, kernel fayer, and hardware layer.
+
+一 一 一 一
+日
+Applications Applications Apptications ' Ay
+
+i System
+
+Libararies
+
+Operating Systems
+
+[ Kemet
+Componets
+
+~
+H Hardware j cpu | |wmes|
+| a
+
+| Storage)
+
++ vo
+| Dewees { i
+
+i Please answer the location of the selected sub-systems in difference types of operating systems.
+(a) (2 pts) in MS-DOS (monolithic operating systems), where will the memory management services be located?
+(b) (3 pts) in Linux Gayered operating system), where will the standard I/O libraries are iocated?
+
+| (c} (2 pts) In Container (virtualized operating systems}, where will the scheduling services are located?
+
+(d) (3 pts) In Mach/QNX ({micro-kerme! operating systems), where will the device driver be located?
+
+| | LG
+
+=== PAGE p-2.pgm
+題 號 : 896 國 立 臺 灣 大 學 110 學 年 度 碩士 班 招生 考試 試題
+
+科目 : 計算 機 結構 與 作業 系 統 (B) MH + 398
+節 次 : 2 共 6 頁 之 第 2 頁
+和 (10 pts) A running process requires four different types of memory context. Please exFFFFFFFF re
+specify the locations of each context showing in the figure on the right. cotenren waite
+(a) (2 pts) Stack segment o
+(b) (3 pts) Text segment 畢
+(c) (2 pts) Uninitialized data segment ©
+
+(d) (3 pts) Free space 呈 倉 一
+Heep
+
+®)
+
+Initiallzed Data
+
+es A
+
+8. (10 pts) The following table shows the time attributes of five processes in a uni-processor computer, including PID,
+priority, arrival time, CPU burst, and IO burst. Assuming that the IO burst occurs on different devices and always
+
+starts after first time unit. The less the priority value, the higher its priority. Please answer the following
+sub-questions.
+
+PID Priority Arrival Time CPU Burst | [O Burst
+1 2 0 4 0
+2 1 (Highest) 2 5 3
+3 3 (Lowest) 3 3 0
+4 3 4 5 3
+
+5 1 10 4 2
+
+(a) (2 pts) When round-robin scheduling algorithm is used and the quantum size is 3, what's the completion time of
+
+PID 5 process?
+
+(b) (2 pts) When non-preemptive priority scheduling algorithm is used, what's the completion time of PID 5 process?
+(c) (2 pts) When preemptive SJF scheduling algorithm is used, what's the completion time of PID 5 process?
+
+(d) (2 pts) When preemptive LISC scheduling algorithm is used and PID 5 process arrives at time 16, what's the
+
+completion time of PID 5 process?
+
+(e) (2 pts) When preemptive LIF scheduling algorithm is used and the CPU burst of PID 5 process becomes 8, what's
+
+the completion time of PID 5 process?
+
+4. (10 pts) Suppose that a process needs to read and write a large file from the storage sub-system. Please answer the
+five sub-questions using one of three values: (A) — less than, (B) — greater than, and (C) - similar to.
+Assume blocking I/O is adopted as the I/O model, the file to be stored has very large size, and the delay of system
+
+load can be ignored here. The file system has 4K-byte data blocks.
+
+The following table shows the setting of the process and the sub-questions to be answered. The first column defines
+he buffering model, the second column defines the parameters of the buffering model, and the third column shows the
+
+BRA
+
+=== PAGE p-3.pgm
+題 號 : 996 國 立 臺灣 大 學 110 學 年 度 碩士 班 招生 考試 試題
+
+科目 : 計算 機 結構 與 作業 系 統 (GB) AER + 396
+
+節 次 : 2 共 6 頁 之 第 3 頁
+. |
+function calls used to store the data. The first line of below table stands for the baseline, which considers the combination
+lof unbuffered /O, 4K buffer size, and no disk synchronization, to be compared to.
+
+Setting Sub-Questions
+
+Unbuffered | Buf Size write() (Baseline to be compared to)
+
+IO AKB
+
+Unbuffered | Buf Size fsync() after write () (a) (2 pts) How is the Clock time compared with that of
+
+lie} 4KB baseline?
+
+Unbuffered | Buf Size fsync () after write () (b) (2 pts) How is the User CPU time compared with that
+
+ie) 8KB of baseline?
+
+Buffered IO | line-at-a-time | puts() (c) (2 pts) How is the System CPU time compared with
+
+that of baseline?
+Buffered io | fully buffer puts() (d) (2 pts) How is the User CPU time compared with that
+
+of baseline?
+Buffered 10 | fully buffer puts()+fflush()+fsyne () (e) (2 pts) How is the System CPU time compared with
+that of baseline?
+
+5. (10 pts) Please read the code segment and answer the five sub-questions.
+(a) (2 pts) Please answer the line number where the process will be suspended when it first starts?
+(b) (2 pts) When the process is suspended and a SIGUSR2 signal is sent to the process, how does the process react?
+(A): terminated, (B): resume, (C): no action, or (D) Add SIGUSR2 to the signal mask.
+(c) (2 pts) What's the signal mask when SIGUSR2 is caught by the process: (A) SIGUSRiand SIGUSR2, (B)
+SIGUSR1, (C) SIGINT and SIGUSR2, and (D) Empty.
+
+(dc) (2 pts) When SIGINT is sent and caught, from which line will the process be resumed?
+(e) (2 pts} When sigaction() on line 17, 19, and 21 are replaced by signal(), what's the signal mask after resumed by
+catching SIGINT? (A) SIGUSR1 and SIGUSR2, (B) SIGUSR1, (C) SIGINT and SIGUSR2, and (D) Empty.
+
+1 %% include all the head files
+2
+
+3 static void sigHandling(int);
+4
+
+5 int
+6 main(void)
+7{
+
+8 sigset_t newmask, oldmask, waitmask;
+9 struct sigaction handling, saveintr;
+
+11 pr_mask("program start: ");
+
+13 handling.sa_handler = sigHandling;
+14 — sigemptysei(&handling.sa_mask);
+15 handling.sa_flags = 0;
+
+17 if (sigaction(SIGUSR1, &handling, &saveintr) < 0)
+18 return(-1);
+
+19 if (sigaction(SIGUSR2, &handling, &saveintr) < 0)
+20 return(-1);
+
+21 __ if (sigaction(SIGINT, &handling, &saveintr) < 0)
+22 return(-1);
+
+24 — sigemptyset(&waitmask);
+
+25 — sigaddset(&waitmask, SIGUSR1);
+26 — sigemptyset(&newmask);
+
+27 — sigaddset(&newmask, SIGINT);
+
+29 諒 .
+30 * Block SIGINT and save current signal mask.
+
+Oe
+
+=== PAGE p-4.pgm
+題 號 : 996 國 立 臺 灣 大 學 110 學 年 度 碩士 班 招生 考試 試題
+
+科目 : 計算 機 結構 與 作業 系 統 (B) ALR + 396
+節 次 : 2 共 6 頁 之 第 4 頁
+31 *]
+
+32 if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0)
+33 err_sys("SIG_BLOCK error");
+
+34
+
+35 入
+
+36 * Critical region of code.
+
+37. *,
+
+38 — pr_mask("in critical region: ");
+
+39
+
+40 /*
+
+41 Pause, allowing all signals except SIGUSR1.
+42 *,
+
+43 _ if (sigsuspend(&waitmask) != -1)
+
+44 err_sys("sigsuspend error”);
+
+45
+
+46 pr_mask(“after return from sigsuspend: ");
+
+47
+
+48 入
+
+49 * Reset signal mask which unblocks SIGINT.
+50 */
+
+51 if (sigprocmask(SIG_SETMASK, &oldmask, NULL) < 0)
+52 err_sys("SIG_SETMASK error");
+
+54 OF
+55 * And continue processing ...
+*/
+
+57 ~~ pr_mask("program exit: ");
+59 ~— exit(0);
+
+62 static void
+
+63 sigHandling(int signo)
+
+64 {
+
+65 — pr_mask("\n in sigHandling:");
+66 __ printi("Received signal %d\n", signo);
+67}
+
+6. (20 pts) Consider a SMP processor (Symmetric Multiprocessor) adopting the Write-Invalidate Snooping Cache
+Coherence protocol. Each processor has a 4KiB direct-mapped, physically-addressed L1 cache with 16-byte cache lines. Three
+integer arrays A, B and C are placed contiguously in the memory in the order of A, B and C. The starting address of array A is
+Ox0000A000 (assuming 32-bit memory address). Processor PO and Pi execute the following code segment (the L1 cache is
+empty initially):
+
+int A[300], B[300], C[300]
+for (ik4*Pn; ix 4*(Pn+1);i++) /* Pn is the processor id: 0, 1 */
+Cli] = Afi]+B [1];
+
+(a) (5 pts) What is the size (bits) of the tag array?
+
+(b) (5 pts) Could increasing the cache associativity reduce cache misses running the above codes?
+
+(c) {5 pts) How many coherence misses could occur in the worst case(c1)? How many of them are false-sharing misses(c2)?
+
+(d) (5 pts) if the cache line size becomes 32 bytes (the cache size is still 4KiB), how many coherence misses could occur in the
+worst case (1)? How many of them are false-sharing misses(d2)?
+
+7. (25 pts) Consider a 5-stage (IF, ID, EX, MEM, WB) RISC-V pipelined processor (Figure 1} composed of logic blocks with the
+
+following latency (any unspecified block latency is treated as 0):
+
+BRA
+
+=== PAGE p-5.pgm
+Ate: 396 國 立 臺 灣 大 學 110 學 年 度 碩士 班 招生 考試 試題
+科目 : 計算 機 結構 與 作業 系 統 (B》 題 瑟 :396
+2
+
+Siok: 共 6 頁 之 第 5 頁
+Control/| Pipeline Forwarding
+-Mem / Register Adder / Single) mm .
+Mux | ALU PC R/W ALU | Register R/W |Unit/Hazard Detection
+D-Mem R/W Fite R/WI Shifter/Comparator gate | Gen .
+Control Unit
+280 ps | 180 ps (25 ps 00 ps 50 ps 30ps |Sps [50 ps| 80 ps 30 ps 50 ps
+3 e
+Tc 了 | rs2 [ rst | funct3 | rd opcode |
+7 bits 5 bits 5 bits 3 bits & bits 7 bits
+
+R-type instruction format (add/sub rd, rs1, rs2)
+
+Ex REBYE
+reset | | Regine 4)
+Mantes}
+Morrdtand )
+ervirn_)
+|
+ranactent 19.8 ia
+eto t a4
+nauoeton ft ad
+epee “ie Rees}
+oleae
+wan
+ere
+insets. Mate
+
+Data ermory
+
+fnatecrenen ONS} 32 2 J
+
+Leanne sey]
+
+aunesen [14-85 |
+
+nsnuneron (24-205 |
+H mona | | 」
+=
+Figure 1
+Given the following code segment:
+
+#1 lw x10, 100(x5)
+
+#2 add x2, X10, x2
+
+#3 add x2, X2, x4
+
+#4 sub x6, x2, X6
+
+{a) (10 pts) Which pipeline stage determines the clock cycle time?
+
+(b) (5 pts) When the first instruction (Iw) is in the MEM stage, which instructions are executing in the ID (b1) and EX (b2) stage?
+(請 填寫 instruction number, 不 要 寫 instruction)
+
+(c (5 pts) When the sub instruction (#4) is in the EX state, what value should be set for the control signal ForwardA (c1) and
+ForwardB (c2), respectively?
+
+(d) (5 pts) What are the control signal values for RegWrite (d1}, MemtoReg{d2), MemRead(d3), and MemWrite (4) for the sub
+instruction?
+
+8. (5 pts) Which one(s) of the following statements are correct? (全 對 才 給 分 )
+(1) A processor with higher MIPS (Million Instruction per Second) has higher performance than a processor with lower MIPS.
+(2) The LRU (Least Recently Used) cache replacement policy has been proved to be the optimal one.
+
+還 見 背 面
+
+=== PAGE p-6.pgm
+mate: 896 國 立 臺灣 大 學 110 學 年 度 碩士 班 招生 考試 試題
+科目 : 計算 機 結構 與 作業 人 系統 (B) 題 號 :396
+fick: 2 共 6 頁 之 第 6 頁
+
+(3) Vectorinstructions could be beneficialto applications with good data-level parallelism.
+
+(4) A SMT (Simultaneous Multithreading) processor can increase CPU utilization by allowing instructions from several
+independent threads to execute each cycle.
+
+試題 隨 卷 繳 回
+

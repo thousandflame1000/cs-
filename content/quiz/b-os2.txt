@@ -1,0 +1,834 @@
+@q me1-01 | os-memory#1 | 2 | 計算
+base（重定位）暫存器 14000、limit 暫存器 3000。行程的邏輯位址 2500 轉成的實體位址？邏輯位址 3200 呢？
+== 16500,越界
+?? 2500,3200
+== 16500,trap
+---
+先檢查邏輯位址 < limit：2500 < 3000，實體 $14000+2500=16500$。3200 ≥ 3000，硬體觸發 trap（越界）。
+
+@q me1-02 | os-memory#1 | 2 | 觀念
+位址繫結可以發生在哪三個時間點？哪一個才允許行程在執行中被搬到別的記憶體位置？
+[x] 編譯時、載入時、執行時；只有執行時繫結（靠硬體轉換）可以
+[ ] 編譯時、連結時、執行時；編譯時
+[ ] 只有執行時
+[ ] 編譯時、載入時、執行時；載入時
+---
+編譯時決定就寫死了位址；載入時決定的話，搬家要重新改程式裡的位址。
+
+@q me1-03 | os-memory#1 | 3 | 觀念
+An operating system runs each process with execution-time translation: the CPU generates a logical address d, and after checking that d is valid, the hardware adds the value in a base register to form the physical address. One run of a program is placed with base 4096, while a second run of the same program is placed at the very bottom of memory with base 0. Both runs use the same program image, so every variable has the same logical address in both runs; the variable `count`, for example, is at logical address 300. Which of the following statements are correct? Select all that apply.
+[x] With base 4096, logical address 300 translates to physical address 4396.
+[x] With base zero, a valid logical address can have the same numeric value as its physical address.
+[ ] Execution-time translation requires logical and physical addresses to differ numerically in every case.
+[ ] The processor-generated logical address is always the final physical address.
+[ ] Changing the base to 8192 leaves the physical translation of logical address 300 equal to 4396.
+---
+「4396」對：4096＋300。「base 零數值可相同」對：0＋d＝d。「每次必不同」錯：零起點就是反例。「邏輯位址就是最終實體位址」錯：還要經過硬體加上 base 才是實體位址，只有 base 為零時數值才剛好相同。「換 base 仍 4396」錯：新值為 8192＋300＝8492。
+
+@q me1-04 | os-memory#1 | 3 | 情境
+A process with a 4096-byte image runs under base/limit translation: a valid logical address d satisfies $0\le d<\text{limit}$ and translates to base plus d. While the process is paused, the operating system moves its unchanged image to another place in memory to make room for a new process, and then updates the registers it will load when the process resumes:
+
+| | base | limit |
+|---|---|---|
+| before the move | 10000 | 4096 |
+| after the move | 18000 | 4096 |
+
+Before the move, the process stored a pointer whose value is logical address 1000, and after it resumes it reads through that pointer again. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] Logical address 1000 now translates to physical address 19000.
+[ ] To reach the same byte after moving, the process must now use logical address 9000.
+[ ] Its limit must increase by 8000 solely because its base increased by 8000.
+[ ] Logical address 4096 becomes valid after the move.
+[ ] Every logical address in the program must be manually increased by 8000.
+---
+「19000」對：18000＋1000。「要改用邏輯位址 9000」錯：邏輯位址不變，仍是 1000，硬體在執行時加新 base。「limit 增 8000」錯：程式大小未變，合法位移範圍仍 4096 位元組。「4096 變有效」錯：上界不含自身，搬家不改變合法範圍。「全部邏輯地址加 8000」錯：那會把重定位重複計算，更新 base 才是題設機制。
+
+@q me1-05 | os-memory#1 | 3 | 觀念
+The operating system gives a process a 1024-byte region that starts at physical address 12000. On every access, the hardware first compares the logical byte address d with the limit register and reports an error to the operating system if the check fails; otherwise it adds the base register to d:
+```
+if (d >= limit) error();   // limit = 1024
+physical = base + d;       // base  = 12000
+```
+The process then performs single-byte reads at logical addresses 0, 1023, and 1024, in that order, and the operating system logs the physical address of every read that succeeds. Which of the following statements are correct? Select all that apply.
+[x] Logical address 0 translates to physical address 12000.
+[x] Logical address 1023 translates to physical address 13023.
+[ ] Logical address 1024 is valid.
+[x] The limit check helps prevent this process from addressing memory outside its assigned range.
+[x] Validity is decided by comparing the logical address with the limit, not with the base.
+---
+「位址 0」對：12000＋0＝12000。「位址 1023」對：12000＋1023＝13023。「1024 有效」錯：上界不包含 limit 本身。「保護範圍」對：超出邏輯範圍的存取要擋下。「跟 limit 比、不跟 base 比」對：檢查的是邏輯位移，不是拿它和實體起點比較。
+
+@q me2-01 | os-memory#2 | 2 | 追蹤
+記憶體空洞依序 300、150、500、250（KB）。依序來了 200、120、400、240 KB 的行程。用 first-fit，最後各空洞剩多少？
+== 100 30 100 10
+== 100,30,100,10
+---
+200 → 300 那塊（剩 100）；120 → 150（剩 30）；400 → 500（剩 100）；240 → 250（剩 10）。
+
+@q me2-02 | os-memory#2 | 2 | 追蹤
+同上，用 best-fit，最後各空洞剩多少？
+== 60 30 100 50
+== 60,30,100,50
+---
+200 → 最小夠用的 250（剩 50）；120 → 150（剩 30）；400 → 500（剩 100）；240 → 300（剩 60）。
+
+@q me2-03 | os-memory#2 | 3 | 追蹤
+同上，用 worst-fit。哪個行程放不進去？
+== 400
+---
+200 → 最大的 500（剩 300）；120 → 現在最大的是 300 和 300，挑第一個（原本的 300，剩 180）；400：空洞 180、150、300、250，都不夠，放不進去；240 → 300（剩 60）。worst-fit 把大洞先切碎了。
+
+@q me2-04 | os-memory#2 | 3 | 觀念
+A contiguous memory allocator manages a 1 MiB region. After many allocations and frees, its unused memory consists of 3 separate holes, and the holes are separated by live allocations that cannot be moved right now because devices are writing into them:
+
+| hole | 1 | 2 | 3 |
+|---|---|---|---|
+| size (KiB) | 30 | 40 | 50 |
+
+A request then arrives for one contiguous 100 KiB region. The allocator's statistics page reports "120 KiB free", and a developer wonders why the request fails and what would have to change for it to succeed later, for example once the live allocations can be moved together into one end of the region. The allocator uses first fit and never splits one request across several holes, and each hole lies between allocations owned by different processes. Which of the following statements are correct? Select all that apply.
+[x] Total unused memory is 120 KiB.
+[x] The request cannot fit in any existing single hole.
+[ ] Even if the live allocations could be moved together, this request still could not be satisfied.
+[ ] Having at least 100 KiB unused guarantees immediate success for this contiguous request.
+[ ] The 120 KiB are all unused bytes inside already allocated blocks.
+---
+「總共 120」對：30＋40＋50。「沒有單洞夠大」對：最大僅 50。「就算能搬也放不下」錯：若能把活著的配置搬到一起，三個洞合併成 120 KiB 的連續空間就放得下。空閒量夠、卻分散在不連續區域，這是外部碎片。「總量夠必成功」錯：請求還有連續性限制。「配置內未用」錯：題設描述的是配置區域外的空洞，並非內部碎片。
+
+@q me2-05 | os-memory#2 | 3 | 計算
+A first-fit allocator is observed on a long-running workload. A snapshot shows 200 allocated blocks and about 100 holes, consistent with the 50-percent rule, which says that the number of holes is about half the number of allocated blocks. In this simplified snapshot, assume that the average allocated block has the same size as the average hole, for example 12 KiB each. A student wants to know what fraction of the memory is free, and what can and cannot be concluded from the counts alone, before measuring any sizes. Which of the following statements are correct? Select all that apply.
+[x] The hole count is approximately one half of the allocated-block count.
+[x] Under the equal-average-size assumption, holes occupy one third of total space.
+[x] A hole count of half the allocated-block count does not by itself mean that half the bytes are free.
+[x] Without information about sizes, block counts alone do not determine the fraction of free bytes.
+[x] Under the equal-average-size assumption, allocated blocks occupy two thirds of total space.
+---
+「洞數一半」對：100÷200＝1/2。「空間三分之一」對：平均大小相等時，洞占 100÷(200＋100)＝1/3。「洞數一半不代表位元組一半」對：分母不同，大小也未必相等。「只知數量無法定容量比例」對：若洞與已配置塊大小差很多，比例就不同。「配置占三分之二」對：200÷300＝2/3。五句都對。
+
+@q me2-06 | os-memory#2 | 3 | 觀念
+A contiguous allocator has many small free holes scattered between the images of live processes, so a new 300 KiB process cannot be loaded even though more than 300 KiB is free in total. The operating system decides to compact memory: it moves the live process images together toward one end of memory, so that the holes merge into one large hole. In the simplified model used here, the move copies 2000 bytes at a rate of 1000 bytes per ms, and every process uses logical addresses that the hardware translates by adding a per-process base register. Ignore all other costs. A student wants to know how long the copying takes, what must be updated for each moved process, what happens to absolute physical addresses that were already handed out, and what compaction does to the total amount of free memory. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] The stated copying takes 0.5 milliseconds.
+[ ] Each moved process may keep its old base value, since its logical addresses do not change.
+[ ] Existing absolute physical references automatically change merely because bytes are copied.
+[x] Compaction can reduce external fragmentation without increasing total free bytes.
+[ ] The existence of any free hole guarantees that every live image can be moved safely without further conditions.
+---
+「0.5 毫秒」錯：2000÷1000＝2 毫秒。「base 可維持舊值」錯：邏輯位址不變沒錯，但 base 要改成新位置，否則轉換後仍參照原位置。「絕對地址自行改變」錯：複製資料不會自動修補其中的地址。「不增總空閒量」對：合併的是位置，沒有憑空增加記憶體。「有洞就一定安全」錯：還要考慮重定位、參照與外部存取。
+
+@q me2-07 | os-memory#2 | 3 | 陷阱
+「best-fit 留下的空洞最小，所以外部碎片一定最少」對嗎？
+[ ] 對
+[x] 不對
+---
+best-fit 會留下一堆小到沒用的碎洞。實驗上 first-fit 和 best-fit 的記憶體利用率差不多，first-fit 比較快；worst-fit 通常最差。
+
+@q me3-01 | os-memory#3 | 2 | 計算
+頁大小 4 KB。邏輯位址 20000 的頁號、頁內位移各是？
+== 4,3616
+?? 頁號,位移
+---
+$20000=4\times4096+3616$。
+
+@q me3-02 | os-memory#3 | 2 | 計算
+接上題，頁表說第 4 頁在第 7 個 frame。實體位址是？
+== 32288
+---
+$7\times4096+3616=32288$。位移不變，只把頁號換成 frame 號。
+
+@q me3-03 | os-memory#3 | 2 | 計算
+32 位元邏輯位址、頁大小 4 KB。頁號佔幾個位元？頁表最多幾個項目？
+== 20,1048576
+?? 頁號位元,項目數
+---
+位移 $\lg4096=12$ 位元，頁號 $32-12=20$ 位元，$2^{20}=1048576$ 項。
+
+@q me3-04 | os-memory#3 | 2 | 計算
+記憶體存取 100 ns、TLB 查詢 20 ns、TLB 命中率 80%（先查 TLB，沒中再去記憶體查頁表）。有效存取時間？
+== 140
+---
+命中：$20+100=120$；沒中：$20+100+100=220$。$0.8\times120+0.2\times220=140$ ns。
+
+@q me3-05 | os-memory#3 | 3 | 計算
+接上題，TLB 命中率要多少，有效存取時間才會降到 125 ns？
+== 0.95
+== 95%
+---
+$h\cdot120+(1-h)\cdot220=125$：$220-100h=125$，$h=0.95$。
+
+@q me3-06 | os-memory#3 | 2 | 計算
+頁大小 4096 bytes，行程大小 10000 bytes。要幾頁？內部碎片多少 bytes？
+== 3,2288
+?? 頁數,內部碎片
+---
+$\lceil10000/4096\rceil=3$ 頁；最後一頁只用了 $10000-8192=1808$，浪費 $4096-1808=2288$。
+
+@q me3-07 | os-memory#3 | 2 | 觀念
+分頁有外部碎片嗎？內部碎片呢？
+[x] 沒有外部碎片；有內部碎片（最後一頁可能沒用滿）
+[ ] 兩種都有
+[ ] 兩種都沒有
+[ ] 有外部碎片，沒有內部碎片
+---
+任何空的 frame 都能用，不需要連續空間。平均每個行程浪費半頁。
+
+@q me3-08 | os-memory#3 | 3 | 比較
+頁大小變大的好處和壞處？
+[x] 頁表變小、TLB 涵蓋範圍變大、磁碟 I/O 效率好；但內部碎片變大、可能載入不需要的資料
+[ ] 只有好處
+[ ] 只有壞處
+[ ] 頁表變大、內部碎片變小
+---
+現代系統常同時支援 4 KB 和大頁（2 MB、1 GB）。
+
+@q me4-01 | os-memory#4 | 2 | 計算
+32 位元位址、頁 4 KB、每個頁表項 4 bytes。單層頁表多大？
+== 4MB
+== 4 MB
+== 4194304
+---
+$2^{20}$ 項 $\times4$ bytes $=4$ MB，而且每個行程一份。
+
+@q me4-02 | os-memory#4 | 2 | 計算
+32 位元位址、頁 4 KB 的兩層頁表，常見切法是 10 / 10 / 12。外層頁表有幾項？一張內層頁表多大（每項 4 bytes）？
+== 1024,4KB
+?? 外層項數,內層大小
+== 1024,4096
+---
+外層 $2^{10}$ 項；內層每張也是 $2^{10}$ 項 × 4 bytes ＝ 4 KB，剛好一頁。
+
+@q me4-03 | os-memory#4 | 3 | 觀念
+A process uses 30-bit virtual byte addresses and pages whose offset occupies twelve bits. The remaining virtual page number is divided equally between two table indices. Every page-table entry occupies eight bytes. An inner table is allocated only after some virtual page in its outer-index region is mapped; allocating one inner table reserves all its entry positions, not merely the entries currently used. Ignore allocation metadata and memory used for the process's data pages.
+
+The process maps one page containing virtual address 0x00000100 and one containing 0x00600100. They use two different outer entries, and no other outer entry is used. The outer table itself is fully allocated. Compare the table memory with a flat table covering every virtual page. Also examine an uncached translation that must follow both table levels before reading data. Do not count a virtual page's unused data bytes as a decrease in page-table entry size. Which statements are correct? Select all that apply.
+[x] A complete flat table would require 2 MiB.
+[x] The outer table plus the two allocated inner tables require 12 KiB.
+[ ] An uncached lookup reads only one table entry before accessing data.
+[ ] The two-level organization always uses less table memory even when every inner table is allocated.
+[ ] Each table index has twelve bits.
+---
+「平表二 MiB」對：頁號十八位，2¹⁸ 個八位元組項，共 2²¹ 位元組。「二層十二 KiB」對：每段索引九位，每張 512×8＝4096 位元組；外表加兩張內表為三張。「未快取只讀一項」錯：先外再內共兩項，才取得資料的實體位置。「全內表都配仍必較省」錯：512 張內表已有平表同量，再加外表更大。「索引十二位」錯：十二位是頁內位移，兩個索引各九位；給定兩位址的外索引為零與三。
+
+@q me4-04 | os-memory#4 | 3 | 計算
+48 位元虛擬位址、頁 4 KB、每項 8 bytes，每張頁表剛好一頁。需要幾層？
+== 4
+---
+每頁放 $4096/8=512=2^9$ 項，每層吃 9 位元。$48-12=36$ 位元，$36/9=4$ 層（x86-64 就是這樣）。
+
+@q me4-05 | os-memory#4 | 3 | 計算
+同上的設定（頁 4 KB、每項 8 bytes），完整 64 位元位址需要幾層？
+== 6
+---
+$(64-12)/9\approx5.8$，向上取整 6 層。層數太多，所以 64 位元系統只用 48 或 57 位元。
+
+@q me4-06 | os-memory#4 | 2 | 計算
+實體記憶體 4 GB、frame 4 KB。反轉頁表有幾項？
+== 1048576
+---
+反轉頁表每個 frame 一項：$2^{32}/2^{12}=2^{20}$。跟行程數、虛擬位址大小無關。
+
+@q me4-07 | os-memory#4 | 3 | 比較
+A memory-management experiment uses a simplified inverted page table ordered by physical frame number. The machine contains 4096 frames, and the basic table reserves 1 16-byte entry for each frame. An entry can record exactly 1 process identifier and 1 virtual page number. The entry number identifies the frame, not a location in an individual process's virtual page table. No additional alias list or other search structure is included in the measured table.
+
+For a lookup without a cached translation, the implementation begins at the first entry and inspects entries sequentially until the requested process/page pair is found. In 1 trial, the only corresponding pair is stored in the final entry. In another trial, 2 processes want different virtual-page names to describe the same physical frame. A third trial adds a process but does not add physical memory. Ignore metadata and compare basic storage, search work, and the information that 1 entry can represent. Which statements are correct? Select all that apply.
+?? 複選
+[ ] The basic table uses 16 KiB.
+[x] Adding another process without adding physical frames does not change the basic entry count.
+[ ] A requested virtual page number is automatically a direct index into the frame-ordered table.
+[ ] One stored process/page pair per entry is enough to describe a frame shared by several processes.
+[ ] Searching the last entry takes no more than one entry inspection under the stated implementation.
+---
+「16 KiB」錯：4096×16＝65536 位元組，是 64 KiB。「行程增加表項不變」對：基本表項數由實體框數決定。「虛頁直接索引」錯：排列依實體框，不依每個行程的虛頁號。「一個配對就能描述共享」錯：一個配對欄位不能同時列出多個不同別名，共享需要額外處理。「最後一項一看即知」錯：順序搜尋可能要看完 4096 項。
+
+@q me4-08 | os-memory#4 | 3 | 計算
+三層頁表、TLB 沒中時，一次記憶體存取總共要碰幾次記憶體？
+== 4
+---
+三層頁表各讀一次，再加上真正的資料：4 次。所以 TLB 對多層頁表格外重要。
+
+@q me5-01 | os-memory#5 | 2 | 計算
+段表：第 2 段 base 4300、limit 400；第 1 段 base 2300、limit 600。邏輯位址 (2, 53) 和 (1, 650) 的結果？
+== 4353,越界
+?? (2,53),(1,650)
+== 4353,trap
+---
+(2,53)：$53<400$，實體 $4300+53=4353$。(1,650)：$650\ge600$，越界 trap。
+
+@q me5-02 | os-memory#5 | 2 | 比較
+分段和分頁兩種記憶體管理方式，哪個比較是對的？
+[x] 分段照程式邏輯切（程式碼、資料、堆疊），大小不一、方便保護和共享，但有外部碎片；分頁大小固定、沒有外部碎片，但對程式設計者不可見
+[ ] 分頁有外部碎片
+[ ] 分段大小固定
+[ ] 兩者一樣
+---
+有些系統兩個一起用：先分段、每段再分頁。
+
+@q me5-03 | os-memory#5 | 3 | 情境
+2 processes execute the same immutable code bytes through their own segment tables. In process X, segment number 2 describes the shared code. In process Y, segment number 5 describes it. Both descriptors have physical base 50000, byte-length limit 2048 and read-only permission. The local segment numbers select entries in the respective process's table; they are not physical memory addresses.
+
+The test program forms a segment/offset pair with offset 100 in each process and reads a byte. It separately tests an offset exactly equal to 2048 and attempts a write through each shared-code descriptor. An offset is valid only when nonnegative and strictly less than the descriptor's limit. The machine checks permissions even when the addressed bytes are already resident. There is no policy that changes a read-only descriptor or creates a private writable copy on this test. Determine how descriptor contents, segment numbers and permissions contribute to the 3 experiments. Which statements are correct? Select all that apply.
+[x] Both segment-offset pairs with offset 100 translate to physical address 50100.
+[x] Different segment numbers can designate the same physical code bytes.
+[ ] An offset of 2048 is valid because it equals the limit.
+[x] A write through either read-only descriptor must be rejected.
+[x] Sharing the code does not require the two processes to use the same segment number.
+---
+「50100」對：各自查段表後都是 50000＋100。「段號可不同」對：段號是行程自己表內的索引，表項仍可指向同一份實體資料。「2048 有效」錯：上界不包含 limit。「寫入擋下」對：兩份描述都標唯讀。「段號不必相同」對：共享靠實體位置與權限設定，不靠段號相等。
+
+@q me5-04 | os-memory#5 | 3 | 陷阱
+「分段沒有內部碎片，所以比分頁省記憶體」對嗎？
+[ ] 對
+[x] 不對
+---
+分段每段剛好配需要的大小，確實沒有內部碎片，但段大小不一，會產生外部碎片，嚴重時浪費更多。
+
+@q vm1-01 | os-vm#1 | 2 | 計算
+A server uses demand paging. A memory access that finds its page in memory takes 200 ns, while an access that causes a page fault takes 8 ms on average, because the page must be read from disk, the page table updated, and the faulting instruction restarted. With fault rate $p$, the effective access time is
+```
+EAT = (1 - p) * 200 + p * 8000000    (ns)
+```
+The operators measure about one fault per 1000 accesses, $p = 0.001$, on a database workload, and they want to know how much slower memory appears than with no faults at all, which part of the time dominates, and what fault rate would keep the slowdown under 10%. A junior operator expects about 400 ns, twice the normal access time, and thinks the database is barely affected. The team must decide whether to buy more memory to reduce faults. Which of the following statements are correct? Select all that apply.
+[x] With $p=0.001$, the effective access time is about 8.2 µs.
+[x] With $p=0.001$, memory appears about 40 times slower than with no faults.
+[x] To keep the slowdown under 10%, $p$ must be below about $2.5\times10^{-6}$.
+[x] Even at $p=0.001$, almost all of the effective time comes from page faults.
+[ ] With $p=0.001$, the effective access time is about 400 ns, twice the normal access time.
+---
+$0.999\times200+0.001\times8\times10^6\approx199.8+8000$ ns，「約 8.2 µs」，是 200 ns 的「約 41 倍」，其中 8000 ns「幾乎全來自缺頁」。要低於 220 ns：$p<\frac{20}{7{,}999{,}800}\approx2.5\times10^{-6}$。400 ns 嚴重低估了 8 ms 的缺頁成本。
+
+@q vm1-02 | os-vm#1 | 3 | 計算
+A memory access takes 200 ns when the page is in memory, and servicing a page fault takes 8 ms, which is 8000000 ns. A system designer wants the effective access time, $(1-p)\cdot200+p\cdot8000000$ ns for fault rate $p$, to stay at most 220 ns, a slowdown of less than 10%. Three workloads are measured: a text editor with about one fault per million accesses, a compiler with about one fault per 50000 accesses, and a database with about one fault per 1000 accesses. The designer must find the largest fault rate that meets the target and decide which of the three workloads meet it. A colleague suggests that one fault per thousand accesses should be good enough, since faults look rare in practice and memory is expensive. Which of the following statements about the fault rate $p$ are correct? Select all that apply.
+?? 複選
+[x] $p$ must be at most about $2.5\times10^{-6}$, about one fault per 400,000 accesses.
+[ ] $p$ may be as large as about $10^{-3}$, one fault per thousand accesses.
+[ ] $p$ may be as large as about $0.1$, since faults are rare anyway.
+[ ] $p$ must be at most about $10^{-9}$, one fault per billion accesses.
+[ ] $p$ must be at most about $2.5\times10^{-5}$, one fault per 40,000 accesses.
+---
+$200+p(8\times10^6-200)\le220$，$p\le\frac{20}{7999800}\approx2.5\times10^{-6}$，「倒數約 40 萬」。$10^{-3}$ 時已經約 8.2 µs；$2.5\times10^{-5}$ 差了十倍；$10^{-9}$ 比需要的嚴格太多，不是上限。
+
+@q vm1-03 | os-vm#1 | 2 | 觀念
+When a process touches a page that is not in memory, the operating system handles the page fault in several steps: it checks that the address is legal, finds a free frame, schedules a disk read of the 4 KiB page, updates the page table when the read completes, and restarts the faulting instruction. The disk in this system needs several milliseconds per read, while the processor executes about $10^9$ instructions per second. A student wants to know which step dominates the time and what the processor can do in the meantime. Which of the following statements about the steps of handling a page fault are correct? Select all that apply.
+[x] Reading the page from disk takes by far the longest.
+[x] While the disk read is under way, the CPU can be given to another process.
+[ ] Checking that the faulting address is legal takes the longest, since the page table must be searched.
+[ ] Updating the page table after the read takes the longest, since every entry must be rewritten.
+[ ] Restarting the faulting instruction takes the longest, since it must be decoded again.
+---
+磁碟是毫秒級，其他步驟都是微秒以下，「讀磁碟最久」；讀的時候行程只能等，「CPU 交給別的行程」。檢查位址、更新一個頁表項目、重新執行指令都很快。
+
+@q vm1-04 | os-vm#1 | 2 | 觀念
+頁表項目裡的「修改位元」（有沒有被寫過）有什麼用？
+[x] 記錄這一頁載入後有沒有被寫過；沒寫過的被換出時不用寫回磁碟
+[ ] 記錄這一頁有沒有被讀過
+[ ] 標示這一頁是否在記憶體中
+[ ] 標示這一頁可不可以被換出
+---
+換出乾淨的頁只要直接丟掉，省一次磁碟寫入。
+
+@q vm1-05 | os-vm#1 | 2 | 情境
+Under demand paging, a program starts with none of its pages in memory, and each page is brought in only when the program first touches it, through a page fault. A monitoring tool records the faults of one run of a 50-page program: 38 faults in the first second, then 3 more over the next 10 minutes, while the program performs about $10^9$ memory accesses in total. A student wants to name the scheme and to explain the shape of the fault count over time, and whether every access causes a fault. Which of the following statements are correct? Select all that apply.
+[x] This is called pure demand paging.
+[x] Many faults occur at the start.
+[x] The fault rate then settles, because programs tend to reuse nearby pages.
+[ ] Under this scheme, every memory access causes a page fault.
+[ ] This scheme is the same thing as copy-on-write.
+---
+一頁都不先載入、碰到才載入，就是「純需求分頁」；「一開始缺頁很多」，之後靠區域性「穩定下來」。只有第一次碰到某頁才缺頁；寫入時才複製（COW）是 fork 的技巧，不是同一件事。
+
+@q vm1-06 | os-vm#1 | 3 | 計算
+處理 page fault 時，有 30% 的機率被換出的頁被改過（要先寫回磁碟）。讀一頁 8 ms、寫一頁也 8 ms。平均每次 page fault 的磁碟時間？
+== 10.4
+---
+$8+0.3\times8=10.4$ ms。
+
+@q vm2-01 | os-vm#2 | 2 | 計算
+參考串 2 5 1 2 3 5 4 2 5 1 3 2，3 個 frame。FIFO、LRU、OPT 各缺頁幾次？
+== 10,10,7
+?? FIFO,LRU,OPT
+---
+程式模擬。OPT 每次換掉「最晚才會再用到」的頁，是下限。
+
+@q vm2-02 | os-vm#2 | 2 | 計算
+同一串（2 5 1 2 3 5 4 2 5 1 3 2），4 個 frame。FIFO、LRU、OPT 各缺頁幾次？
+== 9,7,6
+?? FIFO,LRU,OPT
+---
+frame 變多，三者都變少。
+
+@q vm2-03 | os-vm#2 | 3 | 計算
+參考串 3 2 1 0 3 2 4 3 2 1 0 4，FIFO 用 3 個和 4 個 frame 各缺頁幾次？
+== 9,10
+?? 3個frame,4個frame
+---
+frame 變多、缺頁反而變多：Belady 異常。只有 FIFO 這類演算法會有；LRU、OPT 是 stack algorithm，不會。
+
+@q vm2-04 | os-vm#2 | 2 | 觀念
+Which of the following page replacement algorithms can never show Belady's anomaly?
+[x] LRU
+[x] OPT
+[ ] FIFO
+[ ] Second chance (clock)
+[ ] Every replacement algorithm
+---
+LRU 和 OPT 是 stack algorithm：$n$ 個 frame 時記憶體裡的頁一定是 $n+1$ 個 frame 時的子集合，frame 變多不會多缺頁。FIFO 有經典的反例；Clock 在參考位元全為 1 時退化成 FIFO，也可能出現異常；所以不是每種都不會。
+
+@q vm2-05 | os-vm#2 | 2 | 計算
+參考串 1 3 0 3 5 6 3 1 4 6，3 個 frame。LRU 缺頁幾次？Clock（second chance）呢？
+== 8,9
+?? LRU,Clock
+---
+程式模擬：FIFO 9、LRU 8、OPT 6、Clock 9。Clock 是 LRU 的近似，這裡跟 FIFO 一樣。
+
+@q vm2-06 | os-vm#2 | 2 | 觀念
+Which of the following statements about the clock (second-chance) page replacement algorithm are correct?
+[x] When the hand finds a reference bit of 1, it clears the bit to 0 and moves on.
+[x] A page whose bit is 0 when the hand reaches it is replaced.
+[x] If every bit is 1, the algorithm behaves like FIFO.
+[x] It approximates LRU using only one bit per page.
+[x] Hardware sets the reference bit whenever the page is accessed.
+---
+「硬體在存取時把 reference 位元設成 1」；指針繞圈，「1 就清成 0 往下」，「0 就換掉」；全部都是 1 時繞一圈清完回到起點，「就是 FIFO」。它「只用一個位元近似 LRU」。五句都對。
+
+@q vm2-07 | os-vm#2 | 3 | 陷阱
+「OPT 是最好的頁替換演算法，作業系統應該用它」對嗎？
+[ ] 對
+[x] 不對
+---
+OPT 要知道未來的參考串，實際上做不到；它用來當比較的下限。實作用 LRU 的近似（例如 Clock）。
+
+@q vm2-08 | os-vm#2 | 2 | 比較
+Which of the following statements explain why exact LRU page replacement is rarely implemented directly?
+?? 複選
+[x] Every memory access would have to update a record of when the page was last used.
+[ ] LRU suffers from Belady's anomaly, so systems avoid it.
+[ ] LRU usually performs worse than FIFO.
+[ ] LRU requires knowledge of future references, which is impossible.
+[ ] LRU requires the page table to be sorted by page number on every access.
+---
+「每次存取都要更新最近使用時間」，硬體成本太高，所以實際上用 reference 位元近似。LRU 是堆疊演算法，沒有 Belady 異常；通常比 FIFO 好；需要知道未來的是 OPT；它和頁號順序無關。
+
+@q vm3-01 | os-vm#3 | 2 | 觀念
+Which of the following statements about thrashing are correct? Select all that apply.
+[x] It happens when processes do not have enough frames for the pages they are actively using, so page faults occur almost constantly.
+[x] During thrashing, CPU utilization is low while the paging disk is very busy.
+[ ] When CPU utilization drops because of thrashing, admitting more processes to keep the CPU busy is the right response.
+[x] Giving each running process enough frames for the pages it is currently using is a way to prevent thrashing.
+[ ] Thrashing can happen with FIFO replacement but never with LRU replacement.
+---
+「frame 不夠、一直缺頁」對：剛換出去的頁馬上又要用，一直在換頁。
+
+「CPU 使用率低、磁碟很忙」對：行程大多在等換頁。
+
+「再多放行程進來」錯：這是經典的錯誤反應。早期的系統看到 CPU 閒就加行程，每個行程分到的 frame 更少，缺頁更多，CPU 更閒，惡性循環。正確作法是暫停或換出一些行程。
+
+「給每個行程夠用的 frame」對：這就是工作集（working set）的想法；總需求超過實體記憶體時就減少同時執行的行程。
+
+「LRU 不會發生」錯：frame 少於正在使用的頁數時，任何換頁演算法都救不了。
+
+@q vm3-02 | os-vm#3 | 3 | 情境
+A system has 60 frames and runs five processes whose current working sets contain 14, 16, 10, 15, and 13 pages. CPU utilization is low and the paging disk is busy. Which of the following statements are correct? Select all that apply.
+[x] The processes together need 68 frames for their working sets, more than the 60 available, which explains the constant page faults.
+[ ] Admitting a sixth process will raise CPU utilization, since the CPU is mostly idle.
+[x] Suspending the process whose working set has 10 pages and freeing its frames lets the other four working sets fit in memory.
+[ ] Suspending a process cannot help, because its pages will have to be loaded again when it resumes.
+[x] The low CPU utilization here does not mean there is too little work; the processes are mostly waiting for pages.
+---
+「合計 68 頁超過 60」對：$14+16+10+15+13=68$，這就是 thrashing。
+
+「再多放一個行程」錯：這是早期系統的經典惡性循環，排程器把「CPU 閒」誤判成「工作不夠」，每個行程分到的 frame 更少，缺頁更多。
+
+「暫停工作集 10 頁的那個」對：剩下 $68-10=58\le60$，其他四個都裝得下，缺頁大減。
+
+「暫停沒用」錯：之後重新載入的成本只付一次，比所有行程一直互相搶 frame 好得多。
+
+「CPU 閒不代表工作少」對：行程都卡在等頁從磁碟讀進來。
+
+@q vm3-03 | os-vm#3 | 2 | 計算
+參考串 1 2 1 3 4 4 3 5 6 5 6 6 7，工作集視窗 $\Delta=4$。在時間 $t=7$（第 7 個參考，4）時工作集是？
+== 3 4
+---
+看最近 4 個參考：3、4、4、3 → {3, 4}。
+
+@q vm3-04 | os-vm#3 | 2 | 計算
+同一串，在最後一個參考（第 13 個，7）時，$\Delta=4$ 的工作集大小？
+== 3
+---
+最近 4 個：5、6、6、7 → {5,6,7}，大小 3。
+
+@q vm3-05 | os-vm#3 | 2 | 比較
+Which of the following statements comparing global and local page replacement are correct?
+[x] With global replacement, a process may take frames from other processes.
+[x] With local replacement, a process replaces only its own pages.
+[ ] With local replacement, one process's thrashing spreads to all the other processes.
+[ ] Global replacement prevents thrashing, since frames flow to whichever process needs them.
+[ ] With global replacement, a process's performance is independent of the other processes.
+---
+「全域可以搶別人的 frame」，「區域只換自己的」。全域時一個行程的表現受別人影響，一個行程 thrashing 還可能把別人拖下水；區域替換反而把問題關在那個行程裡。
+
+@q vm3-06 | os-vm#3 | 2 | 觀念
+Which of the following statements about the page-fault-frequency (PFF) scheme for preventing thrashing are correct?
+[x] If a process's fault rate is above the upper limit, it is given more frames.
+[x] If its fault rate is below the lower limit, some of its frames are taken away.
+[x] If more frames are needed but none are free, some process is suspended.
+[x] PFF controls the fault rate directly instead of estimating a working set.
+[ ] Frames are taken away when the fault rate is too high, to make room for other processes.
+---
+PFF「直接控制缺頁率」：「太高就多給」、「太低就收回」；「沒有空 frame 可給時暫停某個行程」。缺頁率太高時收回 frame 剛好說反，只會更糟。
+
+@q vm3-07 | os-vm#3 | 3 | 計算
+Three processes have working-set sizes 30, 45 and 50, and the system has 120 frames. Which of the following statements describe what the working-set model does?
+[x] The total demand is 125 frames, which exceeds the 120 available.
+[x] One process is suspended (swapped out) to avoid thrashing.
+[ ] All three processes run anyway, since 125 is close to 120.
+[ ] Another process is admitted, since the CPU is not fully used.
+[ ] Each process receives 40 frames, splitting the memory equally.
+---
+$30+45+50=125>120$，「需求超過」，硬擠只會讓大家都缺頁，所以「暫停其中一個」。差一點也一樣會 thrashing；再加行程更糟；平均分 40 時需要 45、50 的兩個不夠，還是一直缺頁。
+
+@q vm4-01 | os-vm#4 | 2 | 計算
+TLB 有 64 項。頁 4 KB 時 TLB reach 是多少？改用 2 MB 大頁呢？
+== 256KB,128MB
+?? 4KB頁,2MB頁
+== 256 KB,128 MB
+---
+reach＝項數 × 頁大小：$64\times4$ KB＝256 KB；$64\times2$ MB＝128 MB。
+
+@q vm4-02 | os-vm#4 | 3 | 計算
+`int A[1024][1024]`（每個 int 4 bytes、頁 4 KB，一列剛好一頁），只給 1 個 frame。依「列」走訪（外層 i、內層 j）和依「行」走訪（外層 j、內層 i）各缺頁幾次？
+== 1024,1048576
+?? 依列,依行
+---
+依列：同一列都在同一頁，每列缺一次：1024。依行：每次都跳到下一列（另一頁），每個元素都缺頁：$1024^2$。
+
+@q vm4-03 | os-vm#4 | 2 | 觀念
+Which of the following statements about copy-on-write in `fork` are correct?
+[x] Parent and child initially share the same pages, marked read-only.
+[x] A page is copied only when one of them writes to it.
+[x] It avoids wasted copying when the child calls `exec` right after `fork`.
+[x] A write to a shared page causes a fault that the OS handles by copying the page.
+[ ] The child is not allowed to write to its memory until it calls `exec`.
+---
+父子「先共用、設成唯讀」，「誰要寫才複製那一頁」：寫入唯讀頁會觸發 fault，「作業系統在處理時複製」。fork 完常馬上 exec，「省下白費的複製」。子行程可以寫，只是寫時會觸發複製。
+
+@q vm4-04 | os-vm#4 | 2 | 比較
+Which of the following statements comparing the buddy allocator and the slab allocator for kernel memory are correct?
+[x] The buddy system splits memory into power-of-2 blocks, which makes merging free blocks easy.
+[x] The buddy system has internal fragmentation: a 33 KB request receives 64 KB.
+[x] The slab allocator prepares fixed-size slots for each kind of kernel object.
+[x] Linux uses both, building slabs on pages obtained from the buddy system.
+[ ] The slab allocator rounds every request up to a power of 2, just as the buddy system does.
+---
+「buddy 用 2 的次方切分」，相鄰夥伴好合併，但「有內部碎片」：要 33 KB 給 64 KB。「slab 為每種物件準備固定大小的格子」，配置快、幾乎不浪費；Linux「兩者並用」，slab 向 buddy 拿頁再切。捨入到 2 的次方是 buddy 的做法。
+
+@q vm4-05 | os-vm#4 | 2 | 計算
+buddy system 從 256 KB 的區塊中配置 21 KB。實際給多大？
+== 32KB
+== 32
+---
+一路對半切：256→128→64→32，32 是最小夠用的 2 的次方。浪費 11 KB。
+
+@q vm4-06 | os-vm#4 | 2 | 觀念
+Which of the following statements about I/O interlock (locking pages in memory) are correct?
+?? 複選
+[x] It prevents a page used as an I/O buffer from being replaced while a device transfers data into it.
+[ ] Its purpose is to prevent thrashing by keeping frequently used pages in memory.
+[ ] Its purpose is to prevent other processes from reading the buffer during the transfer.
+[ ] Its purpose is to prevent TLB misses on the buffer during the transfer.
+[ ] Locked pages stay locked until the process that owns them terminates.
+---
+正在做 I/O 的緩衝區頁如果被換出、frame 給了別人，DMA 會把資料寫到別人的頁，所以「不讓它被替換」。它跟 thrashing、存取權限、TLB 都無關；I/O 完成就解鎖，不必等行程結束。
+
+@q st1-01 | os-storage#1 | 2 | 計算
+磁頭在 50，請求序列 95、180、34、119、11、123、62、64（磁柱 0–199）。FCFS 的總磁頭移動量？
+== 644
+---
+$45+85+146+85+108+112+61+2=644$。
+
+@q st1-02 | os-storage#1 | 2 | 計算
+同上，SSTF 的總移動量和服務順序？
+== 236,62 64 34 11 95 119 123 180
+?? 總移動,順序
+---
+50→62(12)→64(2)→34(30)→11(23)→95(84)→119(24)→123(4)→180(57)，共 236。
+
+@q st1-03 | os-storage#1 | 3 | 計算
+同上，SCAN（先往大的方向，走到 199 再回頭）和 LOOK（只走到最遠的請求就回頭）的總移動量？
+== 337,299
+?? SCAN,LOOK
+---
+SCAN：$(199-50)+(199-11)=337$。LOOK：$(180-50)+(180-11)=299$。
+
+@q st1-04 | os-storage#1 | 3 | 計算
+同上，C-SCAN（往大的走到 199、跳回 0 繼續往大，跳回的距離也算）的總移動量？
+== 382
+---
+$(199-50)+199+(34-0)=382$。C-LOOK 則是 $130+169+23=322$（跳到 11 再到 34）。
+
+@q st1-05 | os-storage#1 | 2 | 觀念
+磁碟排程用 SSTF（每次挑最近的請求），主要問題是？
+[x] 可能飢餓：離磁頭遠的請求一直被新來的近請求插隊
+[ ] 移動量最大
+[ ] 一定比 FCFS 慢
+[ ] 不能處理新請求
+---
+SCAN 系列保證每一趟都會掃到每個請求。
+
+@q st1-06 | os-storage#1 | 3 | 比較
+A disk has cylinders numbered 0 through 199, and its head is at cylinder 50, moving upward. Three requests are pending, at cylinders 20, 80, and 180, and no new requests arrive. Two schedulers are compared under the following rules. SCAN serves requests in its current direction and always travels to the physical end, 199, before reversing. C-SCAN also travels upward to 199, then returns all the way to cylinder 0 without serving anything on that return trip, and then resumes moving upward. Count every cylinder the head physically crosses, including the return trip, and stop as soon as the last request is served. Which of the following statements are correct? Select all that apply.
+[x] SCAN travels 328 cylinders.
+[x] The circular policy travels 368 cylinders.
+[x] Under these rules, the circular policy serves requests only while moving upward.
+[ ] The circular policy always minimizes total movement compared with SCAN.
+[ ] The 199-to-0 return contributes zero movement under the stated distance rule.
+---
+「SCAN 328」對：50 到 199 為 149，再到 20 為 179。「循環掃描 368」對：149＋199＋20＝368。「只向上服務」對：回程不服務是題設定義。「總移動必最小」錯：本例就比 SCAN 多 40；設計上的等待分布取捨不能直接推成移動量一定較少。「回程零」錯：題設明定所有實體移動都要計入，不能當作免費跳躍。
+
+@q st1-07 | os-storage#1 | 2 | 計算
+7200 RPM 的硬碟，平均旋轉延遲是多少 ms？
+== 4.17
+== 4.2
+---
+轉一圈 $60/7200$ 秒≈8.33 ms，平均等半圈≈4.17 ms。
+
+@q st1-08 | os-storage#1 | 3 | 計算
+A rotating hard disk has an average seek time of 5 ms, spins at 7200 revolutions per minute, and transfers data at 100 MB/s, where 1 MB is $10^6$ bytes. A database performs random reads, and each read transfers one 4 KiB block (4096 bytes) at a random location on the disk. Assume that the average rotational delay is half a revolution, that the controller adds no overhead, and that seek time, rotational delay, and transfer time add up without overlapping. The database team uses this model to estimate how many random reads per second a single disk can sustain. Which of the following statements are correct? Select all that apply.
+[x] Average rotational delay is approximately 4.17 ms.
+[x] Data transfer takes approximately 0.041 ms.
+[x] Total average access time is approximately 9.21 ms.
+[ ] Average rotational delay is approximately 8.33 ms.
+[x] One disk can sustain about 109 random reads per second.
+---
+「4.17 ms」對：7200 RPM 是每秒 120 圈，一圈約 8.33 ms，平均等半圈。
+
+「0.041 ms」對：$4096\div10^8$ 秒約 0.04096 ms。
+
+「9.21 ms」對：$5+4.1667+0.04096\approx9.2076$。
+
+「平均 8.33 ms」錯：那是轉一整圈的時間。
+
+「每秒約 109 次」對：$1000\div9.21\approx108.6$；尋軌和旋轉才是主要成本，傳輸幾乎可以忽略。
+
+@q st1-09 | os-storage#1 | 3 | 觀念
+A simplified SSD has no moving parts: every 4 KiB read takes 100 microseconds once it starts, whatever block number it touches, and in this model the device serves one request at a time. Two requests, for blocks 12 and 900000, arrive together at time 0 and are served one after the other. An administrator who is used to hard disks wonders whether disk-scheduling policies such as SCAN still matter for this device, since the two block numbers are far apart. Real SSDs may serve several requests in parallel, and the order in which queued requests are served can still change how long each one waits. Which of the following statements are correct? Select all that apply.
+[x] Mechanical head-seek distance is not a service-time component in this SSD model.
+[x] Serving the two requests serially takes 200 microseconds.
+[x] The absence of mechanical seeking does not imply that queue scheduling can never affect observed response time.
+[ ] The two serialized 100-microsecond services finish in 100 microseconds in total.
+[ ] Every scheduling policy is necessarily equivalent for every SSD workload.
+---
+「沒有機械尋軌」對：SSD 沒有要移動的磁頭。「串行共 200 微秒」對：100＋100。「排程仍可影響等待」對：沒有磁頭不表示排隊與並行服務等因素都消失。「共 100」錯：那把題設的串行誤當完全重疊。「任何排程都相同」錯：不能把沒有尋軌成本推成所有工作負載都無排程差異。
+
+@q st2-01 | os-storage#2 | 2 | 計算
+6 顆 2 TB 硬碟，RAID 0、RAID 5、RAID 6 的可用容量各是？
+== 12,10,8
+?? RAID0,RAID5,RAID6
+---
+RAID 0 全部用；RAID 5 扣一顆給同位元；RAID 6 扣兩顆。
+
+@q st2-02 | os-storage#2 | 2 | 計算
+同樣 6 顆 2 TB，RAID 1+0（兩兩鏡像再條帶）的可用容量？最多能壞幾顆而保證不掉資料？
+== 6,1
+?? 容量,保證能壞幾顆
+---
+一半拿來鏡像：6 TB。保證只能壞 1 顆（壞兩顆剛好同一對就完了）；運氣好最多壞 3 顆。
+
+@q st2-03 | os-storage#2 | 2 | 比較
+RAID 0、1、5、6 各最多能壞幾顆（保證不掉資料）？
+== 0,1,1,2
+?? RAID0,RAID1,RAID5,RAID6
+---
+RAID 0 沒有冗餘；RAID 1（兩顆鏡像）壞一顆還有另一顆；RAID 5 一份同位元；RAID 6 兩份。
+
+@q st2-04 | os-storage#2 | 3 | 計算
+RAID 5 一條 stripe 有三個資料區塊 1011、0110、1100 和同位元區塊。同位元是多少？存 0110 的硬碟壞了，怎麼還原？
+== 0001,0110
+?? 同位元,還原
+---
+同位元＝$1011\oplus0110\oplus1100=0001$。還原：$1011\oplus1100\oplus0001=0110$。XOR 任意三個得第四個。
+
+@q st2-05 | os-storage#2 | 2 | 計算
+RAID 5 小寫入（只改一個資料區塊）要幾次磁碟 I/O？
+== 4
+---
+讀舊資料、讀舊同位元、寫新資料、寫新同位元（新同位元＝舊同位元 ⊕ 舊資料 ⊕ 新資料）。這是 RAID 5 寫入慢的原因。
+
+@q st2-06 | os-storage#2 | 3 | 情境
+A storage array receives 100 independent small writes, each overwriting one block that is not in any cache. Two layouts are compared. In mirrored RAID 1+0, each overwrite writes the same block to both disks of a mirrored pair. In RAID 5, the controller uses a read-modify-write path: it reads the old data block and the old parity block, computes the new parity, and then writes the new data block and the new parity block. No reads are cached, and no overwrites are combined into full-stripe writes. Count disk-block I/O operations only, ignoring metadata and controller time. Which of the following statements are correct? Select all that apply.
+[x] RAID 1+0 performs 200 block writes in this model.
+[x] The specified RAID 5 implementation performs 400 block I/O operations.
+[x] The RAID 5 count includes 200 reads and 200 writes.
+[ ] The specified RAID 5 path requires no old-data or old-parity reads.
+[ ] These operation counts alone guarantee exactly twice the application throughput for RAID 1+0 on every real workload.
+---
+「鏡像 200 寫」對：100×2。「RAID 5 共 400」對：每筆兩讀兩寫，100×4。「200 讀與 200 寫」對：各 100×2。「不讀舊值」錯：和題設的 read-modify-write 路徑相反。「一定兩倍吞吐」錯：操作數只是此模型的比較，實際還受並行程度、快取、控制器與工作負載等因素影響，不能直接推成固定速度倍數。
+
+@q st2-07 | os-storage#2 | 3 | 陷阱
+「RAID 5 的同位元固定放在同一顆硬碟上」對嗎？
+[ ] 對
+[x] 不對
+---
+那是 RAID 4。RAID 5 把同位元輪流分散在每顆硬碟上，避免每次寫入都卡在同一顆同位元碟。
+
+@q st2-08 | os-storage#2 | 2 | 陷阱
+「有 RAID 1 就不用備份了」對嗎？
+[ ] 對
+[x] 不對
+---
+RAID 防的是硬碟故障。誤刪、被加密勒索、檔案系統錯誤會同步寫到兩顆，鏡像一起壞。
+
+@q st3-01 | os-storage#3 | 3 | 比較
+A file has 16 logical blocks numbered from 0. Compare three simple layouts: contiguous data starting at disk block 100; a linked list whose next pointer is stored inside each data block; and a single-level index already in memory. The first linked block's location is known, but none of its data blocks is cached. Which statements are correct? Select all that apply.
+[x] Contiguous allocation places logical block 7 at disk block 107.
+[x] Reaching linked logical block 7 requires reading eight data blocks from the known first block.
+[x] With the cached index, reading logical block 7 requires only its one data-block read.
+[ ] The linked layout can always obtain logical block 7 by adding seven to the first physical block number.
+[ ] An index requires reading the contents of all seven earlier data blocks before locating block 7.
+---
+「107」對：連續配置的起點加邏輯區塊序號。「鏈結讀八塊」對：從第 0 塊讀到第 7 塊，需沿七個指標並讀目標塊。「索引已在記憶體只讀目標」對：可直接取第七項所列位置。「鏈結直接加七」錯：實體區塊不保證連續。「索引也需逐塊讀」錯：索引把各塊位置分開列出，不需先讀前面的資料內容。
+
+@q st3-02 | os-storage#3 | 3 | 計算
+Unix inode：12 個直接指標、1 個單層間接、1 個雙層間接、1 個三層間接。區塊 4 KB、指標 4 bytes。只用直接和單層間接，最大檔案多大？
+== 4144KB
+== 4144
+---
+一個間接區塊放 $4096/4=1024$ 個指標。$(12+1024)\times4$ KB $=4144$ KB（約 4 MB）。
+
+@q st3-03 | os-storage#3 | 3 | 計算
+A Unix-like file system stores each file's block addresses in its inode: 12 direct pointers, then one pointer each to a single-indirect block, a double-indirect block, and a triple-indirect block. Every block, including the indirect blocks, is 4096 bytes, and each block pointer is 4 bytes, so an indirect block is filled entirely with pointers. A developer must report the largest file the format can describe and checks how much each part contributes, filling in the table below before writing the documentation:
+
+| part | data blocks it can address |
+|---|---|
+| direct | 12 |
+| single-indirect | ? |
+| double-indirect | ? |
+| triple-indirect | ? |
+
+Ignore any other limit on file size, and count only file-data blocks, not the indirect blocks themselves. Use 1 TiB $= 2^{40}$ bytes and 1 GiB $= 2^{30}$ bytes. The developer then compares the total with an older format that has no triple-indirect pointer. Which of the following statements are correct? Select all that apply.
+[x] An indirect block contains 1024 pointers.
+[x] The triple-indirect part alone can address 4 TiB of file data.
+[x] All parts together can address 1074791436 data blocks.
+[ ] All parts together can address exactly $2^{30}$ data blocks, with no contribution from the direct and smaller indirect parts.
+[ ] The triple-indirect part alone is limited to 4 GiB of file data.
+---
+「1024」對：4096÷4。「三層獨占 4 TiB」對：1024³×4096＝2^42 位元組。「總共 1074791436」對：12＋1024＋1024²＋1024³。「總數恰 2^30」錯：那只算三層涵蓋的資料塊，漏掉其他部分。「4 GiB」錯：少了 1024 倍，GiB 與 TiB 不同。
+
+@q st3-04 | os-storage#3 | 3 | 計算
+同上的 inode（inode 已在記憶體中），要讀檔案的第 2000 個區塊（從 0 起算），要幾次磁碟 I/O？
+== 3
+---
+直接 0–11、單層間接 12–1035，2000 落在雙層間接：讀雙層間接區塊、讀單層間接區塊、讀資料區塊，共 3 次。
+
+@q st3-05 | os-storage#3 | 3 | 觀念
+A USB stick uses a simplified FAT volume with 8192 data clusters of 4 KiB each and one 4-byte allocation-table entry per cluster; the entry for a cluster holds the number of the next cluster of the same file, or an end marker. Each file's record stores the number of its first cluster, and the operating system caches the whole table in memory when the stick is plugged in. Reserved entries can be ignored. A student compares this design with linked allocation, where each data cluster stores its own next pointer. Which of the following statements are correct? Select all that apply.
+[x] The table occupies 32 KiB.
+[x] FAT is a form of linked allocation with next-cluster information collected in a separate table.
+[x] Caching the table can avoid reading earlier data clusters merely to obtain their next pointers.
+[ ] The table occupies 8192 bytes under the stated four-byte entry format.
+[ ] A cached chain necessarily supports locating every arbitrary logical cluster with one table-entry lookup and no chain traversal.
+---
+「32 KiB」對：8192×4＝32768 位元組。「鏈結配置變形」對：關係仍是下一塊在哪裡，只是集中存表。「少讀前面資料塊」對：可在記憶體沿 FAT 尋找鏈結。「8192 位元組」錯：忘了每項四位元組。「任意位置都一次表查詢」錯：若只有鏈結與起點，仍可能要沿多個表項走訪；快取減少磁碟讀取，不自動消除鏈結步數。
+
+@q st3-06 | os-storage#3 | 3 | 情境
+A company authors a read-only disc image for a software release, and every file's final size is known before the image is written. One 120-block file is placed contiguously starting at disk block 200 and will never grow; its logical block indices start at 0. Other files are placed after it, and the authoring tool may leave small gaps between files to align them. An engineer wants to locate any logical block of this file quickly and to decide how much space to reserve around it for future versions. Which of the following statements are correct? Select all that apply.
+[x] Logical block 37 is at disk block 237.
+[x] A known starting block permits direct computation of this file's physical block locations.
+[x] The layout does not need to reserve room for later growth of this file under the stated workload.
+[ ] Any read-only image automatically has every file contiguous, regardless of how it was authored.
+[ ] Contiguous placement of each file proves that no unused gaps can exist anywhere in the image.
+---
+「237」對：200＋37。「起點可直接計算」對：連續配置可用起點加序號定位。「不需預留成長」對：題設已知最終大小且不再變動。「唯讀自然全連續」錯：仍取決於建立影像時的布局。「絕無空洞」錯：檔案內連續不代表檔案之間沒有未使用空間。唯讀減少成長問題，不能直接推成所有碎片都不存在。
+
+@q st4-01 | os-storage#4 | 2 | 計算
+1 TB 的磁碟、區塊 4 KB，用 bitmap 管理空閒空間，bitmap 多大？
+== 32MB
+== 32 MB
+== 32
+---
+$2^{40}/2^{12}=2^{28}$ 個區塊，每個 1 bit：$2^{28}$ bits＝$2^{25}$ bytes＝32 MB。
+
+@q st4-02 | os-storage#4 | 3 | 比較
+Name `alpha` initially is the only hard link to a regular file. Create hard link `beta` to the same inode, then symbolic link `gamma` storing pathname `alpha`. Finally unlink `alpha`, without replacing that pathname. Assume ordinary POSIX link semantics. Which statements are correct? Select all that apply.
+[x] Opening `beta` can still reach the original file.
+[x] Resolving `gamma` through its stored pathname now encounters a missing target.
+[ ] Creating both links raises the original file's hard-link count from one to three.
+[ ] The hard link requires an independent second copy of all original data.
+[ ] Removing the symbolic link `gamma` would also remove hard-link name `beta`.
+---
+「beta 仍能讀」對：它直接參照同一個 inode，原檔還有一個硬連結。「gamma 懸空」對：它存的是已不存在的 alpha 路徑。「一變三」錯：只有硬連結讓計數由一變二，符號連結不增加原 inode 的硬連結數；刪 alpha 後剩一。「硬連結複製內容」錯：資料共用。「刪 gamma 也刪 beta」錯：兩個名字各自獨立，移除符號連結不等於移除其可能指向的檔案。
+
+@q st4-03 | os-storage#4 | 2 | 計算
+一個檔案有 3 個 hard link（3 個名字）。刪掉其中 2 個名字後，檔案的資料還在嗎？inode 的連結數是多少？
+== 在,1
+?? 資料,連結數
+== 還在,1
+---
+inode 記錄有幾個名字指向它；減到 0 才真正刪除資料。
+
+@q st4-04 | os-storage#4 | 3 | 觀念
+One process has descriptors 3 and 4 referring to the same open file description because one was created by `dup`. Descriptor 5 comes from a separate `open` of the same regular file. Both open descriptions refer to one inode. Which statements are correct? Select all that apply.
+[x] Three descriptor-table entries are involved in this process.
+[x] Two open file descriptions are involved.
+[x] The two descriptions can refer to the same inode while retaining different current positions.
+[ ] Each inode can have only one open file description regardless of how many independent opens occur.
+[ ] Descriptors 3 and 5 necessarily share one current position solely because they refer to the same inode.
+---
+「三個描述元表項」對：3、4、5 各是一個行程內表項。「兩個開啟描述」對：3 與 4 共用一個，獨立 open 的 5 使用另一個。「同 inode 可有不同位置」對：位置與狀態屬於開啟描述，不是 inode 或每個描述元號碼自行保存。「每 inode 只有一描述」錯：獨立開啟可建立多個。「3 與 5 必同位置」錯：同檔案不代表同一個開啟描述。
+
+@q st4-05 | os-storage#4 | 3 | 比較
+A volume has 8192 blocks. A free-space bitmap uses one bit per block. An alternative stores an eight-byte next pointer inside each of 1024 free blocks, with no separately allocated list blocks. Ignore list-head metadata. Which statements are correct? Select all that apply.
+[x] The bitmap occupies 1024 bytes.
+[x] The free-list pointer fields together occupy 8192 bytes inside free blocks.
+[ ] Using free blocks for list pointers makes the pointer fields occupy zero bytes.
+[x] Consecutive free bits in the bitmap can identify a run of available blocks.
+[ ] The one-bit-per-block bitmap requires 8192 bytes.
+---
+「1024 位元組」對：8192 位元除以八。「指標共 8192」對：1024×8，存放於空閒塊仍會占位元組。「零成本」錯：沒有額外配置整塊，不等於欄位完全不占空間。「連續空閒位元可找連續塊」對。「8192 位元組」錯：把一個位元誤當一個位元組。
+
+@q st5-01 | os-storage#5 | 3 | 觀念
+A volume initially has 100 free blocks, including block 42. A new file's durable inode and directory entry now reference block 42, but a crash prevents its allocation bitmap update. The bitmap still counts all 100 blocks as free. No other allocation changes occur. Which statements are correct? Select all that apply.
+[x] The inode and allocation bitmap disagree about block 42.
+[x] The correct free-block count after this one allocation would be 99.
+[x] Trusting the stale free indication could let another file be assigned block 42.
+[ ] Persisting the inode automatically guarantees that the physically separate bitmap update persisted as well.
+[ ] Updates to different inode, directory, and bitmap locations always occur as one indivisible storage write without any protocol.
+---
+「互相矛盾」對：inode 已使用 42，bitmap 卻仍說空閒。「正確剩 99」對：100−1。「可能再配同塊」對：配置器若相信舊位元，就會造成重複使用。「寫 inode 自動等於寫 bitmap」錯：它們是不同位置的修改。「天然不可分割」錯：需要日誌或其他合適的協定，不能假定多次寫入自帶整筆一致性。
+
+@q st5-02 | os-storage#5 | 3 | 觀念
+A recovery checker must inspect one million inode records after a crash. In this simplified model it examines 50000 records per second, serially, before any additional repair work. Which statements are correct? Select all that apply.
+[x] The stated record scan alone takes twenty seconds.
+[x] Additional block checks and repairs can increase total recovery time beyond that scan time.
+[ ] Examining one million records at the stated rate takes two seconds.
+[x] Recovery that scans all metadata can become costly as the metadata set grows.
+[ ] A consistency checker is guaranteed to bring back every lost user-data byte.
+---
+「二十秒」對：1000000÷50000＝20。「額外工作可再增加」對：題設尚未計入區塊核對與修復。「兩秒」錯：少算十倍。「全掃可能昂貴」對：要處理的紀錄愈多，所需工作也可能增加。「保證找回每個資料位元組」錯：一致性檢查不是備份，無法憑空還原已遺失的內容。
+
+@q st5-03 | os-storage#5 | 3 | 觀念
+A committed redo transaction contains two assignments: mark bitmap block 42 allocated, and set an inode's block pointer to 42. A crash occurs after only the first home-location assignment is durable. Repeating either assignment has the same effect as doing it once. Which statements are correct? Select all that apply.
+[x] Replaying both assignments can complete the committed transaction's home state.
+[x] The replayed inode pointer should designate block 42.
+[x] Repeating these same assignments after another recovery interruption need not create an additional allocation.
+[ ] Recovery must ignore the committed transaction merely because one home-location change already persisted.
+[ ] Replaying the transaction twice necessarily allocates a new block numbered 43 on the second replay.
+---
+「重做可補完」對：有提交紀錄，可將未完成的真正位置更新補上。「仍指 42」對：日誌保存的是指定值。「重做不需多配置」對：相同的設值操作重複後結果不變。「部分已寫就忽略」錯：另一部分可能還沒完成。「第二次一定配置 43」錯：題設是把同一欄設成 42，不是每次再增加一個區塊。
+
+@q st5-04 | os-storage#5 | 3 | 情境
+A redo transaction durably records replacement value 200 and a valid commit record. Its home location still contains old value 100 when power fails; the log remains intact. Recovery replays committed replacements to home locations. Which statements are correct? Select all that apply.
+[x] Recovery can obtain the new value 200 from the log.
+[x] Replaying the committed replacement makes the home value 200.
+[x] A committed transaction can be recoverable even before its home-location update finishes.
+[ ] The new value is irretrievably lost solely because the home location still held 100 at the crash.
+[ ] Erasing the only committed log record before the home update is durable preserves the same stated recovery guarantee.
+---
+「從日誌取到 200」對：新內容與有效提交紀錄都已持久保存。「重做後 200」對：按保存的替換值更新真正位置。「home 尚未完成仍能復原」對：這正是先保存可重做紀錄的用途。「必定永久遺失」錯：日誌仍有完整新值。「提早抹唯一紀錄同樣安全」錯：若 home 還沒保存，兩個地方就都可能失去可恢復的新狀態。
+
+@q st5-05 | os-storage#5 | 2 | 比較
+只記 metadata 的日誌（ordered mode）和連資料都記的日誌（full journaling）？
+[x] 只記 metadata 寫得快，但當機可能讓檔案內容是舊的；全部記比較安全但每份資料寫兩次
+[ ] 只記 metadata 比較安全
+[ ] 兩者一樣
+[ ] 全部記比較快
+---
+很多系統預設只記 metadata，並保證先寫資料再寫 metadata，避免指到垃圾。

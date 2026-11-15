@@ -1,0 +1,1041 @@
+@q rc1-01 | al-recurrence#1 | 2 | 計算
+$f(n)=n^2$、$g(n)=n^2/\lg n$。$f$ 和 $g$ 是什麼關係？
+[x] $f=\omega(g)$：$f/g=\lg n\to\infty$，$f=\Omega(g)$ 但不是 $\Theta$
+[ ] $f=\Theta(g)$：都是 $n^2$
+[ ] $f=O(g)$
+[ ] $f=o(g)$
+---
+差一個 $\lg n$ 就不是同一種長法了。看極限：$\frac{n^2}{n^2/\lg n}=\lg n\to\infty$。
+
+@q rc1-02 | al-recurrence#1 | 2 | 陷阱
+下列哪一個**不是** $O(2^n)$？
+[x] $4^n$
+[ ] $2^{n+10}$
+[ ] $n^{100}$
+[ ] $2^n+n^3$
+---
+$4^n=2^{2n}=2^n\cdot2^n$，比 $2^n$ 多乘一個會長大的 $2^n$。$2^{n+10}=1024\cdot2^n$ 只差常數。多項式比指數慢。
+
+@q rc1-03 | al-recurrence#1 | 3 | 計算
+Two parts of a program have running times $f(n)=\lg(n^3)$ and $g(n)=(\lg n)^3$ for $n > 1$, where all logarithms have base 2. A student evaluates both at a few input sizes before comparing their growth:
+
+| $n$ | 16 | 256 | 65536 |
+|---|---|---|---|
+| $\lg n$ | 4 | 8 | 16 |
+
+The student notices that the two expressions look alike, since both combine a logarithm with a cube, and wonders whether they grow at the same rate or whether one of them eventually dominates, as $n$ grows without bound, despite the small values. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] $f(n)=3\lg n$.
+[ ] $g(n)/\lg n$ tends to zero.
+[ ] At n equal to 16, f is 64 and g is 12.
+[ ] $f(n)=\Theta(g(n))$.
+[ ] At n equal to 16, $\lg(n^3)=64$.
+---
+「三 lg n」對：次方在對數內可移成乘數。「比值趨零」錯：g/lg n＝(lg n)² 趨無窮。「六十四與十二」錯：lg16＝4，故 f＝12、g＝64，數值被交換。「同階」錯：f/g＝3/(lg n)² 趨零。「對數裡次方六十四」錯：lg(16³)＝3×4＝12。
+
+@q rc1-04 | al-recurrence#1 | 3 | 比較
+A course compares five running times as $n$ tends to infinity: $(\lg n)^{10}$, $\sqrt n$, $2^{\lg n}$, $n\lg n$, and $n^{1.01}$, where all logarithms have base 2. A student first evaluates the two smallest-looking functions at a few sizes:
+
+| $n$ | 4 | $2^{20}$ | $2^{100}$ |
+|---|---|---|---|
+| $(\lg n)^{10}$ | 1024 | $20^{10}\approx1.0\times10^{13}$ | $10^{20}$ |
+| $\sqrt n$ | 2 | 1024 | $2^{50}\approx1.1\times10^{15}$ |
+
+The student is surprised that $(\lg n)^{10}$ is still far larger at $n = 2^{20}$ and even at $2^{100}$. The student wants to decide which function eventually dominates, whether small cases can mislead, and how $n\lg n$ compares with $n^{1.01}$, whose power of $n$ is only slightly above 1, and whether $2^{\lg n}$ is really a new function at all. Which of the following statements are correct? Select all that apply.
+[x] $2^{\lg n}=n$.
+[x] $(\lg n)^{10}=o(\sqrt n)$.
+[x] $n\lg n=o(n^{1.01})$.
+[ ] $\sqrt n=o((\lg n)^{10})$ because the logarithm is raised to ten.
+[x] At n equal to four, $(\lg n)^{10}$ is numerically greater than $\sqrt n$.
+---
+「二的對數次方等 n」對：互為反函數。「對數十次方慢於根號」對：固定對數次方比任何固定正冪漸近更慢。「n lg n 慢於 n¹·⁰¹」對：比值 lg n/n⁰·⁰¹ 趨零。「根號反較慢」錯：十是固定次方，不能反轉此漸近關係。「四時對數項較大」對：2¹⁰＝1024，而 √4＝2；漸近順序不保證每個小輸入的數值順序。
+
+@q rc1-05 | al-recurrence#1 | 2 | 證明
+用定義證明 $5n^2-3n+8=O(n^2)$：找出 $c$ 和 $n_0$。
+---
+$n\ge1$ 時 $5n^2-3n+8\le5n^2+8\le5n^2+8n^2=13n^2$。取 $c=13$、$n_0=1$，所有 $n\ge n_0$ 都有 $f(n)\le c\,n^2$。（$c$、$n_0$ 不唯一，例如 $c=6$、$n_0=3$ 也行：$n\ge3$ 時 $-3n+8\le n^2$。）
+
+@q rc1-06 | al-recurrence#1 | 2 | 計算
+$\lim_{n\to\infty}\frac{n^{100}}{1.01^n}$ 是多少？代表什麼？
+[x] 0：任何多項式都比任何底數大於 1 的指數慢，$n^{100}=o(1.01^n)$
+[ ] $\infty$：$n^{100}$ 比較快
+[ ] 1：一樣快
+[ ] 不存在
+---
+$n$ 不大時 $n^{100}$ 看起來大得多，但漸近只看 $n\to\infty$。指數終究會贏。
+
+@q rc1-07 | al-recurrence#1 | 2 | 陷阱
+「$f=O(g)$ 而且 $g=O(f)$，就有 $f=\Theta(g)$」對嗎？
+[x] 對
+[ ] 不對
+---
+$f=O(g)$ 給 $f\le c_1g$；$g=O(f)$ 給 $g\le c_2f$，即 $f\ge\frac1{c_2}g$，這正是 $\Theta$ 的定義。
+
+@q rc1-08 | al-recurrence#1 | 3 | 反例
+是否任兩個函數 $f$、$g$，一定有 $f=O(g)$ 或 $g=O(f)$？
+[x] 不一定：$f=n$、$g=n^{1+\sin n}$，$g$ 在 $n$ 和 $n^2$ 之間來回擺盪，誰都壓不住誰
+[ ] 一定，漸近符號就像大小比較
+[ ] 一定，只要都是正的
+[ ] 只有多項式不一定
+---
+漸近符號像 $\le$，但不是每兩個都能比（不是全序）。考試偶爾會考這個反例。
+
+@q rc1-09 | al-recurrence#1 | 2 | 計算
+$\log_2n$ 和 $\log_{10}n$ 是什麼關係？
+[x] $\Theta$：$\log_2n=\log_{10}n\cdot\log_210$，只差常數倍
+[ ] $\log_2n=\omega(\log_{10}n)$
+[ ] $\log_2n=o(\log_{10}n)$
+[ ] 沒辦法比
+---
+所以寫 $O(\lg n)$ 時底數不用寫。但在指數上就不行：$2^{\log_2n}=n$、$2^{\log_{10}n}=n^{0.301}$。
+
+@q rc1-10 | al-recurrence#1 | 3 | 陷阱
+$2^{\log_2n}$ 和 $2^{\log_4n}$ 各等於什麼？兩者是同一種長法嗎？
+[x] $n$ 和 $\sqrt n$；不是
+[ ] 都是 $n$；是
+[ ] $n$ 和 $n^2$；不是
+[ ] 都是 $\Theta(\lg n)$
+---
+$\log_4n=\frac12\log_2n$，所以 $2^{\log_4n}=(2^{\log_2n})^{1/2}=\sqrt n$。對數底數在指數裡會變成次方。
+
+@q rc1-11 | al-recurrence#1 | 2 | 計算
+$\lg(n!)$ 是哪一種長法？
+[x] $\Theta(n\lg n)$
+[ ] $\Theta(n)$
+[ ] $\Theta(n^2)$
+[ ] $\Theta(\lg n)$
+---
+上界 $n!\le n^n$，$\lg n!\le n\lg n$；下界：一半的因數 $\ge n/2$，$\lg n!\ge\frac n2\lg\frac n2$。
+
+@q rc1-12 | al-recurrence#1 | 1 | 觀念
+$f=O(g)$ 的直覺是？
+[x] $n$ 夠大以後，$g$ 乘上某個固定倍數就壓得住 $f$
+[ ] $f$ 永遠比 $g$ 小
+[ ] $f$ 和 $g$ 一樣大
+[ ] $f$ 比 $g$ 長得快
+---
+「永遠比較小」不必要：$100n$ 一開始比 $n^2$ 大，但 $100n=O(n^2)$。
+
+@q rc1-13 | al-recurrence#1 | 2 | 找錯
+有人說：「$n^2=O(n^3)$，所以 $n^2=\Theta(n^3)$。」哪裡錯？
+[x] $O$ 只是上界；$\Theta$ 還要下界，但 $n^2$ 不是 $\Omega(n^3)$
+[ ] $n^2$ 不是 $O(n^3)$
+[ ] $n^2=\Theta(n^3)$ 是對的
+[ ] 應該是 $n^3=O(n^2)$
+---
+$O$ 像 $\le$，$2\le3$ 不代表 $2=3$。
+
+@q rc1-14 | al-recurrence#1 | 3 | 計算
+$f(n)=n^{\lg n}$ 和 $g(n)=2^n$，哪個長得快？
+[x] $2^n$ 比較快：取 $\lg$ 後比 $\lg^2n$ 和 $n$
+[ ] $n^{\lg n}$ 比較快
+[ ] 一樣快
+[ ] 沒辦法比
+---
+$\lg f=\lg n\cdot\lg n=\lg^2n$；$\lg g=n$。$n$ 長得比 $\lg^2n$ 快很多，所以 $f=o(g)$。比很大的函數時先取對數。（取對數後差很多才能這樣下結論；差常數倍時要小心。）
+
+@q rc1-15 | al-recurrence#1 | 2 | 陷阱
+「$f=o(g)$ 時也一定有 $f=O(g)$」對嗎？
+[x] 對
+[ ] 不對
+---
+小 o 是「嚴格小於」，當然也滿足「小於等於」。反過來不成立。
+
+@q rc1-16 | al-recurrence#1 | 2 | 計算
+$\sqrt n$ 和 $\lg^5 n$，誰比較快？
+[x] $\sqrt n$ 比較快：任何 $n^\epsilon$（$\epsilon>0$）都比任何 $\lg^kn$ 快
+[ ] $\lg^5n$ 比較快
+[ ] 一樣
+[ ] 看 $n$ 多大
+---
+$n$ 不大時 $\lg^5n$ 可能比較大（例如 $n=2^{16}$ 時 $\lg^5n=16^5\approx10^6$、$\sqrt n=256$），但漸近只看極限：$\frac{\lg^5n}{\sqrt n}\to0$。
+
+@q rc1-17 | al-recurrence#1 | 3 | 證明
+證明：若 $f_1=O(g_1)$、$f_2=O(g_2)$，則 $f_1+f_2=O(\max(g_1,g_2))$。
+---
+存在 $c_1,n_1$ 讓 $n\ge n_1$ 時 $f_1\le c_1g_1$；$c_2,n_2$ 讓 $n\ge n_2$ 時 $f_2\le c_2g_2$。取 $n_0=\max(n_1,n_2)$、$c=c_1+c_2$：$f_1+f_2\le c_1g_1+c_2g_2\le(c_1+c_2)\max(g_1,g_2)$。這就是「程式分段時只看最慢的那段」的依據。
+
+@q rc1-18 | al-recurrence#1 | 2 | 情境
+演算法 A 要 $100n\lg n$ 步，演算法 B 要 $n^2$ 步。$n=100$ 時誰快？$n$ 夠大時誰快？
+[x] $n=100$ 時 B 快（$10^4$ 對約 $6.6\times10^4$）；$n$ 夠大時 A 快
+[ ] 永遠 A 快
+[ ] 永遠 B 快
+[ ] 一樣快
+---
+漸近比較只說「夠大以後」。小規模時常數很重要，這也是實務上小陣列改用插入排序的原因。
+
+@q rc2-01 | al-recurrence#2 | 3 | 計算
+Consider the recursive procedure below, called on an input of size $n$, where $n$ is a power of 2:
+```
+solve(n):
+    if n == 1: return            // cost 1
+    for i = 1 to n:
+        for j = 1 to n: work()   // n^2 units in total
+    repeat 8 times: solve(n / 2)
+```
+Its running time satisfies $T(n)=8T(n/2)+n^2$ with $T(1)=1$. A student expands the recurrence depth by depth: the top call does $n^2$ work, each of the 8 calls it makes does $(n/2)^2$, and so on down to the calls with $n = 1$, which are the base calls. The student wants the total work at each depth, the number of base calls, the exact value $T(4)$, and the tight asymptotic solution, and compares it with $\Theta(n^2\lg n)$, which a classmate proposed. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] The full recursive expansion has $n^2$ base calls.
+[ ] Nonrecursive work decreases by a factor of two from one internal depth to the next.
+[x] $T(4)=112$.
+[ ] The tight solution is $\Theta(n^2\lg n)$ because each depth has n squared work.
+[ ] At n equal to four, the full recursive expansion has 16 base calls.
+---
+「n² 葉」錯：葉數是 8^(lg n)＝n³。「各層減半」錯：倍率為 8×(1/2)²＝2，是加倍。「一百一十二」對：T(2)＝12，T(4)＝8×12＋16＝112。「n² lg n」錯：每層成本不相等，緊界是 Θ(n³)。「十六葉」錯：n＝4 有兩層八分支，葉數 64。
+
+@q rc2-02 | al-recurrence#2 | 3 | 計算
+A recursive routine on inputs of size $n$, a power of 4, splits the input into 4 quarters, recurses on only 2 of them, and spends $\sqrt n$ time combining the results:
+```
+T(n) = 2 T(n/4) + sqrt(n),   T(1) = 1
+```
+A student expands the recurrence depth by depth, computes the total work at each depth, and checks the result on $n = 16$, using $T(4) = 2\cdot1+2 = 4$. The student also counts the base calls and asks for the number of depths below the top call, as a function of $n$. Which of the following statements are correct? Select all that apply.
+[x] Each internal depth contributes total nonrecursive work $\sqrt n$.
+[x] $T(16)=12$.
+[x] The tight solution is $\Theta(\sqrt n\lg n)$.
+[x] The depth is $\log_4 n$ on every allowed input.
+[x] At n equal to 16, there are four base calls.
+---
+「每層根號 n」對：2ⁱ√(n/4ⁱ)＝√n。「十二」對：T(4)＝4、T(16)＝2×4＋4。「根號乘對數」對：log₄n 個內部層各花 √n，加上 √n 個基底。「深度 log₄n」對：每一步輸入除四，直到一。「四個基底」對：十六除四兩次，共 2²＝4 葉，並非十六。
+
+@q rc2-03 | al-recurrence#2 | 3 | 計算
+A fast method multiplies two $n\times n$ matrices, with $n$ a power of 2, by making 7 recursive multiplications of $(n/2)\times(n/2)$ matrices and doing $\Theta(n^2)$ additions; a simplified model of its running time is
+```
+T(n) = 7 T(n/2) + n^2,   T(1) = 1
+```
+The ordinary recursive algorithm, by contrast, makes 8 recursive multiplications and runs in $\Theta(n^3)$ time. A student expands the simplified model depth by depth: depth $i$ has $7^i$ calls, each on matrices of size $n/2^i$. The student wants to know how the work per depth changes, which part of the tree dominates, the number of base calls, and the exact value $T(4)$, and a classmate argues that the $n^2$ work at the top call must dominate, as it would for 3 recursive calls. Which of the following statements are correct? Select all that apply.
+[x] Internal work grows by a factor of $7/4$ per depth.
+[x] The tight solution is $\Theta(n^{\log_2 7})$.
+[x] $T(4)=93$.
+[x] The base-call count is $n^{\log_2 7}$ on the allowed inputs.
+[ ] The quadratic root cost dominates because $7/4<1$.
+---
+「七比四」對：每層倍率 7×(1/2)²＝7/4。「n 的 log₂7 次方」對：該指數大於二，葉側主導。「九十三」對：T(2)＝11、T(4)＝7×11＋16。「基底數 n 的 log₂7 次方」對：深度 lg n，每個節點分七支。「七比四小於一」錯：7/4＝1.75，內部總成本隨深度增長。
+
+@q rc2-04 | al-recurrence#2 | 1 | 計算
+$T(n)=T(n/2)+1$ 的解是？
+[x] $\Theta(\lg n)$
+[ ] $\Theta(1)$
+[ ] $\Theta(n)$
+[ ] $\Theta(\sqrt n)$
+---
+$a=1$、$b=2$、$d=0$：$r=1$，每層 1、共 $\lg n$ 層。二分搜尋就是這個。
+
+@q rc2-05 | al-recurrence#2 | 3 | 計算
+A fast method multiplies two $n$-digit numbers, $n$ a power of 2, by making 3 recursive multiplications of $(n/2)$-digit numbers and doing a linear amount of additions; a simplified model of its cost is $T(n)=3T(n/2)+n$ with $T(1)=1$. A student checks the model on small sizes, computing $T(2)$ and $T(4)$ by hand, and then expands the recurrence depth by depth to find how the work per depth changes, how many calls with $n = 1$ there are, and the tight asymptotic solution. Which of the following statements are correct? Select all that apply.
+[x] $T(4)=19$.
+[x] The tight solution is $\Theta(n^{\log_2 3})$.
+[ ] Internal work decreases by a factor of $2/3$ per depth.
+[ ] The recurrence has exactly n base calls.
+[ ] $T(2)=4$.
+---
+「十九」對：T(2)＝3＋2＝5，再得 3×5＋4＝19。「log₂3 次方」對：基底數 3^(lg n)，其階主導。「成本每層二比三」錯：實為 3/2，子數增加比規模縮減快。「恰 n 基底」錯：是 n^(log₂3)，四時有九個。「T 二等四」錯：漏算一個基底或一單位根成本，實為五。
+
+@q rc2-06 | al-recurrence#2 | 3 | 計算
+Consider a procedure that, on an input of size $n$, a power of 4, does $n^2$ units of work and then calls itself on 16 inputs of size $n/4$:
+```
+T(n) = 16 T(n/4) + n^2,   T(1) = 1
+```
+A student expands the recurrence depth by depth: depth $i$ has $16^i$ calls, each on an input of size $n/4^i$. The student computes $T(4) = 16\cdot1 + 16 = 32$ and then $T(16)$, counts the base calls for $n = 16$, and compares $n^2$ with the quantity $n^{\log_4 16}$ used by the master theorem. A classmate predicts that the work shrinks as the tree gets deeper, so that the top call dominates and $T(n) = \Theta(n^2)$, as for many recurrences of this shape, and the student wants to check that prediction. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Internal work at depth i is $n^2/16^i$.
+[x] $T(16)=768$.
+[ ] The tight solution is $\Theta(n^2)$.
+[ ] The comparison quantity $n^{\log_4 16}$ is $n^4$.
+[ ] At n equal to 16, there are 16 base calls.
+---
+「每層除十六」錯：16ⁱ 個子問題抵銷個別平方成本的 16⁻ⁱ，各內部層仍是 n²。「七六八」對：T(4)＝32、T(16)＝16×32＋256＝768。「只平方階」錯：log₄n 層加總，緊界 Θ(n²lg n)。「比較量 n⁴」錯：log₄16＝2。「十六基底」錯：十六輸入有兩層十六分支，共 256 葉。
+
+@q rc2-07 | al-recurrence#2 | 3 | 陷阱
+$T(n)=2T(n/2)+n\lg n$，課本（三種情況版）的 Master 定理能直接用嗎？答案是？
+[x] 不能：$f=n\lg n$ 比 $n^{\log_22}=n$ 大，但只大 $\lg n$、不是多項式倍；用遞迴樹得 $\Theta(n\lg^2n)$
+[ ] 能，情況 3：$\Theta(n\lg n)$
+[ ] 能，情況 2：$\Theta(n\lg n)$
+[ ] 能，情況 1：$\Theta(n)$
+---
+第 $i$ 層成本 $n(\lg n-i)$，加起來約 $\frac12n\lg^2n$。這是 Master 的「縫隙」之一。
+
+@q rc2-08 | al-recurrence#2 | 3 | 陷阱
+Treat $T(n)=\tfrac12T(n/2)+n$, $T(1)=1$, as a mathematical weighted recurrence on powers of two. The elementary Master theorem under consideration explicitly requires $a\ge1$. Which statements are correct? Select all that apply.
+[x] The coefficient one half violates that theorem's stated hypothesis.
+[x] Direct expansion still gives $T(n)=\Theta(n)$.
+[x] $T(8)=85/8$.
+[ ] Failure of the theorem's hypothesis makes this mathematical recurrence undefined.
+[x] The weighted linear-work ratio per expansion depth is one quarter.
+---
+「不合 a≥1」對：係數半不符合題設的基本定理。「仍是線性」對：各層成本比例四分之一，幾何和為 Θ(n)。「85/8」對：T(2)＝5/2、T(4)＝21/4、T(8)＝85/8。「數學式沒定義」錯：加權遞迴仍有基底且能逐步求值。「倍率四分之一」對：權重乘半且線性輸入成本也減半，合為 1/4。
+
+@q rc2-09 | al-recurrence#2 | 3 | 陷阱
+$T(n)=2^nT(n/2)+n^n$ 能用 Master 定理嗎？
+[ ] 能，情況 3
+[x] 不能：$a=2^n$ 不是常數
+[ ] 能，情況 1
+[ ] 能，情況 2
+---
+Master 定理裡 $a$、$b$ 必須是常數。
+
+@q rc2-10 | al-recurrence#2 | 2 | 計算
+$T(n)=9T(n/3)+n^2$ 的解是？
+[x] $\Theta(n^2\lg n)$
+[ ] $\Theta(n^2)$
+[ ] $\Theta(n^3)$
+[ ] $\Theta(n\lg n)$
+---
+$r=9/3^2=1$，每層一樣。
+
+@q rc2-11 | al-recurrence#2 | 3 | 計算
+$T(n)=3T(n/4)+n\lg n$ 的解是？要不要檢查 regularity？
+[x] $\Theta(n\lg n)$；要：$3\frac n4\lg\frac n4\le\frac34n\lg n$，$c=\frac34<1$ 成立
+[ ] $\Theta(n^{\log_43})$；不用
+[ ] $\Theta(n\lg^2n)$；要
+[ ] $\Theta(n)$；不用
+---
+$n^{\log_43}\approx n^{0.79}$，$f=n\lg n$ 比它大多項式倍，根決定（情況 3），所以要寫 regularity。
+
+@q rc2-12 | al-recurrence#2 | 2 | 計算
+$T(n)=4T(n/2)+n$ 的遞迴樹，最底層有幾個葉子？
+[x] $n^2$
+[ ] $n$
+[ ] $4n$
+[ ] $n\lg n$
+---
+$\lg n$ 層，每層乘 4：$4^{\lg n}=n^{\lg4}=n^2$。葉子決定，所以 $T(n)=\Theta(n^2)$。
+
+@q rc2-13 | al-recurrence#2 | 2 | 計算
+$T(n)=2T(n/2)+n^3$ 的解是？
+[x] $\Theta(n^3)$
+[ ] $\Theta(n^3\lg n)$
+[ ] $\Theta(n)$
+[ ] $\Theta(n\lg n)$
+---
+$r=2/8=\frac14<1$，根決定。regularity：$2(n/2)^3=\frac14n^3$。
+
+@q rc2-14 | al-recurrence#2 | 1 | 觀念
+用 Master 定理時，「$r=a/b^d$」代表什麼？
+[x] 遞迴樹每往下一層，該層總工作量變成上一層的幾倍
+[ ] 子問題的大小
+[ ] 樹的高度
+[ ] 葉子的個數
+---
+$r>1$ 越往下越多（葉子決定），$r=1$ 每層一樣（多乘 $\lg n$），$r<1$ 越往下越少（根決定）。
+
+@q rc2-15 | al-recurrence#2 | 3 | 情境
+一個遞迴演算法把問題切成 5 個大小 $n/3$ 的子問題，切和合併花 $O(n^2)$。另一個切成 2 個大小 $n/2$、花 $O(n^2)$。哪個漸近比較快？
+[x] 一樣：兩個都是 $\Theta(n^2)$
+[ ] 第一個
+[ ] 第二個
+[ ] 沒辦法比
+---
+第一個 $r=5/9<1$、第二個 $r=2/4<1$，都是根決定，$\Theta(n^2)$。子問題多寡在根決定時不影響答案。
+
+@q rc2-16 | al-recurrence#2 | 3 | 計算
+$T(n)=aT(n/4)+n^2$。$a$ 最大可以是多少，答案仍然是 $\Theta(n^2)$（根決定）？$a$ 等於多少時變成 $\Theta(n^2\lg n)$？
+== 15,16
+?? 最大a,剛好lg
+---
+$r=a/16$。$r<1$ 要 $a<16$（整數最多 15）；$a=16$ 時每層一樣，多乘 $\lg n$；$a>16$ 就是葉子決定 $n^{\log_4a}$。
+
+@q rc2-17 | al-recurrence#2 | 2 | 計算
+$T(n)=2T(n/2)+1$ 的解是？
+[x] $\Theta(n)$
+[ ] $\Theta(\lg n)$
+[ ] $\Theta(n\lg n)$
+[ ] $\Theta(1)$
+---
+$r=2/1=2>1$，葉子決定：$n^{\log_22}=n$。例如遞迴找陣列最大值。
+
+@q rc2-18 | al-recurrence#2 | 3 | 證明
+說明為什麼 $T(n)=aT(n/b)+f(n)$ 的遞迴樹最底層有 $n^{\log_ba}$ 個葉子。
+---
+每往下一層子問題變成 $a$ 倍、大小除以 $b$，到大小 1 要 $\log_bn$ 層，所以葉子 $a^{\log_bn}$ 個。兩邊取 $\log_b$：$\log_b(a^{\log_bn})=\log_bn\cdot\log_ba=\log_b(n^{\log_ba})$，所以 $a^{\log_bn}=n^{\log_ba}$。
+
+@q rc2-19 | al-recurrence#2 | 2 | 找錯
+有人解 $T(n)=4T(n/2)+n^2$：「$r=4/4=1$，所以答案是 $\Theta(n^2)$。」錯在哪？
+[x] $r=1$ 是每層一樣多，要乘上層數 $\lg n$：$\Theta(n^2\lg n)$
+[ ] $r$ 算錯了
+[ ] 應該是 $\Theta(n^4)$
+[ ] 沒錯
+---
+每層 $n^2$、共 $\lg n$ 層。$r=1$ 時常忘了乘層數。
+
+@q rc2-20 | al-recurrence#2 | 3 | 計算
+For powers of three n, a three-way recursive algorithm satisfies $T(n)=3T(n/3)+n$ and $T(1)=1$. Which statements are correct? Select all that apply.
+[x] Each internal recursion depth contributes total nonrecursive work n.
+[x] $T(27)=108$.
+[ ] The solution is $\Theta(n)$ because child sizes sum to n.
+[ ] $n\log_3 n$ grows asymptotically slower than $n\log_2 n$ by a nonconstant factor.
+[ ] The base-call count is $3n$.
+---
+「每層 n」對：3ⁱ 個規模 n/3ⁱ 的節點相加。「一百零八」對：27 有三個內部層，各 27，再加 27 個基底，合計 27×4。「線性」錯：每層 n 還要乘 lg n 層。「換底差非固定倍」錯：log₃n＝log₂n/log₂3，只差常數。「葉三 n」錯：共 n 個規模一的葉子，三是每個內部節點的分支數。
+
+@q rc3-01 | al-recurrence#3 | 2 | 計算
+$T(n)=T(n/4)+T(3n/4)+n$ 的解是？
+[x] $\Theta(n\lg n)$
+[ ] $\Theta(n)$
+[ ] $\Theta(n^2)$
+[ ] $\Theta(\lg n)$
+---
+每層子問題大小加起來是 $n$，每層成本約 $n$；最長路徑 $\log_{4/3}n$ 層、最短 $\log_4n$ 層，都是 $\Theta(\lg n)$。
+
+@q rc3-02 | al-recurrence#3 | 3 | 計算
+For powers of two n, let $T(n)=T(n/2)+T(n/4)+n$ when n exceeds one, and let $T(x)=1$ for x at most one. A recursion-tree level counts only nonrecursive work at nodes that still recurse. Which statements are correct? Select all that apply.
+?? 複選
+[ ] The two children of a fully expanded node have total size five quarters of their parent's size.
+[x] The total nonrecursive work at depth i is at most $n(3/4)^i$.
+[ ] The total solution is $\Theta(n\lg n)$.
+[ ] The root alone proves a growth requirement of order n log n.
+[ ] Every depth has exactly n nonrecursive work until the longest path ends.
+---
+「子規模四分之五」錯：實際是 n/2＋n/4＝3n/4，並非 5n/4。「各層至多幾何遞減」對：只計仍遞迴的節點，其總規模每深一層至多乘 3/4。「n lg n 緊界」錯：內部幾何和至多 4n，基底成本亦 O(n)，根成本給 Ω(n)，合為 Θ(n)。「根證 n lg n 下界」錯：根只有 n。「每層恰 n」錯：第一個完整子層已是 3n/4。
+
+@q rc3-03 | al-recurrence#3 | 2 | 計算
+$T(n)=T(n/2)+2T(n/4)+n$ 的解是？
+[x] $\Theta(n\lg n)$
+[ ] $\Theta(n)$
+[ ] $\Theta(n^2)$
+[ ] $\Theta(n\lg^2n)$
+---
+$\frac12+2\cdot\frac14=1$：每層加起來還是 $n$，深度 $\Theta(\lg n)$。
+
+@q rc3-03b | al-recurrence#3 | 3 | 計算
+Let $T(n)=T(n/5)+T(7n/10)+n$ for ideal real sizes above one, with constant positive base cost for sizes at most one. Which statements are correct? Select all that apply.
+[x] The two child sizes sum to $0.9n$.
+[x] The solution is $\Theta(n)$.
+[ ] The first depth below the root has nonrecursive work $1.9n$ when both children recurse.
+[ ] The root alone already gives an $n\lg n$ growth requirement.
+[ ] The geometric sum of internal work over all depths exceeds $20n$ for every sufficiently large input.
+---
+「0.9n」對：1/5＋7/10＝9/10。「線性」對：每層內部工作至多 0.9ⁱn，總和至多 10n；終端規模大於 1/5 且總規模至多 n，基底數 O(n)，根又給 n。「1.9n」錯：把原根也算進子層。「根給 n lg n」錯：根只有 n。「內部必超二十 n」錯：幾何和上界十 n 已否定此說，不能忽略每層縮減。
+
+@q rc3-04 | al-recurrence#3 | 3 | 計算
+$T(n)=2T(n/2)+\frac n{\lg n}$ 的解是？
+[x] $\Theta(n\lg\lg n)$
+[ ] $\Theta(n)$
+[ ] $\Theta(n\lg n)$
+[ ] $\Theta(n/\lg n)$
+---
+第 $i$ 層成本 $\frac n{\lg n-i}$，加總 $n\left(\frac1{\lg n}+\cdots+\frac11\right)=n\cdot H_{\lg n}=\Theta(n\lg\lg n)$。Master 套不上（$f$ 只比 $n$ 小一個 $\lg n$）。
+
+@q rc3-05 | al-recurrence#3 | 3 | 計算
+Let $T(n)=2T(n/2)+n\lg n$, $T(1)=1$, and n a power of two. The root is depth zero. Write $L=\lg n$. Which statements are correct? Select all that apply.
+[x] Internal work at depth i is $n(L-i)$ for $0\le i<L$.
+[x] Total internal work is $nL(L+1)/2$.
+[x] $T(8)=56$.
+[ ] Internal work at every depth is $nL$.
+[x] The tight solution is $\Theta(n(\lg n)^2)$.
+---
+「第 i 層 n(L−i)」對：2ⁱ 個子問題各花 (n/2ⁱ)lg(n/2ⁱ)。「內部三角和」對：n×(L＋…＋1)＝nL(L＋1)/2。「五十六」對：八乘六，加八個基底為 56。「每層 nL」錯：子問題的對數因子隨深度減少。「n 乘平方對數」對：三角和是 Θ(nL²)，基底 n 不改變緊界。
+
+@q rc3-06 | al-recurrence#3 | 3 | 計算
+For powers of four n, let $T(n)=3T(n/4)+n^2$ and $T(1)=1$. Count nonrecursive internal work separately from base calls, with root depth zero. Which statements are correct? Select all that apply.
+[x] Internal work at depth i is $n^2(3/16)^i$ before the base depth.
+[x] At n equal to 64, internal work at depth two is 144.
+[ ] Internal work at depth one is $3n^2/4$.
+[ ] The tight solution is $\Theta(n^2\lg n)$ because all internal depths have equal cost.
+[ ] At n equal to 64, the base-call count is 64.
+---
+「倍率三比十六」對：3ⁱ 個節點各有平方成本 n²/16ⁱ。「一百四十四」對：4096×(3/16)²＝144。「下一層三 n²/4」錯：規模除四，平方成本應除十六。「n² lg n」錯：幾何遞減由根主導，總量 Θ(n²)。「六十四個基底」錯：深度三、每次三分支，基底 3³＝27。
+
+@q rc3-07 | al-recurrence#3 | 2 | 計算
+$T(n)=T(n/3)+T(2n/3)+n$ 的遞迴樹，最長的路徑有幾層？
+[x] $\log_{3/2}n$
+[ ] $\log_3n$
+[ ] $\lg n$
+[ ] $n$
+---
+一直走 $\frac23$ 那邊最慢變小。最短的路（一直走 $\frac13$）只有 $\log_3n$ 層。
+
+@q rc3-08 | al-recurrence#3 | 3 | 陷阱
+Consider $T(n)=T(n/3)+T(2n/3)+n$ with constant positive base cost and base size at most one, allowing ideal real-valued sizes. A proof bounds every depth's nonrecursive work by n and the longest path by $O(\lg n)$. Which statements are correct? Select all that apply.
+[x] These two facts establish an $O(n\lg n)$ upper bound when base costs are also included appropriately.
+[x] An argument about minimum growth is still needed to conclude $\Theta(n\lg n)$.
+[x] Depths before even the shortest branch terminates supply $\Omega(\lg n)$ full levels of n work.
+[ ] An upper bound alone establishes the corresponding minimum asymptotic growth by definition.
+[x] Every final incomplete depth contributes at most n internal work.
+---
+「可證上界」對：每層至多 n，最長路徑為對數，葉成本合計 O(n)。「還需下界」對：單有上界無法得緊界。「短路徑前完整層」對：最短路徑約 log₃n，先有對數個成本 n 的完整層，提供 Ω(n lg n)。「上界自帶下界」錯：兩者定義不同。「不完整層至多 n」對：分割保存規模而已終止的分支不再產生內部成本，只能減少該層工作。
+
+@q rc3-09 | al-recurrence#3 | 2 | 比較
+子問題大小的比例加起來（例如 $\frac13+\frac23$）分別「等於 1」和「小於 1」時，$T(n)=\sum T(\alpha_in)+n$ 的答案是？
+[x] 等於 1：$\Theta(n\lg n)$；小於 1：$\Theta(n)$
+[ ] 都是 $\Theta(n\lg n)$
+[ ] 等於 1：$\Theta(n)$；小於 1：$\Theta(\lg n)$
+[ ] 都是 $\Theta(n)$
+---
+比例和 $<1$ 時每層乘一個小於 1 的數，等比級數收斂到第一層的常數倍。
+
+@q rc3-10 | al-recurrence#3 | 3 | 計算
+Let $T(n)=4T(n/2)+n^2\lg n$, $T(1)=1$, and n a power of two. Write $L=\lg n$. Which statements are correct? Select all that apply.
+[x] Internal work at depth i is $n^2(L-i)$.
+[x] $T(8)=448$.
+[x] The tight growth is $\Theta(n^2(\lg n)^2)$.
+[x] Total internal work is $n^2L(L+1)/2$.
+[x] The base-call count is n squared.
+---
+「n²(L−i)」對：4ⁱ×(n/2ⁱ)²×lg(n/2ⁱ)。「四四八」對：64×(3＋2＋1)＋64＝448。「平方對數因子」對：總內部成本的主項為 n²L²/2。「內部三角和」對：各層的 L−i 從 L 降到一，和為 L(L＋1)/2。「n² 基底」對：4^(lg n)＝n²。
+
+@q rc3-11 | al-recurrence#3 | 3 | 觀念
+Consider the elementary three-case Master theorem for $T(n)=aT(n/b)+f(n)$ with fixed constants a and b, comparing f with $n^{\log_b a}$ by polynomial gaps or exact asymptotic equality. Distinguish it from extensions that handle logarithmic factors. Which statements are correct? Select all that apply.
+?? 複選
+[ ] Unequal child sizes n/3 and 2n/3 fit the single common-size form directly without altering the recurrence.
+[ ] A recursion tree can establish bounds only when this Master theorem's hypotheses hold.
+[x] For $2T(n/2)+n\lg n$, f is not $\Theta(n)$ and is not polynomially larger than n.
+[ ] Any branching constant a greater than two automatically violates the theorem.
+[ ] The ratio $\lg n$ eventually exceeds $n^\varepsilon$ for every fixed positive epsilon.
+---
+「不等規模直接符合」錯：同一個 b 無法同時表示 n/3 與 2n/3。「樹法也必須滿足定理」錯：樹法可獨立加總實際各層成本。「n lg n 落基本情況縫隙」對：比 n 大對數因子，卻沒有固定正冪差距；擴充版本能處理。「a 大於二失效」錯：固定 a＝7、8 也合法。「對數壓過所有正冪」錯：對每個固定 ε＞0，lg n/n^ε 趨零。
+
+@q rc3-12 | al-recurrence#3 | 3 | 計算
+Consider $T(n)=T(n/2)+T(n/3)+T(n/6)+n$ with constant positive base cost for real sizes at most one. Which statements are correct? Select all that apply.
+[x] The three child sizes sum to the parent size.
+[x] Fully internal depths have total nonrecursive work n.
+[x] The tight total solution is $\Theta(n\lg n)$.
+[ ] Every internal depth remains full until the longest path ends.
+[x] Repeatedly taking the one-sixth child gives a shortest root-to-base path.
+---
+「子規模和一」對：1/2＋1/3＋1/6＝1。「完整層成本 n」對：規模分配總和不變。「n lg n」對：最短與最長路徑皆對數，完整層給下界、每層至多 n 給上界，葉成本 O(n)。「到最深仍全滿」錯：較快縮小的分支先終止。「六分之一最短」對：每一步選最小孩子最快到達基底，二分之一分支則最慢。
+
+@q rc3-13 | al-recurrence#3 | 3 | 找錯
+Compare $T(n)=T(n/2)+T(n/4)+n$ with $U(n)=2U(n/2)+n$, using powers of two and constant positive base cost at sizes at most one. Which statements are correct? Select all that apply.
+[x] The immediate child sizes total $3n/4$ for T and n for U.
+[x] The tight solutions are $T(n)=\Theta(n)$ and $U(n)=\Theta(n\lg n)$.
+[ ] Having two recursive children alone forces identical tight solutions.
+[ ] T's first internal child depth has nonrecursive work n whenever both children recurse.
+[ ] Replacing n/4 by n/2 leaves the summed child size unchanged.
+---
+「四分之三與一倍」對：分別 n/2＋n/4 與 n/2＋n/2。「線性與線性乘對數」對：前者幾何遞減，後者完整各層 n。「兩個孩子就同解」錯：還需看各子規模與本地成本。「T 下一層 n」錯：只有 3n/4。「改小子規模不影響和」錯：由 3n/4 增為 n，正是成長型態改變的關鍵。
+
+@q rc3-14 | al-recurrence#3 | 3 | 證明
+用遞迴樹說明 $T(n)=3T(n/3)+\frac n{\lg n}$ 的解。
+---
+第 $i$ 層 $3^i$ 個子問題、每個大小 $\frac n{3^i}$，成本 $3^i\cdot\frac{n/3^i}{\log_3(n/3^i)}\cdot$（常數）$=\frac{n}{\log_3n-i}$（差常數）。$i=0$ 到 $\log_3n-1$ 加總：$n\sum_{j=1}^{\log_3n}\frac1j=n\cdot H_{\log_3n}=\Theta(n\lg\lg n)$。
+
+@q rc4-01 | al-recurrence#4 | 3 | 計算
+Let $T(n)=T(\sqrt n)+1$ for n greater than two and $T(2)=1$. Restrict inputs to $n=2^{2^k}$ for nonnegative integer k. Which statements are correct? Select all that apply.
+?? 複選
+[ ] Repeated square roots require exactly k plus one recursive reductions to reach two.
+[x] $T(65536)=5$.
+[ ] The solution on this input sequence is $\Theta(\lg n)$.
+[ ] The number of recursive reductions for 65536 is 16.
+[ ] Substitution $m=\lg n$ changes the recurrence into $S(m)=S(m-1)+1$.
+---
+「k 加一縮減」錯：n＝2^(2^k) 每次指數減半，恰 k 次到二；加一是連基底計算的呼叫數。「五」對：65536→256→16→4→2 四次縮減，加 T(2)＝1。「單對數階」錯：是 Θ(lg lg n)。「十六次」錯：十六是初始指數，需減半四次。「m−1」錯：m＝lg n 下，開根號使新輸入 m/2。
+
+@q rc4-02 | al-recurrence#4 | 3 | 計算
+Let $T(n)=4T(\sqrt n)+(\lg n)^2$, $T(2)=1$, on inputs $n=2^{2^k}$. Set $m=\lg n$. Which statements are correct? Select all that apply.
+[x] The transformed recurrence is $S(m)=4S(m/2)+m^2$.
+[x] $T(256)=256$.
+[x] The tight growth is $\Theta((\lg n)^2\lg\lg n)$.
+[x] The transformed solution is exactly $S(m)=m^2(\lg m+1)$ on the allowed inputs.
+[ ] The original-variable tight growth is $\Theta(n^2\lg n)$.
+---
+「四 S 加 m²」對：對數變數減半，非遞迴項變平方。「二五六」對：S(1)＝1、S(2)＝8、S(4)＝48、S(8)＝256。「平方對數乘雙對數」對：Θ(m²lg m) 換回原變數。「精確 m²(lg m＋1)」對：每個內部層共 m²，深度 lg m，另有 m² 個成本一的基底。「n²lg n」錯：漏把 m 換回 lg n。
+
+@q rc4-03 | al-recurrence#4 | 3 | 計算
+Let $T(n)=2T(\sqrt n)+\lg n$ and $T(2)=1$, with inputs $n=2^{2^k}$. Which statements are correct? Select all that apply.
+?? 複選
+[ ] The transformed recurrence is $S(m)=2S(m/2)+m^2$ for $m=\lg n$.
+[x] $T(65536)=80$.
+[ ] The tight growth is $\Theta(\lg n)$.
+[ ] $T(65536)=31$, as if the nonrecursive cost were always one.
+[ ] All recursive reductions together number only four calls at n equal to 65536.
+---
+「二 S 加 m²」錯：原成本 lg n 只變為 m，並非平方。「八十」對：m＝16，四個內部層各十六，再加十六基底，為 80。「只有單對數」錯：S(m)＝m(lg m＋1)，原變數是 Θ(lg n lg lg n)。「三十一」錯：那是各內部節點成本一時的值。「只有四呼叫」錯：四是路徑深度，二分支樹總呼叫 31。
+
+@q rc4-04 | al-recurrence#4 | 1 | 計算
+$T(n)=T(n-1)+1$ 的解是？
+[x] $\Theta(n)$
+[ ] $\Theta(\lg n)$
+[ ] $\Theta(n^2)$
+[ ] $\Theta(1)$
+---
+展開：$1+1+\cdots$ 共 $n$ 個。
+
+@q rc4-05 | al-recurrence#4 | 3 | 計算
+For integer n at least two, let $T(n)=T(n-1)+\lg n$, with $T(1)=0$. Which statements are correct? Select all that apply.
+[x] $T(n)=\lg(n!)$ exactly.
+[x] The tight growth is $\Theta(n\lg n)$.
+[ ] $T(4)=\lg 10$ because the integers one through four sum to ten.
+[ ] The tight growth is $\Theta((\lg n)^2)$ because the largest local cost is logarithmic.
+[ ] Only $\lg n$ nonbase reductions occur.
+---
+「lg 階乘」對：lg2＋…＋lg n＝lg(2×…×n)。「n lg n」對：階乘的對數同階於 n lg n。「lg 十」錯：應是 lg24，對數相加變成乘積，不是把輸入相加。「平方對數」錯：減一要累加約 n 個對數，不是對半規模。「只減對數次」錯：從 n 到一共 n−1 次。
+
+@q rc4-06 | al-recurrence#4 | 2 | 計算
+河內塔 $T(n)=2T(n-1)+1$、$T(1)=1$。搬 10 個盤子要幾步？
+== 1023
+---
+$T(n)=2^n-1$（驗算：$2(2^{n-1}-1)+1=2^n-1$）。$2^{10}-1=1023$。
+
+@q rc4-07 | al-recurrence#4 | 3 | 計算
+For even n, let $T(0)=0$ and $T(n)=T(n-2)+n$. Which statements are correct? Select all that apply.
+[x] $T(10)=30$.
+[x] The exact formula is $T(n)=n^2/4+n/2$.
+[ ] The tight solution is $\Theta(n)$ because each step removes two.
+[ ] There are exactly n nonbase reductions.
+[ ] The nonbase sum for n ten is $10+8+6+4+2=25$.
+---
+「三十」對：10＋8＋6＋4＋2＝30。「平方四分之一加一半」對：令 n＝2k，總和 2(1＋…＋k)＝k(k＋1)。「線性」錯：有 n/2 項且平均成本也是線性，總量平方。「n 次」錯：每次減二，共 n/2 次。「算成二十五」錯：五項平均六，總和三十，不能把平均值誤當五。
+
+@q rc4-08 | al-recurrence#4 | 3 | 計算
+Let $T(n)=\sqrt n\,T(\sqrt n)+n$, $T(2)=2$, on inputs $n=2^{2^k}$. Define $U(n)=T(n)/n$. Which statements are correct? Select all that apply.
+[x] $U(n)=U(\sqrt n)+1$ above the base.
+[x] The tight solution is $\Theta(n\lg\lg n)$.
+[x] $T(65536)=327680$.
+[x] The value at n equal to sixteen is 48.
+[x] The exact solution on the allowed inputs is $T(n)=n(1+\lg\lg n)$.
+---
+「U 開根加一」對：√n T(√n)/n＝T(√n)/√n。「n 雙對數」對：U 從基底一開始，每次縮減加一，層數 lg lg n。「327680」對：65536×(1＋4)。「十六得四十八」對：T(4)＝2×2＋4＝8、T(16)＝4×8＋16＝48。「精確 n(1＋雙對數)」對：U(2)＝1，恰 k＝lg lg n 次縮減，所以 U＝k＋1。
+
+@q rc4-09 | al-recurrence#4 | 2 | 計算
+$T(n)=3T(n-1)$、$T(0)=1$，$T(5)$ 是多少？
+== 243
+---
+$T(n)=3^n$，$3^5=243$。每往下一層變成 3 倍，共 $n$ 層：指數成長。
+
+@q rc4-10 | al-recurrence#4 | 3 | 計算
+$T(n)=T(n-1)+\frac1n$、$T(0)=0$ 的解是？
+[x] $\Theta(\lg n)$
+[ ] $\Theta(1)$
+[ ] $\Theta(n)$
+[ ] $\Theta(1/n)$
+---
+$T(n)=1+\frac12+\cdots+\frac1n=H_n\approx\ln n$。
+
+@q rc4-11 | al-recurrence#4 | 2 | 觀念
+To transform a recurrence containing $T(\sqrt n)$, set $m=\lg n$ and $S(m)=T(2^m)$. Take n equal to 65536 for a numerical check. Which statements are correct? Select all that apply.
+?? 複選
+[ ] The original input corresponds to m equal to 32.
+[ ] Its square-root subproblem corresponds to new input m divided by four.
+[x] A transformed bound $S(m)=\Theta(m\lg m)$ becomes $\Theta(\lg n\,\lg\lg n)$ in the original variable.
+[ ] The subproblem $T(\sqrt n)$ becomes $S(m-1)$.
+[ ] The transformed variable m equals 256 at this numerical input.
+---
+「m 三十二」錯：lg65536＝16，256 是原輸入的平方根。「子問題 m/4」錯：√(2^m)＝2^(m/2)，新輸入是 m/2。「換回兩個對數」對：m lg m 換成 lg n lg lg n。「子式 S(m−1)」錯：那代表原輸入減半，並非開根號。「新變數等二五六」錯：把原輸入開根號和取對數混為一談。
+
+@q rc4-12 | al-recurrence#4 | 3 | 找錯
+A solution to $T(n)=2T(\sqrt n)+\lg n$ sets $m=\lg n$, $S(m)=T(2^m)$, and correctly obtains $S(m)=\Theta(m\lg m)$. Which statements are correct? Select all that apply.
+[x] The original-variable bound is $\Theta(\lg n\,\lg\lg n)$.
+[x] At n equal to $2^{16}$, m equals 16 and $m\lg m=64$.
+[ ] Replacing the name m by n directly gives the original-variable bound $\Theta(n\lg n)$.
+[ ] At this input, $m\lg m$ equals 256.
+[ ] The correct transformed result must be rejected solely because it uses a variable other than n.
+---
+「換回兩個對數」對：代入 m＝lg n。「十六乘四為六十四」對：新輸入是十六。「直接改字母」錯：m 與 n 有特定關係，不是可任意交換的名稱。「二五六」錯：把 m lg m 當成 m²。「用新變數就錯」錯：換變數本身合法，最後必須正確代回。
+
+@q rc4-13 | al-recurrence#4 | 3 | 陷阱
+$T(n)=2T(n-1)+1$ 和 $T(n)=2T(n/2)+1$，答案差多少？
+[x] 前者 $\Theta(2^n)$、後者 $\Theta(n)$
+[ ] 都是 $\Theta(n)$
+[ ] 都是 $\Theta(2^n)$
+[ ] 前者 $\Theta(n\lg n)$
+---
+減 1 要 $n$ 層才到底，每層翻倍：$2^n$；除 2 只要 $\lg n$ 層：$2^{\lg n}=n$。
+
+@q rc4-14 | al-recurrence#4 | 3 | 計算
+Let $T(0)=0$ and $T(n)=T(n-1)+n^2$ for positive integer n. Which statements are correct? Select all that apply.
+[x] $T(5)=55$.
+[x] $T(n)=n(n+1)(2n+1)/6$.
+[x] The tight growth is $\Theta(n^3)$.
+[ ] The tight growth is $\Theta(n^2)$ because the largest local cost is n squared.
+[x] The difference between T(5) and T(4) is 25.
+---
+「五十五」對：1＋4＋9＋16＋25＝55。「平方和公式」對：逐次展開就是一至 n 的平方和。「立方階」對：公式主項 n³/3。「只平方」錯：漏掉約 n 層成本累積。「五與四差二十五」對：遞迴式在 n＝5 直接給 T(5)−T(4)＝5²，這是差值而非 T(5) 本身。
+
+@q rc4-15 | al-recurrence#4 | 3 | 證明
+用代入法證明 $T(n)=T(n-1)+n$、$T(1)=1$ 有 $T(n)=\frac{n(n+1)}2$。
+---
+$n=1$：$\frac{1\cdot2}2=1$ ✓。設 $T(n-1)=\frac{(n-1)n}2$，則 $T(n)=\frac{(n-1)n}2+n=\frac{n(n-1)+2n}2=\frac{n(n+1)}2$ ✓。所以 $T(n)=\Theta(n^2)$。
+
+@q dc1-01 | al-dc#1 | 1 | 觀念
+用分治法解一個問題，三個步驟依序是？
+[x] 切成子問題、遞迴解子問題、把子問題的答案合併
+[ ] 排序、搜尋、輸出
+[ ] 猜答案、驗證、修正
+[ ] 建表、填表、查表
+---
+合併排序：切兩半、各自排好、合併。建表填表是動態規劃。
+
+@q dc1-02 | al-dc#1 | 2 | 計算
+A student finds the maximum of an array of $n$ numbers, $n$ a power of 2, by divide and conquer:
+```
+max_dc(a, lo, hi):
+    if lo == hi: return a[lo]
+    mid = (lo + hi) / 2
+    return larger(max_dc(a, lo, mid), max_dc(a, mid + 1, hi))   // 1 comparison
+```
+On an array of 16 numbers, the student counts the comparisons made by `larger` and compares them with a simple left-to-right scan that keeps the largest value seen so far. A classmate argues that the recursion halves the array, so the method should run in $\Theta(\lg n)$ time, and another expects about $n\lg n$ comparisons. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] It makes exactly $n-1$ comparisons.
+[ ] Its recurrence is $T(n)=2T(n/2)+n$, so it runs in $\Theta(n\lg n)$ time.
+[ ] It runs in $\Theta(\lg n)$ time, since the array is halved each time.
+[ ] It makes about $n\lg n$ comparisons, one per element on each level.
+[ ] It makes fewer comparisons than a simple left-to-right scan does.
+---
+合併只比一次，「$T(n)=2T(n/2)+1$」；遞迴樹有 $n-1$ 個內部點，每點比一次，「共 $n-1$ 次」，跟直接掃一遍一樣多。兩個子問題都要算，不是 $\lg n$；合併不是 $n$，也到不了 $n\lg n$。
+
+@q dc1-03 | al-dc#1 | 2 | 計算
+用「平方再平方」算 $x^n$：$x^n=(x^{n/2})^2$（$n$ 奇數時再乘一個 $x$）。算 $x^{13}$ 要做幾次乘法？
+== 5
+---
+由下往上：$x^2=x\cdot x$、$x^3=x^2\cdot x$、$x^6=(x^3)^2$、$x^{12}=(x^6)^2$、$x^{13}=x^{12}\cdot x$，共 5 次。一般是 $\lfloor\lg n\rfloor$ 次平方加上（二進位 1 的個數 − 1）次乘 $x$，$T(n)=T(n/2)+O(1)=O(\lg n)$。
+
+@q dc1-04 | al-dc#1 | 2 | 計算
+陣列 `[3, -4, 5, -1, 2, -6, 4]`，最大子陣列和是多少？
+== 6
+---
+`5, -1, 2` 加起來 6。分治做法：左半最大、右半最大、跨中間的最大，三者取大。
+
+@q dc1-05 | al-dc#1 | 3 | 追蹤
+最大子陣列的分治法，陣列 `[2, -5, 3, 1 | -2, 4, -6, 1]`（從中間切）。「跨中間」的最大和是多少？
+== 6
+---
+從中間往左延伸、和最大：`3, 1` 為 4；往右延伸：`-2, 4` 為 2。跨中間 $4+2=6$（`3,1,-2,4`）。左右半各自最大分別是 4 和 4，所以整體答案 6。
+
+@q dc1-06 | al-dc#1 | 2 | 計算
+The maximum subarray problem asks, for an array of $n$ numbers that may be negative, for a contiguous block with the largest sum; for example, in $[-2, 1, -3, 4, -1, 2, 1, -5, 4]$ the best block is $[4, -1, 2, 1]$, with sum 6. The divide-and-conquer algorithm for arrays of $10^6$ numbers splits the array at its midpoint, solves both halves recursively, and also finds the best block that crosses the midpoint by scanning outward from it in both directions, keeping the best sum seen in each direction, which takes time linear in the length of the range. Finally, it returns the best of the three candidates. A student writes the recurrence for this algorithm, solves it, and compares the result with other known methods for the same problem, including one that makes a single pass over the array. Which of the following statements are correct? Select all that apply.
+[x] Its recurrence is $T(n)=2T(n/2)+\Theta(n)$.
+[x] It runs in $\Theta(n\lg n)$ time.
+[x] The crossing case needs one outward scan.
+[x] A different, non-divide-and-conquer method solves the problem in $\Theta(n)$ time.
+[ ] The divide-and-conquer method itself runs in $\Theta(n)$ time.
+---
+兩半各自遞迴，「跨中間的最大和從中間往外各掃一次」，$\Theta(n)$，所以「$T(n)=2T(n/2)+\Theta(n)=\Theta(n\lg n)$」。另有「掃一遍的 $\Theta(n)$ 解法」（記錄以目前位置結尾的最大和），但不是這個分治法。
+
+@q dc1-07 | al-dc#1 | 2 | 比較
+A course lists several algorithms and asks which of them follow the divide-and-conquer pattern: divide the problem into smaller subproblems of the same kind, solve them recursively, and combine their answers. The list includes merge sort, binary search on a sorted array of $10^6$ keys, finding the maximum of an array by splitting it in half, computing $x^n$ for $n = 64$ by repeated squaring, and finding both the minimum and the maximum of 1000 numbers by splitting in half. A student must classify each item and explain what is divided and what is combined. Which of the following are divide-and-conquer algorithms? Select all that apply.
+[x] Merge sort
+[x] Binary search
+[x] Splitting an array in half, finding each half's maximum recursively, and comparing the two
+[x] Computing $x^n$ by recursively computing $x^{\lfloor n/2\rfloor}$ and squaring it
+[x] Finding both the minimum and the maximum by splitting in half and combining the two answers
+---
+五個都是把問題切成較小的子問題、遞迴解、再合併（二分搜尋、算 $x^n$ 都只剩一個子問題；同時找最小最大值是兩半各找再合併）。對照：掃一遍記最大值、一個一個插入都是逐一處理，不算分治。
+
+@q dc1-08 | al-dc#1 | 2 | 計算
+Binary search finds a key in a sorted array of $n$ elements by comparing it with the middle element and continuing in one half only; for example, with $n = 1024$ it needs at most 11 comparisons, and with $n = 2048$ at most 12. A student views it as a divide-and-conquer algorithm and writes down its recurrence, but is unsure whether the recurrence should count one subproblem or two, and whether the problem shrinks by half or by one element per step. A classmate insists that both halves must be searched, since the key could lie in either one. Which of the following statements are correct? Select all that apply.
+[x] Its recurrence is $T(n)=T(n/2)+O(1)$.
+[x] It runs in $\Theta(\lg n)$ time.
+[ ] Its recurrence is $T(n)=2T(n/2)+O(1)$, since the array is split into two halves.
+[ ] Its recurrence is $T(n)=T(n-1)+O(1)$, since one element is removed each time.
+[ ] Both halves must be searched, since the key could lie in either half.
+---
+比一次中間值就決定往哪一半，另一半直接丟掉，只剩一個子問題，「$T(n)=T(n/2)+O(1)$」「$\Theta(\lg n)$」。兩個子問題會變成 $\Theta(n)$；每次只少一個是線性搜尋；陣列有序，所以只可能在其中一半。
+
+@q dc1-09 | al-dc#1 | 3 | 情境
+一個分治演算法：切成 4 個大小 $n/2$ 的子問題，合併要 $O(n)$。改良版用一點技巧只要 3 個子問題，合併變成 $O(n)$ 不變。時間從多少變多少？
+[x] $\Theta(n^2)$ → $\Theta(n^{\lg3})\approx\Theta(n^{1.585})$
+[ ] $\Theta(n\lg n)$ → $\Theta(n)$
+[ ] 沒有變化
+[ ] $\Theta(n^2)$ → $\Theta(n\lg n)$
+---
+葉子決定時，少一個子問題就讓指數下降。Karatsuba 就是這樣（4 次乘法變 3 次）。
+
+@q dc1-10 | al-dc#1 | 3 | 陷阱
+「分治法一定比直接做快」對嗎？
+[ ] 對
+[x] 不對
+---
+找最大值用分治還是 $n-1$ 次比較，沒有比較快；遞迴本身還有額外成本。分治快的關鍵是「合併很便宜」或「子問題可以少做幾個」。
+
+@q dc1-11 | al-dc#1 | 2 | 找錯
+Someone finds the maximum of $n$ numbers by divide and conquer: split the array into two halves, **sort** each half recursively with merge sort, take the last element of each sorted half, and compare the two. They claim the time is $\Theta(n)$, because each level of the recursion makes only one comparison to combine its two answers. On an array of $10^6$ numbers, about 20 levels deep, the method returns the right answer but takes about as long as sorting the whole array. A reviewer asks them to analyze the method and to propose a faster version that keeps the same split into 2 halves. Which of the following statements are correct? Select all that apply.
+[x] Sorting at each level makes the time at least $\Theta(n\lg n)$.
+[x] Each half only needs to return its maximum.
+[x] With that change, $T(n)=2T(n/2)+O(1)=\Theta(n)$.
+[x] The method does find the maximum, just slowly.
+[ ] The claim of $\Theta(n)$ is correct, since each level makes only one comparison.
+---
+「每一層都在排序」，光最上層就要 $\Theta(n\lg n)$。合併步驟只需要子問題的答案：「回傳各半的最大值」，「$2T(n/2)+O(1)=\Theta(n)$」。方法「找得到最大值，只是慢」。
+
+@q dc1-12 | al-dc#1 | 2 | 計算
+算 $x^{16}$ 用平方法要幾次乘法？
+== 4
+---
+$x^2,x^4,x^8,x^{16}$，每次平方一次。$16=2^4$ 沒有多餘的 1，所以剛好 $\lg16=4$ 次。
+
+@q dc1-13 | al-dc#1 | 3 | 證明
+證明：最大子陣列的答案只可能完全在左半、完全在右半、或跨過中間。並說明跨中間的部分怎麼在 $O(n)$ 找到。
+---
+任一個子陣列 $[i,j]$，相對中點 $m$ 只有三種：$j\le m$（全在左）、$i>m$（全在右）、$i\le m<j$（跨中間）。跨中間的一定由「以 $m$ 結尾的某段」和「以 $m+1$ 開頭的某段」接起來，兩段各自取最大即可：從 $m$ 往左累加取最大、從 $m+1$ 往右累加取最大，各 $O(n)$。
+
+@q dc2-01 | al-dc#2 | 2 | 計算
+用 Karatsuba 算 $46\times73$（把每個數拆成十位和個位）。三次乘法 $ac$、$bd$、$(a+b)(c+d)$ 各是多少？最後答案？
+== 28,18,100,3358
+?? ac,bd,(a+b)(c+d),答案
+---
+$a=4,b=6,c=7,d=3$。$ac=28$、$bd=18$、$(10)(10)=100$；中間項 $100-28-18=54$。答案 $2800+540+18=3358$。
+
+@q dc2-02 | al-dc#2 | 2 | 計算
+Karatsuba 算 $12\times34$：中間項 $(a+b)(c+d)-ac-bd$ 是多少？
+== 10
+---
+$ac=3$、$bd=8$、$(3)(7)=21$，中間 $21-3-8=10$。答案 $300+100+8=408$。
+
+@q dc2-03 | al-dc#2 | 2 | 計算
+兩個 8 位數相乘，Karatsuba 一路遞迴到 1 位數。總共做幾次 1 位數乘法？直接乘呢？
+== 27,64
+?? Karatsuba,直接
+---
+每層把乘法變 3 個、位數減半：$3^{\lg8}=27$。直接乘 $8^2=64$。
+
+@q dc2-04 | al-dc#2 | 2 | 計算
+Which of the following statements about Karatsuba multiplication of two $n$-digit numbers are correct?
+?? 複選
+[x] It runs in $\Theta(n^{\lg3})\approx\Theta(n^{1.585})$ time.
+[ ] Its recurrence is $T(n)=4T(n/2)+O(n)$.
+[ ] Its running time is $\Theta(n\lg n)$.
+[ ] Its additions, subtractions and shifts cost $\Theta(n^2)$ at each level.
+[ ] Its running time is $\Theta(n^2)$, the same as long multiplication.
+---
+4 次乘法省成 3 次，加減和移位只要 $O(n)$，「$3T(n/2)+O(n)=\Theta(n^{\lg3})$」。4 次乘法才是 $\Theta(n^2)$；$\Theta(n\lg n)$ 是兩個子問題的情形；加減移位是線性的。
+
+@q dc2-05 | al-dc#2 | 2 | 比較
+Which of the following statements comparing Strassen's algorithm with ordinary block matrix multiplication are correct?
+[x] Ordinary block multiplication needs 8 block products, while Strassen needs only 7.
+[x] Strassen runs in $\Theta(n^{\lg7})\approx\Theta(n^{2.81})$ time.
+[ ] Ordinary block multiplication, with $T(n)=8T(n/2)+\Theta(n^2)$, runs in $\Theta(n^2\lg n)$.
+[ ] Strassen needs only 4 block products.
+[ ] Strassen needs no additions or subtractions beyond those of ordinary multiplication.
+---
+一般分塊「8 次」，$\log_28=3$，還是 $\Theta(n^3)$，不是 $n^2\lg n$；Strassen 用加減湊出「7 個乘積」，「$\Theta(n^{2.81})$」。不是 4 次；它反而要 18 次矩陣加減。
+
+@q dc2-06 | al-dc#2 | 3 | 計算
+$4\times4$ 的乘法用 Strassen 遞迴到 $1\times1$，一共幾次純量乘法？
+== 49
+---
+$4\to2\to1$ 兩層，每層 7 個：$7^2=49$，比一般的 64 少。
+
+@q dc2-07 | al-dc#2 | 3 | 陷阱
+「Strassen 永遠比一般的三層迴圈乘法快」對嗎？
+[ ] 對
+[x] 不對
+---
+它多了很多加減法、常數大、數值比較不穩定。$n$ 小時一般方法比較快，實作上會在小到某個大小時改回一般方法。
+
+@q dc2-08 | al-dc#2 | 2 | 觀念
+Karatsuba writes $x=a\cdot10^m+b$ and $y=c\cdot10^m+d$. Which of the following statements explain why it needs only three multiplications?
+[x] The middle term $ad+bc$ equals $(a+b)(c+d)-ac-bd$.
+[x] The products $ac$ and $bd$ are needed anyway.
+[x] Additions are cheap next to a recursive multiplication.
+[x] The product is $ac\cdot10^{2m}+(ad+bc)\cdot10^m+bd$.
+[ ] Because $ad=bc$ always holds, one of these products can be skipped.
+---
+展開「$xy=ac\cdot10^{2m}+(ad+bc)\cdot10^m+bd$」；「$(a+b)(c+d)-ac-bd$ 就是中間項」，而「$ac$、$bd$ 本來就要算」，用便宜的加減換掉一次遞迴乘法。$ad=bc$ 一般不成立。
+
+@q dc2-09 | al-dc#2 | 3 | 情境
+Suppose someone found a way to multiply $2\times2$ block matrices using only 6 block multiplications. Which of the following statements are correct?
+[x] The recursive algorithm would run in $\Theta(n^{\lg6})\approx\Theta(n^{2.585})$ time.
+[x] At least 7 block products are provably needed.
+[ ] It would run in $\Theta(n^{2.81})$ time, the same as Strassen's algorithm.
+[ ] It would run in $\Theta(n^2)$ time, since combining costs $\Theta(n^2)$.
+[ ] Its running time would be dominated by the combining cost at the root.
+---
+$T(n)=6T(n/2)+\Theta(n^2)$，$n^{\log_26}\approx n^{2.585}$ 比 $n^2$ 大，「葉子決定」，不是根的合併成本；$n^{2.81}$ 是 7 次的結果。「已經證明至少要 7 次」，所以 Strassen 在這種分法下是最佳的。
+
+@q dc2-10 | al-dc#2 | 2 | 計算
+Two 1024-digit numbers are multiplied with Karatsuba's method, recursing down to single digits. At each level, both numbers are split into halves, and the product is formed from 3 recursive multiplications of half-length numbers instead of the 4 used by the direct method; additions, subtractions, and shifts are not counted. Which of the following statements are correct? Select all that apply.
+[x] Karatsuba needs about $3^{10}=59049$ single-digit multiplications.
+[ ] Karatsuba needs about half as many single-digit multiplications as direct multiplication.
+[ ] Karatsuba needs about $1/1024$ as many as direct multiplication.
+[ ] Both methods need about the same number of single-digit multiplications.
+[x] Direct multiplication needs $4^{10}=1048576$ single-digit multiplications.
+---
+$1024=2^{10}$，要切 10 層。
+
+「Karatsuba 約 $3^{10}=59049$」對：每層子問題數變 3 倍。
+
+「約一半」錯、「約 $1/1024$」錯、「差不多」錯：比值是 $59049/1048576\approx1/17.8$。每層省 1/4，十層累積起來是 $(3/4)^{10}$。
+
+「直接乘 $4^{10}$」對：每一位乘每一位，$1024^2=4^{10}$。
+
+@q dc3-01 | al-dc#3 | 2 | 觀念
+In the divide-and-conquer closest-pair algorithm, the left and right halves are solved recursively, giving a minimum distance $\delta$. Which of the following statements about what remains to be checked are correct?
+[x] Pairs with one point on each side of the dividing line must still be checked.
+[x] Only points within $\delta$ of the line matter.
+[ ] Every pair with one point on each side must be checked.
+[ ] Nothing more needs to be checked, since $\delta$ is already the answer.
+[ ] Only points lying exactly on the dividing line need to be checked.
+---
+兩邊各自都 $\ge\delta$，更近的配對只可能「一左一右」，而且兩點都「離中線不到 $\delta$」。只看帶狀區域，不必比所有左右配對；離中線不遠但不在線上的點也要看。
+
+@q dc3-02 | al-dc#3 | 2 | 觀念
+帶狀區域裡的點照 $y$ 排序後，每個點只要跟後面幾個點比？
+[x] 常數個（課本說 7 個）
+[ ] 全部
+[ ] $\lg n$ 個
+[ ] $\sqrt n$ 個
+---
+一個 $\delta\times2\delta$ 的長方形裡，同一邊的點兩兩距離 $\ge\delta$，最多只能擠 8 個點。所以只要往後看常數個。
+
+@q dc3-03 | al-dc#3 | 2 | 計算
+In the divide-and-conquer closest-pair algorithm, the points in the strip must be in $y$ order. Which of the following statements are correct?
+[x] Re-sorting the strip by $y$ at every level gives $T(n)=2T(n/2)+O(n\lg n)=O(n\lg^2n)$.
+[x] Presorting by $y$ once gives $O(n\lg n)$.
+[x] Keeping the order means splitting the presorted list in linear time at each level.
+[x] The combine step then takes linear time.
+[ ] Re-sorting the strip at every level gives $O(n^2)$ time.
+---
+「每層重排」讓合併變 $O(n\lg n)$，解出「$O(n\lg^2n)$」，不是 $n^2$。「預先排好」、每層「線性時間切開排好的串列」，「合併步驟線性」，總共「$O(n\lg n)$」。
+
+@q dc3-04 | al-dc#3 | 2 | 比較
+Which of the following statements about the closest-pair problem for $n$ points in the plane are correct?
+?? 複選
+[x] Divide and conquer beats the $\Theta(n^2)$ method of checking every pair.
+[ ] Comparing every pair takes only $\Theta(n\lg n)$ time.
+[ ] Divide and conquer takes $O(n)$ time.
+[ ] Divide and conquer must compare each strip point with every other point in the strip.
+[ ] Divide and conquer is slower than comparing every pair when $n$ is large.
+---
+所有點對 $\Theta(n^2)$；分治靠「帶狀區域每點只比常數個」把合併壓到線性，「$O(n\lg n)$」，$n$ 大時快得多。光預先排序就要 $n\lg n$，不可能 $O(n)$。
+
+@q dc3-05 | al-dc#3 | 3 | 陷阱
+帶狀區域裡「每個點只跟 $y$ 座標接下來的 7 個點比」，為什麼不需要往前比？
+[x] 往前的配對，在處理前面那個點時已經比過了
+[ ] 往前的點一定比較遠
+[ ] 因為已經按 $x$ 排序
+[ ] 其實需要
+---
+每一對只要比一次，從 $y$ 比較小的那個往上看。
+
+@q dc3-06 | al-dc#3 | 3 | 證明
+說明為什麼帶狀區域裡，跟某點 $p$ 距離小於 $\delta$ 的點，在 $y$ 排序中只可能在 $p$ 之後的常數個位置內。
+---
+距離 $<\delta$ 的點 $q$（$q$ 在 $p$ 上方）一定落在以 $p$ 為底、高 $\delta$、寬 $2\delta$（橫跨中線）的長方形內。把長方形切成 8 個 $\frac\delta2\times\frac\delta2$ 的小格，每格對角線 $\frac\delta{\sqrt2}<\delta$；同一邊的點兩兩距離 $\ge\delta$，所以每格最多一點，長方形最多 8 點（含 $p$）。照 $y$ 排序時，$q$ 一定在 $p$ 之後 7 個以內。
+
+@q dc3-07 | al-dc#3 | 1 | 觀念
+Which of the following statements about the sorting done at the start of the divide-and-conquer closest-pair algorithm are correct?
+[x] Sorting by $x$ lets the middle line be found in $O(1)$.
+[x] A second copy of the points, sorted by $y$, is prepared for the strip.
+[ ] Sorting by distance from the origin is what makes the split possible.
+[ ] No sorting is needed to achieve $O(n\lg n)$, since the strip is small.
+[ ] Sorting by $x$ alone is enough, since the strip never needs $y$ order.
+---
+「照 $x$ 排好」才能 $O(1)$ 找中線、切兩半；「另一份照 $y$ 排好」給帶狀區域，每點只要和後面常數個比。離原點遠近跟切分無關；不排序的話每層都要另外處理，難以做到 $O(n\lg n)$。
+
+@q dc4-01 | al-dc#4 | 2 | 計算
+`[4, 1, 6, 2, 8, 3, 5, 7]` 有幾個逆序對？
+== 9
+---
+左半 `[4,1,6,2]` 內有 3 個、右半 `[8,3,5,7]` 內有 3 個；排好後 `[1,2,4,6]` 和 `[3,5,7,8]` 之間的跨半逆序對 3 個（4>3、6>3、6>5）。共 9。
+
+@q dc4-02 | al-dc#4 | 3 | 追蹤
+合併 `[1, 2, 4, 6]` 和 `[3, 5, 7, 8]` 時順便數跨半逆序對：每次從右邊拿一個數，就加上「左邊剩下幾個」。總共加了多少？
+== 3
+---
+拿 3 時左邊剩 4、6（加 2）；拿 5 時剩 6（加 1）；拿 7、8 時左邊已空（加 0）。共 3。
+
+@q dc4-03 | al-dc#4 | 2 | 觀念
+Inversions are counted while merge sort merges two sorted halves. Which of the following statements are correct?
+[x] Both halves are already sorted when they are merged.
+[x] When an element $y$ is taken from the right half, every element still left in the left half is greater than $y$.
+[x] So that many inversions can be added at once.
+[x] The total time stays $O(n\lg n)$.
+[x] The inversions crossing the two halves are all counted during the merge itself.
+---
+「左右已排好」；拿右邊的 $y$ 代表左邊剩下的最小值都比 $y$ 大，「剩下的全都比 $y$ 大」、又在 $y$ 前面，「一次加上剩下的個數」；跨兩半的逆序「全在合併時數完」，總共「仍是 $O(n\lg n)$」。五句都對。
+
+@q dc4-04 | al-dc#4 | 2 | 計算
+`[5, 4, 3, 2, 1, 6]` 有幾個逆序對？
+== 10
+---
+前 5 個完全倒過來：$\binom52=10$；6 在最後，比前面都大，不增加。
+
+@q dc4-05 | al-dc#4 | 2 | 比較
+Which of the following statements about finding the number of inversions of an array of $n$ numbers are correct?
+[x] Checking every pair takes $\Theta(n^2)$ time.
+[x] The merge-sort method takes $\Theta(n\lg n)$ time.
+[ ] Both methods take $\Theta(n\lg n)$ time.
+[ ] The merge-sort method takes $\Theta(n)$ time, since each element is merged once per level.
+[ ] Adding inversions one pair at a time inside merge sort still takes $\Theta(n\lg n)$ time.
+---
+「兩兩比」是 $\Theta(n^2)$；「合併排序法」每次放出右半的元素就一次加上左半剩下的個數，$\Theta(n\lg n)$。每層合併 $O(n)$、共 $\lg n$ 層，不是 $\Theta(n)$；逆序對可多達 $n^2/2$，一對一對數一定是平方。
+
+@q dc4-06 | al-dc#4 | 3 | 情境
+Alice and Bob each order the same 10 movies from favorite to least favorite. Listing the movies in Alice's order and writing Bob's position for each, we find the number of inversions in that sequence. Which of the following statements are correct?
+[x] Each inversion is a pair they order oppositely.
+[x] It ranges from 0 (identical orders) to 45 (completely opposite orders).
+[x] It can be computed in $O(n\lg n)$ time with merge sort.
+[x] With completely opposite orders, every pair of movies is an inversion.
+[ ] More inversions means more similar tastes, since more pairs have been compared.
+---
+「一個逆序對就是一對兩人先後相反的電影」；完全一樣是 0，「完全相反時每一對都逆序」，$10\times9/2=45$；「合併排序 $O(n\lg n)$」算得出來。逆序越多越不像。
+
+@q dc4-07 | al-dc#4 | 2 | 計算
+`[2, 4, 1, 3, 5]` 有幾個逆序對？
+== 3
+---
+(2,1)、(4,1)、(4,3)。
+
+@q dc4-08 | al-dc#4 | 3 | 找錯
+有人在合併時，每次從**左邊**拿出一個數就加上「右邊還剩幾個」。用 `[3,4]` 和 `[1,2]` 試，會算出多少？正確答案是多少？
+== 0,4
+?? 錯的規則,正確
+---
+1、2 先從右邊拿走；之後拿 3、4 時右邊已經空了，各加 0，算出 0。正確是 4（3>1、3>2、4>1、4>2）。左邊拿出的 $x$ 比右邊**剩下的**都小，它們不是逆序；該數的是「右邊已經被拿走的個數」，或改成拿右邊時加「左邊剩幾個」。
+
+@q dc5-01 | al-dc#5 | 2 | 觀念
+Two polynomials of degree less than $n$ are multiplied with FFT. Which of the following describes the method?
+?? 複選
+[x] Evaluate at $2n$-th roots of unity, multiply, interpolate.
+[ ] Multiply every pair of coefficients, then sort the products by degree.
+[ ] Find the roots of both polynomials, then multiply the roots together.
+[ ] Evaluate both at $2n$ arbitrary integer points, which is just as fast.
+[ ] Evaluate both at the $n$-th roots of unity only, since each has degree less than $n$.
+---
+「在 $2n$ 次單位根求值、逐點相乘、內插回係數」，求值和內插各用一次 FFT。兩兩係數相乘是 $O(n^2)$ 的展開；求根無關；一般整數點不能對半切；乘積次數到 $2n-2$，要 $2n$ 個點才能內插回來。
+
+@q dc5-02 | al-dc#5 | 2 | 計算
+兩個次數 5 的多項式相乘，乘積的次數是多少？至少要在幾個點求值才能內插回來？如果 FFT 要用 2 的次方個點，取幾個？
+== 10,11,16
+?? 次數,至少幾點,FFT點數
+---
+次數相加 10；次數 10 的多項式由 11 個點唯一決定；往上取 2 的次方：16。
+
+@q dc5-03 | al-dc#5 | 2 | 計算
+$(1+2x)(3+x)$ 的係數（由低次到高次）是？
+== 3 7 2
+== 3,7,2
+---
+$3+x+6x+2x^2=3+7x+2x^2$。FFT 就是把這種卷積從 $O(n^2)$ 加速到 $O(n\lg n)$。
+
+@q dc5-04 | al-dc#5 | 2 | 觀念
+Which of the following statements explain why FFT evaluates a polynomial at the $n$-th roots of unity?
+[x] Squaring them yields only $n/2$ distinct values.
+[x] With $A(x)=A_{\text{even}}(x^2)+x\,A_{\text{odd}}(x^2)$, this gives $T(n)=2T(n/2)+O(n)$.
+[ ] The roots of unity are all real numbers, which are easier to compute with.
+[ ] Any $n$ distinct points would make the problem split in half just as well.
+[ ] The roots of unity are integers, so no rounding errors can occur.
+---
+單位根「平方後只剩 $n/2$ 個」，兩個子多項式只要在 $n/2$ 個點求值，所以「$T(n)=2T(n/2)+O(n)$」。一般的點平方後不會重複，子問題不會變小；單位根大多是複數，不是實數也不是整數。
+
+@q dc5-05 | al-dc#5 | 2 | 計算
+Let $\omega_8=e^{2\pi i/8}$. Which of the following statements are correct?
+[x] $\omega_8^2=i$.
+[x] $\omega_8^4=-1$.
+[x] $\omega_8^2=\omega_4$.
+[x] $\omega_8^8=1$.
+[ ] $\omega_8=\frac{\sqrt2}{2}$, a real number.
+---
+$\omega_8^2=e^{\pi i/2}=i=\omega_4$，「$\omega_8^4=e^{\pi i}=-1$」，「$\omega_8^8=1$」；平方後就是第 4 個單位根，這是 FFT 能對半切的關鍵。$\omega_8=\frac{\sqrt2}2+\frac{\sqrt2}2i$，不是實數。
+
+@q dc5-06 | al-dc#5 | 2 | 比較
+Two polynomials of degree less than $n$ are multiplied. Which of the following statements are correct?
+[x] Direct expansion takes $\Theta(n^2)$ time.
+[x] Using FFT takes $\Theta(n\lg n)$ time.
+[x] Applying Karatsuba to polynomials takes $\Theta(n^{1.585})$ time.
+[x] The pointwise multiplication step of the FFT method takes only $O(n)$ time.
+[x] The two transforms dominate the running time of the FFT method.
+---
+「直接展開 $\Theta(n^2)$」；FFT 轉點值、「逐點乘 $O(n)$」、再轉回來，「轉換佔主要時間」，共「$\Theta(n\lg n)$」；「Karatsuba 套在多項式上是 $\Theta(n^{\lg3})$」。五句都對。
+
+@q dc5-07 | al-dc#5 | 3 | 陷阱
+「用 FFT 乘兩個次數 $n-1$ 的多項式，只要在 $n$ 個點求值就夠」對嗎？
+[ ] 對
+[x] 不對
+---
+乘積次數到 $2n-2$，需要 $2n-1$ 個點才能唯一決定，所以要取 $2n$ 個點（補 0）。只用 $n$ 個點會讓高次項「繞回來」疊到低次項上。
+
+@q dc5-08 | al-dc#5 | 3 | 證明
+寫出 FFT 的遞迴式並解出時間。
+---
+把 $A(x)$ 拆成偶次係數 $A_0$ 和奇次係數 $A_1$：$A(x)=A_0(x^2)+xA_1(x^2)$。在 $n$ 個 $n$ 次單位根求 $A$，等於在 $n/2$ 個 $n/2$ 次單位根求 $A_0$、$A_1$（兩個大小減半的子問題），再用 $O(n)$ 組合（$\omega^{k+n/2}=-\omega^k$）。$T(n)=2T(n/2)+O(n)=O(n\lg n)$。

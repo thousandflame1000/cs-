@@ -1,0 +1,4319 @@
+@q ls1-01 | la-systems#1 | 2 | 計算
+The augmented matrix $\left[\begin{smallmatrix}1&2&1&3\\2&4&3&7\\1&2&2&4\end{smallmatrix}\right]$ is reduced to RREF. Which of the following statements are true?
+[x] The pivots are in columns 1 and 3.
+[x] The system has infinitely many solutions, with $x_2$ as a free variable.
+[ ] The system has exactly one solution.
+[ ] The system has no solution, because the last row becomes all zeros.
+[ ] The pivots are in columns 1, 2 and 3.
+---
+RREF：$\left[\begin{smallmatrix}1&2&0&2\\0&0&1&1\\0&0&0&0\end{smallmatrix}\right]$。主元在第 1、3 行，「columns 1 and 3」對、「columns 1, 2 and 3」錯。最後一列是 $[0\ 0\ 0\mid0]$，代表 $0=0$，不是矛盾，所以「no solution」錯；矛盾要長成 $[0\ 0\ 0\mid c\ne0]$。變數 3 個、主元 2 個，1 個自由變數，「infinitely many」對、「exactly one」錯。
+
+@q ls1-02 | la-systems#1 | 2 | 計算
+The augmented matrix $\left[\begin{smallmatrix}1&2&1&3\\2&4&3&7\\1&2&2&4\end{smallmatrix}\right]$ reduces to $\left[\begin{smallmatrix}1&2&0&2\\0&0&1&1\\0&0&0&0\end{smallmatrix}\right]$. Write every solution as one particular solution plus $t$ times a fixed vector: $x=(2,0,1)+t\,(\,?,?,?\,)$. Give the missing vector.
+== -2,1,0
+---
+$x_1=2-2x_2$、$x_3=1$。令 $x_2=t$：$(2-2t,t,1)=(2,0,1)+t(-2,1,0)$。
+
+@q ls1-03 | la-systems#1 | 2 | 計算
+After elimination, the last row of an augmented matrix is $[0\ 0\ 0\mid 5]$. How many solutions does the system have?
+== 0
+---
+這一列代表 $0=5$，矛盾，無解。
+
+@q ls1-04 | la-systems#1 | 3 | 計算
+$\left[\begin{smallmatrix}1&1&2&3\\2&3&5&8\\1&2&3&6\end{smallmatrix}\right]$ is an augmented matrix. Which of the following statements are true?
+[x] The system has no solution.
+[x] After elimination, the last row of the augmented matrix reads $0=1$.
+[ ] The system has exactly one solution.
+[ ] The system has infinitely many solutions, because column 3 is the sum of columns 1 and 2.
+[ ] Changing the last entry 6 to any other number still leaves the system with no solution.
+---
+消去得 $\left[\begin{smallmatrix}1&0&1&0\\0&1&1&0\\0&0&0&1\end{smallmatrix}\right]$，最後一列是 $0=1$，所以「no solution」對，「exactly one」「infinitely many」都錯；第 3 行＝第 1 行＋第 2 行只說明係數有自由變數，不代表有解。「$0=1$」對（係數部分剩 2 個主元，增廣後多出一個矛盾列）。係數部分第 3 列＝第 2 列－第 1 列，右邊要滿足 $b_3=8-3=5$ 才一致，把 6 改成 5 就有無限多解，所以「any other number」錯。
+
+@q ls1-05 | la-systems#1 | 2 | 觀念
+A system $Ax=0$, whose right-hand side is all zeros, has $m$ equations and $n$ unknowns with $m<n$. Which of the following must be true?
+[x] It has a nonzero solution.
+[x] It has infinitely many solutions.
+[ ] It has only the zero solution.
+[ ] It may have no solution at all.
+[ ] It has exactly $n-m$ free variables.
+---
+主元最多 $m$ 個 $<n$，一定有自由變數，所以「nonzero solution」「infinitely many」都對，「only the zero solution」錯。右邊全 0 時 $x=0$ 永遠是解，「no solution at all」錯。自由變數是 $n-\text{主元數}\ge n-m$，只有每一列都有主元時才剛好 $n-m$，所以「exactly $n-m$」錯，例如兩條相同的方程式。
+
+@q ls1-06 | la-systems#1 | 2 | 陷阱
+「交換兩列、把一列乘以非零常數、把一列的倍數加到另一列」這三種列運算會改變方程組的解。
+[ ] 對
+[x] 不對
+---
+三種運算都可逆，所以新舊系統的解完全一樣。（乘以 0 就不可逆，不算列運算。）
+
+@q ls2-01 | la-systems#2 | 1 | 計算
+Which of the following is the inverse of $\left[\begin{smallmatrix}2&1\\5&3\end{smallmatrix}\right]$?
+[x] $\left[\begin{smallmatrix}3&-1\\-5&2\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}-3&1\\5&-2\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}3&1\\5&2\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}3&-5\\-1&2\end{smallmatrix}\right]$
+[ ] The matrix is not invertible.
+---
+$ad-bc=6-5=1\ne0$，可逆，「not invertible」錯。$\frac1{1}\left[\begin{smallmatrix}d&-b\\-c&a\end{smallmatrix}\right]=\left[\begin{smallmatrix}3&-1\\-5&2\end{smallmatrix}\right]$。全部變號的那個差了一個負號；沒加負號的那個是忘了變號；$-5$ 在右上角的那個是正確答案的轉置，乘回去不是 $I$。
+
+@q ls2-02 | la-systems#2 | 2 | 計算
+Use $[A\mid I]$ to invert $A=\left[\begin{smallmatrix}1&2&0\\0&1&3\\2&0&1\end{smallmatrix}\right]$. What is $(A^{-1})_{13}$, the entry in row 1, column 3?
+== 6/13
+---
+$\det A=13$。程式消去得 $A^{-1}=\frac1{13}\left[\begin{smallmatrix}1&-2&6\\6&1&-3\\-2&4&1\end{smallmatrix}\right]$。
+
+@q ls2-03 | la-systems#2 | 2 | 觀念
+Let $A$ be an $n\times n$ matrix. Which of the following conditions are not equivalent to "$A$ is invertible"?
+[x] Every entry of $A$ is nonzero.
+[x] Every diagonal entry of $A$ is nonzero.
+[ ] $Ax=0$ has only the zero solution.
+[ ] $Ax=b$ has exactly one solution for every $b$.
+[ ] The RREF of $A$ is $I$.
+---
+$\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]$ 每個元素、每個對角元素都不是 0，卻不可逆；$\left[\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\right]$ 對角線全 0 卻可逆。所以「every entry」「every diagonal entry」都不等價。「only the zero solution」「exactly one solution for every $b$」「RREF is $I$」都是可逆的等價條件。
+
+@q ls2-04 | la-systems#2 | 3 | 陷阱
+$A$、$B$ 都是 $n\times n$ 方陣，$AB=I$，則一定有 $BA=I$。
+[x] 對
+[ ] 不對
+---
+$AB=I$ 推出 $B$ 的零空間只有 0，$B$ 可逆，所以 $A=B^{-1}$。非方陣時不成立，例如 $A$ 是 $1\times2$、$B$ 是 $2\times1$。
+
+@q ls2-05 | la-systems#2 | 2 | 計算
+$A$ and $B$ are invertible $n\times n$ matrices. Which of the following statements are true?
+[x] $(AB)^{-1}=B^{-1}A^{-1}$.
+[x] $(ABC)^{-1}=C^{-1}B^{-1}A^{-1}$ for every invertible $n\times n$ matrix $C$.
+[ ] $(AB)^{-1}=A^{-1}B^{-1}$ for all such $A$ and $B$.
+[ ] $(AB)^{-1}=AB$.
+[ ] $AB$ need not be invertible.
+---
+$(AB)(B^{-1}A^{-1})=AIA^{-1}=I$，所以 $AB$ 一定可逆，「need not be invertible」錯，「$B^{-1}A^{-1}$」對。順序要反過來（像穿襪子再穿鞋，脫的時候先脫鞋），三個相乘也一樣反過來，「$C^{-1}B^{-1}A^{-1}$」對。$A^{-1}B^{-1}$ 只有 $A$、$B$ 可交換時才剛好相等，「for all」錯；「$=AB$」要 $(AB)^2=I$，一般不成立。
+
+@q ls3-01 | la-systems#3 | 2 | 計算
+Compute the LU factorization of $A=\left[\begin{smallmatrix}2&1&1\\4&3&3\\8&7&9\end{smallmatrix}\right]$. What are the multipliers $\ell_{21}$, $\ell_{31}$ and $\ell_{32}$ used during elimination?
+== 2,4,3
+?? l21,l31,l32
+---
+第 2 列減 2 倍第 1 列；第 3 列減 4 倍第 1 列得 $[0,3,5]$；第 2 列變成 $[0,1,1]$，第 3 列再減 3 倍第 2 列得 $[0,0,2]$。$L$ 的下三角就是這些乘數。
+
+@q ls3-02 | la-systems#3 | 2 | 計算
+In the LU factorization of $A=\left[\begin{smallmatrix}2&1&1\\4&3&3\\8&7&9\end{smallmatrix}\right]$, what are the diagonal entries of $U$ (the three pivots), in order?
+== 2,1,2
+---
+$U=\left[\begin{smallmatrix}2&1&1\\0&1&1\\0&0&2\end{smallmatrix}\right]$；之後學行列式會知道 $\det A=$ 主元乘積 $=4$。
+
+@q ls3-03 | la-systems#3 | 2 | 觀念
+The same coefficient matrix $A$ must be solved against many different right-hand sides $b$. Which of the following describe the benefit of computing $A=LU$ first?
+[x] Factoring once costs $O(n^3)$, and after that each new $b$ costs only $O(n^2)$.
+[x] Each new $b$ is handled by solving $Ly=b$ forward and then $Ux=y$ backward.
+[ ] It makes the matrix symmetric.
+[ ] It makes the solution unique.
+[ ] It makes the matrix invertible.
+---
+分解只做一次，「$O(n^3)$ … $O(n^2)$」對；之後每個 $b$ 是前代 $Ly=b$、後代 $Ux=y$ 兩次三角代入，「forward … backward」對。分解不會改變 $A$ 本身的性質：不會變對稱、不會讓不可逆的變可逆，解是否唯一也是 $A$ 自己決定的，「It makes the matrix symmetric.」、「It makes the solution…」、「It makes the matrix invertible.」錯。
+
+@q ls3-04 | la-systems#3 | 2 | 觀念
+When is a factorization $PA=LU$, with row exchanges, needed instead of plain $A=LU$?
+[x] When elimination meets a zero in a pivot position and must swap a lower row up.
+[x] In numerical practice, rows are often exchanged even when a pivot is merely very small, for stability.
+[ ] Whenever $A$ is not invertible.
+[ ] Whenever $A$ is symmetric.
+[ ] Always, because plain $A=LU$ never exists.
+---
+例如 $\left[\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\right]$ 第一個主元位置就是 0，沒辦法直接 LU，所以「zero in a pivot position」對；實務上的部分選主元會挑最大的當主元，「very small」對。不可逆不一定要換列：$\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]=\left[\begin{smallmatrix}1&0\\1&1\end{smallmatrix}\right]\left[\begin{smallmatrix}1&1\\0&0\end{smallmatrix}\right]$，所以「not invertible」錯。對稱矩陣常常可以直接 LU（甚至 $LDL^T$），「symmetric」「always」都錯。
+
+@q vs1-01 | la-vs#1 | 2 | 觀念
+$\mathbb R^2$ 中，下列哪一個是子空間？
+[x] 直線 $y=3x$
+[ ] 直線 $y=3x+1$
+[ ] 第一象限 $\{(x,y):x,y\ge0\}$
+[ ] 兩條座標軸的聯集
+---
+$y=3x+1$ 不含原點；第一象限乘 $-1$ 會跑出去；兩軸聯集 $(1,0)+(0,1)$ 不在裡面。
+
+@q vs1-02 | la-vs#1 | 2 | 觀念
+所有 $2\times2$ 矩陣中，下列哪一個集合**不是**子空間？
+[x] 左上角元素等於 1 的矩陣
+[ ] 對稱矩陣
+[ ] 上三角矩陣
+[ ] 跡（對角線和）為 0 的矩陣
+---
+不含零矩陣；而且兩個這種矩陣相加，左上角變 2，也不封閉。
+
+@q vs1-03 | la-vs#1 | 2 | 計算
+$W_0=\{(x,y,z):x+y+z=0\}$、$W_1=\{(x,y,z):x+y+z=1\}$，哪個是 $\mathbb R^3$ 的子空間？
+[x] 只有 $W_0$
+[ ] 只有 $W_1$
+[ ] 兩個都是
+[ ] 兩個都不是
+---
+$W_0$ 是過原點的平面，加法和純量乘法都封閉；$W_1$ 不含原點，$(1,0,0)+(0,1,0)$ 也跑出去。
+
+@q vs1-04 | la-vs#1 | 3 | 陷阱
+Let $U$ and $W$ be subspaces of a vector space. Is $U\cup W$ always a subspace? Is $U\cap W$ always a subspace? (Answer yes or no for each.)
+== no,yes
+== 不一定,一定
+?? union,intersection
+---
+$x$ 軸 ∪ $y$ 軸不封閉：$(1,0)+(0,1)=(1,1)$ 不在裡面。交集滿足三個條件（0 在兩邊、兩邊都封閉）。兩個子空間的「和」$U+W$ 才是包含兩者的最小子空間。
+
+@q vs2-01 | la-vs#2 | 2 | 計算
+Are $(1,2,3)$, $(2,4,6)$, $(1,1,1)$ linearly independent (yes or no)? What is the dimension of their span?
+== no,2
+== 不獨立,2
+?? independent?,dimension
+---
+第二個是第一個的 2 倍。矩陣秩 2，張成一個平面。
+
+@q vs2-02 | la-vs#2 | 2 | 計算
+What is the dimension of $P_3$, the space of polynomials $a_0+a_1x+a_2x^2+a_3x^3$? Of the space of $2\times3$ real matrices?
+== 4,6
+?? P3,2×3 matrices
+---
+基底 $1,x,x^2,x^3$；矩陣空間基底是每個位置一個 1 的矩陣，$2\times3=6$ 個。
+
+@q vs2-03 | la-vs#2 | 2 | 觀念
+$\mathbb R^3$ 中 4 個向量一定線性相依嗎？
+[x] 一定：維度只有 3，最多 3 個獨立的向量
+[ ] 不一定
+[ ] 只有在包含零向量時
+[ ] 一定獨立
+---
+同理，2 個向量不可能張成 $\mathbb R^3$。
+
+@q vs2-04 | la-vs#2 | 3 | 計算
+What is the dimension of the subspace of $2\times2$ symmetric matrices? Of $2\times2$ upper triangular matrices?
+== 3,3
+?? symmetric,upper triangular
+---
+對稱：$\left[\begin{smallmatrix}a&b\\b&c\end{smallmatrix}\right]$，3 個自由參數。上三角：$\left[\begin{smallmatrix}a&b\\0&c\end{smallmatrix}\right]$，也是 3。一般 $n\times n$ 都是 $\frac{n(n+1)}2$。
+
+@q ls4-01 | la-systems#4 | 2 | 計算
+$A$ is $5\times3$ with rank 2. What are the dimensions of $C(A)$, $N(A)$, $C(A^T)$ and $N(A^T)$?
+== 2,1,2,3
+?? C(A),N(A),C(A^T),N(A^T)
+---
+$C(A)\subseteq\mathbb R^5$ 維度 $r=2$；$N(A)\subseteq\mathbb R^3$ 維度 $n-r=1$；列空間 $r=2$；左零空間 $m-r=3$。
+
+@q ls4-02 | la-systems#4 | 2 | 觀念
+Let $A$ be an $m\times n$ matrix. Which of the following pairs of subspaces are always perpendicular to each other?
+[x] $N(A)$ and $C(A^T)$
+[x] $N(A^T)$ and $C(A)$
+[ ] $C(A)$ and $N(A)$
+[ ] $C(A)$ and $C(A^T)$
+[ ] $N(A)$ and $N(A^T)$
+---
+$Ax=0$ 代表 $x$ 跟 $A$ 的每一列內積為 0，所以 $N(A)$ 垂直於列空間 $C(A^T)$（都在 $\mathbb R^n$）；同理 $A^Ty=0$ 代表 $y$ 垂直於 $A$ 的每一行，$N(A^T)$ 垂直於 $C(A)$（都在 $\mathbb R^m$）。其餘三對在 $m\ne n$ 時根本在不同空間；$m=n$ 時也不一定垂直，例如 $A=\left[\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right]$ 的 $C(A)=N(A)=$ $x$ 軸。
+
+@q ls4-03 | la-systems#4 | 3 | 陷阱
+Let $A$ be a $3\times3$ matrix. Which of the following statements about $C(A)$ and $N(A)$ are true?
+[x] They can never be the same subspace, since their dimensions add up to 3.
+[x] For a $2\times2$ matrix they can be the same, e.g. for $\left[\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right]$.
+[ ] They are the same subspace whenever $A$ has rank 1.
+[ ] They are the same subspace when $A=0$.
+[ ] They are always the same subspace.
+---
+$\dim C(A)+\dim N(A)=3$，兩者一樣的話維度都是 1.5，不可能，所以「can never」對，「rank 1」「always」錯。$A=0$ 時 $C(A)=\{0\}$、$N(A)=\mathbb R^3$，不一樣，「$A=0$」錯。$2\times2$ 的 $\left[\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right]$：$C(A)=N(A)=$ $x$ 軸，維度 $1+1=2$ 能平分，所以「$2\times2$」對。
+
+@q ls5-01 | la-systems#5 | 2 | 計算
+$A$ is $4\times6$ with rank 3, and $B$ is $6\times5$ with rank 4. What are the largest and the smallest possible values of $\text{rank}(AB)$?
+== 3,1
+?? largest,smallest
+---
+上界 $\min(3,4)=3$；Sylvester 下界 $r_A+r_B-n=3+4-6=1$。
+
+@q ls5-02 | la-systems#5 | 2 | 觀念
+Which of the following statements about $A^TA$ and $A$ are true for every real matrix $A$?
+[x] $\text{rank}(A^TA)=\text{rank}(A)$.
+[x] $N(A^TA)=N(A)$.
+[ ] $\text{rank}(A^TA)=2\,\text{rank}(A)$.
+[ ] $\text{rank}(A^TA)\le\text{rank}(A)-1$.
+[ ] There is no general relationship between the two ranks.
+---
+$A^TAx=0$ ⇒ $x^TA^TAx=\|Ax\|^2=0$ ⇒ $Ax=0$；反方向顯然，所以兩者零空間一樣，「$N(A^TA)=N(A)$」對。兩者行數相同（都是 $n$），零空間相同就表示秩相等，「rank … $=$」對，其餘三個都錯。
+
+@q ls5-03 | la-systems#5 | 2 | 計算
+$\left[\begin{smallmatrix}1&2&3\\2&4&6\\3&6&9\end{smallmatrix}\right]$ 的秩？可以寫成哪種形式？
+[x] 秩 1；$uv^T$，$u=(1,2,3)^T$、$v=(1,2,3)^T$
+[ ] 秩 3
+[ ] 秩 2
+[ ] 秩 0
+---
+每一列都是第一列的倍數。秩 1 矩陣一定是一個行向量乘一個列向量。
+
+@q vs3-01 | la-vs#3 | 2 | 觀念
+下列哪一個**不是**線性變換？
+[x] $T(x,y)=(x+1,y)$
+[ ] $T(x,y)=(2x,x+y)$
+[ ] $T(x,y)=(y,x)$
+[ ] $T(x,y)=(0,0)$
+---
+線性變換一定把 0 送到 0；$T(0,0)=(1,0)$。
+
+@q vs3-02 | la-vs#3 | 2 | 計算
+A linear transformation $T:\mathbb R^5\to\mathbb R^3$ has a range of dimension 2. What is the dimension of its kernel?
+== 3
+---
+rank–nullity：$\dim\ker+\dim\text{range}=5$。
+
+@q vs3-03 | la-vs#3 | 2 | 觀念
+線性變換 $T$ 是一對一 ⇔ ？
+[x] $\ker T=\{0\}$
+[ ] 值域是整個空間
+[ ] $T$ 是方陣
+[ ] $T(0)=0$
+---
+$T(u)=T(v)$ ⇔ $T(u-v)=0$。核只有 0 就推得 $u=v$。
+
+@q vs3-04 | la-vs#3 | 3 | 陷阱
+有沒有從 $\mathbb R^3$ 到 $\mathbb R^2$ 的一對一線性變換？
+[x] 沒有：值域維度最多 2，核維度至少 1
+[ ] 有
+[ ] 只有零變換
+[ ] 看基底
+---
+同理，$\mathbb R^2\to\mathbb R^3$ 不可能映成。
+
+@q vs3-05 | la-vs#3 | 2 | 計算
+Let $D:P_3\to P_3$ be differentiation, where $P_3$ is the space of polynomials $a_0+a_1x+a_2x^2+a_3x^3$. Find the dimensions of its kernel and of its range.
+== 1,3
+?? kernel,range
+---
+核是常數函數（維度 1）；值域是次數 ≤ 2 的多項式（維度 3）。$1+3=4=\dim P_3$。
+
+@q vs4-01 | la-vs#4 | 2 | 計算
+$T(x,y)=(x+2y,3x)$ 在標準基底下的矩陣？
+[x] $\left[\begin{smallmatrix}1&2\\3&0\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1&3\\2&0\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1&2\\0&3\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}3&0\\1&2\end{smallmatrix}\right]$
+---
+第 $j$ 行是 $T(e_j)$：$T(1,0)=(1,3)$、$T(0,1)=(2,0)$。
+
+@q ei2-04 | la-eigen#2 | 2 | 觀念
+相似矩陣（$B=P^{-1}AP$）**不一定**共享哪一個？
+[x] 特徵向量
+[ ] 特徵值
+[ ] 行列式
+[ ] 秩和跡
+---
+它們是同一個線性變換在不同基底下的樣子；特徵向量會跟著基底改變（$B$ 的特徵向量是 $P^{-1}v$）。
+
+@q ei2-05 | la-eigen#2 | 3 | 反例
+兩個矩陣特徵值相同，一定相似嗎？
+[x] 不一定：$\left[\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right]$ 和 $I$ 特徵值都是 1、1，但 $I$ 只跟自己相似
+[ ] 一定
+[ ] 只要都是 $2\times2$ 就一定
+[ ] 只要行列式相同就一定
+---
+$P^{-1}IP=I$，所以任何不是 $I$ 的矩陣都不跟 $I$ 相似。
+
+@q dt1-01 | la-det#1 | 2 | 計算
+Let $A$ be a $4\times4$ matrix with $\det A=3$. Find $\det(2A)$, $\det(A^{-1})$, and $\det(A^T)$.
+== 48,1/3,3
+?? det(2A),det(A^-1),det(A^T)
+---
+$\det(cA)=c^n\det A=16\times3$；$\det A^{-1}=1/\det A$；轉置不變。
+
+@q dt1-02 | la-det#1 | 2 | 觀念
+三種列運算各怎麼改變行列式？
+[x] 交換兩列：變號；一列乘 $c$：乘 $c$；一列的倍數加到另一列：不變
+[ ] 三種都不變
+[ ] 三種都變號
+[ ] 交換不變；乘 $c$ 變號
+---
+所以消成上三角時要記錄換了幾次列、乘了什麼。
+
+@q dt1-03 | la-det#1 | 2 | 計算
+Evaluate $\det\begin{bmatrix}2&0&0&0\\1&3&0&0\\4&5&1&0\\7&8&9&2\end{bmatrix}$.
+== 12
+---
+下三角矩陣的行列式是對角線乘積：$2\cdot3\cdot1\cdot2=12$。
+
+@q dt1-04 | la-det#1 | 3 | 陷阱
+對任意兩個 $n\times n$ 矩陣，$\det(A+B)=\det A+\det B$ 都成立。
+[ ] 對
+[x] 不對
+---
+例如 $A=B=I_2$：$\det(2I)=4\ne1+1$。行列式對乘法有 $\det(AB)=\det A\det B$，對加法沒有。
+
+@q dt2-01 | la-det#2 | 2 | 計算
+Evaluate the Vandermonde determinant $\det\begin{bmatrix}1&1&1\\1&2&4\\1&3&9\end{bmatrix}$.
+== 2
+---
+$\prod_{i<j}(x_j-x_i)=(2-1)(3-1)(3-2)=2$。
+
+@q dt2-02 | la-det#2 | 2 | 計算
+Evaluate $\det\begin{bmatrix}0&1&2\\1&0&3\\4&-3&8\end{bmatrix}$.
+== -2
+---
+沿第 1 列展開：$0-1\cdot(1\cdot8-3\cdot4)+2\cdot(1\cdot(-3)-0\cdot4)=4-6=-2$。
+
+@q dt2-03 | la-det#2 | 2 | 計算
+A block upper-triangular matrix $\begin{bmatrix}A&B\\0&D\end{bmatrix}$ has square blocks $A$ and $D$ with $\det A=3$ and $\det D=-2$. What is its determinant?
+== -6
+---
+$\det A\cdot\det D$，跟 $B$ 無關。
+
+@q dt2-04 | la-det#2 | 2 | 計算
+Expanding an $n\times n$ determinant directly from the definition (a sum over all permutations) gives how many terms when $n=10$?
+== 3628800
+---
+$n!$ 項，$10!=3628800$。用消去法只要 $O(n^3)$。
+
+@q dt3-01 | la-det#3 | 2 | 計算
+$A=\left[\begin{smallmatrix}1&2\\3&4\end{smallmatrix}\right]$ 的伴隨矩陣 $\operatorname{adj}A$？
+[x] $\left[\begin{smallmatrix}4&-2\\-3&1\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}4&-3\\-2&1\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}-4&2\\3&-1\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1&-2\\-3&4\end{smallmatrix}\right]$
+---
+餘因子矩陣再轉置。$A^{-1}=\frac{\operatorname{adj}A}{\det A}=\frac1{-2}\operatorname{adj}A$。
+
+@q dt3-02 | la-det#3 | 3 | 計算
+Let $A$ be a $3\times3$ matrix with $\det A=4$. What is $\det(\operatorname{adj}A)$?
+== 16
+---
+$A\operatorname{adj}A=(\det A)I$，取行列式：$\det A\cdot\det\operatorname{adj}A=(\det A)^n$，所以 $\det\operatorname{adj}A=(\det A)^{n-1}=4^2$。
+
+@q dt3-03 | la-det#3 | 2 | 計算
+Use Cramer's rule to solve $2x+y=5$, $x+3y=10$. What is $x$?
+== 1
+---
+$\det A=5$；把第一行換成 $(5,10)$：$\det=15-10=5$。$x=5/5=1$（$y=3$）。
+
+@q dt3-04 | la-det#3 | 2 | 觀念
+Cramer 法則實際計算上的缺點？
+[x] 要算 $n+1$ 個 $n\times n$ 行列式，比高斯消去慢很多；主要用在理論推導或小矩陣
+[ ] 只能用在 $2\times2$
+[ ] 不能處理可逆矩陣
+[ ] 結果會錯
+---
+理論上它給出解的公式，例如看出解對係數是連續的。
+
+@q dt4-01 | la-det#4 | 2 | 計算
+Find the area of the parallelogram spanned by $(3,1)$ and $(1,2)$, and the area of the triangle with vertices $(0,0)$, $(3,1)$, $(1,2)$.
+== 5,2.5
+?? parallelogram,triangle
+---
+$|\det\left[\begin{smallmatrix}3&1\\1&2\end{smallmatrix}\right]|=5$；三角形一半。
+
+@q dt4-02 | la-det#4 | 2 | 觀念
+Let $M$ be a real $2\times2$ matrix and consider the map $x\mapsto Mx$ on the plane. Which of the following statements are correct? Select all that apply.
+[x] If $\det M<0$, the map flips the plane over, like a mirror reflection.
+[x] $|\det M|$ is the factor by which the map scales areas.
+[ ] If $\det M<0$, then $M$ is not invertible.
+[x] The reflection $\begin{bmatrix}1&0\\0&-1\end{bmatrix}$ has determinant $-1$.
+[ ] The matrix $-I$, which turns the plane half a turn about the origin, has determinant $-1$.
+---
+「$\det<0$ 會翻面」對：正負號代表方向；負的表示把逆時針的順序變成順時針。
+
+「$|\det|$ 是面積倍率」對。
+
+「$\det<0$ 就不可逆」錯：不可逆是 $\det=0$；負的只是翻面，面積照樣有。
+
+「上下翻的反射行列式 $-1$」對：$1\cdot(-1)-0=-1$。
+
+「$-I$（轉半圈）行列式 $-1$」錯：$\det(-I)=(-1)^2=1$。轉動不會翻面，行列式都是 1。
+
+@q dt4-03 | la-det#4 | 2 | 計算
+A linear map $A$ of $\mathbb R^3$ has $\det A=-2$. What is the volume of the image of the unit cube?
+== 2
+---
+體積放大倍率是 $|\det A|$。
+
+@q ei1-01 | la-eigen#1 | 2 | 計算
+Find the eigenvalues of $A=\begin{bmatrix}4&1\\2&3\end{bmatrix}$.
+== 2,5
+---
+$\det(A-\lambda I)=\lambda^2-7\lambda+10=0$。驗算：和 7＝跡、積 10＝行列式。
+
+@q ei1-02 | la-eigen#1 | 2 | 計算
+For $A=\begin{bmatrix}4&1\\2&3\end{bmatrix}$, find an eigenvector for the eigenvalue 5 whose first component is 1.
+== 1,1
+---
+$(A-5I)v=\left[\begin{smallmatrix}-1&1\\2&-2\end{smallmatrix}\right]v=0$，$v=(1,1)$。
+
+@q ei1-03 | la-eigen#1 | 2 | 計算
+A $2\times2$ matrix $A$ has eigenvalues 2 and 3. Find the eigenvalues of $A^2$, of $A^{-1}$, and of $A+4I$.
+== 4 9,1/2 1/3,6 7
+?? A^2,A^-1,A+4I
+---
+特徵向量不變，特徵值跟著做同樣的運算。
+
+@q ei1-04 | la-eigen#1 | 3 | 陷阱
+$A+B$ 的特徵值一定是「$A$ 的某個特徵值加上 $B$ 的某個特徵值」配對相加而成。
+[ ] 對
+[x] 不對
+---
+只有 $A$、$B$ 有共同的特徵向量（例如可交換、可同時對角化）時才成立。跡倒是一定相加。
+
+@q ei1-05 | la-eigen#1 | 2 | 計算
+Find the eigenvalues of $\begin{bmatrix}3&1&1\\1&3&1\\1&1&3\end{bmatrix}$.
+== 5,2,2
+---
+$=2I+J$（$J$ 全 1）。$J$ 的特徵值 3、0、0，所以 5、2、2。驗算跡 9。
+
+@q ei2-01 | la-eigen#2 | 2 | 觀念
+$\left[\begin{smallmatrix}2&1\\0&2\end{smallmatrix}\right]$ 能對角化嗎？
+[x] 不能：特徵值 2 的代數重數 2、幾何重數只有 1
+[ ] 能
+[ ] 能，因為是上三角
+[ ] 能，因為可逆
+---
+$A-2I=\left[\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right]$ 零空間只有一維，湊不到 2 個獨立特徵向量。
+
+@q ei2-02 | la-eigen#2 | 2 | 觀念
+Let $M$ be an $n \times n$ matrix. Which of the following statements are correct? Select all that apply.
+[x] If $M$ has $n$ distinct eigenvalues, then $M$ is diagonalizable.
+[ ] If $M$ is diagonalizable, then $M$ has $n$ distinct eigenvalues.
+[x] Eigenvectors that belong to distinct eigenvalues are linearly independent.
+[x] $M$ is diagonalizable if and only if, for every eigenvalue, its geometric multiplicity equals its algebraic multiplicity.
+[ ] The matrix $\begin{bmatrix} 1 & 1 \\ 0 & 2 \end{bmatrix}$ is not diagonalizable, because it is not symmetric.
+---
+「$n$ 個相異特徵值就能對角化」對：每個特徵值各取一個特徵向量，共 $n$ 個且線性獨立，剛好組成基底。
+
+「能對角化就有 $n$ 個相異特徵值」錯：$I$ 只有一個特徵值 1，本身就是對角的。
+
+「相異特徵值的特徵向量線性獨立」對：這是上面第一句的理由。
+
+「幾何重數＝代數重數」對：這是可對角化的充要條件；相異特徵值只是其中一種「每個重數都是 1」的特例。
+
+「不對稱所以不能對角化」錯：對稱是「一定能（而且能用正交矩陣）對角化」的充分條件，不是必要條件。這個矩陣的特徵值 1、2 相異，所以可以對角化。
+
+@q ei2-03 | la-eigen#2 | 3 | 計算
+A $3\times3$ matrix $A$ has eigenvalues 2, 2, 5, and $\dim N(A-2I)=1$. Is $A$ diagonalizable? (Answer yes or no.)
+== no
+== 不能
+---
+特徵值 2 需要 2 個獨立特徵向量，只有 1 個。
+
+@q ei3-01 | la-eigen#3 | 2 | 計算
+Let $A=\begin{bmatrix}1&1\\0&2\end{bmatrix}$. What is the upper-right entry of $A^5$?
+== 31
+---
+特徵值 1、2，對角化後 $A^k=\left[\begin{smallmatrix}1&2^k-1\\0&2^k\end{smallmatrix}\right]$，$2^5-1=31$。
+
+@q ei3-02 | la-eigen#3 | 2 | 計算
+The Markov matrix $\begin{bmatrix}0.9&0.2\\0.1&0.8\end{bmatrix}$ has columns summing to 1. Find its steady-state vector whose components sum to 1.
+== 2/3,1/3
+---
+特徵值 1 的特徵向量：$-0.1x+0.2y=0$，$x=2y$，正規化成 $(\frac23,\frac13)$。
+
+@q ei3-03 | la-eigen#3 | 2 | 觀念
+為什麼 Markov 矩陣（每行和為 1）一定有特徵值 1？
+[x] $A^T$ 的每列和為 1，$(1,1,\dots,1)$ 是 $A^T$ 特徵值 1 的特徵向量；$A$ 和 $A^T$ 特徵值相同
+[ ] 因為對角線都是 1
+[ ] 因為可逆
+[ ] 不一定有
+---
+其他特徵值的絕對值都 ≤ 1，所以 $A^k$ 收斂到穩態方向。
+
+@q ei3-04 | la-eigen#3 | 3 | 計算
+The Fibonacci numbers satisfy $\begin{bmatrix} F_{n+1} \\ F_n \end{bmatrix} = M \begin{bmatrix} F_n \\ F_{n-1} \end{bmatrix}$ with $F_0 = 0$ and $F_1 = 1$. Which of the following statements are correct? Select all that apply.
+[x] $M = \begin{bmatrix} 1 & 1 \\ 1 & 0 \end{bmatrix}$.
+[x] The eigenvalues of $M$ are $\frac{1 \pm \sqrt{5}}{2}$.
+[x] For $n \ge 1$, $M^n = \begin{bmatrix} F_{n+1} & F_n \\ F_n & F_{n-1} \end{bmatrix}$.
+[ ] $M$ is not diagonalizable over the real numbers.
+[ ] $F_n$ grows roughly like $2^n$.
+---
+「$M=\left[\begin{smallmatrix}1&1\\1&0\end{smallmatrix}\right]$」對：第一列 $F_{n+1}=F_n+F_{n-1}$，第二列 $F_n=F_n$。
+
+「特徵值 $\frac{1\pm\sqrt5}2$」對：$\det(M-\lambda I)=\lambda^2-\lambda-1$。
+
+「$M^n$ 的形式」對：$M^1$ 是 $\left[\begin{smallmatrix}F_2&F_1\\F_1&F_0\end{smallmatrix}\right]$，每乘一次 $M$ 往前推一項；例如 $M^6=\left[\begin{smallmatrix}13&8\\8&5\end{smallmatrix}\right]$。
+
+「不能在實數上對角化」錯：兩個特徵值相異而且都是實數（$M$ 也是對稱矩陣），一定可以。
+
+「成長約 $2^n$」錯：由最大的特徵值決定，約 $1.618^n$。
+
+@q ei4-01 | la-eigen#4 | 2 | 計算
+Let $M = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}$, whose characteristic polynomial is $\lambda^2 - 5\lambda - 2$. Which of the following statements are correct? Select all that apply.
+[x] By the Cayley–Hamilton theorem, $M^2 = 5M + 2I$.
+[x] $M^{-1} = \frac{1}{2}(M - 5I)$.
+[x] $M^{-1} = \begin{bmatrix} -2 & 1 \\ 1.5 & -0.5 \end{bmatrix}$.
+[ ] $M^{-1} = \frac{1}{2}(5I - M)$.
+[ ] $M^3 = 25M + 4I$.
+---
+「$M^2=5M+2I$」對：Cayley–Hamilton 說矩陣滿足自己的特徵多項式，$M^2-5M-2I=0$。實際乘：$M^2=\left[\begin{smallmatrix}7&10\\15&22\end{smallmatrix}\right]=5M+2I$ ✓。
+
+「$M^{-1}=\frac12(M-5I)$」對：$M(M-5I)=2I$，兩邊除以 2。
+
+「數值 $\left[\begin{smallmatrix}-2&1\\1.5&-0.5\end{smallmatrix}\right]$」對：$\frac12\left[\begin{smallmatrix}-4&2\\3&-1\end{smallmatrix}\right]$。
+
+「$\frac12(5I-M)$」錯：差一個負號，移項時常犯的錯。
+
+「$M^3=25M+4I$」錯：$M^3=M\cdot M^2=5M^2+2M=5(5M+2I)+2M=27M+10I$。把 $M^2$ 的係數直接平方是錯的。
+
+@q ei4-02 | la-eigen#4 | 2 | 觀念
+Which of the following statements about the minimal polynomial of a square matrix are correct? Select all that apply.
+[x] A matrix is diagonalizable if and only if its minimal polynomial has no repeated roots.
+[x] The minimal polynomial of $\begin{bmatrix} 2 & 1 \\ 0 & 2 \end{bmatrix}$ is $(\lambda - 2)^2$.
+[x] For the $3 \times 3$ matrix $2I$, the minimal polynomial is $\lambda - 2$, while the characteristic polynomial is $(\lambda - 2)^3$.
+[ ] A matrix is diagonalizable if and only if its minimal polynomial equals its characteristic polynomial.
+[ ] The minimal polynomial of an $n \times n$ matrix is always a polynomial of order exactly $n$, the same as the characteristic polynomial.
+---
+「可對角化 ⇔ 最小多項式沒有重根」對：可對角化時 $\prod(M-\lambda_iI)$（每個相異特徵值一次）就是 0；反過來，沒有重根代表每個 Jordan 區塊都是 $1\times1$。
+
+「$\left[\begin{smallmatrix}2&1\\0&2\end{smallmatrix}\right]$ 是 $(\lambda-2)^2$」對：$M-2I\ne0$，但 $(M-2I)^2=0$。有重根，所以不能對角化。
+
+「$2I$ 的最小多項式 $\lambda-2$」對：$2I-2I=0$，一次就夠；特徵多項式是 $(\lambda-2)^3$。
+
+「最小多項式＝特徵多項式才能對角化」錯：$2I$ 是對角的，兩者卻不相等。
+
+「最小多項式一定 $n$ 次」錯：同上，$2I$ 的最小多項式只有一次。最小多項式整除特徵多項式，次數 $\le n$。
+
+@q ei4-03 | la-eigen#4 | 3 | 計算
+A matrix $A$ satisfies $A^2-3A+2I=0$, and $A$ is neither $I$ nor $2I$. Which eigenvalues does $A$ have, and is $A$ diagonalizable (yes or no)?
+== 1 2,yes
+== 1 2,能
+?? eigenvalues,diagonalizable
+---
+最小多項式整除 $(\lambda-1)(\lambda-2)$，又不是一次（$A\ne I,2I$），所以就是它：沒有重根，可對角化，特徵值 1 和 2 都出現。
+
+@q ei5-01 | la-eigen#5 | 2 | 計算
+A $4\times4$ matrix has 3 as its only eigenvalue, geometric multiplicity 2, and minimal polynomial $(\lambda-3)^3$. What are the sizes of its Jordan blocks?
+== 3,1
+---
+區塊數＝幾何重數 2；最大區塊大小＝最小多項式的次方 3；總和 4：一個 3、一個 1。
+
+@q ei5-02 | la-eigen#5 | 3 | 計算
+A $4\times4$ matrix has 0 as its only eigenvalue, with geometric multiplicity 2. How many Jordan forms are possible, ignoring the order of the blocks?
+== 2
+---
+2 個區塊、總大小 4：(3,1) 或 (2,2)。需要最小多項式（$\lambda^3$ 或 $\lambda^2$）才能分辨。
+
+@q ei5-03 | la-eigen#5 | 2 | 觀念
+Let $J = J_3(\lambda) = \begin{bmatrix} \lambda & 1 & 0 \\ 0 & \lambda & 1 \\ 0 & 0 & \lambda \end{bmatrix}$ be a $3 \times 3$ Jordan block. Which of the following statements are correct? Select all that apply.
+[x] $J$ has $\lambda$ on the diagonal, 1 directly above the diagonal, and 0 elsewhere.
+[x] $(J - \lambda I)^3 = 0$, but $(J - \lambda I)^2 \ne 0$.
+[ ] $J$ is diagonalizable.
+[x] The geometric multiplicity of $\lambda$ in $J$ is 1.
+[ ] $J$ has three distinct eigenvalues.
+---
+「對角線 $\lambda$、上方一條 1」對：這就是 Jordan 區塊的形狀。
+
+「三次方才是 0」對：$N=J-\lambda I$ 每乘一次，1 那條就往右上移一格；$N^2$ 只剩右上角一個 1，$N^3=0$。所以最小多項式是 $(x-\lambda)^3$。
+
+「可對角化」錯：只有一個特徵值、特徵空間只有一維。
+
+「幾何重數 1」對：$N$ 的秩是 2，零空間一維。每個 Jordan 區塊只提供一個特徵向量。
+
+「三個相異特徵值」錯：只有 $\lambda$（代數重數 3）。
+
+@q or1-01 | la-ortho#1 | 1 | 計算
+Let $u=(1,2,2)$ and $v=(2,-2,1)$. Find $u\cdot v$ and $\|u\|$.
+== 0,3
+?? u·v,‖u‖
+---
+$2-4+2=0$（正交）；$\sqrt{1+4+4}=3$。
+
+@q or1-02 | la-ortho#1 | 2 | 計算
+$W$ is a 2-dimensional subspace of $\mathbb R^5$. What is $\dim W^\perp$?
+== 3
+---
+$\dim W+\dim W^\perp=5$。
+
+@q or1-03 | la-ortho#1 | 2 | 觀念
+Cauchy–Schwarz 不等式 $|u\cdot v|\le\|u\|\|v\|$ 什麼時候取等號？
+[x] $u$、$v$ 共線（其中一個是另一個的倍數）
+[ ] 正交時
+[ ] 長度相等時
+[ ] 永遠不會
+---
+這也保證 $\cos\theta=\frac{u\cdot v}{\|u\|\|v\|}$ 在 $[-1,1]$ 之間。
+
+@q or1-04 | la-ortho#1 | 2 | 計算
+What is the angle, in degrees, between $(1,0,1)$ and $(1,1,0)$?
+== 60
+== 60°
+---
+$\cos\theta=\frac{1}{\sqrt2\sqrt2}=\frac12$，60 度。
+
+@q or2-01 | la-ortho#2 | 2 | 計算
+Find the projection of $b=(1,2,3)$ on the line through $a=(1,1,1)$.
+== 2,2,2
+---
+$\frac{a\cdot b}{a\cdot a}a=\frac63(1,1,1)$。
+
+@q or2-02 | la-ortho#2 | 3 | 計算
+Find the projection of $b=(1,2,0)$ on the plane spanned by $(1,0,1)$ and $(0,1,1)$.
+== 0,1,1
+---
+$P=A(A^TA)^{-1}A^T$，程式算得 $Pb=(0,1,1)$。驗算：$b-Pb=(1,1,-1)$ 跟兩個基底向量內積都是 0。
+
+@q or2-03 | la-ortho#2 | 2 | 觀念
+投影矩陣 $P$ 一定滿足？
+[x] $P^2=P$ 而且 $P^T=P$
+[ ] $P^2=I$
+[ ] $P^TP=I$
+[ ] $\det P=1$
+---
+投影兩次跟一次一樣。$P$ 的特徵值只有 0 和 1。
+
+@q or2-04 | la-ortho#2 | 3 | 陷阱
+投影矩陣 $P$ 只要不是 $I$，就一定不可逆。
+[x] 對
+[ ] 不對
+---
+它把垂直方向的向量壓成 0，有非零的零空間；行列式 0。
+
+@q or3-01 | la-ortho#3 | 2 | 計算
+Fit the line $y=c+dx$ to the points $(0,1)$, $(1,3)$, $(2,4)$, $(3,4)$ by least squares. Find $c$ and $d$.
+== 1.5,1
+?? c,d
+---
+正規方程 $\left[\begin{smallmatrix}4&6\\6&14\end{smallmatrix}\right]\left[\begin{smallmatrix}c\\d\end{smallmatrix}\right]=\left[\begin{smallmatrix}12\\23\end{smallmatrix}\right]$，解得 $c=1.5$、$d=1$。
+
+@q or3-02 | la-ortho#3 | 2 | 觀念
+最小平方解 $\hat x$ 的幾何意義？
+[x] $A\hat x$ 是 $b$ 在 $A$ 的行空間上的投影，誤差 $b-A\hat x$ 垂直於行空間
+[ ] $\hat x$ 讓 $Ax=b$ 剛好成立
+[ ] $\hat x$ 是 $b$ 的投影
+[ ] $\hat x$ 垂直於 $b$
+---
+正規方程 $A^T(b-A\hat x)=0$ 就是在說誤差垂直於每一行。
+
+@q or3-03 | la-ortho#3 | 2 | 觀念
+正規方程 $A^TA\hat x=A^Tb$ 有唯一解的條件？
+[x] $A$ 的行向量線性獨立（$A^TA$ 可逆）
+[ ] $A$ 是方陣
+[ ] $b$ 在 $A$ 的行空間
+[ ] 永遠唯一
+---
+行不獨立時投影 $A\hat x$ 唯一，但 $\hat x$ 有無限多個。
+
+@q or4-01 | la-ortho#4 | 2 | 觀念
+正交矩陣 $Q$ 的行列式和特徵值？
+[x] $\det Q=\pm1$；特徵值的絕對值都是 1
+[ ] $\det Q=0$
+[ ] 特徵值都是 1
+[ ] 特徵值都是實數
+---
+$Q$ 保長度：$\|Qv\|=\|v\|$，所以 $|\lambda|=1$。旋轉矩陣的特徵值可以是複數。
+
+@q or4-02 | la-ortho#4 | 2 | 比較
+$2\times2$ 正交矩陣中，「繞原點轉一個角度」和「對一條直線反射」怎麼分？
+[x] $\det=1$ 是轉角度；$\det=-1$ 是反射
+[ ] 對稱的是轉角度
+[ ] 跡是 0 的是轉角度
+[ ] 都一樣
+---
+反射矩陣同時是對稱矩陣，特徵值 1 和 −1。
+
+@q or4-03 | la-ortho#4 | 3 | 陷阱
+$Q$ 是 $3\times2$、兩個行向量單位正交，則 $QQ^T=I_3$。
+[ ] 對
+[x] 不對
+---
+$Q^TQ=I_2$，但 $QQ^T$ 是投影到 $Q$ 行空間的 $3\times3$ 投影矩陣（秩 2），不是 $I_3$。只有方陣才同時 $Q^TQ=QQ^T=I$。
+
+@q or5-01 | la-ortho#5 | 2 | 計算
+Apply Gram–Schmidt to $v_1=(1,1,0)$ and $v_2=(1,0,1)$. What is the second orthogonal vector, before normalization?
+== 0.5,-0.5,1
+== 1/2,-1/2,1
+---
+$u_2=v_2-\frac{v_2\cdot v_1}{v_1\cdot v_1}v_1=(1,0,1)-\frac12(1,1,0)$。
+
+@q or5-02 | la-ortho#5 | 2 | 觀念
+$A=QR$ 中 $R$ 為什麼是上三角？
+[x] Gram–Schmidt 第 $k$ 個正交向量只用到前 $k$ 個原始向量，所以 $a_k$ 也只用 $q_1..q_k$ 表示
+[ ] 隨便選的
+[ ] 因為 $Q$ 是正交的
+[ ] 因為 $A$ 是方陣
+---
+$R$ 的元素 $r_{ij}=q_i\cdot a_j$。
+
+@q or5-03 | la-ortho#5 | 2 | 觀念
+有了 $A=QR$，最小平方怎麼解？
+[x] 解 $R\hat x=Q^Tb$（上三角，後代就好）
+[ ] 解 $Q\hat x=Rb$
+[ ] $\hat x=Q^{-1}b$
+[ ] 不能用 QR
+---
+$A^TA=R^TQ^TQR=R^TR$，正規方程化簡後就是 $R\hat x=Q^Tb$，數值上比直接算 $A^TA$ 穩定。
+
+@q sv1-01 | la-sym-svd#1 | 2 | 觀念
+關於實數元素的對稱矩陣 $A=A^T$，下列哪一個一定成立？
+[x] 特徵值都是實數，而且可以用正交矩陣對角化
+[ ] 可逆
+[ ] 特徵值都是正的
+[ ] 只有一個特徵值
+---
+譜定理：$A=Q\Lambda Q^T$。
+
+@q sv1-02 | la-sym-svd#1 | 2 | 計算
+$\left[\begin{smallmatrix}2&1\\1&2\end{smallmatrix}\right]$ 的特徵值和單位特徵向量？
+[x] 3：$\frac1{\sqrt2}(1,1)$；1：$\frac1{\sqrt2}(1,-1)$
+[ ] 2、2
+[ ] 3：$(1,0)$；1：$(0,1)$
+[ ] 1、1
+---
+兩個特徵向量正交，這是對稱矩陣的保證。
+
+@q sv1-03 | la-sym-svd#1 | 3 | 證明
+證明：實對稱矩陣不同特徵值的特徵向量互相正交。
+---
+$Au=\lambda u$、$Av=\mu v$、$\lambda\ne\mu$。$\lambda(u\cdot v)=(Au)\cdot v=u\cdot(A^Tv)=u\cdot(Av)=\mu(u\cdot v)$，所以 $(\lambda-\mu)(u\cdot v)=0$，$u\cdot v=0$。
+
+@q sv2-01 | la-sym-svd#2 | 2 | 計算
+What are the three leading principal minors of $\left[\begin{smallmatrix}2&-1&0\\-1&2&-1\\0&-1&2\end{smallmatrix}\right]$, and is the matrix positive definite (yes/no)?
+== 2 3 4,yes
+== 2 3 4,是
+?? leading minors,positive definite
+---
+2、$4-1=3$、$\det=4$，全部正，所以正定。
+
+@q sv2-02 | la-sym-svd#2 | 2 | 計算
+Is $\left[\begin{smallmatrix}1&2\\2&1\end{smallmatrix}\right]$ positive definite (yes/no)?
+== no
+== 不是
+---
+特徵值 3 和 −1；或領先主子式 1、$1-4=-3<0$。
+
+@q sv2-03 | la-sym-svd#2 | 3 | 陷阱
+判斷對稱矩陣**半正定**時，只要檢查領先主子式都 $\ge0$ 就夠了。
+[ ] 對
+[x] 不對
+---
+反例 $\left[\begin{smallmatrix}0&0\\0&-1\end{smallmatrix}\right]$：領先主子式 0、0 都 $\ge0$，但特徵值有 −1。半正定要看**所有**主子式，或看特徵值。
+
+@q sv2-04 | la-sym-svd#2 | 2 | 觀念
+為什麼 $A^TA$ 一定半正定？
+[x] $x^TA^TAx=\|Ax\|^2\ge0$
+[ ] 因為它是對稱的
+[ ] 因為它可逆
+[ ] 不一定
+---
+$A$ 的行獨立時 $A^TA$ 正定。
+
+@q sv3-01 | la-sym-svd#3 | 2 | 計算
+Write $5x^2+4xy+2y^2=6$ as $x^TAx=6$. What are the eigenvalues of $A$, and what kind of curve is this?
+== 1 6,ellipse
+== 1 6,橢圓
+?? eigenvalues,curve
+---
+$A=\left[\begin{smallmatrix}5&2\\2&2\end{smallmatrix}\right]$，特徵值 1、6 都正：橢圓（主軸方向是特徵向量）。
+
+@q sv3-02 | la-sym-svd#3 | 2 | 計算
+What kind of curve is $x^2+6xy+y^2=1$?
+== hyperbola
+== 雙曲線
+---
+$A=\left[\begin{smallmatrix}1&3\\3&1\end{smallmatrix}\right]$，特徵值 4、−2 一正一負：雙曲線。
+
+@q sv3-03 | la-sym-svd#3 | 2 | 觀念
+$\|x\|=1$ 時，$x^TAx$（$A$ 對稱）的最大值是？
+[x] 最大的特徵值，在對應的單位特徵向量取到
+[ ] $\det A$
+[ ] $\operatorname{tr}A$
+[ ] 最大的對角元素
+---
+Rayleigh 商。最小值是最小的特徵值。
+
+@q sv4-01 | la-sym-svd#4 | 2 | 計算
+$A=\left[\begin{smallmatrix}3&0\\4&5\end{smallmatrix}\right]$ 的奇異值？
+[x] $3\sqrt5$ 和 $\sqrt5$
+[ ] 3 和 5
+[ ] 5 和 3
+[ ] 45 和 5
+---
+$A^TA=\left[\begin{smallmatrix}25&20\\20&25\end{smallmatrix}\right]$，特徵值 45、5，開根號。驗算乘積 $15=|\det A|$。
+
+@q sv4-02 | la-sym-svd#4 | 2 | 計算
+What are the singular values and the rank of $\left[\begin{smallmatrix}1&1\\1&1\\0&0\end{smallmatrix}\right]$?
+== 2 0,1
+?? singular values,rank
+---
+$A^TA=\left[\begin{smallmatrix}2&2\\2&2\end{smallmatrix}\right]$，特徵值 4、0，奇異值 2、0。秩＝非零奇異值個數。
+
+@q sv4-03 | la-sym-svd#4 | 3 | 陷阱
+$\left[\begin{smallmatrix}2&0\\0&-3\end{smallmatrix}\right]$ 的奇異值是 2 和 −3。
+[ ] 對
+[x] 不對
+---
+正確是 3 和 2。奇異值一定非負，而且由大到小排。負號放進 $U$ 或 $V$。對稱矩陣的奇異值是特徵值的絕對值。
+
+@q sv4-04 | la-sym-svd#4 | 2 | 觀念
+用 SVD 做最佳秩 $k$ 近似怎麼做？
+[x] 只保留最大的 $k$ 個奇異值和對應的 $u_i$、$v_i$：$\sum_{i\le k}\sigma_iu_iv_i^T$
+[ ] 保留最小的 $k$ 個
+[ ] 隨便選 $k$ 行
+[ ] 取前 $k$ 列
+---
+Eckart–Young 定理：誤差是丟掉的奇異值決定的，這是最小的。影像壓縮就是這樣。
+
+@q ls1-07 | la-systems#1 | 2 | 情境
+Balance $a\,\mathrm{C_3H_8}+b\,\mathrm{O_2}\to c\,\mathrm{CO_2}+d\,\mathrm{H_2O}$ by writing one conservation equation for each of carbon, hydrogen and oxygen. Using the smallest positive integer solution, give $a,b,c,d$.
+== 1,5,3,4
+---
+C：$3a=c$；H：$8a=2d$；O：$2b=2c+d$。4 個未知數、3 條方程式、右邊全 0，RREF 有 1 個自由變數：$(a,b,c,d)=t(\frac14,\frac54,\frac34,1)$，取 $t=4$。
+
+@q ls1-08 | la-systems#1 | 3 | 情境
+Four one-way streets form a loop A→B→C→D→A, carrying flows $x_1$ (A→B), $x_2$ (B→C), $x_3$ (C→D) and $x_4$ (D→A). Per hour, 400 cars enter at A, 250 leave at B, 100 enter at C and 250 leave at D, and at each intersection the flow in equals the flow out. If no flow can be negative, what is the smallest possible value of $x_2$?
+== 150
+---
+A：$400+x_4=x_1$；B：$x_1=x_2+250$；C：$x_2+100=x_3$；D：$x_3=x_4+250$。消去得 $x_1=400+x_4$、$x_2=150+x_4$、$x_3=250+x_4$，$x_4$ 自由。$x_4\ge0$，所以 $x_2\ge150$。四條方程式其實只有三條獨立（總流入 500＝總流出 500）。
+
+@q ls1-09 | la-systems#1 | 2 | 情境
+Find the quadratic $p(x)=ax^2+bx+c$ passing through $(1,2)$, $(2,3)$ and $(3,6)$. What is $p(4)$?
+== 11
+---
+三條方程式消去得 $a=1$、$b=-2$、$c=3$，$p(4)=16-8+3=11$。三個不同的 $x$ 一定唯一解（之後學 Vandermonde 行列式就知道為什麼）。
+
+@q ls1-10 | la-systems#1 | 3 | 計算
+For the augmented matrix $\left[\begin{smallmatrix}1&1&1&1\\1&2&3&2\\1&3&a&b\end{smallmatrix}\right]$, which values of $a$ and $b$ give infinitely many solutions?
+== 5,3
+?? a,b
+---
+消去：第 2 列 $[0,1,2\mid1]$；第 3 列 $[0,2,a-1\mid b-1]$，再減 2 倍第 2 列得 $[0,0,a-5\mid b-3]$。$a\ne5$ 唯一解；$a=5,b\ne3$ 無解；$a=5,b=3$ 無限多解。
+
+@q ls1-11 | la-systems#1 | 3 | 找錯
+解 $x+ky=1$、$kx+y=1$：學生把第 2 式減 $k$ 倍第 1 式得 $(1-k^2)y=1-k$，兩邊除以 $1-k^2$ 得 $y=\frac1{1+k}$，結論「每個 $k$ 都唯一解 $x=y=\frac1{1+k}$」。錯在哪？
+[x] 除以 $1-k^2$ 前沒檢查它是不是 0：$k=1$ 時無限多解、$k=-1$ 時無解
+[ ] 第 2 式應該減 $\frac1k$ 倍第 1 式
+[ ] $x$ 應該是 $\frac1{1-k}$
+[ ] 沒有錯
+---
+$k=1$：兩式一樣，$0=0$，無限多解；$k=-1$：$0\cdot y=2$，無解。含參數的消去，每次除法都要分情況。
+
+@q ls1-12 | la-systems#1 | 2 | 反例
+Someone claims: "If there are more equations than unknowns ($m>n$), the system has no solution." Which of the following are counterexamples?
+[x] $x=1$, $2x=2$, $3x=3$
+[x] $x+y=2$, $x-y=0$, $2x=2$
+[ ] $x=1$, $x=2$
+[ ] $x+y=1$
+[ ] $x+y=1$, $2x+2y=3$
+---
+反例要「$m>n$ 而且有解」。$x=1,2x=2,3x=3$ 有解 $x=1$；$x+y=2,x-y=0,2x=2$ 有解 $x=y=1$，兩個都是反例。$x=1,x=2$ 雖然 $m>n$ 但無解，符合原說法，不是反例。$x+y=1$ 是 $m<n$；$x+y=1,2x+2y=3$ 是 $m=n$，都不是反例。$m>n$ 只代表「通常」不一致；右邊剛好落在係數組得出的範圍內就有解。
+
+@q ls1-13 | la-systems#1 | 2 | 陷阱
+$Ax=b$ has two different solutions $u\ne v$. Which of the following statements are true?
+[x] The system has infinitely many solutions.
+[x] $u+t(v-u)$ is a solution for every real number $t$.
+[x] $v-u$ is a nonzero solution of $Ax=0$.
+[ ] The system has exactly two solutions.
+[ ] The system may have exactly three solutions.
+---
+$A(v-u)=b-b=0$，「$v-u$」對；所以 $A(u+t(v-u))=b+t\cdot0=b$，「every real number $t$」對，解有無限多個，「infinitely many」對。線性系統的解的個數只可能是 0、1 或無限多，「exactly two」「exactly three」都錯。
+
+@q ls1-14 | la-systems#1 | 2 | 計算
+A coefficient matrix is $3\times5$ with 3 pivots. Does $Ax=b$ have a solution for every $b\in\mathbb R^3$ (yes/no)? How many free variables are there?
+== yes,2
+== 有,2
+?? solvable for every b,free variables
+---
+每一列都有主元，消完不會出現 $[0\cdots0\mid c]$，所以一定有解；$5-3=2$ 個自由變數，解有無限多個。
+
+@q ls1-15 | la-systems#1 | 1 | 追蹤
+Solve $\left[\begin{smallmatrix}2&1&-1&3\\0&3&2&7\\0&0&4&8\end{smallmatrix}\right]$ by back substitution. Give $x_1,x_2,x_3$ in order.
+== 2,1,2
+---
+$x_3=8/4=2$；$x_2=(7-2\cdot2)/3=1$；$x_1=(3-1+2)/2=2$。從最後一列往上代。
+
+@q ls1-16 | la-systems#1 | 2 | 情境
+A cinema charges 120 dollars for adults, 80 for students and 50 for children. It sold 30 tickets for 2700 dollars, and the number of student tickets was twice the number of child tickets. How many adult, student and child tickets were sold?
+== 12,12,6
+---
+$a+s+c=30$、$120a+80s+50c=2700$、$s=2c$。代入得 $a=30-3c$、$3600-150c=2700$，$c=6$、$s=12$、$a=12$。驗算 $1440+960+300=2700$。
+
+@q ls1-17 | la-systems#1 | 2 | 比較
+同一個矩陣，列梯形（REF）和 RREF 哪個是唯一的？
+[x] RREF 唯一；REF 不唯一（列運算順序不同會得到不同的 REF）
+[ ] 兩個都唯一
+[ ] 兩個都不唯一
+[ ] REF 唯一；RREF 不唯一
+---
+例如 $\left[\begin{smallmatrix}1&2\\0&1\end{smallmatrix}\right]$ 和 $\left[\begin{smallmatrix}2&4\\0&3\end{smallmatrix}\right]$ 都是同一個矩陣的 REF，但 RREF 都是 $I$。主元的位置在所有 REF 裡都一樣。
+
+@q ls1-18 | la-systems#1 | 3 | 計算
+How many pivots does $\left[\begin{smallmatrix}1&2&3&4\\2&3&4&5\\3&4&5&6\\4&5&6&7\end{smallmatrix}\right]$ have after elimination?
+== 2
+---
+第 $k$ 列 $=$ 第 1 列 $+(k-1)(1,1,1,1)$，所以每一列都是 $(1,2,3,4)$ 和 $(1,1,1,1)$ 的組合，只有 2 個主元。第 3、4 列消完全變 0。
+
+@q ls1-19 | la-systems#1 | 3 | 證明
+證明：若 $x_p$ 是 $Ax=b$ 的一個解，則 $Ax=b$ 的每一個解都能寫成 $x_p+x_h$，其中 $Ax_h=0$；反過來這樣的向量也都是解。
+---
+設 $x$ 是任一解，令 $x_h=x-x_p$，$Ax_h=b-b=0$，所以 $x=x_p+x_h$。反過來 $A(x_p+x_h)=b+0=b$。所以解集合＝特解平移的「$Ax=0$ 的解」。
+
+@q ls1-20 | la-systems#1 | 3 | 陷阱
+During elimination, someone replaces row 2 by (row 2 − row 1) and, at the same time, row 1 by (row 1 − row 2), both computed from the old rows. Which of the following statements are true?
+[x] The solution set may change.
+[x] The two new rows are negatives of each other, so the information of one equation is lost.
+[ ] Nothing changes, because each step on its own is a legal row operation.
+[ ] Nothing changes; only the order of the rows is different.
+[ ] The system always ends up with no solution.
+---
+新列是 $r_2-r_1$ 和 $r_1-r_2$，彼此是負的，等於把兩條方程式換成一條，「negatives of each other」對。例如 $x+y=3$、$x-y=1$ 原本唯一解，做完只剩 $y=1$，$x$ 變自由，「may change」對、兩個「nothing changes」錯。原來的解仍滿足新方程式，解集合只會變大不會變空，「no solution」錯。列運算要一次一個，用的是「當下」的列。
+
+@q ls2-06 | la-systems#2 | 2 | 計算
+What is the first row of the inverse of $\left[\begin{smallmatrix}1&0&2\\2&1&0\\0&1&1\end{smallmatrix}\right]$?
+== 1/5,2/5,-2/5
+== 0.2,0.4,-0.4
+---
+用 $[A\mid I]$ 消去得 $A^{-1}=\frac15\left[\begin{smallmatrix}1&2&-2\\-2&1&4\\2&-1&1\end{smallmatrix}\right]$。驗算第 1 列乘 $A$ 的第 1 行：$\frac15(1+4+0)=1$。
+
+@q ls2-07 | la-systems#2 | 2 | 情境
+A message $(p_1,p_2)$ is scrambled with the matrix $\left[\begin{smallmatrix}2&1\\5&3\end{smallmatrix}\right]$ into $(2p_1+p_2,\,5p_1+3p_2)$. You receive the scrambled pair $(7,18)$. What was the original message?
+== 3,1
+---
+解密要乘反矩陣 $\left[\begin{smallmatrix}3&-1\\-5&2\end{smallmatrix}\right]$：$(21-18,\,-35+36)=(3,1)$。驗算 $(6+1,15+3)=(7,18)$。加密矩陣一定要可逆才解得回來。
+
+@q ls2-08 | la-systems#2 | 2 | 反例
+$(A+B)^{-1}=A^{-1}+B^{-1}$ 對嗎？下列哪個是反例？
+[x] $A=B=I$：$(2I)^{-1}=\frac12I$，但 $I+I=2I$
+[ ] $A=I$、$B=0$
+[ ] $A=B=0$
+[ ] 這是對的，沒有反例
+---
+$B=0$ 時 $B^{-1}$ 不存在，不能當反例。反矩陣對乘法有 $(AB)^{-1}=B^{-1}A^{-1}$，對加法沒有公式。
+
+@q ls2-09 | la-systems#2 | 1 | 陷阱
+$\left[\begin{smallmatrix}2&0&0\\0&0&0\\0&0&5\end{smallmatrix}\right]$ 的反矩陣是？
+[x] 不存在
+[ ] $\left[\begin{smallmatrix}1/2&0&0\\0&0&0\\0&0&1/5\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1/2&0&0\\0&1&0\\0&0&1/5\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}-2&0&0\\0&0&0\\0&0&-5\end{smallmatrix}\right]$
+---
+對角矩陣可逆 ⇔ 對角線全不為 0。「$\left[\begin{smallmatrix}1/2&0&0\\0&0&0\\0&0&1/5\end{smallmatrix}\right]$」乘回去 $(2,2)$ 位置是 0，不是 $I$。
+
+@q ls2-10 | la-systems#2 | 2 | 計算
+Given $A^{-1}=\left[\begin{smallmatrix}3&-1\\-5&2\end{smallmatrix}\right]$, what is $(2A)^{-1}$? Give its four entries row by row.
+== 1.5,-0.5,-2.5,1
+== 3/2,-1/2,-5/2,1
+---
+$(cA)^{-1}=\frac1cA^{-1}$。常見錯誤是乘 2 而不是除以 2。
+
+@q ls2-11 | la-systems#2 | 2 | 找錯
+解 $AX=B$（$A$ 可逆）：學生寫 $X=BA^{-1}$。錯在哪？
+[x] 應該左乘：$A^{-1}AX=A^{-1}B$，$X=A^{-1}B$；矩陣乘法不能交換
+[ ] 沒錯
+[ ] 應該是 $X=B-A$
+[ ] 應該是 $X=A^{-1}B^{-1}$
+---
+$BA^{-1}$ 是 $XA=B$ 的解。兩者一般不相等。
+
+@q ls2-12 | la-systems#2 | 3 | 觀念
+$A$ is a square matrix with $A^2=0$. Which of the following statements are true?
+[x] $I-A$ is invertible.
+[x] $(I-A)^{-1}=I+A$.
+[ ] $I-A$ is invertible only when $A=0$.
+[ ] $(I-A)^{-1}=I-A$.
+[ ] $A$ itself is invertible.
+---
+$(I-A)(I+A)=I-A^2=I$，所以「invertible」「$I+A$」對，也不需要 $A=0$。$(I-A)^2=I-2A$，$A\ne0$ 時不是 $I$，「$I-A$」錯。若 $A$ 可逆，$A^2$ 也可逆，不可能是 0，所以「$A$ itself」錯。這是 $\frac1{1-x}=1+x+x^2+\cdots$ 在 $A^2=0$ 時截斷的版本。
+
+@q ls2-13 | la-systems#2 | 3 | 計算
+For which $k$ is $\left[\begin{smallmatrix}1&2&k\\0&1&1\\1&0&1\end{smallmatrix}\right]$ not invertible?
+== 3
+---
+第 3 列減第 1 列：$[0,-2,1-k]$；再加 2 倍第 2 列：$[0,0,3-k]$。$k=3$ 時第 3 列全 0，主元只有 2 個。
+
+@q ls2-14 | la-systems#2 | 3 | 情境
+In a two-industry economy, each dollar of product 1 uses 0.2 dollars of product 1 and 0.4 dollars of product 2, and each dollar of product 2 uses 0.3 dollars of product 1 and 0.1 dollars of product 2. Outside demand is $(60,30)$. Total output $x$ satisfies $x=Cx+d$. What is $x$?
+== 105,80
+---
+$C=\left[\begin{smallmatrix}0.2&0.3\\0.4&0.1\end{smallmatrix}\right]$，$x=(I-C)^{-1}d$。$(I-C)^{-1}=\frac1{0.6}\left[\begin{smallmatrix}0.9&0.3\\0.4&0.8\end{smallmatrix}\right]$，乘 $(60,30)$ 得 $(105,80)$。驗算 $0.2\cdot105+0.3\cdot80+60=105$。
+
+@q ls2-15 | la-systems#2 | 2 | 比較
+要解 $Ax=b$，「先算 $A^{-1}$ 再乘 $b$」和「直接消去」比？
+[x] 直接消去比較省（約 $\frac13n^3$ 對 $n^3$），數值也比較穩
+[ ] 先算 $A^{-1}$ 比較快
+[ ] 一樣快
+[ ] 只有 $A^{-1}$ 的方法能用
+---
+只有要對同一個 $A$ 反覆用、而且真的需要 $A^{-1}$ 的元素時才算它；多組 $b$ 用 LU 更好。
+
+@q ls2-16 | la-systems#2 | 2 | 觀念
+$A$ 可逆、$B$ 不可逆（都是 $n\times n$）。$AB$ 呢？
+[x] 不可逆
+[ ] 可逆
+[ ] 看 $A$ 和 $B$ 的大小
+[ ] 可能可逆也可能不可逆
+---
+若 $AB$ 可逆，則 $B=A^{-1}(AB)$ 是兩個可逆矩陣的乘積，也可逆，矛盾。或：$Bx=0$ 有非零解，$ABx=0$ 也有。
+
+@q ls2-17 | la-systems#2 | 1 | 計算
+The elementary matrix $E$ adds 3 times row 1 to row 3. What is the $(3,1)$ entry of $E^{-1}$?
+== -3
+---
+反運算是「把第 1 列的 3 倍從第 3 列減掉」。基本矩陣的反矩陣還是基本矩陣。
+
+@q ls2-18 | la-systems#2 | 2 | 計算
+What is the first row of $\left[\begin{smallmatrix}1&1&1\\0&1&1\\0&0&1\end{smallmatrix}\right]^{-1}$?
+== 1,-1,0
+---
+反矩陣是 $\left[\begin{smallmatrix}1&-1&0\\0&1&-1\\0&0&1\end{smallmatrix}\right]$：「前綴和」的反運算是「相鄰差」。上三角的反矩陣還是上三角。
+
+@q ls2-19 | la-systems#2 | 3 | 陷阱
+$A$ 是 $2\times3$、$B$ 是 $3\times2$，$AB=I_2$，則 $BA=I_3$ 也一定成立。
+[ ] 對
+[x] 不對
+---
+$BA$ 是 $3\times3$，但 $Ax=0$ 一定有非零解（3 個未知數只有 2 條方程式），所以 $BAx=0$ 也有非零解，$BA$ 不可能是 $I_3$。「$AB=I\Rightarrow BA=I$」只對方陣成立。
+
+@q ls2-20 | la-systems#2 | 3 | 證明
+證明：$n\times n$ 的 $A$，若 $Ax=0$ 只有零解，則對每個 $b$，$Ax=b$ 都恰有一個解。
+---
+$Ax=0$ 只有零解 ⇒ 沒有自由變數 ⇒ 每一行都有主元，$n$ 個主元，每一列也都有主元 ⇒ RREF 是 $I$ ⇒ 任何 $b$ 消完都是 $[I\mid c]$，解 $x=c$ 存在；唯一性：兩個解相減是 $Ax=0$ 的解，只能是 0。
+
+@q ls3-05 | la-systems#3 | 1 | 計算
+$\left[\begin{smallmatrix}2&4\\3&8\end{smallmatrix}\right]=LU$，$\ell_{21}$ 和 $u_{22}$ 各是？
+== 1.5,2
+== 3/2,2
+?? l21,u22
+---
+第 2 列減 $\frac32$ 倍第 1 列：$[3,8]-1.5[2,4]=[0,2]$。
+
+@q ls3-06 | la-systems#3 | 2 | 計算
+$A=\left[\begin{smallmatrix}1&2&1\\3&8&1\\0&4&1\end{smallmatrix}\right]$，LU 的乘數 $\ell_{21},\ell_{31},\ell_{32}$ 和 $u_{33}$ 依序是？
+== 3,0,2,5
+---
+第 2 列減 3 倍第 1 列得 $[0,2,-2]$；第 3 列不用動第 1 行（$\ell_{31}=0$）；再減 2 倍新的第 2 列：$[0,4,1]-2[0,2,-2]=[0,0,5]$。
+
+@q ls3-07 | la-systems#3 | 2 | 追蹤
+接上題，用 $L=\left[\begin{smallmatrix}1&0&0\\3&1&0\\0&2&1\end{smallmatrix}\right]$ 解 $Ly=b$，$b=(4,12,5)$。$y$ 是？
+== 4,0,5
+---
+前代：$y_1=4$；$y_2=12-3\cdot4=0$；$y_3=5-2\cdot0=5$。
+
+@q ls3-08 | la-systems#3 | 2 | 計算
+接上題，再解 $Ux=y$，$U=\left[\begin{smallmatrix}1&2&1\\0&2&-2\\0&0&5\end{smallmatrix}\right]$、$y=(4,0,5)$，$x$ 是？
+== 1,1,1
+---
+後代：$x_3=1$；$2x_2-2=0$，$x_2=1$；$x_1=4-2-1=1$。驗算 $A(1,1,1)=(4,12,5)$。
+
+@q ls3-09 | la-systems#3 | 3 | 陷阱
+不可逆的矩陣一定沒有 LU 分解。
+[ ] 對
+[x] 不對
+---
+$\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]=\left[\begin{smallmatrix}1&0\\1&1\end{smallmatrix}\right]\left[\begin{smallmatrix}1&1\\0&0\end{smallmatrix}\right]$。LU 只要消去途中不需要換列就有；$U$ 的對角線出現 0 只代表不可逆。
+
+@q ls3-10 | la-systems#3 | 2 | 找錯
+消去時做了「第 2 列 ← 第 2 列 − 3×第 1 列」，學生在 $L$ 的 $(2,1)$ 填 $-3$。錯在哪？
+[x] $L$ 存的是乘數本身 $+3$：$L$ 是把消去「還原」回去，要加回 3 倍
+[ ] 應該填 $1/3$
+[ ] 應該填在 $(1,2)$
+[ ] 沒錯
+---
+消去矩陣 $E_{21}$ 的 $(2,1)$ 是 $-3$，$L=E^{-1}$ 的 $(2,1)$ 是 $+3$。
+
+@q ls3-11 | la-systems#3 | 3 | 情境
+電路模擬時同一個 $1000\times1000$ 的 $A$ 要解 1000 個不同的 $b$。「每次都重新消去（$\frac13n^3$）」和「LU 一次（$\frac13n^3$）＋每個 $b$ 兩次三角代入（$n^2$）」的運算量比約是幾倍？
+== 250
+---
+重新消去：$1000\times\frac13\times10^9\approx3.33\times10^{11}$。LU：$3.33\times10^8+1000\times10^6=1.33\times10^9$。比約 250 倍。
+
+@q ls3-12 | la-systems#3 | 2 | 計算
+$A=\left[\begin{smallmatrix}0&2\\3&4\end{smallmatrix}\right]$ 要寫成 $PA=LU$。$U$ 是？
+[x] $\left[\begin{smallmatrix}3&4\\0&2\end{smallmatrix}\right]$，$P$ 交換兩列、$L=I$
+[ ] $\left[\begin{smallmatrix}0&2\\3&4\end{smallmatrix}\right]$
+[ ] 不存在
+[ ] $\left[\begin{smallmatrix}3&4\\0&-2\end{smallmatrix}\right]$
+---
+第一個主元位置是 0，交換後已經是上三角，不用再消。
+
+@q ls3-13 | la-systems#3 | 3 | 計算
+$A=\left[\begin{smallmatrix}4&2\\2&5\end{smallmatrix}\right]$（$A=A^T$）寫成 $LDL^T$，$D$ 的對角線是？
+== 4,4
+---
+$\ell_{21}=\frac12$，$U=\left[\begin{smallmatrix}4&2\\0&4\end{smallmatrix}\right]$。把 $U$ 的對角線提出來成 $D$，剩下的 $\left[\begin{smallmatrix}1&1/2\\0&1\end{smallmatrix}\right]$ 剛好是 $L^T$。
+
+@q ls3-14 | la-systems#3 | 3 | 追蹤
+部分選主元（每次選該行絕對值最大的當主元）處理 $\left[\begin{smallmatrix}1&2\\4&3\end{smallmatrix}\right]$，$U$ 的 $(2,2)$ 元素？
+== 1.25
+== 5/4
+---
+選 4 當主元，先交換；$\ell_{21}=\frac14$；$2-\frac14\cdot3=1.25$。選主元讓乘數 $|\ell|\le1$，誤差不會放大。
+
+@q ls3-15 | la-systems#3 | 2 | 觀念
+為什麼 $L$ 的下三角可以「直接填乘數」，不用再算？
+[x] 消去順序是由上往下，$E$ 們的反矩陣相乘時乘數不會互相混在一起
+[ ] 因為 $L$ 是對角矩陣
+[ ] 因為乘數都是整數
+[ ] 只有 $2\times2$ 才可以
+---
+反過來 $E_{32}E_{31}E_{21}$ 本身（消去矩陣的乘積）的元素會混，例如 $(3,1)$ 會出現 $\ell_{31}-\ell_{32}\ell_{21}$。
+
+@q ls3-16 | la-systems#3 | 3 | 情境
+熱傳導模擬的係數矩陣是三對角（只有主對角和上下各一條非零），$n=10^6$。LU 分解的運算量大約是？
+[x] $O(n)$：$L$、$U$ 也只有兩條對角線，每列只消一次
+[ ] $O(n^3)$
+[ ] $O(n^2)$
+[ ] 不能做 LU
+---
+帶狀矩陣不會在帶外產生新的非零（不換列時），所以約 $n$ 次的常數量運算。一般 $n^3$ 在 $10^6$ 時完全做不完。
+
+@q ls3-17 | la-systems#3 | 3 | 證明
+證明：兩個下三角、對角線全是 1 的矩陣相乘，結果還是下三角、對角線全是 1。
+---
+$(LM)_{ij}=\sum_k\ell_{ik}m_{kj}$。$\ell_{ik}\ne0$ 需要 $k\le i$，$m_{kj}\ne0$ 需要 $k\ge j$。$i<j$ 時沒有 $k$ 同時滿足，元素是 0（下三角）；$i=j$ 時只剩 $k=i$，$\ell_{ii}m_{ii}=1$。
+
+@q ls3-18 | la-systems#3 | 2 | 觀念
+$A$ 可逆、消去不用換列。主元都不是 0 時，「$L$ 對角線全 1」的 LU 分解有幾種？
+[x] 唯一一種
+[ ] 兩種
+[ ] 無限多種
+[ ] 看消去順序
+---
+若 $L_1U_1=L_2U_2$，則 $L_2^{-1}L_1=U_2U_1^{-1}$，左邊是單位下三角、右邊是上三角，只能是 $I$。
+
+@q ls4-04 | la-systems#4 | 2 | 計算
+$A=\left[\begin{smallmatrix}1&2&0&1\\2&4&1&4\\3&6&1&5\end{smallmatrix}\right]$，RREF 是 $\left[\begin{smallmatrix}1&2&0&1\\0&0&1&2\\0&0&0&0\end{smallmatrix}\right]$。$N(A)$ 的一組基底是？
+[x] $(-2,1,0,0)$、$(-1,0,-2,1)$
+[ ] $(1,2,0,1)$、$(0,0,1,2)$
+[ ] $(1,2,3)$、$(0,1,1)$
+[ ] $(2,-1,0,0)$、$(1,0,2,-1)$、$(0,0,0,1)$
+---
+自由變數 $x_2$、$x_4$；令 $(x_2,x_4)=(1,0)$ 和 $(0,1)$ 解出特殊解。「$(1,2,0,1)$、$(0,0,1,2)$」是列空間的基底；「$(1,2,3)$、$(0,1,1)$」是行空間的基底；「$(2,-1,0,0)$、$(1,0,2,-1)$、$(0,0,0,1)$」有 3 個向量，太多了（維度 $4-2=2$）。
+
+@q ls4-05 | la-systems#4 | 2 | 陷阱
+接上題，$C(A)$ 的一組基底是？
+[x] 原矩陣的第 1、3 行：$(1,2,3)$、$(0,1,1)$
+[ ] RREF 的第 1、3 行：$(1,0,0)$、$(0,1,0)$
+[ ] RREF 的非零列
+[ ] $(1,2,0,1)$、$(2,4,1,4)$
+---
+列運算會改變行空間（RREF 的行第 3 個分量都是 0，但 $A$ 的不是），只保留「哪幾行是主元行」這個資訊，所以要回原矩陣拿。
+
+@q ls4-06 | la-systems#4 | 2 | 計算
+接上題，$N(A^T)$ 的一個非零向量？
+== 1,1,-1
+---
+第 3 列＝第 1 列＋第 2 列，所以 $(1,1,-1)^TA=0$。$N(A^T)$ 維度 $3-2=1$，就是它的倍數。
+
+@q ls4-07 | la-systems#4 | 1 | 觀念
+列運算不會改變下列哪兩個？
+[x] $N(A)$ 和列空間 $C(A^T)$
+[ ] $C(A)$ 和 $N(A^T)$
+[ ] $C(A)$ 和 $N(A)$
+[ ] 四個全都不變
+---
+列運算是左乘可逆矩陣 $E$：$EAx=0\Leftrightarrow Ax=0$；列的組合範圍不變。行空間會變。
+
+@q ls4-08 | la-systems#4 | 3 | 情境
+一個連通的電路有 4 個節點、5 條導線。矩陣每一列代表一條導線（起點 $-1$、終點 $+1$，其他 0），是 $5\times4$。它的秩、$\dim N(A)$、$\dim N(A^T)$ 各是？
+== 3,1,2
+?? 秩,N(A),N(A^T)
+---
+$Ax=0$ 代表每條導線兩端電位相同，連通時只有「全部相同」，$\dim N(A)=1$，秩 $4-1=3$。$\dim N(A^T)=5-3=2$，對應 2 個獨立的迴路（電流守恆的解）。
+
+@q ls4-09 | la-systems#4 | 3 | 觀念
+Which of the following conditions are each equivalent to "$Ax=b$ has a solution"?
+[x] $b$ is perpendicular to every vector in $N(A^T)$.
+[x] $b$ lies in $C(A)$.
+[ ] $b$ is perpendicular to every vector in $N(A)$.
+[ ] $b$ lies in $N(A)$.
+[ ] $b\ne0$.
+---
+有解 ⇔ $b$ 是 $A$ 各行的組合 ⇔ $b\in C(A)$，「lies in $C(A)$」對；$C(A)$ 正好是所有和 $N(A^T)$ 垂直的向量，「perpendicular to … $N(A^T)$」也對。$N(A)$ 住在 $\mathbb R^n$，$b$ 住在 $\mathbb R^m$，跟 $N(A)$ 比垂直或包含都搭錯空間。$b\ne0$ 跟有沒有解無關：$b=0$ 一定有解。
+
+@q ls4-10 | la-systems#4 | 2 | 反例
+「$\dim N(A)=\dim N(A^T)$」對所有矩陣都成立嗎？
+[x] 不是，例如 $A=\left[\begin{smallmatrix}1&0&0\end{smallmatrix}\right]$：$\dim N(A)=2$、$\dim N(A^T)=0$
+[ ] 是
+[ ] 只有對 $A=0$ 不成立
+[ ] 只有對可逆矩陣不成立
+---
+$\dim N(A)=n-r$、$\dim N(A^T)=m-r$，只有方陣才相等。
+
+@q ls4-11 | la-systems#4 | 2 | 計算
+$u\in\mathbb R^3$、$v\in\mathbb R^4$ 都不是零向量，$A=uv^T$。$C(A)$、$N(A)$、$C(A^T)$、$N(A^T)$ 的維度？
+== 1,3,1,2
+?? $C(A)$,$N(A)$,$C(A^T)$,$N(A^T)$
+---
+$A$ 的每一行都是 $u$ 的倍數，秩 1。$A$ 是 $3\times4$：$N(A)$ 是 $4-1$、$N(A^T)$ 是 $3-1$。
+
+@q ls4-12 | la-systems#4 | 1 | 計算
+$4\times4$ 可逆矩陣的四個子空間維度？
+== 4,0,4,0
+---
+秩 4，兩個零空間只有零向量。
+
+@q ls4-13 | la-systems#4 | 2 | 找錯
+A student says: "A basis for $N(A)$ is given by the nonzero rows of the RREF of $A$." Which of the following statements are true?
+[x] The nonzero RREF rows form a basis for the original row space.
+[x] Special solutions obtained from the free variables give a nullspace basis.
+[x] Each special solution has zero dot product with each row of the RREF.
+[ ] RREF row vectors always give a basis for the original column space, even for rectangular matrices with unequal row and column dimensions.
+[x] For the one-row matrix $[1\ \ 2]$, vector $(-2,1)$ spans its nullspace.
+---
+「非零列給 row space」對：列運算保存由原列張成的空間。「自由變數特殊解」對：每個自由方向取一組獨立解。「點積零」對：R x＝0 的每個等式正表示一列與 x 的點積零。「RREF 列就是原 column space」錯：長方矩陣時甚至向量所在維度不同，原行空間基底需取原矩陣主元行。「[1 2] 的零空間」對：x₁＋2x₂＝0，解為 t(−2,1)。
+
+@q ls4-14 | la-systems#4 | 3 | 觀念
+$A$ 是 $m\times n$、$B$ 是 $n\times p$。下列哪個一定成立？
+[x] $C(AB)\subseteq C(A)$ 而且 $N(B)\subseteq N(AB)$
+[ ] $C(AB)\supseteq C(A)$
+[ ] $N(AB)\subseteq N(B)$
+[ ] $C(AB)=C(A)$
+---
+$ABx=A(Bx)$ 是 $A$ 的行的組合；$Bx=0\Rightarrow ABx=0$。所以乘出來的秩不會超過任何一個。
+
+@q ls4-15 | la-systems#4 | 2 | 計算
+$A$ 是 $6\times4$，$\dim N(A)=2$。其他三個子空間的維度？
+== 2,2,4
+?? C(A),C(A^T),N(A^T)
+---
+秩 $4-2=2$；$\dim N(A^T)=6-2=4$。
+
+@q ls4-16 | la-systems#4 | 3 | 陷阱
+$3\times2$ 矩陣的 $N(A^T)$ 可能只有零向量嗎？
+[x] 不可能，$\dim N(A^T)=3-r\ge1$
+[ ] 可能，只要兩行線性無關
+[ ] 可能，只要 $A\ne0$
+[ ] 一定只有零向量
+---
+秩最多 2（只有 2 行），所以 $\mathbb R^3$ 裡一定有向量跟兩行都垂直。
+
+@q ls4-17 | la-systems#4 | 3 | 證明
+證明 $N(A)$ 的每個向量都跟 $A$ 的列空間 $C(A^T)$ 的每個向量垂直。
+---
+$x\in N(A)$：$Ax=0$，即 $A$ 的每一列 $r_i$ 滿足 $r_i\cdot x=0$。列空間的向量是 $\sum c_ir_i$，跟 $x$ 的內積 $\sum c_i(r_i\cdot x)=0$。
+
+@q ls4-18 | la-systems#4 | 2 | 比較
+$C(A)$ 和 $C(A^T)$ 的比較，哪個對？
+[x] 維度相同（都是秩），但在不同的空間：$C(A)\subseteq\mathbb R^m$、$C(A^T)\subseteq\mathbb R^n$
+[ ] 一定是同一個子空間
+[ ] 維度不同
+[ ] $C(A^T)$ 永遠比較大
+---
+「行秩＝列秩」是線代第一個不顯然的定理；方陣也只有對稱時兩者才一定相同。
+
+@q ls4-19 | la-systems#4 | 3 | 計算
+$A=\left[\begin{smallmatrix}1&2\\2&4\\3&6\end{smallmatrix}\right]$。$b=(1,2,c)$ 要在 $C(A)$ 裡，$c$ 必須是多少？
+== 3
+---
+$C(A)$ 是 $(1,2,3)$ 張成的直線，$b$ 必須是它的倍數。等價地，$b$ 要跟 $N(A^T)$ 的 $(-3,0,1)$ 垂直：$-3+c=0$。
+
+@q ls4-20 | la-systems#4 | 2 | 情境
+A small rating matrix has 3 users (rows) and 2 movies (columns):
+$A = \begin{bmatrix} 1 & 0 \\ 1 & 1 \\ 0 & 1 \end{bmatrix}$.
+A vector $b \in \mathbb{R}^3$ of user scores can be "explained" if $b = Ax$ for some weights $x \in \mathbb{R}^2$. Which of the following statements are correct? Select all that apply.
+[x] $b = (1, 2, 1)^T$ can be explained, that is, $b \in C(A)$.
+[x] $N(A^T)$ is spanned by $(1, -1, 1)^T$.
+[ ] $b = (1, 1, 1)^T$ can be explained.
+[ ] Since $A$ has more rows than columns, $Ax = b$ has a solution for every $b \in \mathbb{R}^3$.
+[x] $\dim C(A) + \dim N(A^T) = 3$.
+---
+「$(1,2,1)^T$ 可以」對：取 $x=(1,1)^T$，$Ax=(1,2,1)^T$。
+
+「$N(A^T)$ 由 $(1,-1,1)^T$ 張成」對：解 $A^Ty=0$：$y_1+y_2=0$、$y_2+y_3=0$，得 $y=t(1,-1,1)^T$。
+
+「$(1,1,1)^T$ 可以」錯：解 $Ax=b$：第一列 $x_1=1$、第三列 $x_2=1$，代入第二列得 $x_1+x_2=2\ne1$，矛盾。快速判斷法：若 $b=Ax$，對 $N(A^T)$ 裡的 $y$ 有 $y^Tb=(A^Ty)^Tx=0$；這裡 $y=(1,-1,1)^T$，$y^Tb=1\ne0$，所以不行。
+
+「列比欄多所以每個 $b$ 都有解」錯：剛好相反。$C(A)$ 最多 2 維，是 $\mathbb R^3$ 裡的一個平面，大部分的 $b$ 不在上面，例如上面的 $(1,1,1)^T$。
+
+「$\dim C(A)+\dim N(A^T)=3$」對：$\dim C(A)=\operatorname{rank}A=2$，$\dim N(A^T)=m-\operatorname{rank}A=3-2=1$，加起來是列數 $m=3$。
+
+@q ls5-04 | la-systems#5 | 2 | 反例
+$\text{rank}(A+B)=\text{rank}A+\text{rank}B$ 一般不成立。下列哪個是反例？
+[x] $A=I$、$B=-I$：左邊 0，右邊 $2n$
+[ ] $A=I$、$B=0$
+[ ] $A=B=0$
+[ ] $A=\left[\begin{smallmatrix}1&0\\0&0\end{smallmatrix}\right]$、$B=\left[\begin{smallmatrix}0&0\\0&1\end{smallmatrix}\right]$
+---
+後三個都剛好相等。一般只有上界 $\text{rank}(A+B)\le\text{rank}A+\text{rank}B$。
+
+@q ls5-05 | la-systems#5 | 2 | 計算
+$A$、$B$ 都是 $3\times3$、秩 2。$\text{rank}(AB)$ 的最大和最小可能？
+== 2,1
+?? 最大,最小
+---
+上界 $\min(2,2)$；下界 $2+2-3=1$。兩個都取得到，例如 $A=B=\text{diag}(1,1,0)$ 得 2；$A=\text{diag}(1,1,0)$、$B=\text{diag}(0,1,1)$ 得 1。
+
+@q ls5-06 | la-systems#5 | 2 | 計算
+$\left[\begin{smallmatrix}1&2&3\\4&5&6\\7&8&9\end{smallmatrix}\right]$ 的秩？
+== 2
+---
+第 3 列 $=2\times$ 第 2 列 $-$ 第 1 列。看起來很「滿」的矩陣也可能不滿秩。
+
+@q ls5-07 | la-systems#5 | 3 | 陷阱
+Which of the following statements about $\text{rank}(A^2)$ and $\text{rank}A$ for a square matrix $A$ are true?
+[x] They can differ: $A=\left[\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right]$ has rank 1, but $A^2=0$.
+[x] $\text{rank}(A^2)\le\text{rank}A$ always holds.
+[ ] They are equal for every square matrix.
+[ ] They are equal only when $A$ is not invertible.
+[ ] They are equal only for $2\times2$ matrices.
+---
+$C(A^2)\subseteq C(A)$，所以「$\le$ always」對；$\left[\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right]$ 是反例，「can differ」對、「every square matrix」錯。可逆時兩者都是 $n$，一定相等，所以「only when not invertible」錯；$I_3$ 也相等，「only for $2\times2$」錯。相等的條件是 $C(A)\cap N(A)=\{0\}$。
+
+@q ls5-08 | la-systems#5 | 3 | 計算
+$\left[\begin{smallmatrix}1&1&1\\1&k&1\\1&1&k\end{smallmatrix}\right]$ 在 $k=1$ 時秩多少？$k\ne1$ 時呢？
+== 1,3
+?? k=1,k≠1
+---
+減掉第 1 列：$[0,k-1,0]$、$[0,0,k-1]$。$k=1$ 全變 0；$k\ne1$ 有 3 個主元。
+
+@q ls5-09 | la-systems#5 | 3 | 情境
+評分矩陣 $1000\times500$（使用者 × 電影）近似秩 20，寫成 $UV^T$（$U$ 是 $1000\times20$、$V$ 是 $500\times20$）。存 $U,V$ 要幾個數？是存原矩陣的幾分之一？
+== 30000,3/50
+== 30000,0.06
+?? 數字個數,比例
+---
+$1000\times20+500\times20=30000$；原本 $500000$，比例 $\frac{30000}{500000}=0.06=\frac{3}{50}$。
+
+@q ls5-10 | la-systems#5 | 2 | 陷阱
+$A$ 是 $5\times3$、秩 3。$AA^T$（$5\times5$）可逆嗎？
+[x] 不可逆，秩只有 3
+[ ] 可逆
+[ ] 看 $A$ 的元素
+[ ] 可逆，因為 $A$ 的秩是滿的
+---
+$\text{rank}(AA^T)=\text{rank}A=3<5$。反而 $A^TA$（$3\times3$）秩 3，可逆。
+
+@q ls5-11 | la-systems#5 | 2 | 計算
+分塊對角矩陣 $\left[\begin{smallmatrix}A&0\\0&B\end{smallmatrix}\right]$，$\text{rank}A=2$、$\text{rank}B=3$。整個的秩？
+== 5
+---
+兩塊的列互不干擾，主元各自數。
+
+@q ls5-12 | la-systems#5 | 2 | 觀念
+$P$ and $Q$ are invertible. Which of the following statements are true?
+[x] $\text{rank}(PAQ)=\text{rank}A$.
+[x] $\text{rank}(PA)=\text{rank}A$.
+[ ] $\text{rank}(PAQ)$ is always larger than $\text{rank}A$.
+[ ] $\text{rank}(PAQ)$ is always smaller than $\text{rank}A$.
+[ ] Whether $\text{rank}(PAQ)=\text{rank}A$ depends on the particular $P$ and $Q$.
+---
+乘可逆矩陣不會改變秩：$\text{rank}(PAQ)\le\text{rank}A=\text{rank}(P^{-1}PAQQ^{-1})\le\text{rank}(PAQ)$，所以兩個「=」都對（$Q=I$ 就是 $PA$ 的情形）。「larger」「smaller」「depends」都錯；只有乘不可逆矩陣時秩才可能變小。
+
+@q ls5-13 | la-systems#5 | 3 | 計算
+$A$ 是 $4\times4$、$A^2=0$。$\text{rank}A$ 最大可能是多少？
+== 2
+---
+$0=\text{rank}(A^2)\ge r+r-4$，所以 $r\le2$。取得到：$A=\left[\begin{smallmatrix}0&I_2\\0&0\end{smallmatrix}\right]$。等價說法：$C(A)\subseteq N(A)$，$r\le4-r$。
+
+@q ls5-14 | la-systems#5 | 2 | 找錯
+A student writes $\text{rank}(AB)=\text{rank}A\cdot\text{rank}B$. Which of the following examples show that this is wrong?
+[x] $A=B=I_2$
+[x] $A=B=I_3$
+[ ] $A=B=0$
+[ ] $A=I_2$, $B=0$
+[ ] $A=B=I_1$
+---
+$I_2$：左邊 2、右邊 $2\times2=4$；$I_3$：左邊 3、右邊 9，這兩個都能看出錯。全 0 的兩個例子左右都是 0；$I_1$ 左右都是 1，剛好相等，看不出錯。正確的關係是 $r_A+r_B-n\le\text{rank}(AB)\le\min(r_A,r_B)$。
+
+@q ls5-15 | la-systems#5 | 3 | 計算
+$5\times5$ 矩陣 $a_{ij}=i+j$ 的秩？
+== 2
+---
+$a_{ij}=i\cdot1+1\cdot j$，矩陣 $=u\mathbf 1^T+\mathbf 1v^T$（$u=(1..5)$、$v=(1..5)$），兩個秩 1 相加，秩最多 2；又不是秩 1（第 1、2 列不成比例）。
+
+@q ls5-16 | la-systems#5 | 3 | 證明
+證明 $\text{rank}(A+B)\le\text{rank}A+\text{rank}B$。
+---
+$(A+B)x=Ax+Bx\in C(A)+C(B)$，所以 $C(A+B)\subseteq C(A)+C(B)$。後者由 $C(A)$ 的基底和 $C(B)$ 的基底張成，維度最多 $\text{rank}A+\text{rank}B$。
+
+@q ls5-17 | la-systems#5 | 1 | 計算
+$4\times4$ 棋盤 $\pm1$ 矩陣 $a_{ij}=(-1)^{i+j}$ 的秩？
+== 1
+---
+每一列都是第 1 列 $(1,-1,1,-1)$ 的 $\pm1$ 倍，$=uu^T$，$u=(1,-1,1,-1)$。
+
+@q ls5-18 | la-systems#5 | 2 | 比較
+$A$ is a $5\times7$ matrix. Which of the following statements are true?
+[x] Its rank is at most 5.
+[x] If its rank is 5, then $Ax=b$ has a solution for every $b\in\mathbb R^5$.
+[ ] Its rank can be 7.
+[ ] $Ax=b$ can never be solvable for every $b$.
+[ ] If its rank is 5, then the solution of $Ax=b$ is unique.
+---
+行秩＝列秩 $\le\min(5,7)=5$，「at most 5」對、「can be 7」錯。秩 5 時每一列都有主元，$C(A)=\mathbb R^5$，任何 $b$ 都有解，「solution for every $b$」對、「can never」錯；但有 $7-5=2$ 個自由變數，解有無限多個，「unique」錯。
+
+@q ls5-19 | la-systems#5 | 2 | 觀念
+秩 1 的 $m\times n$ 矩陣一定可以寫成？
+[x] 一個非零行向量乘一個非零列向量 $uv^T$
+[ ] 一個對角矩陣
+[ ] 兩個可逆矩陣的乘積
+[ ] 一個單位矩陣的倍數
+---
+所有行都是同一個向量 $u$ 的倍數，第 $j$ 行 $=v_ju$。
+
+@q ls5-20 | la-systems#5 | 3 | 陷阱
+$A$ is a $3\times3$ matrix of rank 2. Which of the following statements are true?
+[x] $\text{rank}(A^TA)=2$.
+[x] $\text{rank}(A+A^T)$ depends on $A$; it can even be 0.
+[ ] $\text{rank}(A+A^T)=2$ for every such $A$.
+[ ] $\text{rank}(A^TA)=4$.
+[ ] $\text{rank}(A^TA)$ depends on $A$.
+---
+$A^TA$ 和 $A$ 零空間相同，秩一定一樣是 2，「$=2$」對，「$=4$」「depends」錯（$3\times3$ 的秩也不可能是 4）。$A+A^T$：$A=\left[\begin{smallmatrix}0&1&0\\-1&0&0\\0&0&0\end{smallmatrix}\right]$ 秩 2 但 $A+A^T=0$；$A=\text{diag}(1,1,0)$ 時 $A+A^T$ 秩 2，所以「depends … can even be 0」對、「for every such $A$」錯。
+
+@q vs1-05 | la-vs#1 | 2 | 反例
+Let $S = \{(x, y) \in \mathbb{R}^2 : xy \ge 0\}$, the first and third quadrants together with both axes. Which of the following statements are correct? Select all that apply.
+[x] $S$ contains the zero vector.
+[x] $S$ is closed under scalar multiplication.
+[x] $(1, 0)$ and $(0, -1)$ both belong to $S$, but their sum does not, so $S$ is not a subspace.
+[ ] $S$ is a subspace, because it contains the zero vector and is closed under scalar multiplication.
+[ ] The union of the two axes, $\{(x, y) : xy = 0\}$, is a subspace of $\mathbb{R}^2$.
+---
+「含零向量」對：$0\cdot0=0\ge0$。
+
+「純量乘法封閉」對：$(cx)(cy)=c^2xy\ge0$。
+
+「$(1,0)+(0,-1)$ 不在 $S$」對：$(1,-1)$ 的 $xy=-1<0$。三個條件只差加法不封閉，這就是反例。
+
+「含零、乘法封閉就是子空間」錯：三個條件缺一不可。
+
+「兩軸的聯集是子空間」錯：$(1,0)+(0,1)=(1,1)$ 不在任何一軸上。
+
+@q vs1-06 | la-vs#1 | 2 | 觀念
+In the vector space of all functions $f : \mathbb{R} \to \mathbb{R}$, which of the following sets are subspaces? Select all that apply.
+[x] $\{f : f(0) = 0\}$
+[ ] $\{f : f(0) = 1\}$
+[x] $\{f : f(1) = 2 f(0)\}$
+[x] $\{f : f(x) = f(-x) \text{ for all } x\}$
+[ ] $\{f : f(x) \ge 0 \text{ for all } x\}$
+---
+判斷技巧：條件寫成「某個線性式＝0」的，一定是子空間。
+
+「$f(0)=0$」是：$(f+g)(0)=0$、$(cf)(0)=0$。
+
+「$f(0)=1$」不是：零函數不在裡面；兩個相加在 0 的值變 2。
+
+「$f(1)=2f(0)$」是：即 $f(1)-2f(0)=0$，線性條件。
+
+「偶函數」是：$f(x)-f(-x)=0$ 對每個 $x$ 都是線性條件。
+
+「$f\ge0$」不是：乘上 $-1$ 就跑出去了。
+
+@q vs1-07 | la-vs#1 | 3 | 陷阱
+Let $S$ be the set of real polynomials of the form $ax^2 + bx + c$ with $a \ne 0$. Which of the following statements are correct? Select all that apply.
+[x] $S$ is not a subspace, because it does not contain the zero polynomial.
+[x] $x^2$ and $-x^2 + x$ belong to $S$, but their sum $x$ does not.
+[ ] $S$ is closed under multiplication by every real number.
+[x] The set of all polynomials $ax^2 + bx + c$ with $a, b, c \in \mathbb{R}$ is a subspace.
+[ ] The set of polynomials $ax^2 + bx + c$ with $a + b + c = 1$ is a subspace.
+---
+「不含零多項式」對：零多項式的 $a=0$。
+
+「$x^2+(-x^2+x)=x$ 不在 $S$」對：加法不封閉。
+
+「乘任何實數都封閉」錯：乘 0 就得到零多項式，不在 $S$ 裡。
+
+「所有 $ax^2+bx+c$ 是子空間」對：二次以下（含）的多項式，加法、純量乘法都封閉，含 0。
+
+「$a+b+c=1$ 是子空間」錯：不含零多項式（$0+0+0\ne1$）。條件右邊不是 0 的都不行。
+
+@q vs1-08 | la-vs#1 | 3 | 情境
+A spring without external force satisfies $y'' + y = 0$; with a constant external force it satisfies $y'' + y = 1$. Consider the set of all solutions of each equation inside the vector space of twice-differentiable functions. Which of the following statements are correct? Select all that apply.
+[x] The solutions of $y'' + y = 0$ form a subspace.
+[x] The solutions of $y'' + y = 1$ do not form a subspace, because the zero function is not a solution.
+[x] The function $y = 1 + \sin x$ is a solution of $y'' + y = 1$.
+[ ] The sum of two solutions of $y'' + y = 1$ is again a solution of $y'' + y = 1$.
+[ ] Both sets of solutions are subspaces.
+---
+「$y''+y=0$ 的解是子空間」對：$y_1,y_2$ 都是解時，$(ay_1+by_2)''+(ay_1+by_2)=a\cdot0+b\cdot0=0$。
+
+「$y''+y=1$ 的解不是子空間、零函數不是解」對：$0''+0=0\ne1$。
+
+「$1+\sin x$ 是解」對：$y''=-\sin x$，$y''+y=-\sin x+1+\sin x=1$。
+
+「兩個解相加還是解」錯：右邊會變成 $1+1=2$。
+
+「兩個都是」錯：如上。
+
+@q vs1-09 | la-vs#1 | 1 | 計算
+Find $a$ and $b$ with $(3,5)=a(1,1)+b(1,2)$.
+== 1,2
+?? a,b
+---
+$a+b=3$、$a+2b=5$，$b=2$、$a=1$。所以 $(3,5)$ 在 span$\{(1,1),(1,2)\}$ 裡（其實整個 $\mathbb R^2$ 都在）。
+
+@q vs1-10 | la-vs#1 | 2 | 計算
+Let $W = \operatorname{span}\{(1, 0, 1),\ (0, 1, 1)\}$ in $\mathbb{R}^3$. Which of the following statements are correct? Select all that apply.
+[x] $W$ is the plane $\{(x, y, z) : z = x + y\}$.
+[x] The vector $(1, 2, 4)$ is not in $W$.
+[ ] $(1, 2, 4) = 1 \cdot (1, 0, 1) + 2 \cdot (0, 1, 1)$.
+[x] The vector $(1, 2, 3)$ is in $W$.
+[ ] $W = \mathbb{R}^3$, because two vectors that are not parallel span all of $\mathbb{R}^3$.
+---
+「$W$ 是平面 $z=x+y$」對：$a(1,0,1)+b(0,1,1)=(a,b,a+b)$。
+
+「$(1,2,4)$ 不在」對：前兩個分量決定 $a=1$、$b=2$，第三個分量只能是 3。
+
+「$1\cdot(1,0,1)+2\cdot(0,1,1)=(1,2,4)$」錯：算出來是 $(1,2,3)$。
+
+「$(1,2,3)$ 在」對：同上。
+
+「兩個不平行的向量張成 $\mathbb R^3$」錯：最多張成一個平面。
+
+@q vs1-11 | la-vs#1 | 2 | 情境
+One unit of feed $X$ contains (protein, fat) $=(2,1)$, and one unit of feed $Y$ contains $(1,3)$. How many units of $X$ and of $Y$ give exactly $(7,11)$?
+== 2,3
+?? X,Y
+---
+$2a+b=7$、$a+3b=11$，$a=2$、$b=3$。問「能不能調出某個營養組合」就是問它在不在 span 裡（再加上份量不能是負的）。
+
+@q vs1-12 | la-vs#1 | 2 | 計算
+Which of the following subsets of $\mathbb{R}^3$ are subspaces? Select all that apply.
+[x] $\{(x, y, z) : x = 2y,\ z = 0\}$
+[ ] $\{(x, y, z) : x = y^2\}$
+[ ] $\{(x, y, z) : x + y + z = 1\}$
+[x] $\{(t, 2t, 3t) : t \in \mathbb{R}\}$
+[x] $\{(0, 0, 0)\}$
+---
+「$x=2y$、$z=0$」是：兩個齊次線性條件，是一條過原點的直線。
+
+「$x=y^2$」不是：$(1,1,0)$ 在裡面，乘 2 得 $(2,2,0)$，$2\ne4$。
+
+「$x+y+z=1$」不是：不含原點。
+
+「$(t,2t,3t)$」是：過原點的直線，$(1,2,3)$ 的所有倍數。
+
+「只有零向量」是：最小的子空間。
+
+@q vs1-13 | la-vs#1 | 3 | 證明
+$U$、$W$ 是 $V$ 的子空間。證明 $U+W=\{u+w:u\in U,w\in W\}$ 也是子空間。
+---
+含 0：$0=0+0$。加法：$(u_1+w_1)+(u_2+w_2)=(u_1+u_2)+(w_1+w_2)$，括號各自在 $U$、$W$。乘法：$c(u+w)=cu+cw$。三個條件都成立。
+
+@q vs1-14 | la-vs#1 | 2 | 陷阱
+Which of the following statements about subsets of $\mathbb{R}^n$ are correct? Select all that apply.
+[x] The set $\{0\}$ containing only the zero vector is a subspace.
+[x] The empty set is not a subspace, because it does not contain the zero vector.
+[ ] Both the empty set and $\{0\}$ are subspaces.
+[x] Every subspace contains $\{0\}$ as a subset.
+[ ] $\{0\}$ is not a subspace, because it contains no nonzero vector.
+---
+「$\{0\}$ 是子空間」對：$0+0=0$、$c\cdot0=0$，最小的子空間。
+
+「空集合不是」對：子空間一定要含零向量。
+
+「兩個都是」錯。
+
+「每個子空間都包含 $\{0\}$」對。
+
+「沒有非零向量所以不是」錯：沒有這個要求。
+
+@q vs1-15 | la-vs#1 | 2 | 觀念
+Let $v_1,v_2\in\mathbb{R}^3$ and let $W$ be the smallest subspace of $\mathbb{R}^3$ that contains both $v_1$ and $v_2$. Which of the following statements are correct? Select all that apply.
+[x] $W=\operatorname{span}\{v_1,v_2\}$.
+[ ] $W=\{v_1,v_2\}$.
+[x] $W$ contains the zero vector.
+[ ] $W$ is always a plane through the origin.
+[x] $W$ equals the intersection of all subspaces of $\mathbb{R}^3$ that contain $v_1$ and $v_2$.
+---
+「$W$ 就是 span」對：子空間對加法、純量乘法封閉，所以一定含所有 $av_1+bv_2$；而這些本身就構成子空間，所以是最小的。
+
+「$W=\{v_1,v_2\}$」錯：這個集合連 0 都沒有，也不對加法封閉。
+
+「含零向量」對：任何子空間都含 0（取 $a=b=0$）。
+
+「一定是平面」錯：$v_2=2v_1\neq0$ 時是一條直線，$v_1=v_2=0$ 時只有 $\{0\}$。
+
+「等於所有含 $v_1,v_2$ 的子空間的交集」對：子空間的交集還是子空間，而且被每一個含它們的子空間包住，所以就是最小的那個。
+
+@q vs1-16 | la-vs#1 | 3 | 計算
+Let $W=\operatorname{span}\{(1,1,0),(0,1,1),(1,2,1)\}$. Which of the following statements are correct? Select all that apply.
+[x] $W$ is a plane through the origin.
+[ ] $W=\mathbb R^3$.
+[x] $(1,2,1)=(1,1,0)+(0,1,1)$.
+[x] $W$ is the plane $x-y+z=0$.
+[ ] $(1,0,0)\in W$.
+---
+「是過原點的平面」對：第三個向量是前兩個的和，前兩個又不成比例，只張出 2 維。
+
+「$W=\mathbb R^3$」錯：只有 2 維。
+
+「$(1,2,1)$ 是前兩個的和」對。
+
+「平面 $x-y+z=0$」對：法向量 $(1,1,0)\times(0,1,1)=(1,-1,1)$；驗算 $(1,1,0)$：$1-1+0=0$，$(0,1,1)$：$0-1+1=0$。
+
+「$(1,0,0)$ 在 $W$ 裡」錯：$1-0+0=1\ne0$。
+
+@q vs1-17 | la-vs#1 | 3 | 情境
+Let $M = \begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix}$, and let $W$ be the set of all real $2 \times 2$ matrices $X$ with $XM = MX$. Which of the following statements are correct? Select all that apply.
+[x] $W$ is a subspace of the vector space of all real $2 \times 2$ matrices.
+[x] $W$ consists exactly of the matrices of the form $\begin{bmatrix} a & b \\ 0 & a \end{bmatrix}$.
+[x] Every matrix in $W$ can be written as $aI + bN$ with $N = \begin{bmatrix} 0 & 1 \\ 0 & 0 \end{bmatrix}$.
+[ ] $W$ consists exactly of the diagonal matrices.
+[ ] $W$ is not a subspace, because matrix multiplication is not commutative.
+---
+「$W$ 是子空間」對：條件 $XM-MX=0$ 對 $X$ 是線性的：零矩陣滿足；$X$、$Y$ 都滿足時 $X+Y$、$cX$ 也滿足。
+
+「形式是 $\left[\begin{smallmatrix}a&b\\0&a\end{smallmatrix}\right]$」對：設 $X=\left[\begin{smallmatrix}p&q\\r&s\end{smallmatrix}\right]$，$XM=\left[\begin{smallmatrix}p&p+q\\r&r+s\end{smallmatrix}\right]$、$MX=\left[\begin{smallmatrix}p+r&q+s\\r&s\end{smallmatrix}\right]$，比較得 $r=0$、$p=s$。
+
+「$aI+bN$」對：就是上面的形式拆開。
+
+「只有對角矩陣」錯：$N$ 本身不是對角的，但 $NM=MN=N$。（而且對角矩陣 $\operatorname{diag}(1,2)$ 反而不跟 $M$ 交換。）
+
+「乘法不交換所以不是子空間」錯：乘法一般不交換，不影響「跟某個固定矩陣交換的那些矩陣」形成子空間。
+
+@q vs1-18 | la-vs#1 | 3 | 陷阱
+Which of the following statements are correct? Select all that apply.
+[x] $\mathbb{R}^2$ is not a subspace of $\mathbb{R}^3$, because its elements have two components and therefore it is not even a subset of $\mathbb{R}^3$.
+[x] The plane $\{(x, y, 0) : x, y \in \mathbb{R}\}$ is a subspace of $\mathbb{R}^3$.
+[ ] The plane $\{(x, y, 1) : x, y \in \mathbb{R}\}$ is a subspace of $\mathbb{R}^3$.
+[x] The set $\{(x, y, z) : x + y + z = 0\}$ is a subspace of $\mathbb{R}^3$.
+[ ] The union of the $x$-axis and the $y$-axis is a subspace of $\mathbb{R}^2$.
+---
+「$\mathbb R^2$ 不是 $\mathbb R^3$ 的子空間」對：子空間首先要是子集合。$(1,2)$ 不是 $\mathbb R^3$ 的元素。
+
+「$\{(x,y,0)\}$ 是」對：含零向量、加法和純量乘法都留在裡面。它跟 $\mathbb R^2$「長得一樣」（同構），但是不同的集合。
+
+「$\{(x,y,1)\}$ 是」錯：不含零向量；兩個元素相加第三個分量變 2，也跑出去了。
+
+「$x+y+z=0$ 是」對：齊次線性方程式的解集合一定是子空間。
+
+「兩個座標軸的聯集是」錯：$(1,0)+(0,1)=(1,1)$ 不在任何一軸上，加法不封閉。
+
+@q vs1-19 | la-vs#1 | 2 | 找錯
+學生判斷 $\{(x,y):x^2=y^2\}$ 是子空間：「含 $(0,0)$；$(cx)^2=c^2x^2=c^2y^2=(cy)^2$，乘法封閉。」錯在哪？
+[x] 沒檢查加法：$(1,1)+(1,-1)=(2,0)$，$4\ne0$
+[ ] 乘法的推導錯了
+[ ] $(0,0)$ 不在裡面
+[ ] 沒錯，它是子空間
+---
+這個集合是兩條直線 $y=x$ 和 $y=-x$ 的聯集，加法不封閉。
+
+@q vs1-20 | la-vs#1 | 1 | 觀念
+$\mathbb R^2$ 中，span$\{(2,4)\}$ 是什麼？
+[x] 直線 $y=2x$
+[ ] 點 $(2,4)$
+[ ] 整個平面
+[ ] 線段從原點到 $(2,4)$
+---
+所有 $c(2,4)$，$c$ 是任何實數（包括負數和 0）。
+
+@q vs2-05 | la-vs#2 | 2 | 計算
+Let $u_1 = (1, 2, 1)$, $u_2 = (2, 1, 0)$, and $u_3 = (1, -1, -1)$ be vectors in $\mathbb{R}^3$. Which of the following statements are correct? Select all that apply.
+[x] $u_3 = u_2 - u_1$.
+[x] The set $\{u_1, u_2, u_3\}$ is linearly dependent.
+[x] The span of $\{u_1, u_2, u_3\}$ equals the span of $\{u_1, u_2\}$.
+[ ] $u_1 = 2u_3$.
+[ ] The set is linearly independent, because none of the three vectors is a scalar multiple of another.
+---
+「$u_3=u_2-u_1$」對：$(2-1,\ 1-2,\ 0-1)=(1,-1,-1)$。
+
+「線性相依」對：$u_1-u_2+u_3=0$ 是一組不全為 0 的係數。
+
+「張成的空間等於 $u_1,u_2$ 的」對：$u_3$ 已經能用 $u_1,u_2$ 表示，加進來不會多張出新的方向。
+
+「$u_1=2u_3$」錯：$2u_3=(2,-2,-2)$。
+
+「沒有誰是誰的倍數就獨立」錯：三個或更多向量時，相依可能是「某一個是**其他幾個的組合**」，不一定是某兩個平行。這題正是例子。
+
+@q vs2-06 | la-vs#2 | 3 | 計算
+For which value of $k$ are $(1,1,0)$, $(1,0,1)$, $(0,1,k)$ linearly dependent?
+== -1
+---
+當行排成矩陣消去：第 2 列減第 1 列得 $(0,-1,1)$；第 3 列 $(0,1,k)$ 加上它得 $(0,0,k+1)$。$k=-1$ 時只剩 2 個主元。驗算 $(1,1,0)-(1,0,1)=(0,1,-1)$。
+
+@q vs2-07 | la-vs#2 | 1 | 陷阱
+一組向量裡有零向量，它一定？
+[x] 線性相依
+[ ] 線性獨立
+[ ] 看其他向量
+[ ] 是基底
+---
+$1\cdot0+0\cdot v_2+\cdots=0$ 是一組不全為 0 的係數。
+
+@q vs2-08 | la-vs#2 | 2 | 計算
+What is the dimension of $\operatorname{span}\{(1,2,3,4),(2,3,4,5),(3,4,5,6)\}$?
+== 2
+---
+$(3,4,5,6)=2(2,3,4,5)-(1,2,3,4)$，另外兩個不成比例。
+
+@q vs2-09 | la-vs#2 | 3 | 計算
+What is the dimension of $\{p\in P_3: p(1)=0\}$, where $P_3$ is the space of polynomials $a_0+a_1x+a_2x^2+a_3x^3$?
+== 3
+---
+一個線性條件把 4 維砍掉 1 維。基底例如 $x-1$、$x^2-1$、$x^3-1$。
+
+@q vs2-10 | la-vs#2 | 3 | 計算
+What is the dimension of the subspace of $3\times3$ matrices $M$ with $M^T=-M$?
+== 3
+---
+對角線必須是 0（$m_{ii}=-m_{ii}$），上三角 3 個位置決定一切。一般 $\frac{n(n-1)}2$。
+
+@q vs2-11 | la-vs#2 | 2 | 計算
+What is the dimension of the subspace of $\mathbb R^4$ consisting of the solutions of $x_1+x_2+x_3+x_4=0$ and $x_1=x_2$?
+== 2
+---
+兩個獨立的條件，$4-2=2$。
+
+@q vs2-12 | la-vs#2 | 2 | 陷阱
+$\mathbb R^3$ 的基底是唯一的嗎？維度呢？
+[x] 基底有無限多組；維度唯一（一定是 3）
+[ ] 基底唯一；維度不唯一
+[ ] 兩個都唯一
+[ ] 兩個都不唯一
+---
+任何 3 個獨立的向量都是基底。維度是「任何基底的向量個數」，這個數一定一樣。
+
+@q vs2-13 | la-vs#2 | 2 | 觀念
+$\mathbb R^3$ 中 3 個線性獨立的向量，一定是基底嗎？
+[x] 一定：個數剛好等於維度時，獨立 ⇔ 張成
+[ ] 不一定，還要檢查張成
+[ ] 不一定，還要互相垂直
+[ ] 只有標準基底才是
+---
+維度 $n$ 的空間：$n$ 個獨立 ⇒ 基底；$n$ 個張成 ⇒ 基底。省一半檢查。
+
+@q vs2-14 | la-vs#2 | 2 | 情境
+螢幕用紅綠藍三種光混色（每個顏色是 $\mathbb R^3$ 的向量）。廠商說「我們加了第四種黃光，可以顯示更多顏色」。從線性代數的角度，加第四種光（係數允許任意實數時）能張成的空間？
+[x] 還是最多 $\mathbb R^3$，四個向量一定相依
+[ ] 變成 $\mathbb R^4$
+[ ] 變小
+[ ] 看黃光的亮度
+---
+實際上亮度不能是負的，能顯示的是錐形範圍，第四種光可以把錐形撐大；但張成的空間不會超過 3 維。
+
+@q vs2-15 | la-vs#2 | 2 | 找錯
+學生說「$\{(1,0),(0,1),(1,1)\}$ 是 $\mathbb R^2$ 的基底，因為它張成 $\mathbb R^2$」。錯在哪？
+[x] 不獨立：$(1,1)=(1,0)+(0,1)$；基底要獨立而且張成
+[ ] 它不能張成 $\mathbb R^2$
+[ ] 沒錯
+[ ] $(1,1)$ 的長度不是 1
+---
+$\mathbb R^2$ 的基底一定剛好 2 個向量。
+
+@q vs2-16 | la-vs#2 | 2 | 計算
+Find the coordinates of $(5,3)$ with respect to the basis $\{(1,1),(1,-1)\}$.
+== 4,1
+?? first,second
+---
+$a+b=5$、$a-b=3$，$a=4$、$b=1$。
+
+@q vs2-17 | la-vs#2 | 3 | 計算
+Find the coordinates of $x^2$ with respect to the basis $\{1,\ x-1,\ (x-1)^2\}$ of $P_2$.
+== 1,2,1
+?? 1,x-1,(x-1)^2
+---
+$x^2=((x-1)+1)^2=(x-1)^2+2(x-1)+1$，就是在 $x=1$ 的泰勒展開。
+
+@q vs2-18 | la-vs#2 | 3 | 反例
+「一組向量中任兩個都線性獨立，整組就線性獨立」，反例？
+[x] $(1,0)$、$(0,1)$、$(1,1)$
+[ ] $(1,0)$、$(2,0)$
+[ ] $(1,0,0)$、$(0,1,0)$、$(0,0,1)$
+[ ] $(0,0)$、$(1,1)$
+---
+任兩個不共線，但三個在 $\mathbb R^2$ 一定相依。第二、四個選項本身就有兩兩相依；第三個整組獨立。
+
+@q vs2-19 | la-vs#2 | 3 | 計算
+Let $U$ and $W$ be two different planes through the origin in $\mathbb R^3$. What is $\dim(U\cap W)$?
+== 1
+---
+$\dim(U+W)=\dim U+\dim W-\dim(U\cap W)$。兩平面不同，$U+W=\mathbb R^3$，所以 $3=2+2-\dim(U\cap W)$，交集是一條直線。
+
+@q vs2-20 | la-vs#2 | 3 | 證明
+$v_1,\dots,v_k$ 線性獨立，$v\notin\text{span}\{v_1,\dots,v_k\}$。證明 $v_1,\dots,v_k,v$ 線性獨立。
+---
+設 $c_1v_1+\cdots+c_kv_k+cv=0$。若 $c\ne0$，$v=-\frac1c\sum c_iv_i$ 在 span 裡，矛盾，所以 $c=0$；剩下 $\sum c_iv_i=0$，由獨立性 $c_i=0$。這也是「把獨立集擴充成基底」的步驟。
+
+@q vs3-06 | la-vs#3 | 2 | 觀念
+下列四個函數中，哪一個是線性變換？
+[x] $T(A)=A+A^T$（$n\times n$ 矩陣到自己）
+[ ] $T(x)=x^2$（$\mathbb R\to\mathbb R$）
+[ ] $T(x,y)=(x,|y|)$
+[ ] $T(x)=2x+3$
+---
+$(A+B)+(A+B)^T=(A+A^T)+(B+B^T)$，乘常數也成立。$x^2$、$|y|$ 不保加法；$2x+3$ 不把 0 送到 0。
+
+@q vs3-07 | la-vs#3 | 2 | 計算
+Let $T(x,y,z)=(x+y,\ y+z,\ x+2y+z)$. Find a nonzero vector in the kernel of $T$ whose first component is 1.
+== 1,-1,1
+---
+$x+y=0$、$y+z=0$，第三式自動成立（＝前兩式相加）。核是一維，值域是二維，$1+2=3$。
+
+@q vs3-08 | la-vs#3 | 1 | 計算
+A linear transformation satisfies $T(1,0)=(2,1)$ and $T(0,1)=(-1,3)$. Find $T(3,2)$.
+== 4,9
+---
+$3T(1,0)+2T(0,1)=(6-2,\ 3+6)$。線性變換由基底的像完全決定。
+
+@q vs3-09 | la-vs#3 | 3 | 計算
+A linear transformation satisfies $T(1,1)=(3,1)$ and $T(1,-1)=(1,5)$. Find $T(5,1)$.
+== 11,13
+---
+$(5,1)=3(1,1)+2(1,-1)$，所以 $T(5,1)=3(3,1)+2(1,5)=(11,13)$。不用先求標準矩陣。
+
+@q vs3-10 | la-vs#3 | 2 | 反例
+「$T(0)=0$ 就是線性變換」，反例？
+[x] $T(x,y)=(xy,0)$
+[ ] $T(x,y)=(x,0)$
+[ ] $T(x,y)=(x+1,y)$
+[ ] $T(x,y)=(2x,3y)$
+---
+$T(0,0)=0$，但 $T(1,1)+T(1,1)=(2,0)\ne T(2,2)=(4,0)$。第三個 $T(0)\ne0$，不是反例；其他兩個是線性的。
+
+@q vs3-11 | la-vs#3 | 3 | 情境
+電腦繪圖要把每個點平移 $(x,y)\mapsto(x+2,y+1)$。為什麼不能用 $2\times2$ 矩陣做？常見的解法？
+[x] 平移把 0 送到 $(2,1)$，不是線性；改用 $(x,y,1)$ 三個座標，平移變成 $3\times3$ 矩陣
+[ ] 可以，用 $\left[\begin{smallmatrix}2&0\\0&1\end{smallmatrix}\right]$
+[ ] 平移是線性的，只是矩陣要很大
+[ ] 只能用迴圈一點一點加
+---
+$\left[\begin{smallmatrix}1&0&2\\0&1&1\\0&0&1\end{smallmatrix}\right]\left[\begin{smallmatrix}x\\y\\1\end{smallmatrix}\right]=\left[\begin{smallmatrix}x+2\\y+1\\1\end{smallmatrix}\right]$。這樣平移、縮放可以串成一個矩陣乘積。
+
+@q vs3-12 | la-vs#3 | 3 | 計算
+$T:P_2\to P_3$，$T(p)=\int_0^xp(t)\,dt$。$T$ 是一對一嗎？映成嗎？
+[x] 一對一，不映成
+[ ] 映成，不一對一
+[ ] 都是
+[ ] 都不是
+---
+核：$\int_0^xp=0$ 對所有 $x$ ⇒ 微分得 $p=0$，所以一對一。值域維度 $3<4$；常數 1 不在值域（值域的多項式在 0 都是 0）。
+
+@q vs3-13 | la-vs#3 | 2 | 觀念
+$T:V\to W$，$\dim V=\dim W=n$（有限）。下列哪個對？
+[x] 一對一 ⇔ 映成
+[ ] 一對一和映成互相獨立
+[ ] 一定一對一
+[ ] 一定映成
+---
+rank–nullity：核是 $\{0\}$ ⇔ 值域維度 $n$ ⇔ 值域＝$W$。無限維時不成立（例如多項式空間上的微分映成但不一對一）。
+
+@q vs3-14 | la-vs#3 | 3 | 計算
+Let $T$ map each $2\times2$ real matrix $M$ to $M-M^T$. Find the dimensions of the kernel and of the range of $T$.
+== 3,1
+?? kernel,range
+---
+核：$M=M^T$，$2\times2$ 中這種矩陣有 3 個自由元素。值域：$M-M^T$ 對角線 0、$(1,2)=-(2,1)$，只有 1 維。$3+1=4$。
+
+@q vs3-15 | la-vs#3 | 2 | 找錯
+學生說「$T(x,y)=(x+y,2x+2y)$ 有兩個輸出分量，所以映成 $\mathbb R^2$」。錯在哪？
+[x] 第二個分量永遠是第一個的 2 倍，值域只是直線 $y=2x$
+[ ] 沒錯
+[ ] $T$ 不是線性的
+[ ] 值域是 $\{0\}$
+---
+值域的維度＝秩＝1；核是 $x+y=0$，維度 1；$1+1=2$。
+
+@q vs3-16 | la-vs#3 | 2 | 比較
+Let $T : \mathbb{R}^3 \to \mathbb{R}^2$ be the linear map $T(x, y, z) = (x + y,\ y + z)$. Which of the following statements are correct? Select all that apply.
+[x] The kernel of $T$ is a subspace of $\mathbb{R}^3$, and the range of $T$ is a subspace of $\mathbb{R}^2$.
+[x] The kernel of $T$ is spanned by $(1, -1, 1)$.
+[x] The range of $T$ is all of $\mathbb{R}^2$.
+[ ] The kernel of $T$ is a subspace of $\mathbb{R}^2$.
+[ ] $T$ is one-to-one.
+---
+「核在 $\mathbb R^3$、值域在 $\mathbb R^2$」對：核是「被送到 0 的輸入」，住在定義域；值域是「可能的輸出」，住在對應域。
+
+「核由 $(1,-1,1)$ 張成」對：$x+y=0$、$y+z=0$，令 $y=-1$ 得 $x=1$、$z=1$。
+
+「值域是整個 $\mathbb R^2$」對：$T(1,0,0)=(1,0)$、$T(0,0,1)=(0,1)$，兩個標準基底都打得到。
+
+「核在 $\mathbb R^2$」錯：方向弄反了。
+
+「一對一」錯：核不只零向量，例如 $T(1,-1,1)=(0,0)=T(0,0,0)$。
+
+@q vs3-17 | la-vs#3 | 2 | 情境
+The map $T(x,y,z)=(x,y,0)$ flattens every point of space onto the floor. Find the dimensions of the kernel and of the range of $T$.
+== 1,2
+?? kernel,range
+---
+核是 $z$ 軸（$x=y=0$ 的點全被壓到原點）；值域是 $xy$ 平面。$1+2=3$。
+
+@q vs3-18 | la-vs#3 | 3 | 證明
+證明線性變換 $T:V\to W$ 的核是 $V$ 的子空間。
+---
+$T(0)=T(0+0)=2T(0)$ ⇒ $T(0)=0$，0 在核裡。$u,v$ 在核：$T(u+v)=T(u)+T(v)=0$、$T(cu)=cT(u)=0$。
+
+@q vs3-19 | la-vs#3 | 3 | 計算
+Linear maps $T:\mathbb R^4\to\mathbb R^3$ and $S:\mathbb R^3\to\mathbb R^2$ both have range equal to their whole target space. What is the dimension of the kernel of $v\mapsto S(T(v))$?
+== 2
+---
+$S\circ T$ 的值域也是整個 $\mathbb R^2$（維度 2），rank–nullity：$4-2=2$。
+
+@q vs3-20 | la-vs#3 | 3 | 陷阱
+$T$ 是線性變換、$v_1,\dots,v_k$ 線性獨立，則 $T(v_1),\dots,T(v_k)$ 也一定線性獨立。
+[ ] 對
+[x] 不對
+---
+$T=0$ 就是反例。要 $T$ 一對一才保證。反過來：$T(v_i)$ 獨立 ⇒ $v_i$ 獨立，這個方向一定對。
+
+@q vs4-04 | la-vs#4 | 1 | 計算
+$\mathbb R^2$ 中「繞原點逆時針轉 90°」的標準矩陣？
+[x] $\left[\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}-1&0\\0&-1\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\right]$
+---
+矩陣分別乘上標準基底 $(1,0)$、$(0,1)$，須得到 $(0,1)$、$(-1,0)$，故為 $\left[\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right]$。$\left[\begin{smallmatrix}0&1\\-1&0\end{smallmatrix}\right]$ 是順時針九十度；負單位矩陣是轉一百八十度；交換兩個座標的矩陣是對 $y=x$ 鏡射。
+
+@q vs4-05 | la-vs#4 | 2 | 計算
+微分 $D$ 在 $P_2$ 的基底 $\{1,x,x^2\}$ 下的矩陣？
+[x] $\left[\begin{smallmatrix}0&1&0\\0&0&2\\0&0&0\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}0&0&0\\1&0&0\\0&2&0\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1&0&0\\0&2&0\\0&0&0\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}0&1&2\\0&0&0\\0&0&0\end{smallmatrix}\right]$
+---
+$D(1)=0$、$D(x)=1$、$D(x^2)=2x$，座標各當一行。第二個是把行列寫反了。
+
+@q vs4-06 | la-vs#4 | 2 | 計算
+Let $T(x,y)=(y,x)$ and $B=\{(1,1),(1,-1)\}$. Find $[T]_B$, using $B$ for both input and output, entering the four entries row by row.
+== 1,0,0,-1
+---
+$T(1,1)=(1,1)=1\cdot b_1$；$T(1,-1)=(-1,1)=-1\cdot b_2$。選對基底，矩陣就變對角。
+
+@q vs4-07 | la-vs#4 | 3 | 計算
+Let $A=\begin{bmatrix}2&1\\0&3\end{bmatrix}$ and $P=\begin{bmatrix}1&1\\0&1\end{bmatrix}$. Find $P^{-1}AP$, entering the four entries row by row.
+== 2,0,0,3
+---
+$AP=\left[\begin{smallmatrix}2&3\\0&3\end{smallmatrix}\right]$，$P^{-1}=\left[\begin{smallmatrix}1&-1\\0&1\end{smallmatrix}\right]$，相乘得 $\left[\begin{smallmatrix}2&0\\0&3\end{smallmatrix}\right]$。$P$ 的兩行 $(1,0)$、$(1,1)$ 就是讓 $A$ 只做伸縮的方向。
+
+@q vs4-08 | la-vs#4 | 2 | 計算
+Let $A=\begin{bmatrix}3&5\\1&4\end{bmatrix}$ and $B=P^{-1}AP$ for some invertible $P$. What is the sum of the diagonal entries of $B$?
+== 7
+---
+$\operatorname{tr}(P^{-1}AP)=\operatorname{tr}(APP^{-1})=\operatorname{tr}A$。相似矩陣的跡、秩都一樣。
+
+@q vs4-09 | la-vs#4 | 3 | 反例
+Two square matrices $M$ and $N$ are similar if $N = P^{-1}MP$ for some invertible $P$. Someone claims: "Two square matrices with the same rank are always similar." Which of the following statements are correct? Select all that apply.
+[x] The matrices $\operatorname{diag}(1,2)$ and $I_2$ have rank two but are not similar.
+[x] The matrices $\operatorname{diag}(1,0)$ and $\operatorname{diag}(0,1)$ are similar.
+[x] Similarity preserves trace.
+[x] A matrix similar to the identity matrix must itself equal that identity matrix.
+[ ] Equal rank and equal trace together are sufficient for similarity of all same-size square matrices.
+---
+「秩二仍不相似」對：對角一二的跡三，而單位矩陣跡二。「交換對角相似」對：用交換兩個座標的可逆矩陣作基底變換。「跡不變」對：tr(P⁻¹MP)＝tr(M)。「與單位相似只能是單位」對：P⁻¹IP＝I。「同秩同跡就夠」錯：二階單位矩陣與對角為一、右上為一的 Jordan 塊皆秩二跡二，後者卻不等於單位，故不相似。
+
+@q vs4-10 | la-vs#4 | 2 | 計算
+$T(x,y,z)=(x+2z,\ 3y-z)$ 的標準矩陣是？
+[x] $\left[\begin{smallmatrix}1&0&2\\0&3&-1\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1&0\\0&3\\2&-1\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1&2&0\\3&-1&0\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1&0&2\\0&3&1\end{smallmatrix}\right]$
+---
+$\mathbb R^3\to\mathbb R^2$ 是 $2\times3$；第 $j$ 行是 $T(e_j)$：$(1,0)$、$(0,3)$、$(2,-1)$。
+
+@q vs4-11 | la-vs#4 | 3 | 陷阱
+Let $R = \begin{bmatrix} 0 & -1 \\ 1 & 0 \end{bmatrix}$ be the map that turns every vector counterclockwise by 90 degrees and $F = \begin{bmatrix} 1 & 0 \\ 0 & -1 \end{bmatrix}$ the reflection across the $x$-axis. Consider the linear map that first applies $R$ and then applies $F$. Which of the following statements are correct? Select all that apply.
+[x] The matrix of this map is $FR = \begin{bmatrix} 0 & -1 \\ -1 & 0 \end{bmatrix}$.
+[x] This map is the reflection across the line $y = -x$.
+[ ] The matrix of this map is $RF$, because $R$ is applied first.
+[x] $RF = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}$, the reflection across the line $y = x$.
+[ ] $RF = FR$, because both are reflections in the end.
+---
+「矩陣是 $FR$」對：作用在 $v$ 上是 $F(Rv)=(FR)v$，**後做的放左邊**。$FR=\left[\begin{smallmatrix}1&0\\0&-1\end{smallmatrix}\right]\left[\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right]=\left[\begin{smallmatrix}0&-1\\-1&0\end{smallmatrix}\right]$。
+
+「對 $y=-x$ 翻」對：$(1,0)\mapsto(0,-1)$、$(0,1)\mapsto(-1,0)$，$(1,-1)$ 不動、$(1,1)$ 變號。
+
+「先做 $R$ 所以是 $RF$」錯：這是最常見的順序錯誤。
+
+「$RF$ 是對 $y=x$ 翻」對：$RF=\left[\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\right]$，也就是「先翻再轉」。
+
+「$RF=FR$」錯：兩個都是鏡射，但對不同的線，順序不同結果就不同。
+
+@q vs4-12 | la-vs#4 | 2 | 找錯
+To find the matrix of $T(x, y) = (x + 2y,\ 3x + 4y)$, a student writes $T(e_1) = (1, 3)$ and $T(e_2) = (2, 4)$ as rows, obtaining $\begin{bmatrix} 1 & 3 \\ 2 & 4 \end{bmatrix}$. Which of the following statements are correct? Select all that apply.
+[x] The correct matrix is $\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}$, with $T(e_j)$ as its $j$-th column.
+[x] The student's matrix is the transpose of the correct one, and it maps $(x, y)$ to $(x + 3y,\ 2x + 4y)$.
+[ ] Writing $T(e_j)$ as rows instead of columns gives the same result for every input vector.
+[x] $T(1, 1) = (3, 7)$.
+[ ] The student's matrix also maps $(1, 1)$ to $(3, 7)$.
+---
+「正確矩陣、$T(e_j)$ 放第 $j$ 欄」對：這樣 $Me_j$ 才會等於第 $j$ 欄，也就是 $T(e_j)$。
+
+「學生的是轉置，算出 $(x+3y,\ 2x+4y)$」對：直接乘看看。
+
+「放列或放欄都一樣」錯：只有對稱矩陣時才一樣。
+
+「$T(1,1)=(3,7)$」對：$(1+2,\ 3+4)$。
+
+「學生的也得 $(3,7)$」錯：$(1+3,\ 2+4)=(4,6)$。
+
+@q vs4-13 | la-vs#4 | 3 | 計算
+Let $D$ be differentiation on $P_2$, the polynomials $a_0+a_1x+a_2x^2$, and use the basis $\{1,\ 1+x,\ 1+x+x^2\}$. What is the third column of the matrix of $D$ in this basis?
+== -1,2,0
+---
+$D(1+x+x^2)=1+2x=2(1+x)-1$，所以座標 $(-1,2,0)$。基底換了，同一個 $D$ 的矩陣就不同。
+
+@q vs4-14 | la-vs#4 | 2 | 觀念
+$B=P^{-1}AP$。$B^5$ 和 $A^5$ 的關係？
+[x] $B^5=P^{-1}A^5P$
+[ ] $B^5=P^{-5}A^5P^5$
+[ ] $B^5=A^5$
+[ ] 沒有簡單關係
+---
+中間的 $PP^{-1}$ 全部抵消。所以如果 $B$ 很簡單（例如對角），可以用 $A^5=PB^5P^{-1}$ 算。
+
+@q vs4-15 | la-vs#4 | 3 | 證明
+設 $B=P^{-1}AP$（$P$ 可逆）。證明 $B$ 和 $A$ 的秩相同。
+---
+$B=P^{-1}AP$。乘可逆矩陣不改變秩：$\text{rank}(AP)=\text{rank}A$（$C(AP)=C(A)$，因為 $P$ 映成），$\text{rank}(P^{-1}AP)=\text{rank}(AP)$（$N(P^{-1}M)=N(M)$）。
+
+@q vs4-16 | la-vs#4 | 3 | 計算
+Let $T(x,y)=(x+y,\ y)$ and $B=\{(1,1),(1,0)\}$. Find $[T]_B$, using $B$ for both input and output, entering the four entries row by row.
+== 1,0,1,1
+---
+$T(1,1)=(2,1)=1\cdot(1,1)+1\cdot(1,0)$ → 第 1 行 $(1,1)$；$T(1,0)=(1,0)=0\cdot b_1+1\cdot b_2$ → 第 2 行 $(0,1)$。矩陣 $\left[\begin{smallmatrix}1&0\\1&1\end{smallmatrix}\right]$，跟標準矩陣 $\left[\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right]$ 相似。
+
+@q vs4-17 | la-vs#4 | 2 | 情境
+A robot's local axes, written in world coordinates, are $b_1=(0,1)$ and $b_2=(-1,0)$. What are the world coordinates of the point with local coordinates $(2,3)$?
+== -3,2
+---
+$2b_1+3b_2=(0,2)+(-3,0)$。換基底矩陣 $P=[b_1\ b_2]$ 把局部座標換成世界座標。
+
+@q vs4-18 | la-vs#4 | 3 | 情境
+A robot's local axes, written in world coordinates, are $b_1=(0,1)$ and $b_2=(-1,0)$. What are the local coordinates of the point with world coordinates $(4,1)$?
+== 1,-4
+---
+要乘 $P^{-1}$：解 $a(0,1)+b(-1,0)=(4,1)$，$-b=4$、$a=1$。這個 $P$ 的行互相垂直、長度 1，$P^{-1}=P^T$。
+
+@q vs4-19 | la-vs#4 | 3 | 陷阱
+Let $B = \{(1, 0), (1, 1)\}$ be a basis of $\mathbb{R}^2$ and $P = \begin{bmatrix} 1 & 1 \\ 0 & 1 \end{bmatrix}$, whose columns are the vectors of $B$. Consider the identity map $\mathrm{id}(v) = v$, with inputs written in coordinates with respect to $B$ and outputs written in standard coordinates. Which of the following statements are correct? Select all that apply.
+[x] The matrix of this map is $P$.
+[x] If the coordinate vector of $v$ with respect to $B$ is $(2, 3)$, then $v = (5, 3)$ in standard coordinates.
+[ ] The matrix of the identity map is always the identity matrix, no matter which bases are used.
+[x] To convert standard coordinates into coordinates with respect to $B$, one multiplies by $P^{-1}$.
+[ ] The matrix of this map is $P^T$.
+---
+「矩陣是 $P$」對：第 $j$ 欄是「輸入的第 $j$ 個基底向量」用輸出基底寫出來的座標；輸入基底向量就是 $B$ 的向量，用標準座標寫就是它自己。
+
+「座標 $(2,3)$ 對應 $(5,3)$」對：$2(1,0)+3(1,1)=(5,3)$，也就是 $P\left[\begin{smallmatrix}2\\3\end{smallmatrix}\right]$。
+
+「恆等映射的矩陣一定是單位矩陣」錯：只有輸入輸出用**同一個**基底時才是。用不同基底時，恆等映射的矩陣就是換基底矩陣。
+
+「標準座標轉 $B$ 座標乘 $P^{-1}$」對：反方向的換基底。
+
+「是 $P^T$」錯：$P^T=\left[\begin{smallmatrix}1&0\\1&1\end{smallmatrix}\right]$，把 $(1,0)$ 送到 $(1,1)$，不對。基底向量要排成**欄**。
+
+@q vs4-20 | la-vs#4 | 2 | 比較
+Let $T(x, y) = (y, x)$ on $\mathbb{R}^2$. Its matrix in the standard basis is $\begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}$. Let $C = \{(1, 1), (1, -1)\}$, and let $P = \begin{bmatrix} 1 & 1 \\ 1 & -1 \end{bmatrix}$ convert $C$-coordinates to standard coordinates. Which of the following statements are correct? Select all that apply.
+[x] The matrix of $T$ in the basis $C$ is $P^{-1} \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix} P$.
+[x] The matrix of $T$ in the basis $C$ is $\begin{bmatrix} 1 & 0 \\ 0 & -1 \end{bmatrix}$.
+[ ] The matrices of $T$ in two different bases are always equal.
+[x] The matrices of $T$ in the two bases have the same trace.
+[ ] The matrices of $T$ in two different bases are always transposes of each other.
+---
+「$P^{-1}[T]P$」對：先用 $P$ 把 $C$ 座標換成標準座標，在標準座標做 $T$，再用 $P^{-1}$ 換回 $C$ 座標。
+
+「$C$ 下是 $\operatorname{diag}(1,-1)$」對：$T(1,1)=(1,1)$、$T(1,-1)=(-1,1)=-(1,-1)$，$C$ 的兩個向量剛好是特徵向量。
+
+「一定相等」錯：上面兩個矩陣就不同。
+
+「跡相同」對：同一個變換在不同基底下的矩陣彼此相似，相似矩陣的跡相同（這裡都是 0）。
+
+「一定互為轉置」錯：一般只是相似。
+
+@q dt1-05 | la-det#1 | 1 | 計算
+$\det\left[\begin{smallmatrix}3&7\\2&5\end{smallmatrix}\right]$？
+== 1
+---
+$3\cdot5-7\cdot2=15-14$。行列式 1，所以反矩陣全是整數 $\left[\begin{smallmatrix}5&-7\\-2&3\end{smallmatrix}\right]$。
+
+@q dt1-06 | la-det#1 | 2 | 追蹤
+Evaluate $\det\begin{bmatrix}0&2&1\\1&3&2\\2&1&4\end{bmatrix}$ by elimination; the first step must swap rows 1 and 2.
+== -5
+---
+交換後 $\left[\begin{smallmatrix}1&3&2\\0&2&1\\2&1&4\end{smallmatrix}\right]$（記一次變號）；第 3 列減 2 倍第 1 列得 $[0,-5,0]$；再加 $\frac52$ 倍第 2 列得 $[0,0,\frac52]$。對角線積 $1\cdot2\cdot\frac52=5$，變號後 $-5$。
+
+@q dt1-07 | la-det#1 | 2 | 陷阱
+Let $A$ be a $3\times3$ matrix with $\det A=5$. What is $\det(-A)$?
+== -5
+---
+$\det(cA)=c^n\det A$，$(-1)^3=-1$。若是 $4\times4$ 就是 $+5$。常見錯誤是以為負號不影響或只乘一次。
+
+@q dt1-08 | la-det#1 | 2 | 計算
+Let $A$ and $B$ be $n\times n$ matrices with $\det A=3$ and $\det B=7$. Find $\det(A^TA)$ and $\det(A^{-1}BA)$.
+== 9,7
+?? det(A^TA),det(A^-1BA)
+---
+$\det A^T\det A=9$；$\frac1{\det A}\cdot\det B\cdot\det A=\det B$。
+
+@q dt1-09 | la-det#1 | 1 | 觀念
+$\det A=0$ 不等價於下列哪一個？
+[x] $A$ 有一列全是 0
+[ ] $A$ 不可逆
+[ ] $Ax=0$ 有非零解
+[ ] $A$ 的秩小於 $n$
+---
+有一列全 0 ⇒ $\det=0$，反過來不成立，例如 $\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]$。
+
+@q dt1-10 | la-det#1 | 2 | 計算
+$\det\left[\begin{smallmatrix}1&2&3\\2&3&4\\3&4&6\end{smallmatrix}\right]$？
+== -1
+---
+第 2 列減 2 倍第 1 列 $[0,-1,-2]$；第 3 列減 3 倍第 1 列 $[0,-2,-3]$；再減 2 倍第 2 列 $[0,0,1]$。對角線 $1\cdot(-1)\cdot1=-1$。把右下角 6 改成 5 就變成 0。
+
+@q dt1-11 | la-det#1 | 3 | 計算
+The $4\times4$ matrix whose columns are a rearrangement of the standard basis sends $e_1\to e_2\to e_3\to e_4\to e_1$ (a cycle). What is its determinant?
+== -1
+---
+一個長度 4 的循環＝3 次交換，$(-1)^3=-1$。一般長度 $k$ 的循環是 $(-1)^{k-1}$。
+
+@q dt1-12 | la-det#1 | 2 | 找錯
+Let $A$ be a $3\times3$ matrix with $\det A=4$. A student writes $\det(2A)=2\det A=8$. What is the correct value?
+== 32
+---
+$2A$ 的每一列都乘 2，三列各提出一個 2：$2^3\cdot4=32$。
+
+@q dt1-13 | la-det#1 | 2 | 情境
+繪圖程式要對變換矩陣 $\left[\begin{smallmatrix}2&1&3\\4&2&6\\1&0&1\end{smallmatrix}\right]$ 求反矩陣，先檢查行列式。結果？
+[x] 0，第 2 列是第 1 列的 2 倍，這個變換把空間壓扁、不能還原
+[ ] 1
+[ ] $-2$
+[ ] 12
+---
+兩列成比例 ⇒ 列運算可以做出一列 0 ⇒ 行列式 0。
+
+@q dt1-14 | la-det#1 | 3 | 陷阱
+Let $\det A=5$. Row 1 of $A$ is replaced by (2 × row 1) − row 2. What is the new determinant?
+== 10
+---
+這不是單純的「倍數加到另一列」：被換掉的列自己乘了 2。可以拆成「第 1 列乘 2」（×2）再「減第 2 列」（不變）。
+
+@q dt1-15 | la-det#1 | 2 | 計算
+$\det A=-2$。$\det(A^5)$？
+== -32
+---
+$\det(A^k)=(\det A)^k=(-2)^5$。
+
+@q dt1-16 | la-det#1 | 3 | 證明
+$A$ 是 $n\times n$、$A^2=A$、$A\ne I$。證明 $\det A=0$。
+---
+$\det(A)^2=\det A$ ⇒ $\det A\in\{0,1\}$，不夠。改用：若 $A$ 可逆，$A^2=A$ 兩邊左乘 $A^{-1}$ 得 $A=I$，矛盾。所以 $A$ 不可逆，$\det A=0$。
+
+@q dt1-17 | la-det#1 | 3 | 陷阱
+$A$ 是 $2\times3$、$B$ 是 $3\times2$。下列哪個對？
+[x] $\det(BA)=0$ 一定成立；$\det(AB)$ 可能不是 0
+[ ] $\det(AB)=\det(BA)$
+[ ] $\det(AB)=\det A\det B$
+[ ] 兩個都一定是 0
+---
+$BA$ 是 $3\times3$ 但秩 $\le2$。$\det A$ 根本沒定義（非方陣）。例：$A=[I_2\ 0]$、$B=A^T$，$AB=I_2$。
+
+@q dt1-18 | la-det#1 | 2 | 計算
+A factorization $PA=LU$ has $P$ performing one row swap, $L$ with all 1s on its diagonal, and $U$ with diagonal entries $2,-1,3$. What is $\det A$?
+== 6
+---
+$\det P\det A=\det L\det U$ ⇒ $-\det A=-6$ ⇒ $\det A=6$。電腦算行列式就是這樣：消去＋記交換次數。
+
+@q dt1-19 | la-det#1 | 2 | 計算
+An upper triangular matrix has diagonal entries $3,0,7,2$; its other entries are arbitrary. What is its determinant?
+== 0
+---
+三角矩陣的行列式＝對角線乘積，有一個 0 就是 0，不用看其他元素。
+
+@q dt1-20 | la-det#1 | 2 | 比較
+$A$、$B$ 都是 $n\times n$。$\det(AB)$ 和 $\det(BA)$？
+[x] 一定相等（都是 $\det A\det B$），即使 $AB\ne BA$
+[ ] 只有 $AB=BA$ 時相等
+[ ] 互為負數
+[ ] 沒有關係
+---
+$\det(AB)=\det A\det B=\det B\det A=\det(BA)$：行列式是數字，數字的乘法可交換；矩陣本身不能交換不影響。
+
+@q dt2-05 | la-det#2 | 2 | 計算
+$\det\left[\begin{smallmatrix}2&0&0&1\\0&3&0&0\\1&0&1&0\\0&0&0&4\end{smallmatrix}\right]$？
+== 24
+---
+沿第 4 列展開（只有 $a_{44}=4$，符號 $+$）：$4\cdot\det\left[\begin{smallmatrix}2&0&0\\0&3&0\\1&0&1\end{smallmatrix}\right]=4\cdot6$。挑零最多的列或行展開。
+
+@q dt2-06 | la-det#2 | 2 | 計算
+Let $A=\begin{bmatrix}1&2&3\\4&5&6\\7&8&10\end{bmatrix}$. What is the cofactor $C_{12}$?
+== 2
+---
+子式 $M_{12}=\det\left[\begin{smallmatrix}4&6\\7&10\end{smallmatrix}\right]=-2$，$C_{12}=(-1)^{1+2}M_{12}=2$。
+
+@q dt2-07 | la-det#2 | 1 | 陷阱
+$3\times3$ 的餘因子 $C_{23}$ 前面的符號？
+[x] $-$
+[ ] $+$
+[ ] 看 $a_{23}$ 的正負
+[ ] 看行列式的正負
+---
+$(-1)^{2+3}=-1$。棋盤格：$\left[\begin{smallmatrix}+&-&+\\-&+&-\\+&-&+\end{smallmatrix}\right]$。
+
+@q dt2-08 | la-det#2 | 2 | 計算
+Evaluate the $4\times4$ Vandermonde determinant whose $i$-th row is $1,x_i,x_i^2,x_i^3$, with $x=1,2,3,4$.
+== 12
+---
+$\prod_{i<j}(x_j-x_i)=(1)(2)(3)(1)(2)(1)=12$，共 $\binom42=6$ 個因子。
+
+@q dt2-09 | la-det#2 | 3 | 陷阱
+Evaluate the $3\times3$ Vandermonde determinant whose $i$-th row is $1,x_i,x_i^2$, with $x_1=0$, $x_2=1$, $x_3=-1$ in this order.
+== 2
+---
+$\prod_{i<j}(x_j-x_i)=(1-0)(-1-0)(-1-1)=1\cdot(-1)\cdot(-2)=2$。順序改成 $-1,0,1$ 得 $(1)(2)(1)=2$；改成 $0,-1,1$ 就變 $-2$。點的順序影響正負號。
+
+@q dt2-10 | la-det#2 | 3 | 陷阱
+分塊矩陣 $\left[\begin{smallmatrix}A&B\\C&D\end{smallmatrix}\right]$（各塊 $k\times k$）的行列式等於 $\det A\det D-\det B\det C$ 嗎？
+[x] 一般不是；$C=0$（或 $B=0$）時才是 $\det A\det D$
+[ ] 一定是
+[ ] 只有 $k=1$ 時不是
+[ ] 一定是 $\det(AD-BC)$
+---
+$k=1$ 時剛好是 $ad-bc$，所以容易誤推。$A$ 可逆時正確公式是 $\det A\cdot\det(D-CA^{-1}B)$。
+
+@q dt2-11 | la-det#2 | 3 | 計算
+A $5\times5$ tridiagonal matrix has every diagonal entry 2 and every entry just above or just below the diagonal $-1$. What is its determinant?
+== 6
+---
+沿第 1 列展開得 $D_n=2D_{n-1}-D_{n-2}$，$D_1=2$、$D_2=3$ ⇒ $D_n=n+1$。
+
+@q dt2-12 | la-det#2 | 3 | 計算
+$\det\left[\begin{smallmatrix}3&1&1\\1&3&1\\1&1&3\end{smallmatrix}\right]$？
+== 20
+---
+一般 $\left[\begin{smallmatrix}a&b&b\\b&a&b\\b&b&a\end{smallmatrix}\right]$：把三行加到第一行，提出 $a+2b$，再消得 $(a-b)^2(a+2b)=4\cdot5$。
+
+@q dt2-13 | la-det#2 | 2 | 計算
+$\det\left[\begin{smallmatrix}0&0&3\\0&2&5\\1&4&6\end{smallmatrix}\right]$？
+== -6
+---
+沿第 1 行展開，只有 $a_{31}=1$（符號 $+$）：$1\cdot\det\left[\begin{smallmatrix}0&3\\2&5\end{smallmatrix}\right]=-6$。反三角的行列式不是單純的反對角線乘積，還要乘符號。
+
+@q dt2-14 | la-det#2 | 2 | 找錯
+沿第 2 列展開 $3\times3$ 行列式，學生用符號 $+,-,+$。錯在哪？
+[x] 第 2 列的符號是 $-,+,-$
+[ ] 沒錯，每一列都是 $+,-,+$
+[ ] 應該用 $+,+,+$
+[ ] 第 2 列不能展開
+---
+符號由 $(-1)^{i+j}$ 決定，跟列號有關。用錯符號會讓答案整個變號。
+
+@q dt2-15 | la-det#2 | 2 | 比較
+$n=20$ 的行列式：直接展開（$n!$ 項）和消去法（約 $\frac{n^3}3$）各要多少次運算的量級？
+[x] 約 $2.4\times10^{18}$ 對約 2700
+[ ] 一樣多
+[ ] 約 400 對約 8000
+[ ] 約 $10^6$ 對約 $10^3$
+---
+$20!\approx2.43\times10^{18}$，每秒 $10^9$ 次也要 77 年。餘因子展開只適合小矩陣或有很多 0 的矩陣。
+
+@q dt2-16 | la-det#2 | 3 | 計算
+$A$ is $2\times2$ with $\det A=3$, and $B$ is $3\times3$ with $\det B=-1$. Evaluate $\det\begin{bmatrix}2A&0\\0&B\end{bmatrix}$.
+== -12
+---
+分塊對角：$\det(2A)\det B=2^2\cdot3\cdot(-1)$。$2A$ 是 $2\times2$，提出 $2^2$ 不是 $2^5$。
+
+@q dt2-17 | la-det#2 | 2 | 計算
+$\det\left[\begin{smallmatrix}1&1&1\\2&3&5\\4&9&25\end{smallmatrix}\right]$？
+== 6
+---
+轉置後就是 $x=2,3,5$ 的 Vandermonde：$(3-2)(5-2)(5-3)=6$。
+
+@q dt2-18 | la-det#2 | 3 | 情境
+感測器在 $x=1,2,2,3$ 各量到一筆資料，想找 $p(x)=a+bx+cx^2+dx^3$ 剛好通過四筆資料。係數方程組會怎樣？
+[x] 係數矩陣有兩列相同，行列式 0：沒有唯一解（兩筆 $x=2$ 的值不同就無解）
+[ ] 一定唯一解
+[ ] 一定無限多解
+[ ] 只要資料是整數就有解
+---
+Vandermonde 行列式 $\prod(x_j-x_i)$ 裡有 $(2-2)=0$。點的 $x$ 全部不同才保證唯一。
+
+@q dt2-19 | la-det#2 | 2 | 證明
+用沿第一行展開、對 $n$ 一層一層往下推，說明上三角矩陣的行列式是對角線乘積。
+---
+$n=1$ 顯然。$n>1$：上三角的第一行只有 $a_{11}$ 可能非 0，沿第一行展開得 $a_{11}\det A_{11}$，$A_{11}$ 是去掉第一列第一行的 $(n-1)\times(n-1)$ 上三角，由歸納假設等於 $a_{22}\cdots a_{nn}$。
+
+@q dt2-20 | la-det#2 | 1 | 觀念
+沿不同的列或行展開，得到的行列式？
+[x] 一定一樣
+[ ] 可能差一個正負號
+[ ] 只有沿第一列才是對的
+[ ] 沿行展開會得到轉置的行列式
+---
+所以挑 0 最多的那一列或那一行展開最省事。
+
+@q dt3-05 | la-det#3 | 1 | 計算
+$\operatorname{adj}\left[\begin{smallmatrix}2&1\\5&3\end{smallmatrix}\right]$？
+[x] $\left[\begin{smallmatrix}3&-1\\-5&2\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}3&-5\\-1&2\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}2&-1\\-5&3\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}-3&1\\5&-2\end{smallmatrix}\right]$
+---
+$2\times2$：對角交換、非對角變號。「$\left[\begin{smallmatrix}3&-5\\-1&2\end{smallmatrix}\right]$」是餘因子矩陣（還沒轉置）。
+
+@q dt3-06 | la-det#3 | 3 | 陷阱
+Let $A=\begin{bmatrix}1&2&0\\0&1&3\\2&0&1\end{bmatrix}$. The entry $(\operatorname{adj}A)_{13}$ equals which cofactor of $A$, and what is its value?
+== C31,6
+?? cofactor,value
+---
+伴隨矩陣是餘因子矩陣的**轉置**，$(\operatorname{adj}A)_{13}=C_{31}=+\det\left[\begin{smallmatrix}2&0\\1&3\end{smallmatrix}\right]=6$。
+
+@q dt3-07 | la-det#3 | 2 | 計算
+$A$ 是 $3\times3$、$\det A=5$。$A\cdot\operatorname{adj}A$？
+[x] $5I$
+[ ] $I$
+[ ] $25I$
+[ ] $125I$
+---
+$A\operatorname{adj}A=(\det A)I$ 對任何方陣都成立（不可逆時是 0）。
+
+@q dt3-08 | la-det#3 | 3 | 計算
+Let $A$ be a $3\times3$ matrix with $\det A=2$. If $\operatorname{adj}(\operatorname{adj}A)=cA$, what is $c$?
+== 2
+---
+$\operatorname{adj}B=\det B\cdot B^{-1}$。$B=\operatorname{adj}A=2A^{-1}$，$\det B=2^{2}=4$，$B^{-1}=\frac12A$，所以 $\operatorname{adj}B=4\cdot\frac12A=2A$。一般 $(\det A)^{n-2}A$。
+
+@q dt3-09 | la-det#3 | 2 | 計算
+Use Cramer's rule to solve $x+y+z=6$, $x-y+2z=5$, $2x+y-z=1$. What is $y$?
+== 2
+---
+$\det A=\det\left[\begin{smallmatrix}1&1&1\\1&-1&2\\2&1&-1\end{smallmatrix}\right]=7$；第 2 行換成 $(6,5,1)$ 的行列式 14；$y=2$。完整解 $(1,2,3)$。
+
+@q dt3-10 | la-det#3 | 3 | 計算
+Let $A$ be a $3\times3$ matrix. If $\operatorname{adj}(2A)=c\cdot\operatorname{adj}A$, what is $c$?
+== 4
+---
+每個餘因子是 $2\times2$ 子式，乘 2 後每個子式乘 $2^2$。一般 $k^{n-1}$。
+
+@q dt3-11 | la-det#3 | 2 | 陷阱
+$\det A=0$ 時 Cramer 法則？
+[x] 不能用；方程組可能無解也可能無限多解
+[ ] 可以用，答案都是 0
+[ ] 可以用，一定無解
+[ ] 可以用，一定無限多解
+---
+分母是 0。要判斷哪一種，還是要消去看有沒有 $[0\cdots0\mid c\ne0]$。
+
+@q dt3-12 | la-det#3 | 2 | 計算
+Let $A$ be a $4\times4$ matrix with $\det A=2$. What is $\det(\operatorname{adj}A)$?
+== 8
+---
+$(\det A)^{n-1}=2^3$。
+
+@q dt3-13 | la-det#3 | 3 | 觀念
+$A$ 是 $n\times n$、秩 $n-2$（$n\ge3$）。$\operatorname{adj}A$？
+[x] 零矩陣：每個 $(n-1)\times(n-1)$ 子式都是 0
+[ ] 秩 1
+[ ] 可逆
+[ ] 秩 $n-2$
+---
+秩 $n-1$ 時 $\operatorname{adj}A$ 秩 1（$A\operatorname{adj}A=0$ 讓它的行都在一維的 $N(A)$ 裡）；秩 $\le n-2$ 時所有子式都是 0。
+
+@q dt3-14 | la-det#3 | 3 | 情境
+希望整數矩陣 $A$ 的反矩陣也全是整數（例如加解密都只用整數）。條件是？
+[x] $\det A=\pm1$
+[ ] $\det A\ne0$
+[ ] $A$ 的元素都是正的
+[ ] $A$ 是對角矩陣
+---
+$A^{-1}=\frac{\operatorname{adj}A}{\det A}$，$\operatorname{adj}A$ 一定是整數。反過來 $\det A\det A^{-1}=1$，兩個都是整數，只能 $\pm1$。
+
+@q dt3-15 | la-det#3 | 2 | 找錯
+學生求 $\left[\begin{smallmatrix}1&2\\3&4\end{smallmatrix}\right]^{-1}$：算出餘因子矩陣 $\left[\begin{smallmatrix}4&-3\\-2&1\end{smallmatrix}\right]$，除以 $-2$ 就當答案。錯在哪？
+[x] 忘了轉置：應該是 $\frac1{-2}\left[\begin{smallmatrix}4&-2\\-3&1\end{smallmatrix}\right]$
+[ ] 行列式算錯
+[ ] 應該乘 $-2$
+[ ] 沒錯
+---
+只有 $A=A^T$ 時餘因子矩陣才剛好等於伴隨矩陣。
+
+@q dt3-16 | la-det#3 | 2 | 情境
+Two loop currents in a circuit satisfy $3I_1-I_2=5$ and $-I_1+2I_2=0$. Use Cramer's rule to find $I_1$ and $I_2$.
+== 2,1
+?? I1,I2
+---
+$\det=6-1=5$；$I_1=\frac{\det\left[\begin{smallmatrix}5&-1\\0&2\end{smallmatrix}\right]}5=2$；$I_2=\frac{\det\left[\begin{smallmatrix}3&5\\-1&0\end{smallmatrix}\right]}5=1$。
+
+@q dt3-17 | la-det#3 | 3 | 證明
+說明為什麼 $A\cdot\operatorname{adj}A$ 的非對角元素是 0。
+---
+$(A\operatorname{adj}A)_{ij}=\sum_ka_{ik}C_{jk}$，這是把第 $j$ 列換成第 $i$ 列之後，沿第 $j$ 列展開的行列式。$i\ne j$ 時那個矩陣有兩列相同，行列式 0。對角元素 $\sum_ka_{ik}C_{ik}=\det A$。
+
+@q dt3-18 | la-det#3 | 3 | 計算
+Let $A=\begin{bmatrix}2&1&0\\1&3&1\\0&1&2\end{bmatrix}$. Using cofactors, find the entry $(A^{-1})_{21}$.
+== -1/4
+== -0.25
+---
+$\det A=2(6-1)-1(2-0)=8$。$(A^{-1})_{21}=\frac{C_{12}}{\det A}$（注意轉置），$C_{12}=-\det\left[\begin{smallmatrix}1&1\\0&2\end{smallmatrix}\right]=-2$，得 $-\frac14$。
+
+@q dt3-19 | la-det#3 | 2 | 觀念
+$A$ 的元素都是整數、$\det A=1$、$b$ 是整數向量。$Ax=b$ 的解？
+[x] 一定全是整數
+[ ] 一定有分數
+[ ] 可能無解
+[ ] 可能無限多解
+---
+Cramer：$x_i=\det A_i/1$，$A_i$ 全是整數，行列式是整數。
+
+@q dt4-04 | la-det#4 | 2 | 計算
+What is the area of the triangle with vertices $(1,1)$, $(4,2)$, and $(2,5)$?
+== 5.5
+== 11/2
+---
+以 $(1,1)$ 為起點的兩邊 $(3,1)$、$(1,4)$，$\det=12-1=11$，面積 $\frac{11}2$。
+
+@q dt4-05 | la-det#4 | 2 | 情境
+判斷 $(1,2)$、$(3,4)$、$(5,6)$ 三點共不共線？
+[x] 共線：$\det\left[\begin{smallmatrix}1&2&1\\3&4&1\\5&6&1\end{smallmatrix}\right]=0$（圍成的面積 0）
+[ ] 不共線，行列式是 2
+[ ] 不共線，行列式是 $-2$
+[ ] 無法用行列式判斷
+---
+等價地，兩邊 $(2,2)$、$(4,4)$ 成比例。
+
+@q dt4-06 | la-det#4 | 2 | 計算
+What is the volume of the parallelepiped spanned by $(1,0,0)$, $(1,2,0)$, and $(1,1,3)$?
+== 6
+---
+排成行是上三角 $\left[\begin{smallmatrix}1&1&1\\0&2&1\\0&0&3\end{smallmatrix}\right]$，$\det=6$。
+
+@q dt4-07 | la-det#4 | 2 | 計算
+What is the volume of the tetrahedron with vertices at the origin, $(1,0,0)$, $(0,2,0)$, and $(0,0,3)$?
+== 1
+---
+四面體體積是平行六面體的 $\frac16$：$\frac{|\det|}6=\frac66$。
+
+@q dt4-08 | la-det#4 | 2 | 觀念
+$\det(AB)=\det A\det B$ 的幾何解釋？
+[x] 先用 $B$ 放大 $|\det B|$ 倍，再用 $A$ 放大 $|\det A|$ 倍，總共是乘積（翻面次數也相乘）
+[ ] 面積相加
+[ ] 只有 $A$、$B$ 可交換時成立
+[ ] 沒有幾何意義
+---
+所以 $\det A^{-1}=\frac1{\det A}$：還原時要縮回去。
+
+@q dt4-09 | la-det#4 | 1 | 計算
+The shear $\begin{bmatrix}1&3\\0&1\end{bmatrix}$ maps the unit square to a parallelogram. By what factor does the area change?
+== 1
+---
+$\det=1$：形狀歪了，但底和高都沒變。
+
+@q dt4-10 | la-det#4 | 2 | 計算
+The matrix $\begin{bmatrix}2&1\\0&3\end{bmatrix}$ maps the region inside the unit circle to the region inside an ellipse. The ellipse's area is how many times the circle's area?
+== 6
+---
+任何區域面積都乘 $|\det|=6$，所以橢圓面積 $6\pi$。
+
+@q dt4-11 | la-det#4 | 3 | 情境
+A plot of land is a quadrilateral with corners $(0,0)$, $(4,0)$, $(5,3)$, $(1,4)$ in this order. What is its area?
+== 14.5
+---
+鞋帶公式＝把多邊形切成以原點為頂點的三角形、各用 $2\times2$ 行列式：$\frac12|0+12+17+0|=14.5$。點要依序（順或逆時針）排。
+
+@q dt4-12 | la-det#4 | 2 | 情境
+計算幾何判斷轉向：從 $A(0,0)$ 走到 $B(2,1)$ 再到 $C(1,3)$，是左轉還是右轉？
+[x] 左轉：$\det[B-A\ \ C-A]=2\cdot3-1\cdot1=5>0$
+[ ] 右轉
+[ ] 直走
+[ ] 無法判斷
+---
+有向面積正＝逆時針＝左轉。凸包演算法每一步都在做這個判斷。
+
+@q dt4-13 | la-det#4 | 3 | 計算
+A linear map stretches $x$ by 2, stretches $y$ by 3, and flips $z$ to $-z$. What is the volume of the image of a cube with side length 2?
+== 48
+---
+$|\det|=|2\cdot3\cdot(-1)|=6$，原本體積 8，$6\cdot8=48$。翻面不影響體積大小，只影響有向體積的正負。
+
+@q dt4-14 | la-det#4 | 1 | 觀念
+$\det A=0$ 在幾何上？
+[x] 把空間壓扁到比較低的維度（例如平面壓成直線）
+[ ] 把空間翻面
+[ ] 保持面積
+[ ] 把空間放大無限倍
+---
+所以不可逆：壓扁之後不同的點疊在一起，還原不回來。
+
+@q dt4-15 | la-det#4 | 2 | 找錯
+學生算 $(0,0)$、$(3,0)$、$(0,4)$ 三角形面積寫「$|\det\left[\begin{smallmatrix}3&0\\0&4\end{smallmatrix}\right]|=12$」。錯在哪？
+[x] 那是平行四邊形面積，三角形要再除以 2，答案 6
+[ ] 行列式算錯
+[ ] 要取負號
+[ ] 沒錯
+---
+直角三角形兩股 3、4，面積 6，直接驗算。
+
+@q dt4-16 | la-det#4 | 3 | 情境
+極座標換變數 $x=r\cos\theta$、$y=r\sin\theta$，Jacobian 矩陣 $\left[\begin{smallmatrix}\cos\theta&-r\sin\theta\\\sin\theta&r\cos\theta\end{smallmatrix}\right]$ 的行列式是？這代表什麼？
+[x] $r$：$(r,\theta)$ 平面上的小方塊，被送到 $xy$ 平面後面積放大 $r$ 倍，所以 $dx\,dy=r\,dr\,d\theta$
+[ ] 1：換座標不改變面積
+[ ] $r^2$
+[ ] $\cos^2\theta$
+---
+$r\cos^2\theta+r\sin^2\theta=r$。離原點越遠，同樣的 $dr\,d\theta$ 對應的扇形越大。
+
+@q dt4-17 | la-det#4 | 3 | 計算
+What is the volume of the tetrahedron with vertices $(0,0,0)$, $(1,2,0)$, $(0,1,2)$, and $(3,0,1)$?
+== 13/6
+---
+$\det\left[\begin{smallmatrix}1&2&0\\0&1&2\\3&0&1\end{smallmatrix}\right]=1\cdot1-2\cdot(0-6)+0=13$，除以 6。
+
+@q dt4-18 | la-det#4 | 2 | 計算
+A parallelogram of area 5 is mapped by a linear map $A$ with $\det A=3$. What is the area of its image?
+== 15
+---
+$|\det A|$ 是面積放大倍率，對任何區域都一樣。
+
+@q dt4-19 | la-det#4 | 3 | 陷阱
+Let $\det[u\ v]=7$, where $u$ and $v$ are the columns. Find $\det[v\ u]$ and $\det[u+2v\ \ v]$.
+== -7,7
+?? det[v u],det[u+2v v]
+---
+交換兩行變號（方向反了，面積大小不變）；把 $v$ 的倍數加到 $u$ 是剪切，不變。
+
+@q ei1-06 | la-eigen#1 | 2 | 計算
+Let $A=\begin{bmatrix}1&4\\2&3\end{bmatrix}$. Find its two eigenvalues, and an eigenvector for the eigenvalue $-1$ whose first component is 2.
+== 5 -1,2 -1
+?? eigenvalues,eigenvector for λ=-1
+---
+跡 4、行列式 $-5$：$\lambda^2-4\lambda-5=(\lambda-5)(\lambda+1)$。$A+I=\left[\begin{smallmatrix}2&4\\2&4\end{smallmatrix}\right]$，$2x+4y=0$，取 $(2,-1)$。
+
+@q ei1-07 | la-eigen#1 | 1 | 計算
+Find the eigenvalues of $\begin{bmatrix}3&7&1\\0&-1&4\\0&0&2\end{bmatrix}$.
+== 3,-1,2
+---
+三角矩陣 $A-\lambda I$ 還是三角，行列式＝對角線乘積 $(3-\lambda)(-1-\lambda)(2-\lambda)$。
+
+@q ei1-08 | la-eigen#1 | 3 | 陷阱
+Let $R = \begin{bmatrix} 0 & -1 \\ 1 & 0 \end{bmatrix}$, the counterclockwise turn of the plane by 90 degrees. Which of the following statements are correct? Select all that apply.
+[x] $R$ has no real eigenvalue, because $\det(R - \lambda I) = \lambda^2 + 1$.
+[x] Over the complex numbers, the eigenvalues of $R$ are $i$ and $-i$.
+[ ] The eigenvalues of $R$ are $1$ and $-1$.
+[x] $R^2 = -I$, so every nonzero vector of $\mathbb{R}^2$ is an eigenvector of $R^2$ with eigenvalue $-1$.
+[ ] Since $\det R = 1 \ne 0$, the number 1 is an eigenvalue of $R$.
+---
+「沒有實數特徵值」對：$\lambda^2+1=0$ 沒有實根。幾何上，轉 90 度不會把任何非零實向量送到自己的倍數。
+
+「複數特徵值 $\pm i$」對：實矩陣的特徵值可能以共軛複數對出現。
+
+「1 和 $-1$」錯：那是鏡射的特徵值，不是旋轉。
+
+「$R^2=-I$」對：轉兩次 90 度就是轉 180 度，每個向量都變成負的。
+
+「行列式是 1 所以有特徵值 1」錯：行列式是所有特徵值的乘積（這裡 $i\cdot(-i)=1$），不代表某個特徵值是 1。
+
+@q ei1-09 | la-eigen#1 | 2 | 計算
+A $3\times3$ matrix has trace 10, and two of its eigenvalues are 2 and 3. Find the third eigenvalue and the determinant.
+== 5,30
+?? third eigenvalue,det
+---
+跡＝特徵值和：$10-2-3=5$；行列式＝乘積：$2\cdot3\cdot5$。
+
+@q ei1-10 | la-eigen#1 | 2 | 觀念
+Let $M = \begin{bmatrix} 1 & 1 \\ 0 & 2 \end{bmatrix}$. Which of the following statements are correct? Select all that apply.
+[x] $M$ and $M^T$ have the same eigenvalues, namely 1 and 2.
+[x] For the eigenvalue 1, $(1, 0)^T$ is an eigenvector of $M$, while $(1, -1)^T$ is an eigenvector of $M^T$.
+[ ] $M$ and $M^T$ always have the same eigenvectors.
+[ ] The eigenvalues of $M^T$ are the reciprocals of those of $M$.
+[x] $(1, 0)^T$ is not an eigenvector of $M^T$.
+---
+「特徵值相同」對：$M^T-\lambda I=(M-\lambda I)^T$，兩者的特徵方程式一樣；這裡都是三角矩陣，特徵值就是對角線 1、2。
+
+「$\lambda=1$ 的特徵向量 $(1,0)^T$ 和 $(1,-1)^T$」對：$M-I=\left[\begin{smallmatrix}0&1\\0&1\end{smallmatrix}\right]$，解得 $y=0$；$M^T-I=\left[\begin{smallmatrix}0&0\\1&1\end{smallmatrix}\right]$，解得 $x+y=0$。
+
+「特徵向量一定相同」錯：上面就是反例。只有對稱矩陣（$M=M^T$）才一定相同。
+
+「互為倒數」錯：那是 $M^{-1}$ 的特徵值。
+
+「$(1,0)^T$ 不是 $M^T$ 的特徵向量」對：$M^T(1,0)^T=(1,1)^T$，不是 $(1,0)^T$ 的倍數。
+
+@q ei1-11 | la-eigen#1 | 2 | 觀念
+Let $M$ be an $n \times n$ matrix. Which of the following statements are correct? Select all that apply.
+[x] $M$ is not invertible if and only if 0 is an eigenvalue of $M$.
+[x] The matrix $\begin{bmatrix} 1 & 2 \\ 2 & 4 \end{bmatrix}$ has eigenvalues 0 and 5.
+[ ] $M$ is invertible if and only if 1 is not an eigenvalue of $M$.
+[x] If $M$ is invertible and $\lambda$ is an eigenvalue of $M$, then $1/\lambda$ is an eigenvalue of $M^{-1}$.
+[ ] Every square matrix has 0 as an eigenvalue.
+---
+「不可逆 ⇔ 0 是特徵值」對：$Mv=0\cdot v$ 有非零解 ⇔ $N(M)\ne\{0\}$ ⇔ 不可逆。
+
+「$\left[\begin{smallmatrix}1&2\\2&4\end{smallmatrix}\right]$ 的特徵值 0、5」對：第二列是第一列的兩倍，不可逆，所以有 0；另一個 = 跡 $-0=5$。
+
+「可逆 ⇔ 1 不是特徵值」錯：$I$ 可逆，特徵值正是 1。
+
+「$M^{-1}$ 有 $1/\lambda$」對：$Mv=\lambda v$ 兩邊乘 $M^{-1}$ 再除以 $\lambda$（可逆時 $\lambda\ne0$）。
+
+「每個方陣都有特徵值 0」錯：可逆的就沒有。
+
+@q ei1-12 | la-eigen#1 | 3 | 情境
+A linear map of the plane sends $(1,1)$ to $(3,3)$ and $(1,-1)$ to $(-1,1)$. Find its matrix, entering the four entries row by row.
+== 1,2,2,1
+---
+特徵值 3（方向 $(1,1)$）和 $-1$（方向 $(1,-1)$）。$A=PDP^{-1}$，$P=\left[\begin{smallmatrix}1&1\\1&-1\end{smallmatrix}\right]$、$D=\text{diag}(3,-1)$，得 $\left[\begin{smallmatrix}1&2\\2&1\end{smallmatrix}\right]$。驗算 $A(1,1)=(3,3)$。
+
+@q ei1-13 | la-eigen#1 | 3 | 找錯
+A student row-reduces $M = \begin{bmatrix} 2 & 1 \\ 1 & 2 \end{bmatrix}$ to $\begin{bmatrix} 2 & 1 \\ 0 & 1.5 \end{bmatrix}$ and then says the eigenvalues of $M$ are 2 and 1.5. Which of the following statements are correct? Select all that apply.
+[x] The eigenvalues of $M$ are 3 and 1.
+[x] Row operations generally change the eigenvalues of a matrix.
+[ ] The student is correct, because the eigenvalues of a triangular matrix are its diagonal entries.
+[x] $(1, 1)^T$ is an eigenvector for the eigenvalue 3, and $(1, -1)^T$ is an eigenvector for the eigenvalue 1.
+[ ] Row operations preserve the eigenvalues, because they preserve the null space.
+---
+「特徵值 3 和 1」對：$(2-\lambda)^2-1=0$，$\lambda=3$ 或 1。驗算：和是 4（對角線和），$2+1.5=3.5$ 對不上。
+
+「列運算一般會改變特徵值」對：列運算是左乘一個可逆矩陣 $E$，$EM$ 跟 $M$ 一般不相似。
+
+「三角矩陣讀對角線所以學生對」錯：消完的是另一個矩陣，它的特徵值不是 $M$ 的。
+
+「特徵向量」對：$M(1,1)^T=(3,3)^T$、$M(1,-1)^T=(1,-1)^T$。
+
+「保留零空間所以保留特徵值」錯：列運算只保留 $M$ 本身的零空間（也就是特徵值 0 的情況），不保留 $M-\lambda I$ 的。
+
+@q ei1-14 | la-eigen#1 | 2 | 計算
+A $2\times2$ matrix $A$ has eigenvalues $2$ and $-2$. Find the eigenvalues of $A^2$.
+== 4,4
+---
+$A^2v=\lambda^2v$。兩個不同的特徵值平方後變成一樣，所以 $A^2$ 可能是 $4I$（例如 $A=\text{diag}(2,-2)$）。
+
+@q ei1-15 | la-eigen#1 | 3 | 計算
+Find the eigenvalues of $\begin{bmatrix}2&1&0\\1&2&0\\0&0&3\end{bmatrix}$.
+== 3,3,1
+---
+分塊對角：左上 $\left[\begin{smallmatrix}2&1\\1&2\end{smallmatrix}\right]$ 給 3、1，右下給 3。特徵值 3 出現兩次。
+
+@q ei1-16 | la-eigen#1 | 3 | 證明
+證明：$\lambda_1\ne\lambda_2$ 的特徵向量 $v_1,v_2$ 線性獨立。
+---
+設 $c_1v_1+c_2v_2=0$。乘 $A$：$c_1\lambda_1v_1+c_2\lambda_2v_2=0$；原式乘 $\lambda_2$ 相減：$c_1(\lambda_1-\lambda_2)v_1=0$。$v_1\ne0$、$\lambda_1\ne\lambda_2$，所以 $c_1=0$，再得 $c_2=0$。
+
+@q ei1-17 | la-eigen#1 | 2 | 陷阱
+By definition, $v$ is an eigenvector of $M$ with eigenvalue $\lambda$ if $Mv = \lambda v$ and $v \ne 0$. Which of the following statements are correct? Select all that apply.
+[x] The zero vector is never an eigenvector.
+[x] If the zero vector were allowed, then $M \cdot 0 = \lambda \cdot 0$ would make every number $\lambda$ an eigenvalue.
+[ ] The zero vector is an eigenvector for the eigenvalue 0.
+[x] The number 0 can be an eigenvalue of a matrix.
+[ ] The set of all eigenvectors for $\lambda$ together with the zero vector is not a subspace.
+---
+「零向量不是特徵向量」對：定義就排除它。
+
+「否則每個數都是特徵值」對：這就是要排除它的理由。
+
+「零向量是特徵值 0 的特徵向量」錯：特徵值可以是 0，特徵向量不能是零向量，兩件事別混在一起。
+
+「0 可以是特徵值」對：例如不可逆的矩陣。
+
+「加上零向量後不是子空間」錯：那就是特徵空間 $N(M-\lambda I)$，一定是子空間。
+
+@q ei1-18 | la-eigen#1 | 3 | 計算
+Let $u=(1,2,3)^T$, $v=(1,1,1)^T$, and $A=uv^T$. Find the eigenvalues of $A$.
+== 6,0,0
+---
+$Au=u(v^Tu)=6u$，所以 6 是特徵值；$A$ 秩 1，$N(A)$ 二維，0 出現兩次。驗算跡 $1+2+3=6$。
+
+@q ei1-19 | la-eigen#1 | 2 | 計算
+A $2\times2$ matrix $A$ has eigenvalues 1 and 3. Find the eigenvalues of $A^2-2A$.
+== -1,3
+---
+多項式作用在矩陣上，特徵值也跟著代進去：$1-2=-1$、$9-6=3$。
+
+@q ei1-20 | la-eigen#1 | 2 | 比較
+Let $v$ be an eigenvector of the square matrix $M$ with eigenvalue $\lambda$. Which of the following statements are correct? Select all that apply.
+[x] $v$ is an eigenvector of $M + 5I$ with eigenvalue $\lambda + 5$.
+[x] If $-5$ is an eigenvalue of $M$, then $M + 5I$ is not invertible.
+[ ] The eigenvalues of $M + 5I$ are the eigenvalues of $M$ multiplied by 5.
+[x] $v$ is an eigenvector of $5M$ with eigenvalue $5\lambda$.
+[ ] $M + 5I$ has different eigenvectors from $M$, because adding $5I$ changes every entry on the diagonal.
+---
+「$M+5I$ 的特徵值 $\lambda+5$」對：$(M+5I)v=\lambda v+5v$。
+
+「$-5$ 是特徵值時 $M+5I$ 不可逆」對：它就有特徵值 $-5+5=0$。
+
+「乘以 5」錯：加 $5I$ 是平移，乘 5 是 $5M$ 的情況。
+
+「$5M$ 的特徵值 $5\lambda$」對：$5Mv=5\lambda v$。
+
+「特徵向量不同」錯：同一個 $v$ 仍是特徵向量；改變對角線只是讓每個方向的倍率都加 5。
+
+@q ei2-06 | la-eigen#2 | 2 | 計算
+Let $M = \begin{bmatrix} 1 & 4 \\ 2 & 3 \end{bmatrix} = P D P^{-1}$ with $D = \begin{bmatrix} 5 & 0 \\ 0 & -1 \end{bmatrix}$. Which of the following statements are correct? Select all that apply.
+[x] $P = \begin{bmatrix} 1 & 2 \\ 1 & -1 \end{bmatrix}$ works.
+[x] $(1, 1)^T$ is an eigenvector for the eigenvalue 5, and $(2, -1)^T$ is an eigenvector for the eigenvalue $-1$.
+[ ] $P = \begin{bmatrix} 2 & 1 \\ -1 & 1 \end{bmatrix}$ works with the same $D$.
+[x] $P = \begin{bmatrix} 2 & -2 \\ 2 & 1 \end{bmatrix}$ also works with the same $D$.
+[ ] $P = I$ works.
+---
+$P$ 的第 $j$ 欄要是 $D$ 第 $j$ 個對角元的特徵向量。
+
+「$\left[\begin{smallmatrix}1&2\\1&-1\end{smallmatrix}\right]$」對、「特徵向量」對：$M(1,1)^T=(5,5)^T$、$M(2,-1)^T=(-2,1)^T=-(2,-1)^T$。
+
+「$\left[\begin{smallmatrix}2&1\\-1&1\end{smallmatrix}\right]$ 配同一個 $D$」錯：欄的順序反了，它配的是 $\operatorname{diag}(-1,5)$。
+
+「$\left[\begin{smallmatrix}2&-2\\2&1\end{smallmatrix}\right]$ 也行」對：每一欄是原本的非零倍數（2 倍和 $-1$ 倍），還是對應的特徵向量。$P$ 不唯一。
+
+「$P=I$」錯：$M$ 本身不是對角矩陣。
+
+@q ei2-07 | la-eigen#2 | 2 | 比較
+Compare $M = \begin{bmatrix} 3 & 1 \\ 0 & 3 \end{bmatrix}$ with $3I = \begin{bmatrix} 3 & 0 \\ 0 & 3 \end{bmatrix}$. Which of the following statements are correct? Select all that apply.
+[x] Both have the single eigenvalue 3 with algebraic multiplicity 2.
+[x] $3I$ is diagonalizable, but $M$ is not.
+[ ] Both are diagonalizable, because they have the same eigenvalues.
+[x] The eigenspace of $M$ for the eigenvalue 3 is one-dimensional.
+[ ] $M$ and $3I$ are similar matrices.
+---
+「同一個特徵值 3、代數重數 2」對：兩個都是三角矩陣，對角線都是 3。
+
+「$3I$ 可以、$M$ 不行」對：$3I$ 本來就是對角的；$M-3I=\left[\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right]$ 秩 1，特徵空間只有一維。
+
+「特徵值相同所以都可以」錯：可不可對角化要看特徵空間夠不夠大。
+
+「$M$ 的特徵空間一維」對。
+
+「兩者相似」錯：跟 $3I$ 相似的只有 $3I$ 自己（$P^{-1}(3I)P=3I$）。
+
+@q ei2-08 | la-eigen#2 | 2 | 計算
+For $\begin{bmatrix}2&1&0\\0&2&0\\0&0&3\end{bmatrix}$, find the algebraic and geometric multiplicities of the eigenvalue 2.
+== 2,1
+?? algebraic,geometric
+---
+對角線有兩個 2；$A-2I=\left[\begin{smallmatrix}0&1&0\\0&0&0\\0&0&1\end{smallmatrix}\right]$ 秩 2，零空間 $3-2=1$ 維。
+
+@q ei2-09 | la-eigen#2 | 3 | 計算
+Let $J$ be the $3\times3$ matrix of all 1s. What is the geometric multiplicity of its eigenvalue 0, and is $J$ diagonalizable (yes or no)?
+== 2,yes
+== 2,能
+?? geometric multiplicity,diagonalizable
+---
+$J$ 秩 1，$N(J)$ 二維；另一個特徵值 3（跡）幾何重數 1，$2+1=3$，可以對角化。
+
+@q ei2-10 | la-eigen#2 | 3 | 陷阱
+Let $R = \begin{bmatrix} 0 & -1 \\ 1 & 0 \end{bmatrix}$, the counterclockwise turn by 90 degrees. Which of the following statements are correct? Select all that apply.
+[x] $R$ is not diagonalizable over the real numbers, because it has no real eigenvalue.
+[x] $R$ is diagonalizable over the complex numbers, because its eigenvalues $i$ and $-i$ are distinct.
+[ ] $R$ is diagonalizable over the real numbers, because it is invertible.
+[x] $R^4 = I$.
+[ ] $R$ has the eigenvalue 1, because it preserves the length of every vector.
+---
+「實數上不能對角化」對：沒有實特徵值，就沒有實特徵向量。
+
+「複數上可以」對：兩個相異特徵值，各有一個特徵向量。
+
+「可逆所以可以」錯：可逆和可對角化無關。
+
+「$R^4=I$」對：轉四次 90 度回到原位。
+
+「保長度所以有特徵值 1」錯：保持長度只表示特徵值的絕對值是 1，不代表等於 1；這裡是 $\pm i$。
+
+@q ei2-11 | la-eigen#2 | 2 | 觀念
+Let $M = P D P^{-1}$ with $D$ diagonal. Which of the following statements are correct? Select all that apply.
+[x] If $M$ is invertible, then $M^{-1} = P D^{-1} P^{-1}$.
+[x] $M$ is invertible if and only if every diagonal entry of $D$ is nonzero.
+[ ] If $M$ is invertible, then $M^{-1} = P^{-1} D^{-1} P$.
+[x] The eigenvalues of $M^{-1}$ are the reciprocals of the eigenvalues of $M$.
+[ ] If $M$ is invertible, then $M^{-1} = P D^{-1} P$.
+---
+「$M^{-1}=PD^{-1}P^{-1}$」對：$PDP^{-1}\cdot PD^{-1}P^{-1}=I$。
+
+「可逆 ⇔ $D$ 的對角線都不是 0」對：$D$ 的對角線就是特徵值，0 是特徵值 ⇔ 不可逆。
+
+「$P^{-1}D^{-1}P$」錯：$P$ 和 $P^{-1}$ 的位置不能對調。
+
+「特徵值互為倒數」對：$D^{-1}$ 的對角線是 $1/\lambda_i$，特徵向量不變。
+
+「$PD^{-1}P$」錯：少了反矩陣。
+
+@q ei2-12 | la-eigen#2 | 3 | 情境
+A coupled system of two springs satisfies $x'(t) = M x(t)$, where $M = P D P^{-1}$ with $D = \operatorname{diag}(\lambda_1, \lambda_2)$. Let $y = P^{-1} x$. Which of the following statements are correct? Select all that apply.
+[x] The new variables satisfy $y' = D y$.
+[x] Each component satisfies $y_i' = \lambda_i y_i$, so $y_i(t) = c_i e^{\lambda_i t}$.
+[ ] The new variables satisfy $y' = M y$.
+[x] The original solution is recovered as $x(t) = P y(t)$.
+[ ] The new variables should instead be defined as $y = P x$.
+---
+「$y'=Dy$」對：$y'=P^{-1}x'=P^{-1}Mx=P^{-1}PDP^{-1}x=Dy$。
+
+「每個分量各自解」對：$D$ 是對角的，兩個方程式不再互相牽扯（解耦）。
+
+「$y'=My$」錯：換了座標後矩陣也要跟著換。
+
+「$x=Py$」對：換回原本的座標。每個 $y_i$ 對應一個特徵向量方向的「振動模式」。
+
+「應該是 $y=Px$」錯：要乘 $P^{-1}$，$P$ 的欄是特徵向量，把特徵座標換成標準座標。
+
+@q ei2-13 | la-eigen#2 | 2 | 計算
+Let $P=\begin{bmatrix}1&1\\0&1\end{bmatrix}$ and $D=\mathrm{diag}(2,3)$. Find $A=PDP^{-1}$, entering the four entries row by row.
+== 2,1,0,3
+---
+$PD=\left[\begin{smallmatrix}2&3\\0&3\end{smallmatrix}\right]$，乘 $P^{-1}=\left[\begin{smallmatrix}1&-1\\0&1\end{smallmatrix}\right]$ 得 $\left[\begin{smallmatrix}2&1\\0&3\end{smallmatrix}\right]$。驗算：$(1,0)$、$(1,1)$ 分別是 2、3 的特徵向量。
+
+@q ei2-14 | la-eigen#2 | 2 | 找錯
+A student says: "A matrix with a repeated eigenvalue can never be diagonalized." Which of the following statements are correct? Select all that apply.
+[x] The identity $I_2$ is diagonal with eigenvalue one repeated twice.
+[x] The matrix $\operatorname{diag}(2,2,3)$ is diagonalizable.
+[x] The eigenspace of $I_3$ for eigenvalue one has dimension three.
+[x] When the scalar system contains all characteristic roots, diagonalizability is equivalent to equality of geometric and algebraic multiplicities for every eigenvalue.
+[x] Distinct eigenvalues available in the scalar system are sufficient for diagonalizability but are not necessary.
+---
+「二階單位矩陣」對：已對角化，重根不妨礙。「對角二二三」對：本身即對角矩陣。「三階單位的特徵空間維三」對：每個三維向量都滿足 I x＝x。「各重數相等判準」對：在特徵多項式能於所選數域分裂的條件下，可取得足夠獨立特徵向量。「相異充分但非必要」對：相異能保證獨立，單位矩陣則說明必要性不成立。
+
+@q ei2-15 | la-eigen#2 | 3 | 觀念
+Let $M \ne 0$ be a square matrix with $M^k = 0$ for some positive integer $k$ (a nonzero nilpotent matrix). Which of the following statements are correct? Select all that apply.
+[x] Every eigenvalue of $M$ is 0.
+[x] $M$ is not diagonalizable, because a diagonalizable matrix whose eigenvalues are all 0 must be the zero matrix.
+[ ] Some nonzero nilpotent matrices are diagonalizable.
+[x] $\begin{bmatrix} 0 & 1 \\ 0 & 0 \end{bmatrix}$ is such a matrix with $k = 2$.
+[ ] $M$ is invertible.
+---
+「特徵值都是 0」對：$Mv=\lambda v$ 推出 $0=M^kv=\lambda^kv$，$v\ne0$ 所以 $\lambda=0$。
+
+「不能對角化」對：若 $M=PDP^{-1}$，$D$ 的對角線全是 0，$D=0$，$M=0$，矛盾。
+
+「有些可以」錯：如上。
+
+「$\left[\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right]$」對：平方是 0。
+
+「可逆」錯：0 是特徵值就不可逆；而且 $M^k=0$ 本身就不可逆。
+
+@q ei2-16 | la-eigen#2 | 3 | 計算
+For a real number $k$, let
+$M = \begin{bmatrix} 1 & k & 0 \\ 0 & 2 & 0 \\ 0 & 0 & 2 \end{bmatrix}$ and $N = \begin{bmatrix} 2 & k & 0 \\ 0 & 2 & 0 \\ 0 & 0 & 1 \end{bmatrix}$.
+Which of the following statements are correct? Select all that apply.
+[x] $M$ is diagonalizable for every real $k$.
+[ ] $M$ has a repeated eigenvalue, so $M$ is diagonalizable only when $k = 0$.
+[x] $N$ is diagonalizable only when $k = 0$.
+[x] When $k = 1$, the geometric multiplicity of the eigenvalue $2$ of $N$ is $1$.
+[ ] $M$ and $N$ have the same eigenvalues with the same algebraic multiplicities, so for each $k$ either both are diagonalizable or neither is.
+---
+兩個都是上三角，特徵值都是 1、2、2（2 是二重根）。關鍵是特徵值 2 的幾何重數。
+
+「$M$ 對所有 $k$ 都可對角化」對、「$M$ 有重根所以只有 $k=0$」錯：$M-2I=\left[\begin{smallmatrix}-1&k&0\\0&0&0\\0&0&0\end{smallmatrix}\right]$ 秩永遠是 1，零空間 2 維，幾何重數＝代數重數＝2。有重根不代表不能對角化，要看特徵空間夠不夠大。
+
+「$N$ 只有 $k=0$ 可對角化」對、「$k=1$ 時幾何重數 1」對：$N-2I=\left[\begin{smallmatrix}0&k&0\\0&0&0\\0&0&-1\end{smallmatrix}\right]$，$k\ne0$ 時秩 2，零空間只有 1 維，少一個特徵向量。
+
+「特徵值相同所以結果一樣」錯：特徵值與代數重數相同，不代表特徵空間大小相同；$k$ 放的位置不同，一個落在特徵值 1 和 2 之間（不影響），一個落在 2 的區塊裡。
+
+@q ei2-17 | la-eigen#2 | 2 | 計算
+A $4\times4$ matrix has rank 1. What is the geometric multiplicity of its eigenvalue 0?
+== 3
+---
+幾何重數＝$\dim N(A-0I)=4-1$。代數重數至少 3（可能 4，若跡也是 0）。
+
+@q ei2-18 | la-eigen#2 | 3 | 證明
+$A$ 可以對角化，證明 $A^T$ 也可以。
+---
+$A=PDP^{-1}$ ⇒ $A^T=(P^{-1})^TD^TP^T=(P^T)^{-1}DP^T$。令 $Q=(P^T)^{-1}$，$A^T=QDQ^{-1}$。
+
+@q ei2-19 | la-eigen#2 | 2 | 比較
+For an eigenvalue $\lambda$ of a square matrix, let $g$ be its geometric multiplicity and $a$ its algebraic multiplicity. Which of the following statements are correct? Select all that apply.
+[x] $1 \le g \le a$ always holds.
+[x] The matrix is diagonalizable if and only if $g = a$ for every eigenvalue.
+[ ] $g$ can be larger than $a$.
+[x] For $\begin{bmatrix} 2 & 1 \\ 0 & 2 \end{bmatrix}$ and the eigenvalue 2, $a = 2$ and $g = 1$.
+[ ] $g$ can be 0 for an eigenvalue.
+---
+「$1\le g\le a$」對：是特徵值就至少有一個特徵向量；而特徵空間的維數不會超過根的重數。
+
+「$g=a$ 對每個特徵值 ⇔ 可對角化」對：這樣特徵向量的總數剛好是 $n$。
+
+「$g$ 可能比 $a$ 大」錯。
+
+「$\left[\begin{smallmatrix}2&1\\0&2\end{smallmatrix}\right]$：$a=2$、$g=1$」對：$M-2I$ 秩 1，零空間一維。
+
+「$g$ 可能是 0」錯：特徵值的定義就保證有非零的特徵向量。
+
+@q ei2-20 | la-eigen#2 | 2 | 計算
+Is $\begin{bmatrix}2&0&0\\1&2&0\\0&0&1\end{bmatrix}$ diagonalizable? (Answer yes or no.)
+== no
+== 不能
+---
+特徵值 2 代數重數 2；$A-2I=\left[\begin{smallmatrix}0&0&0\\1&0&0\\0&0&-1\end{smallmatrix}\right]$ 秩 2，幾何重數 1。
+
+@q ei3-05 | la-eigen#3 | 2 | 計算
+Let $A=\begin{bmatrix}2&1\\1&2\end{bmatrix}$. What is the upper-left entry of $A^3$?
+== 14
+---
+特徵值 3、1，$A^n=\frac12\left[\begin{smallmatrix}3^n+1&3^n-1\\3^n-1&3^n+1\end{smallmatrix}\right]$，$n=3$：$\frac{28}2=14$。
+
+@q ei3-06 | la-eigen#3 | 3 | 情境
+Three web pages link as follows: page 1 links to pages 2 and 3, page 2 links to page 3, and page 3 links to page 1. A random surfer always follows one of the current page's links, chosen uniformly. In the long run, what fractions of the time are spent on pages 1, 2, and 3?
+== 0.4,0.2,0.4
+== 2/5,1/5,2/5
+---
+轉移矩陣（行和 1）$\left[\begin{smallmatrix}0&0&1\\1/2&0&0\\1/2&1&0\end{smallmatrix}\right]$，解特徵值 1 的向量：$x_1=x_3$、$x_2=\frac12x_1$，正規化 $(0.4,0.2,0.4)$。這就是 PageRank 的雛形。
+
+@q ei3-07 | la-eigen#3 | 2 | 情境
+A car-rental company has two locations, $X$ and $Y$. Of the cars rented at $X$, 80% are returned to $X$ and 20% to $Y$; of those rented at $Y$, 30% are returned to $X$ and 70% to $Y$. With 1000 cars, about how many are at $X$ in the long run?
+== 600
+---
+穩態 $0.2\pi_X=0.3\pi_Y$，$\pi_X=\frac{0.3}{0.5}=0.6$。
+
+@q ei3-08 | la-eigen#3 | 2 | 計算
+Rounding $\frac{\varphi^n}{\sqrt5}$, where $\varphi=\frac{1+\sqrt5}2$, to the nearest integer gives the Fibonacci number $F_n$ (with $F_0=0$, $F_1=1$). Find $F_{20}$.
+== 6765
+---
+另一個特徵值 $\frac{1-\sqrt5}2$ 的絕對值小於 1，它的貢獻在 $n$ 大時趨近 0，所以四捨五入就準了。
+
+@q ei3-09 | la-eigen#3 | 2 | 計算
+The recurrence $x_{n+1} = x_n + 2x_{n-1}$ is written as $\begin{bmatrix} x_{n+1} \\ x_n \end{bmatrix} = M \begin{bmatrix} x_n \\ x_{n-1} \end{bmatrix}$ with $M = \begin{bmatrix} 1 & 2 \\ 1 & 0 \end{bmatrix}$. Which of the following statements are correct? Select all that apply.
+[x] The eigenvalues of $M$ are 2 and $-1$.
+[x] Every solution has the form $x_n = \alpha 2^n + \beta (-1)^n$.
+[ ] The eigenvalues of $M$ are 1 and 2.
+[x] If $x_0 = 0$ and $x_1 = 3$, then $x_n = 2^n - (-1)^n$.
+[ ] Every solution grows roughly like $3^n$.
+---
+「特徵值 2、$-1$」對：$\lambda^2-\lambda-2=(\lambda-2)(\lambda+1)$。
+
+「$\alpha2^n+\beta(-1)^n$」對：對角化後 $M^n$ 的每個元素都是 $2^n$ 和 $(-1)^n$ 的組合。
+
+「1 和 2」錯：把對角線誤當特徵值。
+
+「$x_0=0,x_1=3$ 時」對：$\alpha+\beta=0$、$2\alpha-\beta=3$，$\alpha=1$、$\beta=-1$。驗算 $x_2=3$、$x_3=9$。
+
+「像 $3^n$」錯：由最大的特徵值 2 決定，約 $2^n$。
+
+@q ei3-10 | la-eigen#3 | 3 | 比較
+Two diagonalizable Markov matrices both have eigenvalue 1. The other eigenvalue of matrix $M_1$ is 0.5, and that of $M_2$ is 0.9. Starting from a vector with nonnegative entries adding up to 1, each is iterated toward its steady state. Which of the following statements are correct? Select all that apply.
+[x] $M_1$ converges to its steady state faster.
+[x] At each step, the distance to the steady state shrinks roughly by the factor given by the second eigenvalue.
+[ ] $M_2$ converges faster, because its second eigenvalue is closer to 1.
+[x] After 10 steps, the remaining error is about $0.5^{10} \approx 0.001$ of the initial error for $M_1$, but about $0.9^{10} \approx 0.35$ for $M_2$.
+[ ] Both converge equally fast, because both have the eigenvalue 1.
+---
+「$M_1$ 比較快」對、「每步縮小約第二大特徵值倍」對：$x_k=c_1v_1+c_2\lambda_2^kv_2$，離穩態的部分是 $\lambda_2^k$ 那一項。
+
+「$M_2$ 比較快」錯：越接近 1，縮得越慢。
+
+「10 步後 0.001 對 0.35」對：$0.5^{10}\approx0.00098$、$0.9^{10}\approx0.35$。
+
+「都有 1 所以一樣快」錯：特徵值 1 決定穩態在哪，收斂速度看第二大的特徵值。
+
+@q ei3-11 | la-eigen#3 | 3 | 陷阱
+Let $A=\begin{bmatrix}0.5&100\\0&0.5\end{bmatrix}$. Which of the following statements are correct? Select all that apply.
+[x] $A^k$ approaches the zero matrix as $k\to\infty$.
+[x] The $(1,2)$ entry of $A^k$ equals $100k\cdot0.5^{k-1}$.
+[ ] $A$ is diagonalizable.
+[x] Over all $k\ge1$, the largest value of the $(1,2)$ entry of $A^k$ is $100$, reached at $k=1$ and $k=2$.
+[ ] Because one entry of $A$ is larger than $1$, $A^k$ grows without bound.
+---
+「趨近零矩陣」對：特徵值只有 0.5，小於 1；$k\cdot0.5^{k-1}\to0$。
+
+「$(1,2)$ 元素是 $100k\cdot0.5^{k-1}$」對：寫成 $A=0.5I+N$，$N^2=0$，二項展開只剩 $0.5^kI+k\cdot0.5^{k-1}N$。
+
+「可對角化」錯：特徵值 0.5 重根，但 $A-0.5I$ 的秩是 1，只有一個方向的特徵向量。
+
+「最大值 100，在 $k=1,2$」對：相鄰兩項比值 $\frac{k+1}{2k}\le1$，只有 $k=1$ 時等於 1；依序 100、100、75、50、31.25…
+
+「有元素大於 1 就發散」錯：長期由特徵值決定；大元素只會讓前幾步先變大（這題第 2 步還是 100）。
+
+@q ei3-12 | la-eigen#3 | 3 | 情境
+An animal population has juveniles $y$ and adults $a$, with $\begin{bmatrix}y\\a\end{bmatrix}_{t+1}=\begin{bmatrix}0.5&2\\0.3&0\end{bmatrix}\begin{bmatrix}y\\a\end{bmatrix}_t$. What is the long-run growth factor per period (the largest eigenvalue), to three decimal places?
+== 1.064
+== 1.06
+---
+$\lambda^2-0.5\lambda-0.6=0$，$\lambda=\frac{0.5+\sqrt{2.65}}2\approx1.064$：每期約成長 6.4%。另一個特徵值 $-0.564$ 的影響會衰減。
+
+@q ei3-13 | la-eigen#3 | 2 | 陷阱
+Let $A=\begin{bmatrix}1&1\\0&1\end{bmatrix}$. What is the upper-right entry of $A^{10}$?
+== 10
+---
+$A$ 不能對角化，不能用 $PD^kP^{-1}$；直接看規律 $A^k=\left[\begin{smallmatrix}1&k\\0&1\end{smallmatrix}\right]$。特徵值都是 1，但元素線性成長。
+
+@q ei3-14 | la-eigen#3 | 2 | 計算
+Let $M = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}$. Which of the following statements are correct? Select all that apply.
+[x] $M^2 = I$, so $M^{100} = I$.
+[x] The eigenvalues of $M$ are $1$ and $-1$, with eigenvectors $(1, 1)^T$ and $(1, -1)^T$, respectively.
+[ ] $M^{101} = I$.
+[x] $M = P D P^{-1}$ with $P = \begin{bmatrix} 1 & 1 \\ 1 & -1 \end{bmatrix}$ and $D = \begin{bmatrix} 1 & 0 \\ 0 & -1 \end{bmatrix}$, so $M^n = P D^n P^{-1}$.
+[ ] $M^{100} = 100M$.
+---
+「$M^2=I$、$M^{100}=I$」對：$M$ 把兩個座標交換，做兩次回到原位。
+
+「特徵值 $\pm1$、特徵向量 $(1,1)^T$、$(1,-1)^T$」對：$M(1,1)^T=(1,1)^T$、$M(1,-1)^T=(-1,1)^T=-(1,-1)^T$。
+
+「$M^{101}=I$」錯：$M^{101}=M^{100}M=M$。
+
+「對角化後 $M^n=PD^nP^{-1}$」對：$P$ 的欄是兩個特徵向量，$D$ 是對應的特徵值；$D^n$ 的對角線是 $1$ 和 $(-1)^n$，偶數次方是 $I$。
+
+「$M^{100}=100M$」錯：矩陣的次方不是乘以次數；這裡答案是 $I$。
+
+@q ei3-15 | la-eigen#3 | 3 | 計算
+A $2\times2$ matrix $A$ has eigenvalues 1 and 0.5 with eigenvectors $(2,1)$ and $(1,-1)$, respectively. Let $x_0=(3,0)$. What does $A^kx_0$ approach as $k\to\infty$?
+== 2,1
+---
+$x_0=(2,1)+(1,-1)$，$A^kx_0=(2,1)+0.5^k(1,-1)\to(2,1)$。
+
+@q ei3-16 | la-eigen#3 | 2 | 找錯
+Suppose $A=PDP^{-1}$, where $P$ is invertible and $D$ is diagonal. Which of the following must be true? Select all that apply.
+[x] $A^k=PD^kP^{-1}$ for every positive integer $k$.
+[ ] $A^k=P^kD^kP^{-k}$ for every positive integer $k$.
+[x] If $A$ is invertible, then $A^{-1}=PD^{-1}P^{-1}$.
+[ ] $A^k=P^{-1}D^kP$ for every positive integer $k$.
+[x] $A$ and $D$ have the same eigenvalues.
+---
+「$PD^kP^{-1}$」對：$A^2=PDP^{-1}PDP^{-1}=PD^2P^{-1}$，中間的 $P^{-1}P$ 抵消，依此類推。
+
+「$P^kD^kP^{-k}$」錯：矩陣乘法不能交換，不能把 $P$ 集中到一起；只有 $P$ 和 $D$ 可交換之類的特例才會碰巧成立。
+
+「$A^{-1}=PD^{-1}P^{-1}$」對：$A$ 可逆時 $D$ 的對角元素都不是 0，直接乘回去 $PDP^{-1}\cdot PD^{-1}P^{-1}=I$。
+
+「$P^{-1}D^kP$」錯：$P$ 和 $P^{-1}$ 的位置放反了，一般不相等。
+
+「$A$ 和 $D$ 特徵值相同」對：相似矩陣的特徵多項式相同，$D$ 的特徵值就是對角線。
+
+@q ei3-17 | la-eigen#3 | 3 | 反例
+A Markov matrix has nonnegative entries and columns that sum to 1. Which of the following statements are correct? Select all that apply.
+[x] $P=\begin{bmatrix}0&1\\1&0\end{bmatrix}$ is a Markov matrix, and $P^kx_0$ does not converge for $x_0=(1,0)$.
+[x] Every Markov matrix has 1 as an eigenvalue.
+[ ] For every Markov matrix, $P^kx_0$ converges to the same steady state for every starting distribution $x_0$.
+[x] If every entry of $P$ is positive, $P^kx_0$ converges to the same steady state for every starting distribution $x_0$.
+[ ] The identity matrix is not a Markov matrix.
+---
+「$\left[\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\right]$ 不收斂」對：$x_0$ 在 $(1,0)$、$(0,1)$ 之間來回跳；特徵值 $1$ 和 $-1$，$-1$ 的部分不會消失。
+
+「一定有特徵值 1」對：每一行和為 1，代表 $P^T$ 乘全 1 向量等於全 1 向量，$P^T$ 有特徵值 1，$P$ 也有。
+
+「一定收斂到同一個穩態」錯：上面的對調矩陣就是反例；單位矩陣也是（每個起點都不動，穩態不唯一）。
+
+「每個元素都是正的就收斂到唯一穩態」對：這時其他特徵值的絕對值都小於 1。
+
+「單位矩陣不是 Markov 矩陣」錯：元素非負、每行和為 1，它是。
+
+@q ei3-18 | la-eigen#3 | 2 | 計算
+A $2\times2$ matrix $A$ has eigenvalues 2 and $-1$. Find the trace of $A^5$.
+== 31
+---
+$A^5$ 的特徵值 $32$、$-1$，跡是和。
+
+@q ei3-19 | la-eigen#3 | 2 | 證明
+$A=PDP^{-1}$，說明 $A^k=PD^kP^{-1}$ 對所有正整數 $k$ 成立。
+---
+$k=1$ 成立。設 $A^k=PD^kP^{-1}$，則 $A^{k+1}=A^kA=PD^kP^{-1}PDP^{-1}=PD^{k+1}P^{-1}$。$D^k$ 只要把對角線各自取 $k$ 次方。
+
+@q ei4-04 | la-eigen#4 | 2 | 計算
+Let $A=\begin{bmatrix}2&1\\1&3\end{bmatrix}$. Use the Cayley–Hamilton theorem to find $A^{-1}$, entering the four entries row by row.
+== 0.6,-0.2,-0.2,0.4
+---
+特徵多項式 $\lambda^2-5\lambda+5$，$A^2-5A+5I=0$ ⇒ $A(5I-A)=5I$ ⇒ $A^{-1}=\frac15(5I-A)=\frac15\left[\begin{smallmatrix}3&-1\\-1&2\end{smallmatrix}\right]$。
+
+@q ei4-05 | la-eigen#4 | 3 | 計算
+A $2\times2$ matrix $A$ has characteristic polynomial $\lambda^2-3\lambda+2$. Find $a$ and $b$ such that $A^4=aA+bI$.
+== 15,-14
+?? a,b
+---
+反覆用 $A^2=3A-2I$：$A^3=7A-6I$、$A^4=15A-14I$。驗算特徵值：$\lambda=1$：$15-14=1$；$\lambda=2$：$30-14=16$。
+
+@q ei4-06 | la-eigen#4 | 2 | 計算
+Let $M=\mathrm{diag}(2,2,3)$. Which of the following statements are correct? Select all that apply.
+[x] The minimal polynomial of $M$ is $(\lambda-2)(\lambda-3)$.
+[ ] The minimal polynomial of $M$ is $(\lambda-2)^2(\lambda-3)$.
+[x] The characteristic polynomial of $M$ is $(\lambda-2)^2(\lambda-3)$.
+[x] $M$ is diagonalizable, consistent with its minimal polynomial having no repeated root.
+[ ] The minimal polynomial of $M$ is $(\lambda-2)^2$.
+---
+「最小多項式 $(\lambda-2)(\lambda-3)$」對：$(M-2I)(M-3I)=\mathrm{diag}(0,0,1)\cdot\mathrm{diag}(-1,-1,0)=0$，而且次數更低的都不行。
+
+「$(\lambda-2)^2(\lambda-3)$」錯：那是特徵多項式；最小多項式是能讓 $M$ 變 0 的最低次的那個。
+
+「特徵多項式 $(\lambda-2)^2(\lambda-3)$」對。
+
+「可對角化、最小多項式沒有重根」對：可對角化 ⇔ 最小多項式沒有重根。
+
+「$(\lambda-2)^2$」錯：代入得 $(M-2I)^2=\mathrm{diag}(0,0,1)\ne0$；每個特徵值都必須是最小多項式的根。
+
+@q ei4-07 | la-eigen#4 | 2 | 比較
+$\left[\begin{smallmatrix}2&1&0\\0&2&0\\0&0&3\end{smallmatrix}\right]$ 的最小多項式，跟上一題 $\text{diag}(2,2,3)$ 比？
+[x] $(\lambda-2)^2(\lambda-3)$，比對角的多一個 $(\lambda-2)$
+[ ] 一樣是 $(\lambda-2)(\lambda-3)$
+[ ] $(\lambda-2)^3$
+[ ] $\lambda^3$
+---
+$(A-2I)(A-3I)\ne0$（左上的 1 留下來了）。兩者特徵多項式相同，最小多項式不同：這就是能不能對角化的差別。
+
+@q ei4-08 | la-eigen#4 | 3 | 計算
+$3\times3$ 全 1 矩陣 $J$ 的最小多項式？
+[x] $\lambda(\lambda-3)$
+[ ] $\lambda^2(\lambda-3)$
+[ ] $\lambda-3$
+[ ] $\lambda^3-3\lambda^2$
+---
+$J^2=3J$ ⇒ $J(J-3I)=0$；次數 1 不行（$J$ 不是純量矩陣）。沒有重根 ⇒ 可對角化。
+
+@q ei4-09 | la-eigen#4 | 3 | 找錯
+學生「證明」Cayley–Hamilton：「$p(\lambda)=\det(\lambda I-A)$，把 $\lambda=A$ 代入得 $\det(AI-A)=\det0=0$。」錯在哪？
+[x] $p(A)$ 是矩陣，而 $\det(AI-A)$ 是數字；不能先代再取行列式
+[ ] $\det0$ 不是 0
+[ ] 應該代 $\lambda=-A$
+[ ] 沒錯
+---
+$p(\lambda)$ 先展開成多項式，再把 $\lambda^k$ 換成 $A^k$。正確證明要用 $\operatorname{adj}(\lambda I-A)$ 或三角化。
+
+@q ei4-10 | la-eigen#4 | 2 | 觀念
+$A^2=I$。下列哪個一定對？
+[x] 特徵值只能是 $\pm1$，而且 $A$ 能對角化
+[ ] $A=I$
+[ ] $A=\pm I$
+[ ] $A$ 不能對角化
+---
+最小多項式整除 $\lambda^2-1=(\lambda-1)(\lambda+1)$，沒有重根。例：交換兩座標的矩陣。
+
+@q ei4-11 | la-eigen#4 | 3 | 計算
+A matrix satisfies $A^3=A$. Which values can its eigenvalues take, and must $A$ be diagonalizable (yes or no)?
+== 0 1 -1,yes
+== 0 1 -1,能
+?? possible eigenvalues,diagonalizable
+---
+最小多項式整除 $\lambda^3-\lambda=\lambda(\lambda-1)(\lambda+1)$，三個相異一次因式，一定能對角化。
+
+@q ei4-12 | la-eigen#4 | 2 | 計算
+$3\times3$ 的 $A$ 特徵多項式 $(\lambda-1)^3$、$A\ne I$、$(A-I)^2=0$。最小多項式？
+[x] $(\lambda-1)^2$
+[ ] $\lambda-1$
+[ ] $(\lambda-1)^3$
+[ ] $\lambda^2-1$
+---
+$A\ne I$ 排除 $\lambda-1$；$(A-I)^2=0$ 已經滿足。
+
+@q ei4-13 | la-eigen#4 | 3 | 情境
+$2\times2$ 的 $A$ 特徵值 1、2。要算 $A^{100}$，把 $\lambda^{100}$ 除以 $(\lambda-1)(\lambda-2)$ 得餘式 $a\lambda+b$，則 $A^{100}=aA+bI$。$a$ 是？
+[x] $2^{100}-1$
+[ ] $2^{100}$
+[ ] $2^{100}+1$
+[ ] 100
+---
+代 $\lambda=1$：$a+b=1$；代 $\lambda=2$：$2a+b=2^{100}$。$a=2^{100}-1$、$b=2-2^{100}$。商的部分乘上 $p(A)=0$ 消失。
+
+@q ei4-14 | la-eigen#4 | 3 | 計算
+$3\times3$ 的 $A$ 滿足 $A^3=0$、$A^2\ne0$。最小多項式？
+[x] $\lambda^3$
+[ ] $\lambda^2$
+[ ] $\lambda$
+[ ] $\lambda(\lambda-1)$
+---
+最小多項式整除 $\lambda^3$，又不是 $\lambda^2$（$A^2\ne0$）。
+
+@q ei4-15 | la-eigen#4 | 3 | 證明
+$p(A)=0$。證明 $A$ 的每個特徵值 $\lambda$ 都滿足 $p(\lambda)=0$。
+---
+$Av=\lambda v$ ⇒ $A^kv=\lambda^kv$ ⇒ $p(A)v=p(\lambda)v$。左邊 $0$，$v\ne0$，所以 $p(\lambda)=0$。所以最小多項式的根一定包含所有特徵值。
+
+@q ei4-16 | la-eigen#4 | 2 | 比較
+Let $A$ be a square matrix. Which of the following statements about its characteristic polynomial and minimal polynomial are correct? Select all that apply.
+[x] The minimal polynomial divides the characteristic polynomial.
+[x] The two polynomials have the same roots, ignoring multiplicity.
+[ ] The two polynomials are always equal.
+[x] For the $3\times3$ identity matrix, the minimal polynomial is $\lambda-1$ while the characteristic polynomial is $(\lambda-1)^3$.
+[ ] $A$ is diagonalizable if and only if its characteristic polynomial has no repeated root.
+---
+「最小多項式整除特徵多項式」對：Cayley–Hamilton 說特徵多項式會讓 $A$ 變 0，而最小多項式整除所有這樣的多項式。
+
+「根一樣（不計重數）」對：每個特徵值都必須是最小多項式的根。
+
+「一定相等」錯：例如 $3\times3$ 單位矩陣，最小多項式是 $\lambda-1$，特徵多項式是 $(\lambda-1)^3$。
+
+「$I_3$：$\lambda-1$ 對 $(\lambda-1)^3$」對。
+
+「可對角化 ⇔ 特徵多項式沒有重根」錯：特徵多項式沒有重根是充分條件，不是必要條件；$I_3$ 有三重根但可以對角化。正確的是「最小多項式沒有重根」。
+
+@q ei4-17 | la-eigen#4 | 3 | 計算
+The Fibonacci matrix $F=\begin{bmatrix}1&1\\1&0\end{bmatrix}$ satisfies $F^2=F+I$. Find $a$ and $b$ such that $F^5=aF+bI$.
+== 5,3
+?? a,b
+---
+$F^3=2F+I$、$F^4=3F+2I$、$F^5=5F+3I$：係數就是費氏數。驗算 $F^5=\left[\begin{smallmatrix}8&5\\5&3\end{smallmatrix}\right]$。
+
+@q ei4-18 | la-eigen#4 | 2 | 計算
+A $2\times2$ matrix $A$, not a multiple of $I$, satisfies $A^2-4A+7I=0$. Find the trace and the determinant of $A$.
+== 4,7
+?? trace,det
+---
+$A$ 不是純量矩陣，最小多項式次數 2，就等於特徵多項式 $\lambda^2-(\text{tr})\lambda+\det$。
+
+@q ei5-04 | la-eigen#5 | 1 | 觀念
+$\left[\begin{smallmatrix}2&1\\0&2\end{smallmatrix}\right]$ 的 Jordan 形式？
+[x] 就是它自己，一個大小 2 的區塊
+[ ] $\text{diag}(2,2)$
+[ ] $\text{diag}(2,1)$
+[ ] $\left[\begin{smallmatrix}2&0\\1&2\end{smallmatrix}\right]$ 才是
+---
+它不能對角化，已經是 Jordan 區塊的標準形式。第四個是轉置，跟它相似，但慣例把 1 放上方。
+
+@q ei5-05 | la-eigen#5 | 2 | 計算
+$3\times3$ 矩陣特徵值只有 4、幾何重數 1。Jordan 形式？
+[x] 一個大小 3 的區塊 $J_3(4)$
+[ ] 三個大小 1 的區塊
+[ ] 大小 2 和 1
+[ ] 無法決定
+---
+區塊個數＝幾何重數＝1，所以只有一塊，大小 3。
+
+@q ei5-06 | la-eigen#5 | 3 | 計算
+A $5\times5$ matrix $A$ has 0 as its only eigenvalue, with $\operatorname{rank}A=3$, $\operatorname{rank}A^2=1$, and $A^3=0$. What are the sizes of its Jordan blocks?
+== 3,2
+---
+大小 $\ge k$ 的區塊數＝$\text{rank}A^{k-1}-\text{rank}A^k$：$\ge1$：$5-3=2$；$\ge2$：$3-1=2$；$\ge3$：$1-0=1$。所以一塊 3、一塊 2。
+
+@q ei5-07 | la-eigen#5 | 2 | 計算
+A $3\times3$ matrix has only one eigenvalue. How many Jordan forms are possible, ignoring the order of the blocks?
+== 3
+---
+3 的分割：(3)、(2,1)、(1,1,1)。分別對應最小多項式次方 3、2、1。
+
+@q ei5-08 | la-eigen#5 | 3 | 計算
+$J_3(2)^5$ 的右上角元素？
+== 80
+---
+$J=2I+N$，$N^3=0$：$J^5=2^5I+5\cdot2^4N+\binom52 2^3N^2$。右上角來自 $N^2$：$10\cdot8=80$。
+
+@q ei5-09 | la-eigen#5 | 3 | 反例
+「特徵多項式和最小多項式都一樣的兩個矩陣一定相似」，反例？
+[x] $4\times4$、只有特徵值 0：區塊 (2,1,1) 和 (2,2)，最小多項式都是 $\lambda^2$
+[ ] $3\times3$ 的 (2,1) 和 (3)
+[ ] $\text{diag}(1,2)$ 和 $\text{diag}(2,1)$
+[ ] $I$ 和 $2I$
+---
+(2,1,1) 幾何重數 3、(2,2) 幾何重數 2，不相似。「$3\times3$ 的 (2,1) 和…」最小多項式不同；「$\text{diag}(1,2)$ 和 $\text{diag}(2,1)$」相似；第四個特徵多項式不同。
+
+@q ei5-10 | la-eigen#5 | 3 | 計算
+$6\times6$ 冪零矩陣，Jordan 區塊大小 (3,2,1)。$\text{rank}A$ 和 $\text{rank}A^2$？
+== 3,1
+?? $\text{rank}A$,$\text{rank}A^2$
+---
+$J_k(0)$ 的秩 $k-1$，$J_k(0)^2$ 秩 $\max(k-2,0)$。$\text{rank}A=2+1+0$、$\text{rank}A^2=1+0+0$。
+
+@q ei5-11 | la-eigen#5 | 3 | 情境
+微分方程 $y''-2y'+y=0$ 寫成一階系統，係數矩陣 $\left[\begin{smallmatrix}0&1\\-1&2\end{smallmatrix}\right]$ 特徵值 1 重根、不能對角化。解的形式？
+[x] $c_1e^t+c_2te^t$：Jordan 區塊讓多出一個 $t$ 的因子
+[ ] $c_1e^t+c_2e^{-t}$
+[ ] $c_1e^t$ 而已
+[ ] $c_1e^{2t}$
+---
+$e^{tJ}$ 對 $J=I+N$ 是 $e^t(I+tN)$，$t$ 從 $N$ 那項跑出來。對應到 $A^k$ 時多出 $k\lambda^{k-1}$。
+
+@q ei5-12 | la-eigen#5 | 2 | 找錯
+學生說「$\left[\begin{smallmatrix}1&1\\0&2\end{smallmatrix}\right]$ 有非零的上三角，所以 Jordan 形式是一個大小 2 的區塊」。正確？
+[x] $\text{diag}(1,2)$：兩個相異特徵值，可以對角化
+[ ] $J_2(1)$
+[ ] $J_2(2)$
+[ ] $J_2(1.5)$
+---
+Jordan 區塊裡對角線的值都一樣；相異特徵值各自是大小 1 的區塊。
+
+@q ei5-13 | la-eigen#5 | 2 | 觀念
+$\dim N(A-\lambda I)$ 在 Jordan 形式中代表什麼？
+[x] 特徵值 $\lambda$ 的 Jordan 區塊個數
+[ ] 最大區塊的大小
+[ ] 代數重數
+[ ] 區塊大小的總和
+---
+每個 Jordan 區塊恰好貢獻一個特徵向量。區塊大小的總和才是代數重數。
+
+@q ei5-14 | la-eigen#5 | 2 | 證明
+$A$ 是 $n\times n$ 冪零矩陣（某個 $A^k=0$）。說明 $A^n=0$。
+---
+特徵值只有 0，Jordan 形式由 $J_m(0)$ 組成，$m\le n$；$J_m(0)^m=0$，所以 $J^n=0$，$A^n=PJ^nP^{-1}=0$。或用 Cayley–Hamilton：特徵多項式是 $\lambda^n$。
+
+@q ei5-15 | la-eigen#5 | 2 | 比較
+可對角化和 Jordan 形式的關係？
+[x] 可對角化 ⇔ 所有 Jordan 區塊大小都是 1
+[ ] 可對角化 ⇔ 只有一個 Jordan 區塊
+[ ] 兩者無關
+[ ] 可對角化的矩陣沒有 Jordan 形式
+---
+Jordan 形式是「最接近對角」的形式，每個複數方陣都有。
+
+@q ei5-16 | la-eigen#5 | 3 | 計算
+$4\times4$ 只有特徵值 5，$\dim N(A-5I)=2$、$(A-5I)^2=0$。Jordan 區塊大小？
+== 2,2
+---
+2 個區塊、最大大小 2（最小多項式 $(\lambda-5)^2$）、總和 4 ⇒ (2,2)。如果最小多項式是三次方就是 (3,1)。
+
+@q ei5-17 | la-eigen#5 | 3 | 陷阱
+兩個矩陣有相同的 Jordan 形式（不計區塊順序），一定相似嗎？
+[x] 一定：$A\sim J$、$B\sim J$ 串起來得 $A\sim B$
+[ ] 不一定
+[ ] 只有可對角化時一定
+[ ] 只有 $2\times2$ 時一定
+---
+Jordan 形式是相似的「完全分類」：相似 ⇔ Jordan 形式相同。考試常用它判斷兩個矩陣是否相似。
+
+@q ei5-18 | la-eigen#5 | 1 | 計算
+$J_2(0)=\left[\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right]$，$J_2(0)^2$？
+[x] 零矩陣
+[ ] $J_2(0)$
+[ ] $I$
+[ ] $\left[\begin{smallmatrix}0&0\\1&0\end{smallmatrix}\right]$
+---
+$N$ 把 $e_2\to e_1\to0$，兩步就到 0。$J_k(0)^k=0$ 但 $J_k(0)^{k-1}\ne0$。
+
+@q or1-05 | la-ortho#1 | 1 | 計算
+What is the angle, in degrees, between $(1,2,2)$ and $(2,1,-2)$?
+== 90
+== 90°
+---
+內積 $2+2-4=0$，正交。不用算長度。
+
+@q or1-06 | la-ortho#1 | 2 | 計算
+$W=\text{span}\{(1,1,0)\}\subseteq\mathbb R^3$。$W^\perp$ 的一組基底？
+[x] $(1,-1,0)$、$(0,0,1)$
+[ ] $(1,-1,0)$
+[ ] $(0,0,1)$
+[ ] $(1,1,0)$、$(0,0,1)$
+---
+$W^\perp=\{x:x_1+x_2=0\}$，維度 $3-1=2$，要兩個向量。「$(1,1,0)$、$(0,0,1)$」的 $(1,1,0)$ 在 $W$ 裡。
+
+@q or1-07 | la-ortho#1 | 2 | 計算
+$\|(1,-2,2)\|$？
+== 3
+---
+$\sqrt{1+4+4}$。常見錯誤：直接把分量相加得 1，或忘了開根號得 9。
+
+@q or1-08 | la-ortho#1 | 1 | 計算
+$u\perp v$、$\|u\|=3$、$\|v\|=4$。$\|u+v\|$？
+== 5
+---
+$\|u+v\|^2=\|u\|^2+2u\cdot v+\|v\|^2=9+0+16$。這就是畢氏定理。
+
+@q or1-09 | la-ortho#1 | 2 | 陷阱
+$\mathbb R^3$ 中 $u\cdot v=0$、$u\cdot w=0$（$u\ne0$）。$v$ 和 $w$ 一定平行嗎？
+[x] 不一定：它們都在 $u$ 的垂直平面裡，平面上有很多方向
+[ ] 一定平行
+[ ] 一定垂直
+[ ] 一定相等
+---
+$\mathbb R^2$ 才一定平行（$u^\perp$ 是一條直線）。
+
+@q or1-10 | la-ortho#1 | 3 | 情境
+Subject to $x^2+y^2+z^2=1$, what is the largest possible value of $2x+3y+6z$?
+== 7
+---
+Cauchy–Schwarz：$(2,3,6)\cdot(x,y,z)\le\|(2,3,6)\|\cdot1=\sqrt{49}$，取 $(x,y,z)=\frac17(2,3,6)$ 時等號成立。
+
+@q or1-11 | la-ortho#1 | 2 | 情境
+Two documents have keyword-count vectors $(1,2,0,1)$ and $(2,1,1,0)$. What is their cosine similarity?
+== 2/3
+== 0.667
+---
+內積 $2+2+0+0=4$；長度都是 $\sqrt6$；$\frac4{6}$。搜尋引擎常用夾角而不是距離比較文件，這樣長文和短文能公平比。
+
+@q or1-12 | la-ortho#1 | 2 | 計算
+$W=\text{span}\{(1,0,1,0),(0,1,0,1)\}\subseteq\mathbb R^4$。$\dim W^\perp$？
+== 2
+---
+$\dim W+\dim W^\perp=4$，兩個向量獨立所以 $\dim W=2$。$W^\perp$ 例如 $(1,0,-1,0)$、$(0,1,0,-1)$。
+
+@q or1-13 | la-ortho#1 | 2 | 比較
+「非零向量兩兩正交」和「線性獨立」的關係？
+[x] 兩兩正交 ⇒ 獨立；反過來不成立
+[ ] 兩者等價
+[ ] 獨立 ⇒ 兩兩正交
+[ ] 兩者無關
+---
+$\sum c_iv_i=0$ 跟 $v_j$ 內積得 $c_j\|v_j\|^2=0$。反例：$(1,0)$、$(1,1)$ 獨立但不正交。
+
+@q or1-14 | la-ortho#1 | 3 | 計算
+$\|u\|=3$、$\|v\|=4$、$\|u+v\|=6$。$\|u-v\|$？
+== √14
+== 3.742
+---
+平行四邊形定律 $\|u+v\|^2+\|u-v\|^2=2\|u\|^2+2\|v\|^2$：$36+\|u-v\|^2=50$。
+
+@q or1-15 | la-ortho#1 | 2 | 計算
+Vectors $u$ and $v$ have $\|u\|=2$, $\|v\|=3$, and an angle of 60 degrees between them. What is $u\cdot v$?
+== 3
+---
+$\|u\|\|v\|\cos60°=6\cdot\frac12$。
+
+@q or1-16 | la-ortho#1 | 2 | 觀念
+$W$ 是 $\mathbb R^n$ 的子空間，$(W^\perp)^\perp$？
+[x] $W$
+[ ] $W^\perp$
+[ ] $\{0\}$
+[ ] $\mathbb R^n$
+---
+$W\subseteq(W^\perp)^\perp$ 顯然，維度又都是 $\dim W$，所以相等。（無限維時要再加條件。）
+
+@q or1-17 | la-ortho#1 | 2 | 找錯
+學生說「$(1,1)$ 和 $(1,-1,0)$ 內積是 0，所以正交」。錯在哪？
+[x] 兩個向量不在同一個空間（$\mathbb R^2$ 和 $\mathbb R^3$），內積沒有定義
+[ ] 內積是 2
+[ ] 正交還要長度相等
+[ ] 沒錯
+---
+內積只對同一個空間的兩個向量定義。
+
+@q or1-18 | la-ortho#1 | 3 | 證明
+$v$ 跟 $w_1,\dots,w_k$ 每一個都正交。證明 $v$ 跟 $\text{span}\{w_1,\dots,w_k\}$ 的每個向量都正交。
+---
+$v\cdot(\sum c_iw_i)=\sum c_i(v\cdot w_i)=0$。所以檢查 $v\in W^\perp$ 只要跟 $W$ 的一組基底（或張成集）內積為 0。
+
+@q or1-19 | la-ortho#1 | 3 | 計算
+Find the unit vector in $\mathbb R^3$ that is orthogonal to both $(1,1,1)$ and $(1,-1,0)$ and has a negative third component.
+== 1/√6,1/√6,-2/√6
+== 0.408,0.408,-0.816
+---
+解 $x+y+z=0$、$x-y=0$：$(1,1,-2)$，長度 $\sqrt6$。
+
+@q or1-20 | la-ortho#1 | 3 | 陷阱
+$A$ 是 $m\times n$。$N(A)$ 的正交補是什麼？
+[x] 列空間 $C(A^T)$
+[ ] 行空間 $C(A)$
+[ ] $N(A^T)$
+[ ] $\mathbb R^m$
+---
+$N(A)$ 在 $\mathbb R^n$，正交補也在 $\mathbb R^n$；$C(A)$ 在 $\mathbb R^m$，大小都不對。
+
+@q or2-05 | la-ortho#2 | 1 | 計算
+Find the projection of $(3,4)$ on the direction $(1,0)$.
+== 3,0
+---
+$\frac{(3,4)\cdot(1,0)}{1}(1,0)$。投影到座標軸就是把其他分量歸零。
+
+@q or2-06 | la-ortho#2 | 2 | 計算
+Find the projection of $b=(2,3,4)$ on the line through $a=(1,2,2)$.
+== 16/9,32/9,32/9
+---
+$\frac{a\cdot b}{a\cdot a}a=\frac{2+6+8}{9}(1,2,2)$。
+
+@q or2-07 | la-ortho#2 | 2 | 計算
+投影到直線 $a=(1,2)$ 的投影矩陣？
+[x] $\frac15\left[\begin{smallmatrix}1&2\\2&4\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1&2\\2&4\end{smallmatrix}\right]$
+[ ] $\frac1{\sqrt5}\left[\begin{smallmatrix}1&2\\2&4\end{smallmatrix}\right]$
+[ ] $\frac15\left[\begin{smallmatrix}4&-2\\-2&1\end{smallmatrix}\right]$
+---
+$P=\frac{aa^T}{a^Ta}$。第四個是投影到垂直方向 $(2,-1)$ 的 $I-P$。
+
+@q or2-08 | la-ortho#2 | 2 | 計算
+$P$ is the matrix of the projection on a plane through the origin in $\mathbb R^3$. Give its eigenvalues, its trace, and its rank.
+== 1 1 0,2,2
+?? eigenvalues,trace,rank
+---
+平面裡的向量不動（特徵值 1，兩個方向）；法向量被壓成 0（特徵值 0）。跡＝特徵值和＝秩。
+
+@q or2-09 | la-ortho#2 | 2 | 觀念
+$P$ 是投影到子空間 $W$ 的投影矩陣。$I-P$？
+[x] 投影到 $W^\perp$ 的投影矩陣
+[ ] 零矩陣
+[ ] $P$ 的反矩陣
+[ ] 不是投影矩陣
+---
+$b=Pb+(I-P)b$：一部分在 $W$、一部分垂直 $W$。$(I-P)^2=I-2P+P^2=I-P$。
+
+@q or2-10 | la-ortho#2 | 2 | 情境
+From the signal $(4,1,1)$ we remove its component along $(1,1,1)$, for example a shift shared by three sensors. What remains?
+== 2,-1,-1
+---
+沿 $(1,1,1)$ 的成分 $\frac63(1,1,1)=(2,2,2)$，相減。剩下的分量和是 0，等於「減平均」。
+
+@q or2-11 | la-ortho#2 | 3 | 計算
+What is the distance from the point $(1,2,3)$ to the line through the origin with direction $(1,1,1)$?
+== √2
+== 1.414
+---
+投影 $(2,2,2)$，誤差 $(-1,0,1)$，長度 $\sqrt2$。最近點就是投影點。
+
+@q or2-12 | la-ortho#2 | 3 | 陷阱
+投影到 span$\{a_1,a_2\}$ 等於「投影到 $a_1$」加「投影到 $a_2$」嗎？
+[x] 只有 $a_1\perp a_2$ 時才對
+[ ] 一定對
+[ ] 一定不對
+[ ] 只要 $a_1,a_2$ 獨立就對
+---
+反例 $a_1=(1,0)$、$a_2=(1,1)$、$b=(1,0)$：投影到平面就是 $b$ 本身，但兩個投影相加是 $(1,0)+(\frac12,\frac12)$。所以要先 Gram–Schmidt 或用 $A(A^TA)^{-1}A^T$。
+
+@q or2-13 | la-ortho#2 | 3 | 計算
+Find the projection of $b=(1,1,1)$ on the plane $x+y-z=0$.
+== 2/3,2/3,4/3
+---
+法向量 $n=(1,1,-1)$，$b\cdot n=1$，$b-\frac13n=(\frac23,\frac23,\frac43)$。驗算 $\frac23+\frac23-\frac43=0$。投影到平面＝減掉法向量的分量。
+
+@q or2-14 | la-ortho#2 | 2 | 找錯
+學生化簡 $P=A(A^TA)^{-1}A^T=AA^{-1}(A^T)^{-1}A^T=I$。錯在哪？
+[x] $A$ 不是方陣時沒有 $A^{-1}$，$(A^TA)^{-1}$ 不能拆開
+[ ] 沒錯，投影矩陣都是 $I$
+[ ] 應該是 $A^TA$
+[ ] 轉置的順序錯了
+---
+只有 $A$ 是可逆方陣（投影到整個空間）時 $P=I$ 才對。
+
+@q or2-15 | la-ortho#2 | 3 | 證明
+$A$ 的行獨立，$P=A(A^TA)^{-1}A^T$。證明 $P^2=P$、$P^T=P$。
+---
+$P^2=A(A^TA)^{-1}(A^TA)(A^TA)^{-1}A^T=A(A^TA)^{-1}A^T$。$P^T=A((A^TA)^{-1})^TA^T=A((A^TA)^T)^{-1}A^T=P$，因為 $A^TA$ 是對稱的。
+
+@q or2-16 | la-ortho#2 | 3 | 反例
+「$P^2=P$ 的矩陣就是投影矩陣（正交投影）」，反例？
+[x] $\left[\begin{smallmatrix}1&1\\0&0\end{smallmatrix}\right]$：$P^2=P$，但 $P^T\ne P$（斜投影）
+[ ] $I$
+[ ] $\frac12\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]$
+[ ] 零矩陣
+---
+它把 $(0,1)$ 送到 $(1,0)$，誤差 $(-1,1)$ 不垂直於 $x$ 軸。正交投影要兩個條件都成立。
+
+@q or2-17 | la-ortho#2 | 2 | 計算
+The matrix of the projection on the plane spanned by $(1,0,1)$ and $(0,1,1)$ is $\frac13\begin{bmatrix}2&-1&1\\-1&2&1\\1&1&2\end{bmatrix}$. What is the projection of $(1,0,0)$?
+== 2/3,-1/3,1/3
+---
+就是第一行。驗算：$(1,0,0)-$ 投影 $=(\frac13,\frac13,-\frac13)$，跟兩個基底向量內積都是 0。
+
+@q or2-18 | la-ortho#2 | 2 | 觀念
+What is the determinant of a projection matrix that is neither $I$ nor 0?
+== 0
+---
+有特徵值 0（垂直方向被壓扁），行列式＝特徵值乘積＝0。
+
+@q or2-19 | la-ortho#2 | 2 | 比較
+投影到單位向量 $u$ 的投影矩陣 $uu^T$，和內積 $u^Tu$？
+[x] $uu^T$ 是 $n\times n$ 矩陣（秩 1）；$u^Tu=1$ 是數字
+[ ] 兩個都是數字
+[ ] 兩個都是矩陣
+[ ] $uu^T=I$
+---
+外積 vs 內積。$u$ 不是單位向量時要除以 $u^Tu$。
+
+@q or3-04 | la-ortho#3 | 2 | 計算
+Fit $y=c+dx$ to the points $(0,0)$, $(1,1)$, $(2,3)$ by least squares. Find $c$ and $d$.
+== -1/6,1.5
+== -0.1667,1.5
+?? c,d
+---
+$A^TA=\left[\begin{smallmatrix}3&3\\3&5\end{smallmatrix}\right]$、$A^Tb=(4,7)$，解得 $c=-\frac16$、$d=\frac32$。
+
+@q or3-05 | la-ortho#3 | 2 | 計算
+Fit the line through the origin $y=Cx$ to the points $(1,2)$, $(2,3)$, $(3,7)$ by least squares. Find $C$.
+== 29/14
+---
+只有一個未知數：$C=\frac{\sum x_iy_i}{\sum x_i^2}=\frac{2+6+21}{14}$。就是 $b$ 投影到 $(1,2,3)$ 方向。
+
+@q or3-06 | la-ortho#3 | 1 | 觀念
+Fit a single constant $c$ to the data $1,2,6$ so that the sum of squared errors is smallest. Find $c$.
+== 3
+---
+$A$ 是全 1 的行，$\hat c=\frac{\sum b_i}{n}$：平均數。最小平方的常數擬合就是平均。
+
+@q or3-07 | la-ortho#3 | 3 | 陷阱
+For the least-squares line $y=c+dx$ (with a constant term), what is the sum of the entries of the error vector $b-A\hat x$?
+== 0
+---
+殘差垂直於 $A$ 的每一行，包括全 1 那一行：$\mathbf 1\cdot(b-A\hat x)=0$。例如擬合 $(0,0)$、$(1,1)$、$(2,3)$ 的殘差 $(\frac16,-\frac13,\frac16)$ 和是 0。沒有常數項時不一定。
+
+@q or3-08 | la-ortho#3 | 2 | 找錯
+$A$ 是 $3\times2$，學生寫「最小平方解 $\hat x=A^{-1}b$」。錯在哪？
+[x] 非方陣沒有 $A^{-1}$；要解 $A^TA\hat x=A^Tb$
+[ ] 應該是 $A^Tb$
+[ ] 應該是 $b^{-1}A$
+[ ] 沒錯
+---
+$A^TA$ 是 $2\times2$，行獨立時可逆。
+
+@q or3-09 | la-ortho#3 | 3 | 比較
+最小平方直線擬合，最小化的是哪個距離？
+[x] 每個點到直線的**鉛直**距離平方和
+[ ] 每個點到直線的**垂直**（最短）距離平方和
+[ ] 距離的總和（不平方）
+[ ] 最大的那個距離
+---
+誤差是 $y_i-(c+dx_i)$，只在 $y$ 方向。最小化垂直距離是另一個問題（total least squares，用 SVD 解）。
+
+@q or3-10 | la-ortho#3 | 2 | 情境
+量測資料中有一個點量錯，偏離 100 倍。最小平方直線會？
+[x] 被明顯拉過去：誤差平方讓大誤差的影響特別大
+[ ] 不受影響
+[ ] 稍微受影響，跟其他點一樣
+[ ] 直接忽略那個點
+---
+平方讓離群值主導。實務上會先剔除或改用絕對值誤差等穩健方法。
+
+@q or3-11 | la-ortho#3 | 2 | 情境
+資料看起來像 $y=Ce^{kt}$。怎麼用線性最小平方擬合？
+[x] 取對數 $\ln y=\ln C+kt$，對 $(t,\ln y)$ 擬合直線
+[ ] 直接對 $(t,y)$ 擬合直線
+[ ] 不能用最小平方
+[ ] 對 $(e^t,y)$ 擬合
+---
+未知數變成 $\ln C$ 和 $k$，對它們是線性的。注意這樣最小化的是 $\ln y$ 的誤差。
+
+@q or3-12 | la-ortho#3 | 2 | 觀念
+$b$ 剛好在 $A$ 的行空間裡，最小平方解？
+[x] 就是 $Ax=b$ 的精確解，誤差 0
+[ ] 不存在
+[ ] 是 0
+[ ] 跟一般情況一樣有誤差
+---
+投影 $b$ 到 $C(A)$ 還是 $b$。
+
+@q or3-13 | la-ortho#3 | 3 | 計算
+For the least-squares fit of $y=c+dx$ to $(0,0)$, $(1,1)$, $(2,3)$, what is the smallest sum of squared errors $\|b-A\hat x\|^2$?
+== 1/6
+---
+$\hat x=(-\frac16,\frac32)$，$A\hat x=(-\frac16,\frac43,\frac{17}6)$，殘差 $(\frac16,-\frac13,\frac16)$，平方和 $\frac{1+4+1}{36}$。
+
+@q or3-14 | la-ortho#3 | 3 | 證明
+證明：若 $A^T(b-A\hat x)=0$，則對任何 $x$，$\|Ax-b\|\ge\|A\hat x-b\|$。
+---
+$Ax-b=A(x-\hat x)+(A\hat x-b)$。第一項在 $C(A)$，第二項跟 $C(A)$ 垂直（題設），畢氏定理：$\|Ax-b\|^2=\|A(x-\hat x)\|^2+\|A\hat x-b\|^2\ge\|A\hat x-b\|^2$。
+
+@q or3-15 | la-ortho#3 | 2 | 情境
+GPS 接收器收到 8 顆衛星的訊號，但只有 4 個未知數（位置 3 個＋時鐘誤差）。通常怎麼解？
+[x] 用最小平方解超定方程組，多的衛星用來降低誤差
+[ ] 只用其中 4 顆，其他丟掉
+[ ] 無解
+[ ] 隨機挑 4 顆解完平均
+---
+方程數多於未知數又有量測誤差，最小平方是標準做法（實際是非線性，要線性化後迭代）。
+
+@q or3-16 | la-ortho#3 | 3 | 計算
+擬合 $y=c+dx$ 時，若所有 $x_i$ 的平均是 0，$\hat c$ 和 $\hat d$ 有簡單公式嗎？
+[x] 有：$\hat c=\bar y$、$\hat d=\frac{x\cdot y}{x\cdot x}$，因為 $A$ 的兩行正交
+[ ] 沒有
+[ ] $\hat c=0$
+[ ] $\hat d=\bar y$
+---
+$A^TA=\text{diag}(n,\sum x_i^2)$，正規方程分開解。這就是統計裡先把 $x$「置中」的原因。
+
+@q or3-17 | la-ortho#3 | 2 | 計算
+What is the least-squares solution of the three inconsistent equations $x=1$, $x=2$, $x=4$?
+== 7/3
+---
+$A=(1,1,1)^T$，$\hat x=\frac{1+2+4}3$。
+
+@q or3-18 | la-ortho#3 | 3 | 陷阱
+$A$ 的行相依時，最小平方的投影 $A\hat x$ 和 $\hat x$？
+[x] 投影 $A\hat x$ 唯一；$\hat x$ 有無限多個
+[ ] 兩個都唯一
+[ ] 兩個都不唯一
+[ ] 無解
+---
+投影只看 $C(A)$，一定唯一；$\hat x$ 可以加上 $N(A)$ 的任何向量。要唯一可以取長度最小的那個（偽逆）。
+
+@q or4-04 | la-ortho#4 | 2 | 計算
+Is $\begin{bmatrix}0.6&-0.8\\0.8&0.6\end{bmatrix}$ an orthogonal matrix (yes or no)? What is its determinant?
+== yes,1
+== 是,1
+?? orthogonal,det
+---
+兩行長度 1、內積 $-0.48+0.48=0$。行列式 $0.36+0.64=1$：轉角度（$\cos\theta=0.6$，約 53°）。
+
+@q or4-05 | la-ortho#4 | 3 | 計算
+$Q=\frac13\left[\begin{smallmatrix}1&2&2\\2&1&-2\\2&-2&1\end{smallmatrix}\right]$ 是正交矩陣。$Q^{-1}$ 和 $\det Q$？
+[x] $Q^{-1}=Q$（$Q$ 對稱），$\det Q=-1$
+[ ] $Q^{-1}=Q$，$\det Q=1$
+[ ] $Q^{-1}=-Q$，$\det Q=1$
+[ ] $Q^{-1}=3Q$，$\det Q=-1$
+---
+$Q^{-1}=Q^T=Q$。$\det=-1$ 代表含一次反射；對稱的正交矩陣滿足 $Q^2=I$。
+
+@q or4-06 | la-ortho#4 | 2 | 計算
+Let $u=\frac1{\sqrt2}(1,1)$ and $H=I-2uu^T$, a Householder reflection. Find $H$, entering the four entries row by row.
+== 0,-1,-1,0
+---
+$uu^T=\frac12\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]$。$H$ 把 $u$ 送到 $-u$、垂直方向不動：對直線 $y=-x$ 反射。
+
+@q or4-07 | la-ortho#4 | 2 | 陷阱
+$\left[\begin{smallmatrix}1&1\\1&-1\end{smallmatrix}\right]$ 的兩行互相垂直，它是正交矩陣嗎？
+[x] 不是：行長度 $\sqrt2$；$Q^TQ=2I$。除以 $\sqrt2$ 才是
+[ ] 是
+[ ] 是，因為行列式非 0
+[ ] 是，因為對稱
+---
+「正交矩陣」要求行是**單位**正交（orthonormal），名字有點誤導。
+
+@q or4-08 | la-ortho#4 | 2 | 觀念
+$Q_1$、$Q_2$ 是正交矩陣。下列哪個一定是正交矩陣？
+[x] $Q_1Q_2$
+[ ] $Q_1+Q_2$
+[ ] $2Q_1$
+[ ] $Q_1-Q_2$
+---
+$(Q_1Q_2)^TQ_1Q_2=Q_2^TQ_1^TQ_1Q_2=I$。$Q+(-Q)=0$ 就不是。
+
+@q or4-09 | la-ortho#4 | 1 | 計算
+$Q$ is an orthogonal matrix and $x=(3,4)$. What is $\|Qx\|$?
+== 5
+---
+$\|Qx\|^2=x^TQ^TQx=\|x\|^2$。保長度。
+
+@q or4-10 | la-ortho#4 | 2 | 觀念
+置換矩陣（每列每行恰一個 1）是正交矩陣嗎？
+[x] 是：行是標準基底向量換順序，單位且互相垂直
+[ ] 不是
+[ ] 只有 $I$ 是
+[ ] 只有交換兩列的才是
+---
+所以置換矩陣的反矩陣就是轉置。
+
+@q or4-11 | la-ortho#4 | 2 | 情境
+3D 遊戲引擎把物體的方向存成正交矩陣。每一幀要把世界座標換回物體座標，為什麼很便宜？
+[x] 反矩陣就是轉置，不用解方程
+[ ] 正交矩陣都是單位矩陣
+[ ] 正交矩陣的元素都是整數
+[ ] 不便宜
+---
+$Q^{-1}=Q^T$。累積很多次乘法後數值誤差會讓它不再正交，引擎會定期重新正交化（Gram–Schmidt）。
+
+@q or4-12 | la-ortho#4 | 2 | 計算
+What are the eigenvalues of the orthogonal matrix that reflects $\mathbb R^2$ across a line through the origin?
+== 1,-1
+---
+直線上的向量不動（1）、垂直方向翻過去（$-1$）。轉角度 $\theta$（$\ne0,\pi$）沒有實特徵值。
+
+@q or4-13 | la-ortho#4 | 2 | 找錯
+學生說「正交矩陣一定對稱」。反例？
+[x] 逆時針轉 90°：$\left[\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right]$
+[ ] $I$
+[ ] $\left[\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\right]$
+[ ] $-I$
+---
+其他三個都剛好對稱。對稱又正交 ⇔ $Q^2=I$（反射類）。
+
+@q or4-14 | la-ortho#4 | 2 | 計算
+正交矩陣第一行是 $\frac1{\sqrt2}(1,1)$。第二行可以是？
+[x] $\frac1{\sqrt2}(1,-1)$ 或 $\frac1{\sqrt2}(-1,1)$
+[ ] $(1,-1)$
+[ ] $\frac1{\sqrt2}(1,1)$
+[ ] $(0,1)$
+---
+要跟第一行垂直、長度 1。兩個選擇分別給出 $\det=-1$（反射）和 $\det=1$。
+
+@q or4-15 | la-ortho#4 | 3 | 觀念
+$3\times3$ 正交矩陣 $\det Q=1$。下列哪個一定對？
+[x] 1 是特徵值（有一條不動的軸）
+[ ] $Q=I$
+[ ] $-1$ 是特徵值
+[ ] 特徵值都是實數
+---
+特徵值 $|\lambda|=1$，複數成對出現（乘積 1），實的只能 $\pm1$；三個乘起來是 1，一定有一個是 1。這就是「三維空間的轉動一定有轉軸」。
+
+@q or4-16 | la-ortho#4 | 2 | 證明
+證明正交矩陣保長度：$\|Qx\|=\|x\|$。
+---
+$\|Qx\|^2=(Qx)^T(Qx)=x^TQ^TQx=x^TIx=\|x\|^2$。同理保內積 $(Qu)\cdot(Qv)=u\cdot v$，所以也保角度。
+
+@q or4-17 | la-ortho#4 | 3 | 情境
+解 $Qx=b$（$Q$ 正交）時，$b$ 有小誤差 $\delta$。$x$ 的誤差會被放大嗎？
+[x] 不會：$\|Q^{-1}\delta\|=\|\delta\|$，誤差長度不變
+[ ] 會放大 $\det Q$ 倍
+[ ] 會放大 $n$ 倍
+[ ] 會被縮小
+---
+正交矩陣是數值上最理想的矩陣，所以 QR、Householder 這些方法比直接算 $A^TA$ 穩定。
+
+@q or4-18 | la-ortho#4 | 1 | 計算
+$Q$ is an orthogonal matrix and $u\cdot v=5$. What is $(Qu)\cdot(Qv)$?
+== 5
+---
+$(Qu)^TQv=u^TQ^TQv=u^Tv$。
+
+@q or5-04 | la-ortho#5 | 2 | 計算
+Apply Gram–Schmidt to $(3,4)$ and then $(1,0)$. What is the second unit vector $q_2$?
+== 0.8,-0.6
+---
+$q_1=(0.6,0.8)$；$u_2=(1,0)-0.6\,q_1=(0.64,-0.48)$，長度 0.8，$q_2=(0.8,-0.6)$。
+
+@q or5-05 | la-ortho#5 | 2 | 計算
+Gram–Schmidt on the columns of $A=\begin{bmatrix}3&1\\4&0\end{bmatrix}$ gives $A=QR$. Find $r_{11}$, $r_{12}$, and $r_{22}$.
+== 5,0.6,0.8
+?? r11,r12,r22
+---
+$q_1=(0.6,0.8)$。$r_{11}=\|a_1\|=5$；$r_{12}=q_1\cdot a_2=0.6$；$u_2=a_2-0.6q_1=(0.64,-0.48)$，$r_{22}=\|u_2\|=0.8$。
+
+@q or5-06 | la-ortho#5 | 3 | 計算
+Apply Gram–Schmidt to $(1,1,0)$, $(1,0,1)$, $(0,1,1)$ in this order. What is the third orthogonal vector, before normalization?
+== -2/3,2/3,2/3
+---
+$u_1=(1,1,0)$、$u_2=(\frac12,-\frac12,1)$。$u_3=v_3-\frac{1}{2}u_1-\frac{1/2}{3/2}u_2=(0,1,1)-(\frac12,\frac12,0)-(\frac16,-\frac16,\frac13)$。
+
+@q or5-07 | la-ortho#5 | 2 | 陷阱
+Gram–Schmidt 處理 $(1,2)$、$(2,4)$，會發生什麼事？
+[x] 第二步得到零向量：$(2,4)$ 減掉投影剩 0，代表兩向量相依
+[ ] 得到 $(2,-1)$
+[ ] 得到兩個正交的單位向量
+[ ] 演算法無限迴圈
+---
+不能正規化零向量。實務上用它偵測相依。
+
+@q or5-08 | la-ortho#5 | 2 | 比較
+Gram–Schmidt 的輸入順序 $(1,0),(1,1)$ 和 $(1,1),(1,0)$，結果？
+[x] 不同：第一個向量一定保留方向，所以兩種結果的 $q_1$ 不一樣
+[ ] 完全相同
+[ ] 只差正負號
+[ ] 第二種會失敗
+---
+前者 $q_1=(1,0)$、$q_2=(0,1)$；後者 $q_1=\frac1{\sqrt2}(1,1)$、$q_2=\frac1{\sqrt2}(1,-1)$。張成的空間一樣。
+
+@q or5-09 | la-ortho#5 | 3 | 找錯
+算第三步時學生寫 $u_3=v_3-\text{proj}_{u_1}v_3-\text{proj}_{v_2}v_3$（第二項用原始的 $v_2$ 而不是 $u_2$）。後果？
+[x] $v_2$ 不一定垂直 $u_1$，減完的 $u_3$ 可能不垂直 $u_1$ 或 $u_2$
+[ ] 結果一樣
+[ ] 只差長度
+[ ] $u_3$ 會變成零向量
+---
+投影公式能逐項相減，是因為 $u_1,u_2$ 互相垂直（見「投影到兩個向量張成的空間」那題）。
+
+@q or5-10 | la-ortho#5 | 3 | 比較
+Classical Gram–Schmidt 和 Modified Gram–Schmidt（每減一項就更新向量，再用更新後的向量算下一個投影係數）？
+[x] 數學上結果相同；數值上 Modified 比較穩，算出的 $q$ 比較接近正交
+[ ] Modified 結果不同
+[ ] Classical 比較穩
+[ ] 只有 Modified 能處理 $3\times3$
+---
+Classical 用原始 $v_k$ 算所有係數，捨入誤差累積後會失去正交性。
+
+@q or5-11 | la-ortho#5 | 3 | 計算
+$A=\left[\begin{smallmatrix}3&1\\4&0\end{smallmatrix}\right]=QR$（$r_{11}=5$、$r_{22}=0.8$）。$\det Q$？
+== -1
+---
+$\det A=-4=\det Q\cdot r_{11}r_{22}=\det Q\cdot4$。$R$ 的對角線取正，正負號跑到 $Q$。
+
+@q or5-12 | la-ortho#5 | 3 | 情境
+On $[-1,1]$ with inner product $\langle f,g\rangle=\int_{-1}^1fg\,dx$, apply Gram–Schmidt to $1,x,x^2$. The third result is $x^2-c$. Find $c$.
+== 1/3
+---
+$x^2$ 和 $x$ 內積 0（奇函數）；和 1 的內積 $\frac23$，$\langle1,1\rangle=2$，減去 $\frac{2/3}{2}\cdot1$。這就是 Legendre 多項式（差一個倍數）。
+
+@q or5-13 | la-ortho#5 | 2 | 觀念
+$A$ 的行已經互相垂直（但長度不是 1），$A=QR$ 的 $R$？
+[x] 對角矩陣，對角線是各行的長度
+[ ] $I$
+[ ] 上三角而且非對角都不是 0
+[ ] 不存在
+---
+沒有要減的投影，$r_{ij}=q_i\cdot a_j=0$（$i<j$）；只剩正規化。
+
+@q or5-14 | la-ortho#5 | 3 | 證明
+Gram–Schmidt：說明 $\text{span}\{q_1,\dots,q_k\}=\text{span}\{a_1,\dots,a_k\}$。
+---
+歸納：$u_k=a_k-\sum_{i<k}(q_i\cdot a_k)q_i$，所以 $q_k$ 在 span$\{q_1..q_{k-1},a_k\}=$ span$\{a_1..a_k\}$；反過來 $a_k=\|u_k\|q_k+\sum_{i<k}(q_i\cdot a_k)q_i$ 在 span$\{q_1..q_k\}$。兩個子空間互相包含。
+
+@q or5-15 | la-ortho#5 | 2 | 計算
+Gram–Schmidt on $(1,1,0)$ and $(1,0,1)$ gives $u_2=(\frac12,-\frac12,1)$. What is $\|u_2\|$?
+== √6/2
+== 1.2247
+---
+$\sqrt{\frac14+\frac14+1}=\sqrt{\frac32}=\frac{\sqrt6}2$，$q_2=\frac1{\sqrt6}(1,-1,2)$。
+
+@q or5-16 | la-ortho#5 | 2 | 計算
+Let $A=QR$ with $Q=\begin{bmatrix}0.6&0.8\\0.8&-0.6\end{bmatrix}$ and $R=\begin{bmatrix}5&0.6\\0&0.8\end{bmatrix}$. To solve $Ax=b$ with $b=(4,4)$, first compute $Q^Tb$. What is it?
+== 5.6,0.8
+---
+$Q^Tb=(0.6\cdot4+0.8\cdot4,\ 0.8\cdot4-0.6\cdot4)=(5.6,0.8)$。再後代 $Rx=Q^Tb$：$x_2=1$、$x_1=(5.6-0.6)/5=1$。驗算 $A(1,1)=(4,4)$。
+
+@q or5-17 | la-ortho#5 | 2 | 情境
+衛星訊號處理要把一組幾乎平行的向量正交化，用 Gram–Schmidt 時最擔心什麼？
+[x] 相減後剩下很小的向量，捨入誤差相對變大，正交性變差
+[ ] 計算量太大
+[ ] 結果不唯一
+[ ] 向量太長
+---
+這時候改用 Modified GS 或 Householder QR。
+
+@q sv1-04 | la-sym-svd#1 | 2 | 計算
+$A=\left[\begin{smallmatrix}2&1\\1&2\end{smallmatrix}\right]=3q_1q_1^T+1\,q_2q_2^T$（譜分解）。$q_1q_1^T$ 是？
+[x] $\frac12\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]$
+[ ] $\frac12\left[\begin{smallmatrix}1&-1\\-1&1\end{smallmatrix}\right]$
+[ ] $\left[\begin{smallmatrix}1&0\\0&0\end{smallmatrix}\right]$
+---
+$q_1=\frac1{\sqrt2}(1,1)$，$q_1q_1^T$ 是投影到這個方向的投影矩陣。驗算 $3\cdot\frac12\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]+\frac12\left[\begin{smallmatrix}1&-1\\-1&1\end{smallmatrix}\right]=A$。
+
+@q sv1-05 | la-sym-svd#1 | 3 | 計算
+A $2\times2$ symmetric matrix $A$ has eigenvalue 4 with eigenvector $(1,1)$, and eigenvalue 1. Give the four entries of $A$ row by row.
+== 2.5,1.5,1.5,2.5
+---
+另一個特徵向量一定是 $(1,-1)$（對稱 ⇒ 正交）。$A=4\cdot\frac12\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]+1\cdot\frac12\left[\begin{smallmatrix}1&-1\\-1&1\end{smallmatrix}\right]$。不對稱的話只給一個特徵向量決定不了。
+
+@q sv1-06 | la-sym-svd#1 | 3 | 陷阱
+$\left[\begin{smallmatrix}1&1\\0&2\end{smallmatrix}\right]$ 能對角化。它能用**正交**矩陣對角化（$Q^TAQ$ 對角）嗎？
+[x] 不能：特徵向量 $(1,0)$、$(1,1)$ 不垂直；只有對稱矩陣才能正交對角化
+[ ] 能，把特徵向量正規化就好
+[ ] 能，因為特徵值相異
+[ ] 不能，因為它不能對角化
+---
+實矩陣可以正交對角化 ⇔ 對稱。正規化只改長度，改不了夾角。
+
+@q sv1-07 | la-sym-svd#1 | 2 | 計算
+What are the eigenvalues of $\left[\begin{smallmatrix}0&1&0\\1&0&1\\0&1&0\end{smallmatrix}\right]$?
+== √2,0,-√2
+== 1.414,0,-1.414
+---
+$\det(A-\lambda I)=-\lambda^3+2\lambda$，$\lambda(\lambda^2-2)=0$。對稱，全是實數；跡 0 也對得上。
+
+@q sv1-08 | la-sym-svd#1 | 3 | 比較
+實對稱矩陣和實反對稱矩陣（$A^T=-A$）的特徵值？
+[x] 對稱：都是實數；反對稱：都是純虛數（或 0）
+[ ] 都是實數
+[ ] 都是純虛數
+[ ] 對稱：純虛數；反對稱：實數
+---
+$\bar v^TAv$ 在對稱時是實數、反對稱時是純虛數。例 $\left[\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right]$ 是 $\pm i$。
+
+@q sv1-09 | la-sym-svd#1 | 3 | 情境
+資料的共變異數矩陣 $\left[\begin{smallmatrix}4&2\\2&1\end{smallmatrix}\right]$。特徵值和資料分布？
+[x] 5 和 0：資料幾乎都落在方向 $(2,1)$ 的一條直線上
+[ ] 4 和 1：兩個方向一樣散
+[ ] 5 和 0：資料散成一個圓
+[ ] 3 和 2
+---
+跡 5、行列式 0。特徵值 0 的方向 $(1,-2)$ 上沒有變異。PCA 就是取大特徵值的特徵向量當主方向。
+
+@q sv1-10 | la-sym-svd#1 | 2 | 找錯
+學生把**不對稱**矩陣的特徵向量正規化後排成 $P$，說「$P^{-1}=P^T$」。錯在哪？
+[x] 不對稱時特徵向量一般不垂直，$P$ 不是正交矩陣
+[ ] 正規化的方法錯了
+[ ] 應該是 $P^{-1}=P$
+[ ] 沒錯
+---
+$P^{-1}=P^T$ 需要 $P$ 的行單位正交，這只有對稱矩陣保證。
+
+@q sv1-11 | la-sym-svd#1 | 3 | 計算
+Let $A=\left[\begin{smallmatrix}2&1\\1&2\end{smallmatrix}\right]$. $B$ is the symmetric matrix with positive eigenvalues such that $B^2=A$. What is the top-left entry of $B$?
+== (√3+1)/2
+== 1.366
+---
+$B=Q\Lambda^{1/2}Q^T=\sqrt3\cdot\frac12\left[\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right]+1\cdot\frac12\left[\begin{smallmatrix}1&-1\\-1&1\end{smallmatrix}\right]$，左上 $\frac{\sqrt3+1}2$。
+
+@q sv1-12 | la-sym-svd#1 | 3 | 證明
+證明實對稱矩陣的特徵值都是實數。
+---
+$Av=\lambda v$（$v$ 可能是複向量）。$\bar v^TAv=\lambda\bar v^Tv=\lambda\|v\|^2$。取共軛轉置：$\overline{\bar v^TAv}=v^T A\bar v=(\bar v^TA^Tv)^T=\bar v^TAv$（$A$ 實且對稱），所以 $\bar v^TAv$ 是實數，$\lambda$ 也是。
+
+@q sv1-13 | la-sym-svd#1 | 1 | 觀念
+對任何 $m\times n$ 的 $A$，下列哪個一定是對稱矩陣？
+[x] $A^TA$
+[ ] $A^2$
+[ ] $A+I$
+[ ] $A^{-1}$
+---
+$(A^TA)^T=A^TA$。$AA^T$ 也是。其他的要 $A$ 是方陣，而且要 $A$ 本身對稱才對稱。
+
+@q sv1-14 | la-sym-svd#1 | 2 | 比較
+對稱矩陣和正交矩陣的特徵值？
+[x] 對稱：實數；正交：絕對值 1
+[ ] 都是實數
+[ ] 都是絕對值 1
+[ ] 對稱：絕對值 1；正交：實數
+---
+兩者都有一組單位正交的特徵向量（正交矩陣要在複數裡），都屬於「正規矩陣」。
+
+@q sv1-15 | la-sym-svd#1 | 2 | 計算
+How many entries of a $4\times4$ symmetric matrix can be chosen freely?
+== 10
+---
+對角線 4 個＋上三角 6 個；下三角由上三角決定。$\frac{n(n+1)}2$。
+
+@q sv1-16 | la-sym-svd#1 | 3 | 計算
+A $3\times3$ symmetric matrix has eigenvalues 2, 2, 5, and the eigenvector for 5 is $(1,1,1)$. What are $a_{11}$ and $a_{12}$?
+== 3,1
+?? a11,a12
+---
+$A=2I+3\cdot\frac13\mathbf 1\mathbf 1^T=2I+J$。因為 $\lambda=2$ 的特徵空間就是 $(1,1,1)$ 的垂直平面（對稱 ⇒ 正交），不用知道那兩個向量。
+
+@q sv1-17 | la-sym-svd#1 | 3 | 陷阱
+對稱矩陣同一個特徵值（重根）的兩個特徵向量一定垂直嗎？
+[x] 不一定，但可以在那個特徵空間裡**選**一組垂直的
+[ ] 一定垂直
+[ ] 一定平行
+[ ] 一定不垂直
+---
+例 $I$：任兩個非零向量都是特徵向量。保證垂直的是**不同**特徵值的特徵向量。
+
+@q sv1-18 | la-sym-svd#1 | 2 | 情境
+剛體的慣性張量是 $3\times3$ 對稱矩陣。物理上說剛體一定有三條互相垂直的「主軸」，繞著轉時不會晃，這對應到？
+[x] 譜定理：對稱矩陣有三個互相垂直的特徵向量
+[ ] 行列式不為 0
+[ ] 矩陣可逆
+[ ] 特徵值都相同
+---
+在主軸座標下慣性張量是對角的，特徵值就是主轉動慣量。
+
+@q sv2-05 | la-sym-svd#2 | 1 | 計算
+Is $\left[\begin{smallmatrix}2&-1\\-1&2\end{smallmatrix}\right]$ positive definite (yes/no)?
+== yes
+== 是
+---
+領先主子式 2、3 都正（特徵值 1、3）。
+
+@q sv2-06 | la-sym-svd#2 | 2 | 計算
+$\left[\begin{smallmatrix}1&2\\2&4\end{smallmatrix}\right]$？
+[x] 半正定但不是正定（特徵值 5、0）
+[ ] 正定
+[ ] 不定
+[ ] 負定
+---
+行列式 0 ⇒ 有特徵值 0；跡 5。$x^TAx=(x+2y)^2\ge0$，在 $(2,-1)$ 等於 0。
+
+@q sv2-07 | la-sym-svd#2 | 2 | 計算
+$\left[\begin{smallmatrix}1&b\\b&9\end{smallmatrix}\right]$ is positive definite exactly when $|b|<c$. What is $c$?
+== 3
+---
+領先主子式 $1>0$、$9-b^2>0$。
+
+@q sv2-08 | la-sym-svd#2 | 1 | 計算
+$A=\left[\begin{smallmatrix}2&1\\1&2\end{smallmatrix}\right]$，$x=(1,-1)$。$x^TAx$？
+== 2
+---
+$2x^2+2xy+2y^2=2-2+2$。
+
+@q sv2-09 | la-sym-svd#2 | 2 | 計算
+Write $\left[\begin{smallmatrix}4&2\\2&5\end{smallmatrix}\right]=LL^T$ (Cholesky: $L$ lower triangular with positive diagonal). Give the four entries of $L$ row by row.
+== 2,0,1,2
+---
+$\ell_{11}=\sqrt4=2$；$\ell_{21}=2/2=1$；$\ell_{22}=\sqrt{5-1}=2$。只有正定矩陣才有（根號裡要正）。
+
+@q sv2-10 | la-sym-svd#2 | 2 | 情境
+$f(x,y)=x^2+xy+y^2$ 在原點是什麼點？
+[x] 極小：Hessian $\left[\begin{smallmatrix}2&1\\1&2\end{smallmatrix}\right]$ 正定
+[ ] 極大
+[ ] 鞍點
+[ ] 無法判斷
+---
+二階條件就是看 Hessian 的正定性：正定極小、負定極大、不定鞍點。
+
+@q sv2-11 | la-sym-svd#2 | 3 | 情境
+$f(x,y)=x^2+4xy+y^2$ 在原點？
+[x] 鞍點：Hessian $\left[\begin{smallmatrix}2&4\\4&2\end{smallmatrix}\right]$ 特徵值 6 和 $-2$
+[ ] 極小，因為 $x^2$、$y^2$ 係數都正
+[ ] 極大
+[ ] 無法判斷
+---
+沿 $(1,-1)$ 方向 $f=1-4+1<0$。只看平方項係數會被騙。
+
+@q sv2-12 | la-sym-svd#2 | 2 | 計算
+What are the three pivots produced by elimination on $\left[\begin{smallmatrix}2&1&0\\1&2&1\\0&1&2\end{smallmatrix}\right]$?
+== 2,3/2,4/3
+== 2,1.5,1.333
+---
+主元＝相鄰領先主子式的比：$2$、$\frac32$、$\frac43$（主子式 2、3、4）。全正 ⇔ 正定。
+
+@q sv2-13 | la-sym-svd#2 | 3 | 陷阱
+負定的判斷：領先主子式全部是負的？
+[x] 不對：要正負交錯（$D_1<0$、$D_2>0$、$D_3<0$…），因為 $A$ 負定 ⇔ $-A$ 正定
+[ ] 對
+[ ] 只要 $D_1<0$
+[ ] 只要行列式是負的
+---
+例 $-I_2$ 負定，$D_2=1>0$。$-A$ 的 $k\times k$ 主子式是 $(-1)^kD_k$。
+
+@q sv2-14 | la-sym-svd#2 | 2 | 觀念
+$A$、$B$ 都正定。下列哪個一定正定？
+[x] $A+B$
+[ ] $A-B$
+[ ] $AB$
+[ ] $A-2I$
+---
+$x^T(A+B)x=x^TAx+x^TBx>0$。$AB$ 一般不對稱。$A-B$、$A-2I$ 看大小。
+
+@q sv2-15 | la-sym-svd#2 | 3 | 計算
+$\left[\begin{smallmatrix}k&1&0\\1&k&1\\0&1&k\end{smallmatrix}\right]$ is positive definite exactly when $k>c$. What is $c$?
+== √2
+== 1.414
+---
+主子式 $k>0$、$k^2-1>0$、$k^3-2k=k(k^2-2)>0$。三個同時成立 ⇔ $k>\sqrt2$。或：特徵值 $k$、$k\pm\sqrt2$ 都正。
+
+@q sv2-16 | la-sym-svd#2 | 2 | 證明
+$A$ 正定，證明 $A$ 的對角線元素都是正的。
+---
+$a_{ii}=e_i^TAe_i>0$（$e_i\ne0$）。反過來不成立：對角線正不保證正定。
+
+@q sv2-17 | la-sym-svd#2 | 2 | 計算
+Let $B=\left[\begin{smallmatrix}1&2\\0&1\end{smallmatrix}\right]$ and $A=B^TB$. Give the four entries of $A$, and say whether $A$ is positive definite (yes/no).
+== 1 2 2 5,yes
+== 1 2 2 5,是
+?? A,positive definite
+---
+$B^TB=\left[\begin{smallmatrix}1&2\\2&5\end{smallmatrix}\right]$。$B$ 可逆 ⇒ $Bx\ne0$ ⇒ $x^TAx=\|Bx\|^2>0$。
+
+@q sv2-18 | la-sym-svd#2 | 2 | 情境
+彈簧系統的勁度矩陣 $K$ 必須正定，物理上代表？
+[x] 任何非零位移 $x$ 都存了正的彈性能量 $\frac12x^TKx$，系統穩定
+[ ] 彈簧都一樣硬
+[ ] 系統可以自由移動
+[ ] 彈性能量是負的
+---
+半正定（有 0 特徵值）代表有不用力的移動方式，例如整個系統平移。
+
+@q sv2-19 | la-sym-svd#2 | 3 | 反例
+「對角線都正而且是對稱矩陣，就是正定」，反例？
+[x] $\left[\begin{smallmatrix}1&2\\2&3\end{smallmatrix}\right]$：行列式 $-1$
+[ ] $\left[\begin{smallmatrix}2&1\\1&2\end{smallmatrix}\right]$
+[ ] $I$
+[ ] $\left[\begin{smallmatrix}5&0\\0&1\end{smallmatrix}\right]$
+---
+其他三個都正定。非對角元素太大時就不正定：$x=(1,-1)$ 得 $1-4+3=0$，$x=(2,-1)$ 得 $4-8+3=-1<0$。
+
+@q sv3-04 | la-sym-svd#3 | 2 | 計算
+$3x^2-2xy+3y^2=8$ is an ellipse. What are the lengths of its two semi-axes?
+== 2,√2
+== 2,1.414
+---
+$A=\left[\begin{smallmatrix}3&-1\\-1&3\end{smallmatrix}\right]$，特徵值 2、4。主軸座標下 $2u^2+4v^2=8$，半軸 $\sqrt{8/2}=2$、$\sqrt{8/4}=\sqrt2$。
+
+@q sv3-05 | la-sym-svd#3 | 2 | 計算
+$2xy=1$ 是什麼曲線？
+[x] 雙曲線：$A=\left[\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\right]$ 特徵值 1、$-1$
+[ ] 橢圓
+[ ] 拋物線
+[ ] 兩條直線
+---
+轉 45° 後是 $u^2-v^2=1$。
+
+@q sv3-06 | la-sym-svd#3 | 3 | 陷阱
+$x^2+2xy+y^2=1$ 是什麼？
+[x] 兩條平行直線 $x+y=\pm1$（特徵值 2、0，退化）
+[ ] 橢圓
+[ ] 雙曲線
+[ ] 一個點
+---
+$(x+y)^2=1$。有特徵值 0 時，那個方向沒有限制。
+
+@q sv3-07 | la-sym-svd#3 | 2 | 計算
+$\|x\|=1$ 時，$3x^2-2xy+3y^2$ 的最大值和取到的方向？
+[x] 4，在 $\pm\frac1{\sqrt2}(1,-1)$
+[ ] 3，在 $(1,0)$
+[ ] 4，在 $\frac1{\sqrt2}(1,1)$
+[ ] 2，在 $\frac1{\sqrt2}(1,1)$
+---
+最大特徵值 4 的特徵向量 $(1,-1)$；$(1,1)$ 方向是最小值 2。
+
+@q sv3-08 | la-sym-svd#3 | 1 | 計算
+What is the minimum of $5x^2+4xy+2y^2$ over all $x=(x,y)$ with $\|x\|=1$?
+== 1
+---
+$A=\left[\begin{smallmatrix}5&2\\2&2\end{smallmatrix}\right]$ 特徵值 1、6，最小值是最小特徵值。
+
+@q sv3-09 | la-sym-svd#3 | 2 | 計算
+$5x^2+4xy+2y^2=6$ 的長軸方向？
+[x] $(1,-2)$ 方向（特徵值 1 的特徵向量）
+[ ] $(2,1)$ 方向
+[ ] $x$ 軸
+[ ] $y$ 軸
+---
+半軸長 $\sqrt{6/\lambda}$：特徵值小的方向軸比較長。$\lambda=6$ 的 $(2,1)$ 是短軸。
+
+@q sv3-10 | la-sym-svd#3 | 3 | 計算
+$x^2+y^2-z^2=1$ 的係數矩陣特徵值？是什麼曲面？
+[x] 1、1、$-1$；單葉雙曲面
+[ ] 1、1、1；球面
+[ ] 1、$-1$、$-1$；雙葉雙曲面
+[ ] 1、1、0；圓柱
+---
+兩正一負＝單葉；一正兩負（$=1$）＝雙葉。
+
+@q sv3-11 | la-sym-svd#3 | 2 | 找錯
+學生把 $x^2+4xy+3y^2$ 寫成 $\left[\begin{smallmatrix}1&4\\4&3\end{smallmatrix}\right]$。錯在哪？
+[x] $xy$ 項係數要平分：$a_{12}=a_{21}=2$
+[ ] 對角線寫反了
+[ ] 應該寫成 $\left[\begin{smallmatrix}1&4\\0&3\end{smallmatrix}\right]$
+[ ] 沒錯
+---
+$x^TAx=a_{11}x^2+(a_{12}+a_{21})xy+a_{22}y^2$，要對稱就各放一半。寫成上三角也能得到同一個二次型，但特徵值判斷要用對稱的那個。
+
+@q sv3-12 | la-sym-svd#3 | 2 | 計算
+Let $A=\left[\begin{smallmatrix}3&-1\\-1&3\end{smallmatrix}\right]$. What is the Rayleigh quotient $\frac{x^TAx}{x^Tx}$ at $x=(1,1)$?
+== 2
+---
+$\frac{3-2+3}{2}$。剛好是特徵向量，值等於特徵值。任何 $x$ 的值都在 $[2,4]$ 之間。
+
+@q sv3-13 | la-sym-svd#3 | 3 | 證明
+$A$ 對稱、特徵值 $\lambda_1\ge\cdots\ge\lambda_n$。證明 $\|x\|=1$ 時 $x^TAx\le\lambda_1$。
+---
+$A=Q\Lambda Q^T$，令 $y=Q^Tx$（$\|y\|=1$）。$x^TAx=y^T\Lambda y=\sum\lambda_iy_i^2\le\lambda_1\sum y_i^2=\lambda_1$。$x=q_1$ 時取等號。
+
+@q sv3-14 | la-sym-svd#3 | 3 | 計算
+What are the eigenvalues of the coefficient matrix of $x^2+y^2+z^2+2xy$?
+== 2,1,0
+---
+$A=\left[\begin{smallmatrix}1&1&0\\1&1&0\\0&0&1\end{smallmatrix}\right]$：左上塊 2、0，右下 1。有 0 ⇒ 半正定不正定：$(1,-1,0)$ 時值是 0。
+
+@q sv3-15 | la-sym-svd#3 | 3 | 情境
+Minimize $f(x)=x^TAx-2b^Tx$ with $A=\text{diag}(2,4)$ and $b=(2,4)$. Give the minimizer and the minimum value.
+== 1 1,-6
+?? minimizer,minimum value
+---
+梯度 $2Ax-2b=0$ ⇒ $x=A^{-1}b=(1,1)$；$A$ 正定所以是最小。值 $=-b^TA^{-1}b=-(2+4)$。最小平方和許多最佳化都是這個形式。
+
+@q sv3-16 | la-sym-svd#3 | 2 | 情境
+$z=x^2+4xy+5y^2$ 的曲面形狀？
+[x] 開口向上的碗（係數矩陣 $\left[\begin{smallmatrix}1&2\\2&5\end{smallmatrix}\right]$ 正定）
+[ ] 馬鞍
+[ ] 開口向下
+[ ] 平面
+---
+行列式 $5-4=1>0$、左上 1>0。等高線是橢圓。
+
+@q sv3-17 | la-sym-svd#3 | 2 | 比較
+用主軸定理去掉 $xy$ 交叉項，等於做什麼？
+[x] 換到特徵向量組成的正交座標（轉座標軸），係數變成特徵值
+[ ] 把 $xy$ 項直接刪掉
+[ ] 對 $x$、$y$ 分別縮放
+[ ] 把矩陣取反矩陣
+---
+$x=Qy$：$x^TAx=y^T\Lambda y=\sum\lambda_iy_i^2$。直接刪 $xy$ 項會改變曲線。
+
+@q sv4-05 | la-sym-svd#4 | 1 | 計算
+What are the singular values of $\left[\begin{smallmatrix}1&0\\0&0\\0&2\end{smallmatrix}\right]$?
+== 2,1
+---
+$A^TA=\text{diag}(1,4)$，開根號、由大到小排。
+
+@q sv4-06 | la-sym-svd#4 | 2 | 計算
+Let $u=(1,2,2)$, $v=(3,4)$ and $A=uv^T$. What is the only nonzero singular value of $A$?
+== 15
+---
+$A=\|u\|\|v\|\,\hat u\hat v^T$，$\sigma_1=3\cdot5$。秩 1 只有一個非零奇異值。
+
+@q sv4-07 | la-sym-svd#4 | 2 | 計算
+Let $A=\left[\begin{smallmatrix}3&0\\4&5\end{smallmatrix}\right]$. What is the sum of the squares of all entries (the squared Frobenius norm)? Check it against the singular values.
+== 50
+---
+$9+0+16+25=50$；奇異值平方和 $45+5=50$。$\|A\|_F^2=\sum\sigma_i^2$。
+
+@q sv4-08 | la-sym-svd#4 | 3 | 計算
+Let $A=\left[\begin{smallmatrix}3&0\\4&5\end{smallmatrix}\right]$, and let $A_1=\sigma_1u_1v_1^T$ be the rank-1 matrix closest to $A$. What is the error $\|A-A_1\|_F$?
+== √5
+== 2.236
+---
+Eckart–Young：誤差＝被丟掉的奇異值 $\sigma_2=\sqrt5$。
+
+@q sv4-09 | la-sym-svd#4 | 2 | 計算
+Let $A=\left[\begin{smallmatrix}3&0\\4&5\end{smallmatrix}\right]$. What is its condition number $\sigma_{\max}/\sigma_{\min}$?
+== 3
+---
+$\frac{3\sqrt5}{\sqrt5}$。條件數大代表解 $Ax=b$ 時誤差可能被放大很多。
+
+@q sv4-10 | la-sym-svd#4 | 2 | 計算
+$\text{diag}(2,0)$ 的偽逆？
+[x] $\text{diag}(0.5,0)$
+[ ] 不存在
+[ ] $\text{diag}(0.5,\infty)$
+[ ] $\text{diag}(2,0)$
+---
+非零奇異值取倒數，0 保持 0。
+
+@q sv4-11 | la-sym-svd#4 | 3 | 情境
+A $1000\times1000$ grayscale image is stored by keeping only the first 50 terms of its SVD (each $\sigma_i$, $u_i$ and $v_i$). How many numbers must be stored?
+== 100050
+---
+每個秩 1 項存 $1+1000+1000$ 個數，$50\times2001=100050$，約原本 $10^6$ 的 10%。
+
+@q sv4-12 | la-sym-svd#4 | 3 | 找錯
+A student says the singular values of $\left[\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right]$ are 1 and 1, its eigenvalues. What are the correct singular values?
+== 1.618,0.618
+== (1+√5)/2,(√5-1)/2
+---
+$A^TA=\left[\begin{smallmatrix}1&1\\1&2\end{smallmatrix}\right]$，特徵值 $\frac{3\pm\sqrt5}2$，開根號得 $\frac{\sqrt5\pm1}2$。不對稱時奇異值和特徵值不同；乘積還是 $|\det A|=1$。
+
+@q sv4-13 | la-sym-svd#4 | 2 | 觀念
+$A=U\Sigma V^T$，$U$、$V$ 的行分別是？
+[x] $U$：$AA^T$ 的特徵向量；$V$：$A^TA$ 的特徵向量
+[ ] $U$：$A$ 的特徵向量；$V$：$A^T$ 的特徵向量
+[ ] $U$：$A^TA$ 的；$V$：$AA^T$ 的
+[ ] 都是 $A$ 的特徵向量
+---
+$A^TA=V\Sigma^T\Sigma V^T$、$AA^T=U\Sigma\Sigma^TU^T$。
+
+@q sv4-14 | la-sym-svd#4 | 2 | 計算
+A square matrix $A$ has singular values 4, 3 and 0.5. What is $|\det A|$?
+== 6
+---
+$|\det A|=|\det U|\det\Sigma|\det V|=\prod\sigma_i$。正負號看不出來。
+
+@q sv4-15 | la-sym-svd#4 | 3 | 計算
+Consider $x+y=2$, one equation in two unknowns. What is the shortest solution $A^+b$?
+== 1,1
+---
+$A=[1\ 1]$，$A^+=\frac12(1,1)^T$，$x=(1,1)$。所有解 $(1,1)+t(1,-1)$ 中它跟 $N(A)$ 垂直，長度最小。
+
+@q sv4-16 | la-sym-svd#4 | 2 | 比較
+SVD 和特徵值分解 $A=PDP^{-1}$？
+[x] SVD 對任何 $m\times n$ 都存在，而且 $U$、$V$ 是正交矩陣；特徵值分解只對能對角化的方陣，$P$ 不一定正交
+[ ] 兩者一樣
+[ ] SVD 只能用在方陣
+[ ] 特徵值分解比較通用
+---
+不能對角化的方陣（例如 $\left[\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right]$）照樣有 SVD。對稱半正定矩陣兩者剛好一致。
+
+@q sv4-17 | la-sym-svd#4 | 3 | 證明
+證明 $A$ 的秩等於非零奇異值的個數。
+---
+$A=U\Sigma V^T$，$U$、$V$ 可逆，乘可逆矩陣不改變秩，所以 $\text{rank}A=\text{rank}\Sigma$＝$\Sigma$ 對角線非零元素的個數。
+
+@q sv4-18 | la-sym-svd#4 | 2 | 情境
+推薦系統把評分矩陣做 SVD，取前 $k$ 個奇異值。直觀意義？
+[x] 找出 $k$ 個「口味因子」，每個使用者和電影都用這 $k$ 個因子的強弱描述
+[ ] 刪掉 $k$ 個使用者
+[ ] 把評分四捨五入
+[ ] 隨機挑 $k$ 部電影
+---
+$A\approx U_k\Sigma_kV_k^T$：$U_k$ 的列是使用者的因子權重，$V_k$ 的列是電影的。

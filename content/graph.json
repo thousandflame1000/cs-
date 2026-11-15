@@ -1,0 +1,815 @@
+{
+ "_說明": "知識點圖（2026-11-06）。節點＝各章的 ## 小節（id 寫成 章id#第幾節，從 1 開始）＋地基節點 f-…。pre 是先修；章內小節沒寫 pre 的，預設先修是同章前一節（第 1 節預設沒有）。chapter_order 是排課的優先順序（Kahn 拓撲排序時，可以開始的節點裡先挑順位小的；地基節點會被拉到第一個需要它的地方之前）。",
+ "chapter_order": [
+  "dm-logic",
+  "al-recurrence",
+  "ds-amortized",
+  "ds-bst",
+  "ds-heap",
+  "ds-sort",
+  "co-arith",
+  "en-reading",
+  "la-systems",
+  "os-process",
+  "dm-counting",
+  "al-dc",
+  "ds-hash",
+  "co-perf",
+  "la-vs",
+  "os-sched",
+  "dm-graph",
+  "ds-graph",
+  "ds-unionfind",
+  "co-datapath",
+  "la-det",
+  "os-sync",
+  "dm-relations",
+  "ds-btree",
+  "al-dp",
+  "co-pipeline",
+  "la-eigen",
+  "os-deadlock",
+  "dm-recur-gf",
+  "al-greedy",
+  "co-cache",
+  "la-ortho",
+  "os-memory",
+  "dm-nt-algebra",
+  "al-sp",
+  "co-ilp",
+  "os-vm",
+  "la-sym-svd",
+  "al-mst-flow",
+  "co-vm-coherence",
+  "os-storage",
+  "al-prob",
+  "al-np"
+ ],
+ "foundation": [
+  {
+   "id": "f-func",
+   "title": "函數與成長快慢：n、n²、2ⁿ 誰長得快",
+   "subject": "al",
+   "pre": [],
+   "mins": 30
+  },
+  {
+   "id": "f-log",
+   "title": "指數與對數：lg n 是「對半切幾次」",
+   "subject": "al",
+   "pre": [
+    "f-func"
+   ],
+   "mins": 30
+  },
+  {
+   "id": "f-sum",
+   "title": "Σ 求和：等差、等比、調和級數",
+   "subject": "dm",
+   "pre": [
+    "f-func"
+   ],
+   "mins": 35
+  },
+  {
+   "id": "f-set",
+   "title": "集合與對應：∩、∪、函數是什麼",
+   "subject": "dm",
+   "pre": [],
+   "mins": 30
+  },
+  {
+   "id": "f-mod",
+   "title": "整除與餘數（mod）",
+   "subject": "dm",
+   "pre": [],
+   "mins": 25
+  },
+  {
+   "id": "f-binary",
+   "title": "二進位與十六進位",
+   "subject": "co",
+   "pre": [
+    "f-log"
+   ],
+   "mins": 30
+  },
+  {
+   "id": "f-twos",
+   "title": "負數怎麼存：二補數",
+   "subject": "co",
+   "pre": [
+    "f-binary"
+   ],
+   "mins": 30
+  },
+  {
+   "id": "f-gate",
+   "title": "邏輯閘與布林代數：AND、OR、NOT、XOR",
+   "subject": "co",
+   "pre": [
+    "f-binary"
+   ],
+   "mins": 30
+  },
+  {
+   "id": "f-c-array",
+   "title": "C 語言：變數、陣列、記憶體位址",
+   "subject": "ds",
+   "pre": [],
+   "mins": 35
+  },
+  {
+   "id": "f-c-pointer",
+   "title": "C 語言：指標",
+   "subject": "ds",
+   "pre": [
+    "f-c-array"
+   ],
+   "mins": 35
+  },
+  {
+   "id": "f-recursion",
+   "title": "遞迴：函式呼叫自己",
+   "subject": "ds",
+   "pre": [
+    "f-c-array"
+   ],
+   "mins": 35
+  },
+  {
+   "id": "f-list",
+   "title": "鏈結串列、堆疊與佇列",
+   "subject": "ds",
+   "pre": [
+    "f-c-pointer",
+    "f-bigo"
+   ],
+   "mins": 35
+  },
+  {
+   "id": "f-bigo",
+   "title": "數步數：程式跑多久",
+   "subject": "al",
+   "pre": [
+    "f-func",
+    "f-c-array",
+    "f-log"
+   ],
+   "mins": 30
+  },
+  {
+   "id": "f-bsearch",
+   "title": "二分搜尋",
+   "subject": "al",
+   "pre": [
+    "f-c-array",
+    "f-log",
+    "f-bigo"
+   ],
+   "mins": 25
+  },
+  {
+   "id": "f-vec",
+   "title": "向量與矩陣運算",
+   "subject": "la",
+   "pre": [],
+   "mins": 35
+  },
+  {
+   "id": "f-prob",
+   "title": "機率與期望值入門",
+   "subject": "dm",
+   "pre": [
+    "f-sum"
+   ],
+   "mins": 35
+  },
+  {
+   "id": "f-os",
+   "title": "電腦怎麼跑程式：CPU、記憶體、作業系統",
+   "subject": "os",
+   "pre": [],
+   "mins": 30
+  }
+ ],
+ "pre": {
+  "dm-logic#1": [
+   "f-set"
+  ],
+  "dm-logic#3": [
+   "f-sum"
+  ],
+  "dm-logic#5": [
+   "f-set",
+   "dm-logic#3"
+  ],
+  "al-recurrence#1": [
+   "f-bigo",
+   "f-log"
+  ],
+  "al-recurrence#2": [
+   "f-recursion",
+   "f-sum",
+   "f-bsearch"
+  ],
+  "al-recurrence#4": [
+   "al-recurrence#2",
+   "f-log"
+  ],
+  "ds-amortized#1": [
+   "f-list",
+   "f-c-array",
+   "f-bigo",
+   "f-mod"
+  ],
+  "ds-amortized#3": [
+   "ds-amortized#1"
+  ],
+  "ds-amortized#4": [
+   "ds-amortized#1",
+   "al-recurrence#1",
+   "f-sum",
+   "f-binary",
+   "f-prob"
+  ],
+  "ds-bst#1": [
+   "f-list",
+   "f-recursion",
+   "f-bigo",
+   "f-log"
+  ],
+  "ds-bst#5": [
+   "ds-bst#2",
+   "ds-amortized#4"
+  ],
+  "ds-sort#1": [
+   "al-recurrence#2",
+   "f-c-array",
+   "f-bsearch",
+   "ds-heap#1"
+  ],
+  "ds-sort#2": [
+   "ds-bst#1",
+   "f-log"
+  ],
+  "ds-sort#3": [
+   "ds-sort#1",
+   "f-prob"
+  ],
+  "ds-sort#4": [
+   "ds-sort#1"
+  ],
+  "ds-sort#5": [
+   "ds-sort#3"
+  ],
+  "ds-heap#1": [
+   "ds-bst#1",
+   "f-c-array"
+  ],
+  "ds-heap#2": [
+   "ds-amortized#4"
+  ],
+  "ds-heap#4": [
+   "ds-heap#2",
+   "dm-counting#2"
+  ],
+  "ds-heap#5": [
+   "ds-amortized#4"
+  ],
+  "co-arith#1": [
+   "f-twos"
+  ],
+  "co-arith#2": [
+   "f-gate"
+  ],
+  "co-arith#4": [
+   "co-arith#1"
+  ],
+  "la-systems#1": [
+   "f-vec"
+  ],
+  "la-systems#3": [
+   "la-systems#1",
+   "f-bigo"
+  ],
+  "la-systems#4": [
+   "la-systems#1",
+   "la-vs#2"
+  ],
+  "os-process#1": [
+   "f-os",
+   "f-list"
+  ],
+  "os-process#2": [
+   "f-c-array"
+  ],
+  "os-process#3": [
+   "os-process#1"
+  ],
+  "os-process#4": [
+   "os-process#1"
+  ],
+  "os-process#5": [
+   "os-process#1",
+   "os-process#3"
+  ],
+  "dm-counting#1": [
+   "f-set",
+   "f-sum"
+  ],
+  "dm-counting#2": [
+   "f-sum"
+  ],
+  "dm-counting#3": [
+   "dm-counting#1",
+   "f-set",
+   "f-mod",
+   "f-prob"
+  ],
+  "dm-counting#4": [
+   "dm-counting#2"
+  ],
+  "dm-counting#5": [
+   "dm-counting#2",
+   "dm-logic#3",
+   "ds-bst#1"
+  ],
+  "al-dc#1": [
+   "al-recurrence#2"
+  ],
+  "al-dc#2": [
+   "f-vec"
+  ],
+  "al-dc#3": [
+   "al-dc#1",
+   "ds-sort#1"
+  ],
+  "al-dc#4": [
+   "al-dc#1",
+   "ds-sort#1"
+  ],
+  "al-dc#5": [
+   "al-dc#1",
+   "f-vec"
+  ],
+  "ds-hash#1": [
+   "f-mod",
+   "f-c-array",
+   "f-bigo",
+   "f-binary",
+   "al-recurrence#1",
+   "f-prob"
+  ],
+  "ds-hash#2": [
+   "f-list",
+   "f-prob"
+  ],
+  "ds-hash#3": [
+   "ds-hash#1",
+   "f-prob"
+  ],
+  "ds-hash#4": [
+   "ds-hash#2"
+  ],
+  "co-perf#1": [
+   "f-os"
+  ],
+  "co-perf#3": [
+   "co-perf#1"
+  ],
+  "co-perf#4": [
+   "co-perf#1"
+  ],
+  "la-vs#1": [
+   "f-vec",
+   "f-set",
+   "f-func"
+  ],
+  "la-vs#2": [
+   "la-systems#1"
+  ],
+  "la-vs#3": [
+   "la-vs#1",
+   "f-set",
+   "la-systems#5"
+  ],
+  "la-vs#4": [
+   "la-vs#2"
+  ],
+  "os-sched#1": [
+   "os-process#1"
+  ],
+  "os-sched#4": [
+   "os-sched#2",
+   "os-process#3"
+  ],
+  "dm-graph#1": [
+   "f-set"
+  ],
+  "dm-graph#3": [
+   "dm-graph#1",
+   "dm-logic#3"
+  ],
+  "dm-graph#4": [
+   "dm-graph#1"
+  ],
+  "dm-graph#6": [
+   "dm-graph#1"
+  ],
+  "ds-graph#1": [
+   "f-list",
+   "f-c-array",
+   "dm-graph#1",
+   "f-bigo",
+   "f-log"
+  ],
+  "ds-graph#2": [
+   "ds-amortized#1"
+  ],
+  "ds-graph#3": [
+   "ds-graph#1",
+   "f-recursion"
+  ],
+  "ds-graph#5": [
+   "ds-graph#3"
+  ],
+  "ds-graph#6": [
+   "ds-graph#3"
+  ],
+  "ds-graph#7": [
+   "ds-graph#3",
+   "dm-graph#2"
+  ],
+  "ds-unionfind#1": [
+   "ds-bst#1",
+   "f-bigo",
+   "f-set"
+  ],
+  "ds-unionfind#2": [
+   "f-log",
+   "ds-amortized#4"
+  ],
+  "ds-unionfind#3": [
+   "ds-unionfind#1",
+   "ds-graph#1"
+  ],
+  "co-datapath#1": [
+   "co-arith#1",
+   "f-os",
+   "co-perf#1"
+  ],
+  "co-datapath#2": [
+   "co-arith#2",
+   "f-gate"
+  ],
+  "co-datapath#3": [
+   "co-perf#1"
+  ],
+  "la-det#1": [
+   "la-systems#2",
+   "la-systems#5"
+  ],
+  "la-det#4": [
+   "la-det#1"
+  ],
+  "os-sync#1": [
+   "os-process#3",
+   "os-sched#2"
+  ],
+  "os-sync#3": [
+   "os-sync#1",
+   "os-process#4",
+   "os-sched#4"
+  ],
+  "os-sync#6": [
+   "os-sync#4"
+  ],
+  "dm-relations#1": [
+   "f-set",
+   "dm-logic#2"
+  ],
+  "dm-relations#3": [
+   "dm-relations#1"
+  ],
+  "dm-relations#4": [
+   "dm-relations#1",
+   "f-mod",
+   "dm-graph#1"
+  ],
+  "dm-relations#5": [
+   "f-set",
+   "dm-logic#5",
+   "dm-counting#4"
+  ],
+  "ds-btree#1": [
+   "ds-bst#2",
+   "f-os",
+   "ds-bst#4"
+  ],
+  "ds-btree#3": [
+   "ds-btree#1"
+  ],
+  "ds-btree#4": [
+   "ds-bst#1",
+   "ds-hash#1"
+  ],
+  "ds-btree#5": [
+   "f-list",
+   "f-prob"
+  ],
+  "al-dp#1": [
+   "f-recursion",
+   "al-recurrence#1",
+   "f-bigo"
+  ],
+  "al-dp#4": [
+   "al-dp#2",
+   "f-binary"
+  ],
+  "al-dp#5": [
+   "al-dp#2",
+   "f-bsearch"
+  ],
+  "co-pipeline#1": [
+   "co-datapath#2",
+   "co-perf#1",
+   "co-perf#3"
+  ],
+  "co-pipeline#3": [
+   "co-pipeline#1"
+  ],
+  "co-pipeline#4": [
+   "co-pipeline#1"
+  ],
+  "la-eigen#1": [
+   "la-det#2",
+   "la-vs#2"
+  ],
+  "la-eigen#2": [
+   "la-vs#4"
+  ],
+  "la-eigen#3": [
+   "dm-recur-gf#2"
+  ],
+  "la-eigen#4": [
+   "la-eigen#2"
+  ],
+  "os-deadlock#1": [
+   "os-sync#4"
+  ],
+  "os-deadlock#2": [
+   "ds-graph#3"
+  ],
+  "os-deadlock#4": [
+   "os-deadlock#2"
+  ],
+  "dm-recur-gf#1": [
+   "dm-counting#1",
+   "f-recursion",
+   "f-binary"
+  ],
+  "dm-recur-gf#4": [
+   "dm-recur-gf#1",
+   "al-recurrence#2"
+  ],
+  "dm-recur-gf#5": [
+   "dm-recur-gf#2",
+   "dm-counting#2",
+   "f-sum"
+  ],
+  "al-greedy#1": [
+   "dm-logic#3",
+   "f-bigo",
+   "al-dp#1"
+  ],
+  "al-greedy#2": [
+   "ds-sort#1"
+  ],
+  "al-greedy#3": [
+   "al-greedy#1",
+   "ds-heap#1",
+   "ds-bst#1",
+   "f-binary"
+  ],
+  "al-greedy#4": [
+   "al-greedy#1",
+   "al-dp#2"
+  ],
+  "al-greedy#5": [
+   "al-greedy#1",
+   "f-set",
+   "ds-unionfind#3",
+   "dm-graph#6"
+  ],
+  "al-greedy#6": [
+   "al-greedy#1"
+  ],
+  "co-cache#1": [
+   "f-binary",
+   "f-log",
+   "co-datapath#1",
+   "f-mod",
+   "f-c-array"
+  ],
+  "co-cache#3": [
+   "co-cache#1"
+  ],
+  "co-cache#4": [
+   "co-cache#1",
+   "co-perf#1",
+   "co-pipeline#2"
+  ],
+  "co-cache#6": [
+   "co-cache#3",
+   "co-cache#4"
+  ],
+  "la-ortho#1": [
+   "f-vec",
+   "la-vs#2",
+   "la-systems#4"
+  ],
+  "la-ortho#2": [
+   "la-vs#2",
+   "la-eigen#1"
+  ],
+  "la-ortho#3": [
+   "la-systems#4"
+  ],
+  "la-ortho#4": [
+   "la-ortho#1",
+   "la-eigen#1"
+  ],
+  "la-ortho#5": [
+   "la-ortho#2"
+  ],
+  "os-memory#1": [
+   "f-os",
+   "f-binary",
+   "os-process#1",
+   "f-c-array",
+   "os-process#4"
+  ],
+  "os-memory#3": [
+   "os-memory#1",
+   "f-log"
+  ],
+  "os-memory#5": [
+   "os-memory#1"
+  ],
+  "dm-nt-algebra#1": [
+   "f-mod",
+   "dm-logic#3",
+   "f-bigo",
+   "f-log"
+  ],
+  "dm-nt-algebra#4": [
+   "dm-relations#3",
+   "dm-nt-algebra#2"
+  ],
+  "dm-nt-algebra#5": [
+   "dm-counting#1"
+  ],
+  "al-sp#1": [
+   "ds-graph#2",
+   "ds-graph#4"
+  ],
+  "al-sp#2": [
+   "ds-heap#1"
+  ],
+  "al-sp#3": [
+   "al-sp#1"
+  ],
+  "al-sp#4": [
+   "ds-heap#2"
+  ],
+  "al-sp#5": [
+   "al-sp#1",
+   "al-dp#2"
+  ],
+  "al-sp#6": [
+   "al-sp#1",
+   "ds-graph#4"
+  ],
+  "co-ilp#1": [
+   "co-pipeline#2",
+   "co-pipeline#4"
+  ],
+  "co-ilp#3": [
+   "co-ilp#1"
+  ],
+  "co-ilp#4": [
+   "co-pipeline#3",
+   "co-cache#1"
+  ],
+  "co-ilp#5": [
+   "co-ilp#3",
+   "os-process#3"
+  ],
+  "os-vm#1": [
+   "os-memory#3",
+   "f-prob"
+  ],
+  "la-sym-svd#1": [
+   "la-eigen#2",
+   "la-ortho#4",
+   "la-eigen#3"
+  ],
+  "la-sym-svd#4": [
+   "la-sym-svd#1",
+   "la-ortho#5",
+   "la-systems#5"
+  ],
+  "al-mst-flow#1": [
+   "ds-graph#1",
+   "ds-unionfind#1",
+   "ds-heap#1",
+   "al-greedy#1"
+  ],
+  "al-mst-flow#2": [
+   "ds-graph#2"
+  ],
+  "al-mst-flow#3": [
+   "dm-graph#6"
+  ],
+  "co-vm-coherence#1": [
+   "co-cache#1",
+   "os-memory#3",
+   "os-vm#3"
+  ],
+  "co-vm-coherence#2": [
+   "co-cache#2",
+   "os-process#3"
+  ],
+  "co-vm-coherence#4": [
+   "co-vm-coherence#2",
+   "os-sync#3"
+  ],
+  "os-storage#1": [
+   "f-os",
+   "os-sched#2"
+  ],
+  "os-storage#2": [
+   "f-gate"
+  ],
+  "os-storage#3": [
+   "os-storage#1",
+   "f-list",
+   "os-memory#2"
+  ],
+  "os-storage#5": [
+   "os-storage#3"
+  ],
+  "al-prob#1": [
+   "f-prob",
+   "f-bigo"
+  ],
+  "al-prob#2": [
+   "ds-sort#3"
+  ],
+  "al-prob#3": [
+   "f-mod",
+   "f-c-array"
+  ],
+  "al-np#1": [
+   "al-recurrence#1",
+   "dm-logic#1",
+   "al-dp#4"
+  ],
+  "al-np#2": [
+   "ds-graph#1",
+   "dm-graph#6"
+  ],
+  "al-np#4": [
+   "al-np#2",
+   "al-greedy#1",
+   "al-mst-flow#1"
+  ],
+  "os-deadlock#3": [
+   "f-bigo"
+  ],
+  "dm-relations#2": [
+   "f-bigo"
+  ],
+  "al-dp#2": [
+   "f-vec"
+  ],
+  "al-np#3": [
+   "dm-graph#5",
+   "dm-graph#2",
+   "al-sp#1"
+  ],
+  "os-memory#4": [
+   "os-process#5"
+  ],
+  "dm-logic#4": [
+   "f-mod"
+  ],
+  "os-vm#2": [
+   "f-set"
+  ],
+  "en-reading#1": [
+   "f-func"
+  ]
+ }
+}

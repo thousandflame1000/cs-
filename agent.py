@@ -34,8 +34,8 @@ OUTBOX = os.path.join(BR, 'outbox.jsonl')
 STATE = os.path.join(BR, 'agent_state.json')
 PROGRESS = os.path.join(BR, 'progress.json')
 HEART = os.path.join(BR, 'heartbeat.json')
-NEEDS_ANSWER = {'ask', 'feynman', 'essay', 'blurt', 'checkin', 'request', 'reflect'}
-TYPE_ZH = {'ask': '提問', 'feynman': '費曼關卡', 'essay': '申論作答', 'blurt': '白紙回憶', 'checkin': '晚間打卡', 'request': '請求', 'event': '事件'}
+NEEDS_ANSWER = {'ask', 'feynman', 'essay', 'blurt', 'checkin', 'request', 'reflect', 'work'}
+TYPE_ZH = {'work': '手寫批改', 'ask': '提問', 'feynman': '費曼關卡', 'essay': '申論作答', 'blurt': '白紙回憶', 'checkin': '晚間打卡', 'request': '請求', 'event': '事件'}
 
 
 def now_iso():
@@ -139,6 +139,16 @@ def fmt_msg(m, data=None):
         ls = ctx.get('lessons', [])
         lines += ['回憶的章節：' + '、'.join('%s（%s）' % (lessons.get(x, {}).get('title', x), x) for x in ls), '學生寫下的內容：', m.get('text', ''),
                   '→ 對照章節列出漏掉的重點：python agent.py reply %s --file 回饋.md' % m.get('id')]
+    elif t == 'work':
+        img = os.path.join(BR, ctx.get('file', '')) if ctx.get('file') else '（沒有圖片）'
+        lines += ['題目（%s）：%s' % (ctx.get('qid', ''), ctx.get('stem', ''))]
+        if ctx.get('options'):
+            lines += ['選項：' + ' / '.join('%s. %s' % ('ABCDEFGH'[i], o) for i, o in enumerate(ctx['options']))]
+        lines += ['正解：%s' % ctx.get('answer', ''), '詳解：' + str(ctx.get('explanation', '')),
+                  '學生自評：%s' % (ctx.get('self') or '（還沒自評）'),
+                  '學生的手寫／照片：' + img,
+                  '→ 用 Read 打開圖片，逐行對照（先說哪幾行對，再指出「第一個錯的那一行」與原因，給下一步提示，不要整份重寫）：',
+                  '  python agent.py reply %s --file 批改.md' % m.get('id')]
     elif t == 'checkin':
         lines += ['日期 %s，%s（%s/%s 項），專注 %s 分，做題 %s 題對 %s 題' % (ctx.get('date'), '達標' if ctx.get('full') else '未達標', ctx.get('done'), ctx.get('total'), ctx.get('minutes'), ctx.get('questions'), ctx.get('correct'))]
         for tk in ctx.get('tasks', []):
@@ -462,6 +472,15 @@ def cmd_report(a):
         return 0
     print('學生：%s　更新：%s' % (p.get('student') or '（未填名字）', local_ts(p.get('updated'))))
     print('計畫第 %s 天｜距考試 %s 天｜連續達標 %s 天｜今日任務 %s/%s' % (p.get('planDay'), p.get('daysLeft'), p.get('streak'), p.get('tasksDone'), p.get('tasksTotal')))
+    kp = p.get('kp') or {}
+    if kp:
+        print('知識點：學會 %s/%s｜下一個：%s｜照目前時數還要 %s 天' % (kp.get('learned'), kp.get('total'), (kp.get('next') or {}).get('title') or '—', kp.get('daysToFinish')))
+        if kp.get('today'):
+            print('  今天：' + '、'.join(('✓' if x.get('done') else '') + x['title'] for x in kp['today']))
+        if kp.get('yesterday'):
+            print('  昨天學會（回想只問這些）：' + '、'.join(x['title'] for x in kp['yesterday']))
+        if kp.get('stuck'):
+            print('  卡住（最近 5 題 < 60%）：' + '、'.join('%s %d%%' % (x['title'], round(100 * x['acc'])) for x in kp['stuck']))
     print('\n近 14 天（日期 分鐘 題數 對 打卡）：')
     for d in p.get('last14', []):
         print('  %s %4s %4s %4s %s' % (d['date'], d['minutes'], d['questions'], d['correct'], '✓' if d['checkin'] else ''))

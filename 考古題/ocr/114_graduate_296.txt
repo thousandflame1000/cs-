@@ -1,0 +1,60 @@
+=== PAGE p-1.pgm
+題 號 : 296 國 立 臺灣 大 學 114 學 年 度 碩士 班 招生 考試 試題
+科目 : 數 學 (A) 題 號 : 296
+
+讀 先 在 試卷 第 一 頁 繪製 以 下 表 格 , 然後 將 答案 填 入 。
+
+Please draw the following table on the first page of the answer sheets and fill in the answers accordingly.
+
+2. (5%) There are satisfying truth assignments to
+(nw Ax Any) V GW AAx Ay Anz)
+
+LG
+=== PAGE p-2.pgm
+FAS > 296 國 立 臺 灣 大 學 114 學 年 度 碩士 班 招生 考試 試題
+ARH: 296
+H2 頁 之 第 之 頁
+
+- (10%) Let there be N binary relations from {A,B,C,D} to {1, 2,3,4,5}. Calculate Nmod 13:
+
+(10%) Derive the solution for a, that satisfies the recurrence equation a, = —3d,_,+10a,_2 with
+% =3 and a, =2:
+
+- (10%) The generating function in partial fraction decomposition for the above recurrence equation is
+
+- (10%) The number of non-negative integer solutions of Xy $Xq+-+X, S57 equals
+
+. (10%) Which ones of the following sets are linearly independent? Points will be counted only if all the
+answers are correct.
+
+(A) {—x? + 3x + 6,x3 + 2, x3 — 3x? +5} in P3(R).
+OG TG OG o-G Q)} im he®
+
+9G DG DG 96 Jem
+9 站
+(3). Q fur
+
+。 Let V = P3(x) bea subspace of P(x) with inner product << fig>= Ly f@ag(x)ax.
+(A) (10%) Find the matrix A with respect to the basis {1,~x, x2, x2} in V such that < fig >= [Ff] A[g].
+
+(B) (10%) Find the Fourier coefficient of x5 along x? 一 ox.
+
+a a a3 «gh
+1 a at. gnot
+—2 同
+, (10%) A= a 品 1 av" | where a€R and n isa positive integer. Find the
+ae a i
+日 : i a
+a” qn-} qnt-2 wae a 1
+product of all the eigenvalues of A in the simplest form.
+
+1-2 2 0
+3-4 2 5
+
+10. (10%) Given A= 1 一 1 0 2) anda polynomial f(x) = x* — 7x3 + 13x? ~ 6x +1. Find
+00 0 4 -1
+00 02 1
+
+the largest eigenvalue of f(A).
+
+ARR

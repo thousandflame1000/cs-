@@ -1,0 +1,123 @@
+=== PAGE p-1.pgm
+aH: 406 ALEMAS 109 FERRE SE
+AR: 408
+
+KS! PME PRES RRR EES
+
+1. (5%) Consider
+$y tet H, SP,
+where a<x,<b for I1<i<n. What is the generating function for the number
+of integer solutions to the above equation (where the desired count appears as the
+
+coefficient of x”, where r=0,]1,...)?
+
+2. (5%) What is the number of functions from {1,2,...,7}" to {I,2,. ff 2
+
+3. (10%) Consider
+X, +X, $0 +%, <7,
+where x,20 for 1<i<n. What is its number of nonnegative integer solutions
+
+when n=4 and r=8?
+
+4. (10%) Derive the solution for a, that satisfies the recurrence equation
+
+a, =3a,,+n with a, =1.
+
+5. (10%) The generating function in partial fraction decomposition for the above
+recurrence equation is . (Note that expressions like
+
+x8 9
+(x~3)° x-l
+
+are not partial fraction decompositions.)
+
+6. (10%) Prove the following inequality:
+
+(iva)
+
+ 
+=== PAGE p-2.pgm
+MAH: 408 ALeerKE 109 PFRRALHBAFRRA
+FA: RHE FAH? 408
+Bick. 4 7 x 3am a8
+
+ 
+
+7. (10%) If the polynomial function f(x) = ax‘t + bz? + cx? + dx + € satisfies
+
+f(—2) = 150
+
+f(-1) 16
+F(0) 2
+F(1) 18
+#(2) = 166,
+
+then a, b,c, d,e are , ; ; ; , respectively.
+8. (10%) The nullities of the matrices BBT — \J for \ = 0,1, 2,3,4
+
+0 1 0
+—2 0 0
+0 0 (0
+0 0 -!l
+0 -1 0
+
+are_,_g_ gs, Fespectively.
+
+9. (10%) Let
+00
+00
+00
+00
+
+-1
+
+0 1 0
++b + :a,b,c¢ER
+
+“hy ol “ta
+
+0 i 0
+
+The numbers of elements —2, —1, 0, 1, 2 in a matrix B with
+
+B Ar ifcoeUu
+I=
+0 ifzeUt.
+
+are. yy , respectively.
+=== PAGE p-3.pgm
+MAH: 408 Aree rAS 109 $F RE ALHBEFRRA
+Aa: RF HAR: 408
+fick: 4 x 3 H2e
+
+ 
+
+10. (10%) If
+0 00 0
+0 0 00 0
+05 0 0 0 -05]’
+0 0 0-1 0
+
+then the numbers of elements —2, —1, 0, 1, 2 in a matrix B with
+
+A=
+
+ABA A
+BAB B
+(AB)? AB
+(BA) BA.
+
+a , respectively,
+11. (10%) The numbers of elements 0, 1, 2, 3, 4 in a Jordan normal form of the matrix
+
+4 4 2 1
+0 0 -1 -1
+-1 -1 2 0
+1 2d -1 1
+
+A=
+
+oe ee respectively.
+
+RAMEE
+

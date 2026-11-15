@@ -77,8 +77,9 @@ const Learn = {
   newCards(filt = () => true, limit) {
     const day = S.planDay(), seen = S.st.srs || {};
     const planOrder = {}; (DATA.plan || []).forEach(p => (p.lessons || []).forEach(l => { if (!(l in planOrder)) planOrder[l] = p.day; }));
-    const unlocked = ch => (S.st.lessons[ch] || {}).read || (planOrder[ch] || 99) <= day;
-    let pool = this.cards().filter(c => filt(c) && !seen[c.id] && unlocked(c.ch));
+    // 只從你學會的知識點出新卡（課程規格 H10）；卡片記得它在哪一節（build.py 的 kp 欄）
+    const unlocked = c => c.kp && KP.N[c.kp] ? KP.learned(c.kp) : !!(S.st.lessons[c.ch] || {}).read;
+    let pool = this.cards().filter(c => filt(c) && !seen[c.id] && unlocked(c));
     const kindOrder = { tf: 0, key: 1, recall: 2 };
     pool.sort((a, b) => (planOrder[a.ch] || 99) - (planOrder[b.ch] || 99) || kindOrder[a.kind] - kindOrder[b.kind]);
     return limit == null ? pool : pool.slice(0, Math.max(0, limit));
@@ -102,14 +103,14 @@ const Learn = {
   /* ---------- 自適應選題：讓預測答對率落在 80–85%，同時偏向弱章、避免連續同一章 ---------- */
   TARGET: .82,
   pick(done, prevCh, only) {
-    const today = D.today(), readCh = DATA.lessons.filter(l => (S.st.lessons[l.id] || {}).read).map(l => l.id);
-    const pd = S.planDay(); const planned = new Set(); (DATA.plan || []).forEach(p => { if (p.day <= pd) (p.lessons || []).forEach(x => planned.add(x)); });
-    let chs = only ? [only] : readCh.length >= 2 ? readCh : [...new Set([...readCh, ...planned])];
-    if (!chs.length) chs = DATA.lessons.map(l => l.id);
-    const chSet = new Set(chs), cand = [];
+    const today = D.today();
+    // 只從你學會的知識點出題（課程規格 H10）：題目看主知識點 q.kp；隨機計算題要整章學會才出
+    const ok = q => q.kp && KP.N[q.kp] ? KP.learned(q.kp) : (KP.ORDER.some(k => KP.N[k].ch === q.ch) && KP.ORDER.filter(k => KP.N[k].ch === q.ch).every(KP.learned));
+    const fullCh = ch => KP.ORDER.some(k => KP.N[k].ch === ch) && KP.ORDER.filter(k => KP.N[k].ch === ch).every(KP.learned);
+    const cand = [];
     const due = new Set(this.dueQuestions());
-    for (const q of QBANK.all()) { if (!chSet.has(q.ch) || q.type === 'essay' || done.has(q.id)) continue; const a = S.st.answers[q.id]; cand.push({ id: q.id, q, ch: q.ch, today: a && a.last === today, due: due.has(q.id), fresh: !a }); }
-    for (const g of Gen.list) { if (!chSet.has(g.ch)) continue; const k = 'g:' + g.id, c = this.card(k); cand.push({ id: this.freshGen(g.id), q: { ch: g.ch, diff: g.diff || 2 }, ch: g.ch, gen: true, due: this.isDue(c, today), fresh: !c, today: [...done].some(x => x.startsWith('gen:' + g.id + ':')) }); }
+    for (const q of QBANK.all()) { if ((only && q.ch !== only) || !ok(q) || q.type === 'essay' || done.has(q.id)) continue; const a = S.st.answers[q.id]; cand.push({ id: q.id, q, ch: q.ch, today: a && a.last === today, due: due.has(q.id), fresh: !a }); }
+    for (const g of Gen.list) { if ((only && g.ch !== only) || !fullCh(g.ch)) continue; const k = 'g:' + g.id, c = this.card(k); cand.push({ id: this.freshGen(g.id), q: { ch: g.ch, diff: g.diff || 2 }, ch: g.ch, gen: true, due: this.isDue(c, today), fresh: !c, today: [...done].some(x => x.startsWith('gen:' + g.id + ':')) }); }
     if (!cand.length) return null;
     const r = Math.random;
     let best = null, bs = 1e9;
@@ -120,6 +121,8 @@ const Learn = {
     }
     return best;
   },
+  /* 學過的章（讀完的）：記憶系統、練習、卡片都只從這裡出 */
+  learned() { return [...new Set(KP.M().map(k => KP.N[k].ch).filter(Boolean))]; },
   /* 最弱的幾章（有做過題目的） */
   weakest(k = 3) { return DATA.lessons.map(l => ({ id: l.id, m: this.mastery(l.id), n: ((S.st.elo || {})[l.id] || {}).n || 0 })).filter(x => x.m != null && x.n >= 3).sort((a, b) => a.m - b.m).slice(0, k); },
 };

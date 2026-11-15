@@ -1,0 +1,968 @@
+@q dp1-01 | al-dp#1 | 2 | 觀念
+A thief walks along a street of houses with values $v[0], v[1], \ldots, v[n-1]$ and may not rob two adjacent houses. The following recursive function returns the best total obtainable from houses $i, i+1, \ldots, n-1$:
+```
+best(i):
+    if i >= n: return 0
+    return max(v[i] + best(i + 2), best(i + 1))
+```
+Let $v = [5, 6, 5]$, so $n = 3$, and consider the call `best(0)`. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] `best(0)` returns 10 by combining $v[0]$ with the optimal value `best(2)` of a shorter suffix.
+[ ] The call `best(0)` evaluates `best(2)` exactly once, so this recursion has no overlapping subproblems.
+[ ] Repeatedly robbing the most valuable remaining house and then skipping its neighbors also yields a total of 10.
+[ ] Dynamic programming applies here only if `best(i + 2)` and `best(i + 1)` share no subproblem.
+[ ] Storing the results of `best` saves no work for this input, because no call is ever repeated.
+---
+「best(0) 是 10」對：`best(2)`＝5，`best(1)`＝max(6＋0, 5)＝6，所以 `best(0)`＝max(5＋5, 6)＝10。大問題的最佳值由較短後綴的最佳值組成，這就是最佳子結構。
+
+「best(2) 只算一次」錯：`best(0)` 直接呼叫一次，`best(1)` 又呼叫一次，共兩次；n 變大時重複次數會指數成長，這正是重疊子問題。
+
+「每次拿最值錢的」錯：先拿 6，兩旁的 5 都不能拿，只得 6。每一步都挑眼前最好的，不保證整體最好。
+
+「兩個呼叫不能共用子問題」錯：共用子問題（重疊）正是 DP 省時間的來源，不是限制。
+
+「存起來沒省到」錯：程式數出 `best(2)`、`best(4)` 各被要兩次，`best(3)` 三次；存起來就不用重算。
+
+@q dp1-02 | al-dp#1 | 2 | 計算
+直接遞迴算費氏數 $F(10)$（$F(n)=F(n-1)+F(n-2)$，$F(0)=0$、$F(1)=1$），函式總共被呼叫幾次？
+== 177
+---
+呼叫次數 $C(n)=C(n-1)+C(n-2)+1$，$C(0)=C(1)=1$，算到 $C(10)=177$，指數成長。記憶化後每個 $F(k)$ 只算一次，共 11 個子問題。
+
+@q dp1-03 | al-dp#1 | 2 | 比較
+A program computes $f(240)$, where $f(c)$ is the best total value whose total size is at most $c$ using two kinds of items, of sizes 40 and 60 and values 3 and 5, each available any number of times:
+```
+f(c) = 0                                   if c < 40
+f(c) = 3 + f(c - 40)                       if 40 <= c < 60
+f(c) = max(3 + f(c - 40), 5 + f(c - 60))   if c >= 60
+```
+Version R evaluates $f$ by memoized recursion starting from $f(240)$; version L fills an array in the order $c = 0, 1, \ldots, 240$. Which of the following statements are correct? Select all that apply.
+[x] Version R evaluates only 12 distinct values of $c$.
+[x] Version L fills 241 entries.
+[x] If the item sizes were 1 and 2 instead, version R would reach every value of $c$ from 0 to 240.
+[ ] Version R evaluates more distinct values of $c$ than version L, because each recursive call may branch into two further calls.
+[x] Both versions return $f(240) = 20$.
+---
+「R 只算 12 個」對：從 240 每次減 40 或 60，只會到 20 的倍數，而且 220 到不了（$40x+60y=20$ 沒有非負整數解）。程式列出的是 0、20、40、…、200、240，共 12 個。
+
+「L 填 241 格」對：$c=0$ 到 240，每格只用到前面算好的格子，也不用遞迴呼叫。
+
+「大小改 1、2 時 R 每個上限都算」對：每次減 1 或 2，0 到 240 全都到得了。這時由上往下沒有省到格子，只多了呼叫成本。
+
+「R 算得比 L 多」錯：記憶化讓每個上限只算一次，分支多不會讓相異的狀態變多；這裡是 12 對 241。
+
+「都得到 20」對：例如四個大小 60 的物品，4×5＝20；兩種寫法算的是同一個遞迴式。
+
+@q dp1-04 | al-dp#1 | 2 | 計算
+A dynamic program fills an $n \times n$ table with the loops below. Row 0 is given, and each evaluation of `w(k, j)` and each comparison takes $O(1)$ time.
+```
+for i in 1..n:
+    for j in 1..n:
+        T[i][j] = min over k in 1..n of (T[i-1][k] + w(k, j))
+```
+Count one unit of work for each value of $k$ examined. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] The table has $n^2$ entries, so the tight running time is $\Theta(n^2)$.
+[ ] For $n = 100$, the loops examine $10^4$ values of $k$ in total.
+[x] If each entry examined only $k \in \{j-1, j, j+1\}$, the running time would be $\Theta(n^2)$.
+[ ] The total work equals the number of entries divided by the number of values of $k$ examined per entry.
+[ ] Memoizing `T` instead of filling it with loops would reduce the running time to $\Theta(n)$.
+---
+「n² 格所以平方」錯：每格要看 $n$ 個 $k$，共 $n^2\cdot n=n^3$，緊界 $\Theta(n^3)$。
+
+「n＝100 看 10⁴ 次」錯：$100^3=10^6$ 次；$10^4$ 只是格數。
+
+「每格只看 3 個 k 就是平方」對：$n^2\times3=\Theta(n^2)$。
+
+「格數除以選擇數」錯：每格都要看完自己的選擇，應該相乘。
+
+「改成記憶化就變線性」錯：記憶化只避免同一格重算，每格本身要看的 $n$ 個 $k$ 還是要看。
+
+@q dp1-05 | al-dp#1 | 3 | 反例
+「最長簡單路徑」（不能重複走點）為什麼不能直接用 DP？
+[x] 子問題不獨立：$u\to w$ 和 $w\to v$ 各自的最長簡單路徑可能共用點，接起來就不簡單了，沒有最佳子結構
+[ ] 因為圖太大
+[ ] 因為有權重是負的邊
+[ ] 因為子問題太少
+---
+最短路徑沒有這個問題：最短路徑的子路徑一定也是最短，而且不會共用點。
+
+@q dp1-06 | al-dp#1 | 2 | 情境
+A rod of length $n$ can be cut into integer pieces, and a piece of length $i$ sells for $p_i$, with $p_1 = 1$, $p_2 = 5$, $p_3 = 8$, and $p_4 = 9$. The best revenue satisfies $r_n = \max_{1 \le i \le n}(p_i + r_{n-i})$ with $r_0 = 0$. Which of the following statements are correct? Select all that apply.
+[x] $r_4 = 10$, obtained by cutting the rod into two pieces of length 2.
+[x] Computing $r_1, \ldots, r_n$ bottom-up takes time proportional to $n^2$.
+[x] The plain recursion without memoization takes time exponential in $n$.
+[x] $r_4-r_3=2$.
+[x] The bottom-up computation examines exactly $n(n+1)/2$ candidate first-piece lengths.
+---
+「r₄ 十」對：max(1＋8,5＋5,8＋1,9)＝10。「平方時間」對：各長度 j 檢查 j 個候選。「樸素遞迴指數」對：呼叫數滿足 N(n)＝1＋各較小 N 的總和，N(0)＝1 時得 2ⁿ。「r₄ 減 r₃ 為二」對：10−8＝2。「候選總數三角和」對：從一到 n 各檢查一至 n 個第一段長度，合計 n(n＋1)/2。
+
+@q dp1-07 | al-dp#1 | 2 | 計算
+硬幣面額 1、3、4，湊出 6 元最少要幾枚？
+== 2
+---
+$d[a]=\min_c d[a-c]+1$：$d[6]=d[3]+1=2$（3+3）。貪婪先拿 4 會變 4+1+1，三枚。
+
+@q dp1-08 | al-dp#1 | 3 | 陷阱
+「只要問題有最佳子結構，就應該用 DP」對嗎？
+[ ] 對
+[x] 不對
+---
+還要有重疊子問題，DP 才省得到時間；沒有重疊（像合併排序）用分治就好。另外有些有最佳子結構的問題，貪婪就能解（更快）。
+
+@q dp1-09 | al-dp#1 | 2 | 找錯
+For $n = 4$, a program wants the values $d[1], \ldots, d[4]$ defined by $d[i] = d[i+1] + 1$ with the boundary value $d[5] = 0$. It starts with every array entry equal to 0 and runs the loop below once.
+```
+for i = 1, 2, 3, 4:
+    d[i] = d[i + 1] + 1
+```
+Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] After this loop, $d[1], d[2], d[3], d[4]$ are $4, 3, 2, 1$.
+[ ] Running this loop twice in a row gives the correct values for $n = 4$.
+[ ] The order of the loop affects only the running time, not the values computed.
+[x] Running the loop once in the order $i = 4, 3, 2, 1$ gives $d[1] = 4$.
+[ ] A memoized recursion that computes $d(1)$ from $d(2)$ would also return 1.
+---
+正向跑一次：每個 $d[i]$ 讀到的 $d[i+1]$ 都還是初值 0（只有 $d[4]$ 讀到真正的邊界），所以全部變成 1。
+
+「得到 4、3、2、1」錯：程式跑出來是 1、1、1、1。
+
+「跑兩次就對」錯：第二次得到 2、2、2、1。每跑一次，正確的資訊只往左傳一格，要跑 4 次才對。
+
+「順序只影響時間」錯：值都錯了。
+
+「倒著跑一次 d[1]＝4」對：先算 $d[4]=1$，再 $d[3]=2$……，每格讀到的都已經算好。填表一定要讓被依賴的格子先算。
+
+「記憶化也回傳 1」錯：遞迴會先求出 $d(2)$ 才回來，最後得到正確的 4。
+
+@q dp1-10 | al-dp#1 | 3 | 證明
+用「剪下貼上」論證：鋼條切割有最佳子結構（長度 $n$ 的最佳切法如果第一段長 $i$，剩下長度 $n-i$ 的切法也一定是最佳的）。
+---
+假設剩下的 $n-i$ 不是最佳切法，存在一種賣得更多的切法。把原本剩下的部分剪掉、換成這種更好的切法，整根 $n$ 就賣得比「最佳」還多，矛盾。所以 $r_n=\max_i(p_i+r_{n-i})$ 成立。
+
+@q dp1-11 | al-dp#1 | 2 | 觀念
+The function below computes Fibonacci numbers by plain recursion, with unit-cost addition:
+```
+fib(k):
+    if k < 2: return k
+    return fib(k - 1) + fib(k - 2)
+```
+Consider the single top-level call `fib(6)`, and count every call, including the top-level one. For comparison, a second function finds the maximum of the list `[3, 1, 4, 1, 5, 9, 2, 6]` by splitting it into two halves of equal length, finding the maximum of each half recursively, and returning the larger one. Which of the following statements are correct? Select all that apply.
+[x] `fib(2)` is called 5 times.
+[x] There are 25 calls in total.
+[x] With memoization, only the 7 distinct calls `fib(0)` through `fib(6)` do any work.
+[x] The second function never solves the same sublist twice.
+[ ] With memoization, computing `fib(n)` still needs a number of additions that grows exponentially in $n$.
+---
+「fib(2) 被呼叫 5 次」對、「共 25 次」對：程式數出 `fib(6)`、`fib(5)` 各 1 次，`fib(4)` 2 次，`fib(3)` 3 次，`fib(2)` 5 次，`fib(1)` 8 次，`fib(0)` 5 次，合計 25。同一個子問題被一再重算，就是重疊子問題。
+
+「記憶化只有 7 個呼叫做事」對：每個 $k$ 第一次算完就存起來，之後直接查表。
+
+「對半找最大不會重複」對：每次切出的區間互不相交，每個子問題只出現一次，記憶化沒有幫助。
+
+「記憶化後仍是指數次加法」錯：每個 $k$ 只做一次加法，共 $O(n)$ 次。
+
+@q dp1-12 | al-dp#1 | 2 | 計算
+在 $m\times n$ 的格子中，從左上走到右下，每步只能往右或往下。用 DP 算有幾條路，要填幾格？$3\times3$ 格（點數 $3\times3$）時答案是？
+== 9,6
+?? 填幾格,答案
+---
+每個點一格：$d[i][j]=d[i-1][j]+d[i][j-1]$。$3\times3$ 個點填 9 格，右下角是 6。
+
+@q dp2-01 | al-dp#2 | 2 | 計算
+LCS（最長共同子序列）：STONE 和 LONGEST 的 LCS 長度是？
+== 3
+---
+例如 O、N、E。$c[i][j]$：字元相同取左上 +1，否則取上、左較大的。
+
+@q dp2-02 | al-dp#2 | 2 | 計算
+DYNAMIC 和 DIAMOND 的 LCS 長度是？
+== 3
+---
+例如 D、A、M（DYNAMIC 的 D…A…M、DIAMOND 的 D…A…M）。
+
+@q dp2-03 | al-dp#2 | 3 | 追蹤
+LCS 表：X＝ABCB（列）、Y＝BDCAB（行）。最後一格 $c[4][5]$ 是多少？照「相同往左上、否則上 $\ge$ 左就往上」倒推出的 LCS 是？
+== 3,BCB
+?? 長度,LCS
+---
+填完表最後一列是 0 1 1 2 2 3。倒推得 B、C、B。（LCS 不一定唯一；倒推規則不同可能得到別的答案，長度一樣。）
+
+@q dp2-04 | al-dp#2 | 2 | 計算
+編輯距離（插入、刪除、替換各成本 1）：HORSE 變成 ROSE 是多少？
+== 2
+---
+HORSE → RORSE（H 換 R）→ ROSE（刪掉第二個 R）：2 次，程式填表確認是最少。先刪 H 的話 ORSE → ROSE 還要兩次替換，共 3 次。
+
+@q dp2-05 | al-dp#2 | 2 | 計算
+編輯距離：GRAPE 變成 GIRAFFE 是多少？
+== 3
+---
+程式填表得 3，例如：插入 I（GIRAPE）、P 換 F（GIRAFE）、插入 F（GIRAFFE）。
+
+@q dp2-06 | al-dp#2 | 2 | 計算
+矩陣鏈乘：$A_1$ 是 $5\times10$、$A_2$ 是 $10\times3$、$A_3$ 是 $3\times12$、$A_4$ 是 $12\times5$。最少要幾次純量乘法？
+== 405
+---
+最佳 $((A_1A_2)(A_3A_4))$：$5\cdot10\cdot3=150$、$3\cdot12\cdot5=180$、$5\cdot3\cdot5=75$，共 405。
+
+@q dp2-07 | al-dp#2 | 2 | 計算
+矩陣鏈乘 $A_1$ $2\times3$、$A_2$ $3\times4$、$A_3$ $4\times5$。兩種括號各要幾次乘法？
+== 64,90
+?? (A1A2)A3,A1(A2A3)
+---
+$(A_1A_2)A_3$：$2\cdot3\cdot4+2\cdot4\cdot5=24+40=64$。$A_1(A_2A_3)$：$3\cdot4\cdot5+2\cdot3\cdot5=60+30=90$。
+
+@q dp2-08 | al-dp#2 | 3 | 計算
+矩陣鏈乘，五個矩陣的大小依序是 $4\times10$、$10\times3$、$3\times12$、$12\times20$、$20\times7$。最少幾次乘法？
+== 1344
+---
+程式填表：最佳 $((A_1A_2)((A_3A_4)A_5))$。$A_1A_2$：120；$A_3A_4$：720；$(A_3A_4)A_5$：$3\cdot20\cdot7=420$；最後 $4\cdot3\cdot7=84$。$120+720+420+84=1344$。
+
+@q dp2-09 | al-dp#2 | 2 | 計算
+0/1 背包：容量 7，物品（重, 價）＝(1,1)、(3,4)、(4,5)、(5,7)。最大價值？
+== 9
+---
+選 (3,4)＋(4,5)：重 7、價 9。(5,7)＋(1,1)＝8 比較少。
+
+@q dp2-10 | al-dp#2 | 2 | 計算
+0/1 背包：容量 6，物品 (3,30)、(4,50)、(2,15)。最大價值？
+== 65
+---
+(4,50)＋(2,15)：重 6、價 65。(3,30)＋(2,15)＝45。
+
+@q dp2-11 | al-dp#2 | 2 | 計算
+A course project runs four standard full-table dynamic programs: the longest common subsequence of two strings of lengths 1000 and 2000; the edit distance of the same two strings; the matrix-chain order for 100 matrices; and 0/1 knapsack with 50 items and weight limit $W = 10^4$. Count one unit for each table entry, or for each split point examined in the matrix-chain program. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] The LCS program does about $3 \times 10^3$ units of work, linear in the string lengths.
+[ ] The matrix-chain program examines about $10^4$ split points, since its table has $100^2$ entries.
+[ ] The knapsack program does about $50 \lg 50 \approx 282$ units of work.
+[x] The edit-distance program fills about $2 \times 10^6$ entries.
+[ ] Doubling $W$ to $2 \times 10^4$ leaves the size of the knapsack table unchanged.
+---
+「LCS 約 3000」錯：表有 $1001\times2001\approx2\times10^6$ 格，是 $\Theta(mn)$。
+
+「矩陣鏈約 10⁴」錯：每個區間還要試所有切點，共 $(n^3-n)/6=166{,}650$ 個，$\Theta(n^3)$。
+
+「背包約 282」錯：表的大小是 $n\times W$，約 $50\times10^4=5\times10^5$。
+
+「編輯距離約 2×10⁶」對：$1001\times2001=2{,}003{,}001$。
+
+「W 加倍表不變」錯：表的寬度就是 $W$，加倍就變兩倍；這也是背包只是「擬多項式」時間的原因。
+
+@q dp2-12 | al-dp#2 | 3 | 陷阱
+In the LCS table, when $X_i = Y_j$ we set $c[i][j] = c[i-1][j-1] + 1$, and when $X_i \ne Y_j$ the correct rule is $c[i][j] = \max(c[i-1][j],\ c[i][j-1])$. A student replaces the mismatch rule by $c[i][j] = c[i-1][j-1]$. Which of the following statements are correct? Select all that apply.
+[x] With the correct rule, the LCS of $X = \text{ABCBDAB}$ and $Y = \text{BDCABA}$ has length 4.
+[x] With the student's rule, the table for $X = \text{ABCBDAB}$ and $Y = \text{BDCABA}$ ends with $c[7][6] = 1$.
+[x] With the student's rule, the final value never exceeds the true LCS length.
+[x] Both full-table rules still take time proportional to the number of table cells.
+[ ] The student's rule gives the correct answer whenever $X$ and $Y$ have the same length.
+---
+「正確長四」對：標準規則的最佳值四，例如 BCBA。「錯規則長一」對：逐格只沿左上斜線累積相同字元，實算末格一。「不超真 LCS」對：每個累積值仍對應合法共同子序列，只是可能漏選。「填表時間同為格數」對：每個版本都處理 mn 格且每格常數工作。「等長就對」錯：AB 與 BA 等長，錯規則得零，真 LCS 長一。
+
+@q dp2-13 | al-dp#2 | 2 | 計算
+編輯距離：CAT → CUT、ABC → CBA 各是多少？
+== 1,2
+?? CAT→CUT,ABC→CBA
+---
+CAT→CUT 換一個字母。ABC→CBA：A 換 C、C 換 A，2 次（中間的 B 不動）。
+
+@q dp2-14 | al-dp#2 | 3 | 情境
+In DNA alignment, a gap (an insertion or a deletion) costs 2, a mismatch costs 1, and a match costs 0. Let $D[i][j]$ be the minimum cost of aligning the first $i$ characters of $a$ with the first $j$ characters of $b$, so $D[i][0] = 2i$ and $D[0][j] = 2j$. For $a$ = ACGT and $b$ = AGT, the filled table is:
+```
+         j=0  j=1(A)  j=2(G)  j=3(T)
+i=0        0     2       4       6
+i=1 (A)    2     0       2       4
+i=2 (C)    4     2       1       3
+i=3 (G)    6     4       2       2
+i=4 (T)    8     6       4       2
+```
+Which of the following statements are correct? Select all that apply.
+[x] Every entry satisfies $D[i][j] = \min(D[i-1][j] + 2,\ D[i][j-1] + 2,\ D[i-1][j-1] + \delta)$, where $\delta$ is 0 if $a_i = b_j$ and 1 otherwise.
+[x] The minimum cost of aligning ACGT with AGT is 2, obtained by deleting the second letter of ACGT.
+[x] $D[2][2] = 1$: the first letters match and the second letters form one mismatch.
+[x] The minimum cost of aligning GAT with GTA is also 2.
+[x] Any alignment of two strings of different lengths $m$ and $n$ uses at least $|m-n|$ gaps.
+---
+「三種最後操作取最小」對：最後一步是刪除、插入（各加 2），或兩個字元對齊（相同加 0、不同加 1）。表中每格都可以這樣驗。
+
+「ACGT 對 AGT 是 2」對：右下角就是 2；刪掉第二個字母（花 2），其餘全部相同。
+
+「$D[2][2]=1$」對：AC 對 AG，第一個字母相同、第二個不同，花 1；改用刪插要 4。
+
+「GAT 對 GTA 也是 2」對：兩次失配花 2；用一刪一插要花 4。
+
+「長度不同至少 |m−n| 個空格」對：對齊兩個字元不改變長度差，只能靠插入或刪除補足。五句都對。
+
+@q dp2-15 | al-dp#2 | 3 | 證明
+寫出 0/1 背包的狀態和遞迴式，並說明為什麼是 $O(nW)$。
+---
+$K[i][w]$：只看前 $i$ 件、容量 $w$ 時的最大價值。$K[i][w]=K[i-1][w]$（不拿第 $i$ 件）或 $K[i-1][w-w_i]+v_i$（拿，需 $w_i\le w$），取大。$K[0][w]=0$。表有 $(n+1)(W+1)$ 格、每格 $O(1)$，共 $O(nW)$。
+
+@q dp2-16 | al-dp#2 | 2 | 計算
+SPEED 變成 PEED、MOUSE 變成 HOUSES 的編輯距離各是？
+== 1,2
+?? SPEED→PEED,MOUSE→HOUSES
+---
+刪掉 S；M 換 H、最後插入 S。
+
+@q dp3-01 | al-dp#3 | 2 | 追蹤
+0/1 背包壓成一維 `K[c]`，物品 (2,3)、(3,5)，容量 6。如果 $c$ **由小到大**更新，算出的 `K[6]` 是多少？正確答案（每件只能拿一次）是多少？
+== 10,8
+?? 由小到大,正確
+---
+由小到大時，`K[c-w]` 可能已經包含這件物品，等於同一件拿了好幾次：拿 3 件 (2,3) 得 9、或 2 件 (3,5) 得 10。正確是 (2,3)+(3,5)=8。由大到小更新才保證每件最多拿一次。
+
+@q dp3-02 | al-dp#3 | 2 | 觀念
+A genome tool compares two DNA strings $X$ and $Y$ of lengths $m = 10^6$ and $n = 2\times10^4$, and it needs only the length of a longest common subsequence (LCS), not the subsequence itself. It fills the usual table, where $c[i][j]$ is the LCS length of the first $i$ characters of $X$ and the first $j$ characters of $Y$:
+```
+c[i][j] = c[i-1][j-1] + 1               if X[i] == Y[j]
+c[i][j] = max(c[i-1][j], c[i][j-1])     otherwise
+```
+The full table would hold about $2\times10^{10}$ entries, which does not fit in memory, so the developer considers filling it row by row while keeping only two rows of length $n+1$. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Every entry depends only on $c[i-1][j-1]$ and $c[i-1][j]$, never on $c[i][j-1]$.
+[ ] Keeping two rows reduces the number of stored entries to a constant independent of both string lengths.
+[x] The running time is still $O(mn)$ when only two rows are kept.
+[ ] With only two rows kept, an LCS itself can still be recovered by the usual backtracking from $c[m][n]$.
+[ ] Keeping only the current row, with no other stored value, is enough, because $c[i][j]$ depends only on entries in row $i$.
+---
+「不用左格」錯：字元失配時要取上格與左格最大。「兩列只常數格」錯：兩列各仍長 min(m,n)＋1，需要 O(min(m,n)) 格。「時間仍 O(mn)」對：格子仍全算，只回收舊列。「通常倒推仍可直接做」錯：先前列已被丟掉，普通倒推缺資料。「只依賴當列」錯：需要上一列；一列實作還須保存被覆蓋的左上值。
+
+@q dp3-03 | al-dp#3 | 2 | 陷阱
+「LCS 只存兩列，也能照常倒推出 LCS 字串」對嗎？
+[ ] 對
+[x] 不對
+---
+倒推要從 $c[m][n]$ 一路往回看到第 1 列，前面的列已經被覆蓋了。要答案本身時，存整張表或用分治版本（Hirschberg）。
+
+@q dp3-04 | al-dp#3 | 2 | 追蹤
+A graphics program multiplies four matrices whose dimensions are:
+
+| matrix | $A_1$ | $A_2$ | $A_3$ | $A_4$ |
+|---|---|---|---|---|
+| size | $10\times100$ | $100\times5$ | $5\times50$ | $50\times10$ |
+
+Multiplying a $p\times q$ matrix by a $q\times r$ matrix costs $pqr$ scalar multiplications. The matrix-chain DP fills $m[i][j]$, the cheapest cost of computing $A_i\cdots A_j$, and records the best split points $s[1][4] = 2$, $s[1][2] = 1$, and $s[3][4] = 3$. The programmer wants to compare the optimal order with the two orders a naive library might use, fully left-to-right and fully right-to-left. Which of the following statements are correct? Select all that apply.
+[x] The optimal parenthesization is $((A_1 A_2)(A_3 A_4))$, which needs 8000 scalar multiplications.
+[x] The parenthesization $(((A_1 A_2) A_3) A_4)$ needs 12500 scalar multiplications.
+[x] The parenthesization $(A_1(A_2(A_3A_4)))$ needs 17500 scalar multiplications.
+[x] For a chain of $n$ matrices, the DP runs in $O(n^3)$ time and uses $O(n^2)$ space.
+[ ] $s[1][4] = 2$ means that the last multiplication performed is $A_2$ times $A_3$.
+---
+「分兩段八千」對：5000＋2500＋500＝8000。「左結合一萬二千五」對：5000＋2500＋5000。「右結合一萬七千五」對：2500＋5000＋10000。「立方時間平方空間」對：平方個區間，各試線性種切點。「最後直接乘中間兩原矩陣」錯：s[1][4]＝2 表示最後把區間一至二的結果乘上區間三至四的結果，不是只做中間兩個原矩陣相乘。
+
+@q dp3-05 | al-dp#3 | 3 | 追蹤
+A 0/1 knapsack instance has items 1, 2, 3 with (weight, value) = (1, 1), (3, 4), and (4, 5), and weight limit $W = 7$. The table $K[i][w]$ is the best value using the first $i$ items with weight limit $w$. Row 2 is $0, 1, 1, 4, 5, 5, 5, 5$ and row 3 is $0, 1, 1, 4, 5, 6, 6, 9$ for $w = 0, \ldots, 7$. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] After choosing item 3 at $K[3][7]$, the next state is $K[2][7]$ without reducing the remaining weight.
+[ ] The optimal solution takes exactly items 1 and 3.
+[x] $K[2][3] = 4 \ne K[1][3] = 1$, so item 2 is taken.
+[ ] Because $K[1][7] = 1 > 0$, item 1 is in the optimal solution.
+[ ] In general, if $K[i][w] = K[i-1][w]$, then item $i$ appears in no optimal solution.
+---
+「拿三後重量仍七」錯：應扣重量四，轉 K[2][3]。「只拿一三最佳」錯：重量五、價值六，低於二三合計價值九。「K[2][3] 不同故拿二」對：不拿二只能值一，拿二達四，然後剩容量零。「K[1][7] 正就拿一」錯：這格不在正確回溯路徑上。「相等表示任何最佳解都不拿」錯：只表示存在不拿的最佳解，並列時仍可能拿該件。
+
+@q dp3-06 | al-dp#3 | 2 | 計算
+編輯距離只要答案值，$m=10^4$、$n=10^4$。存整張表要幾格？只存兩列要幾格？
+== 100020001,20002
+?? 整張,兩列
+---
+$(m+1)(n+1)=10001^2=100020001$；兩列 $2(n+1)=20002$。差了五千倍。
+
+@q dp3-07 | al-dp#3 | 3 | 情境
+In the unbounded knapsack problem, each item may be taken any number of times. The DP is compressed into a one-dimensional array $d[0..W]$, where $W$ is the weight limit, and for each item $(w_i, v_i)$ the update $d[w] = \max(d[w],\ d[w - w_i] + v_i)$ is applied over all $w \ge w_i$. The update loop is
+```
+for each item (w_i, v_i):
+    for w = w_i to W:
+        d[w] = max(d[w], d[w - w_i] + v_i)
+```
+Which of the following statements are correct? Select all that apply.
+[x] For the unbounded problem, $w$ should run from small to large, so that $d[w - w_i]$ may already include item $i$.
+[x] For the 0/1 problem, $w$ must run from large to small, so that $d[w - w_i]$ still refers to the previous item.
+[x] For the stated single-item example, descending updates from an all-zero table give value three at weight limit four.
+[x] With a single item of weight 2 and value 3 and weight limit 4, the unbounded version gives 6.
+[ ] The order of $w$ does not affect the result.
+---
+「無限背包遞增」對：可使用本輪剛更新的較小重量，重複拿同件。「0/1 遞減」對：來源格仍是前一輪，避免同件重拿。「範例遞減得三」對：先更新容量四時容量二仍零，之後容量二才變三，所以四不會再變六。「無限版本六」對：重二值三拿兩次。「順序不影響」錯：這個範例直接顯示六與三的差異。
+
+@q dp3-08 | al-dp#3 | 2 | 觀念
+A course planner uses dynamic programming to choose which of 40 elective courses to take, and the table it fills stores only optimal values. After the table is complete, the student also wants the chosen courses, not just the best total score. A teammate who solved an LCS problem the week before shares three observations from that project: the table for strings of lengths $m = 300$ and $n = 500$ had about 150000 entries, tracing back from $c[m][n]$ took far fewer steps than filling the table, and two different subsequences sometimes had the same optimal length. Which of the following statements about recovering an optimal solution are correct? Select all that apply.
+?? 複選
+[ ] Storing only the final optimal value always uniquely identifies every choice in an optimal solution.
+[ ] For LCS of lengths $m$ and $n$, the usual table backtracking has tight time $\Theta(mn)$ on every input.
+[ ] The whole dynamic program must be run again for every step of the reconstruction.
+[x] Tracing back needs the table entries along the path, so keeping only two rows is not enough.
+[ ] Tracing back is unnecessary, because the optimal solution is always unique.
+---
+「只存最終值即可唯一辨識選擇」錯：不同方案可能同值，數值也沒有保存路徑。「每次倒推必 mn」錯：每步至少減少一個字串下標，至多 m＋n 步，不必重掃整張表。「每步重跑 DP」錯：已保存表與選擇便可沿路走。「普通倒推兩列不足」對：它可能需要已刪除的較早列，須另存資料或採用其他重建法。「最佳解必唯一」錯：例如 AB 與 BA 有兩種不同的一字元最佳共同子序列。
+
+@q dp3-09 | al-dp#3 | 3 | 找錯
+A student traces back through a filled LCS table, starting from $c[m][n]$, with the rule: "If $X_i = Y_j$, go diagonally up-left and output the character; otherwise always go up." The student first tests the rule on $X$ = `x` and $Y$ = `xz`, whose table is
+
+| | $j=0$ | $j=1$ (`x`) | $j=2$ (`z`) |
+|---|---|---|---|
+| $i=0$ | 0 | 0 | 0 |
+| $i=1$ (`x`) | 0 | 1 | 1 |
+
+and then on several longer pairs of strings with lengths $m$ and $n$, comparing each output with the value $c[m][n]$. Which of the following statements are correct? Select all that apply.
+[x] For $X$ = `x` and $Y$ = `xz`, the student's rule outputs the empty string, although the LCS has length 1.
+[x] The correct rule, when $X_i \ne Y_j$, moves toward whichever of $c[i-1][j]$ and $c[i][j-1]$ is larger.
+[ ] The student's rule always produces a longest common subsequence.
+[x] The student's output is always a common subsequence, but it may be shorter than the LCS.
+[x] The stated incorrect backtracking still makes at most $m+n$ moves for string lengths $m,n$.
+---
+「x 對 xz 會輸出空」對：起點失配便往上到零列；正確要先往左。「失配走較大鄰格」對：保持目前最佳長度，相等時任選可行方向。「必得到最長」錯：範例漏掉共同的 x。「仍為共同子序列」對：只在相同字元輸出，且下標單調往回。「至多 m＋n 步」對：錯方向仍每步減少至少一個下標；時間不超界不代表輸出正確。
+
+@q dp3-10 | al-dp#3 | 2 | 計算
+A program computes Fibonacci numbers bottom-up by $F(i) = F(i-1) + F(i-2)$, with $F(0) = 0$ and $F(1) = 1$, for values of $n$ up to $10^7$. Count each stored number as one unit, regardless of the size of its representation. Three versions are compared: one fills an array `F[0..n]`; one keeps only two variables, `a` and `b`, and updates both in each step of a loop; and one is a memoized recursive function that stores each $F(i)$ in a table the first time it is computed. The developer must choose a version for a device with very little memory. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Keeping only the single most recent number, with no other saved number, is sufficient for the stated recurrence.
+[ ] Storing all $F(0),\ldots,F(n)$ occupies only $O(1)$ stored numbers.
+[ ] Every bottom-up implementation requires $\Theta(n)$ stored numbers.
+[x] The two-variable version still performs $O(n)$ additions.
+[ ] The memoized recursive version also uses only $O(1)$ extra space.
+---
+「只存最近一個」錯：下一值要前兩個，不能只靠一個數且無其他保存。「全部答案常數個數」錯：從第零項到第 n 項 有 n＋1 個。「每種實作必線性儲存」錯：只保留最近兩個即可。「仍 O(n) 次加法」對：逐一下標往前，空間省下來但加法數仍線性。「記憶化遞迴常數額外空間」錯：存各下標結果且遞迴深度可線性。此處依題設按儲存數字個數計，不把任意精度位元長度混入。
+
+@q dp4-01 | al-dp#4 | 2 | 觀念
+The 0/1 knapsack dynamic program fills a table with $n+1$ rows, one per item, and $W+1$ columns, one per possible total weight from 0 to the weight limit $W$, so it runs in $O(nW)$ time. The input lists the $n$ weights and values and the number $W$, all written in binary; the limit alone takes $b$ bits, so $W$ can be as large as $2^b - 1$. A student tests the program with $n = 100$ items: with $W = 10^4$ it finishes instantly, but with a 60-bit limit such as $W \approx 10^{18}$ it would need about $10^{20}$ steps. The student wants to explain why $O(nW)$ is called pseudo-polynomial, and whether the algorithm becomes polynomial when all numbers are small, for example at most $n^2$, as in many contest problems. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] The largest positive integer representable with b bits is $2^{b-1}$.
+[x] In terms of the bit length, the running time is $O(n \cdot 2^b)$.
+[ ] $O(nW)$ is polynomial in the length of the input.
+[ ] Even if every weight and $W$ are at most $n^2$, the stated table DP still requires superpolynomially many steps in n.
+[ ] "Pseudo-polynomial" means that the algorithm makes random choices.
+---
+「最大 b 位數是 2 的 b−1 次方」錯：這是最小的 b 位正整數，最大是 2ᵇ−1。「O(n2ᵇ)」對：W 小於 2ᵇ，代入 nW 上界。「對二進位輸入長度必多項式」錯：標準表的寬度依數值而非位數，W 可隨位數指數增長。「限制平方仍超多項式」錯：W≤n² 時 nW≤n³。「虛擬多項式表示隨機」錯：它描述數值大小與編碼長度之間的成本差異。
+
+@q dp4-02 | al-dp#4 | 2 | 計算
+An implementation of 0/1 knapsack uses weight-limit-indexed dynamic programming. It processes every item against every integer weight-limit rather than skipping unused capacities or scaling weights. Let the item count be 100 and the limit be 1000000000, both written in ordinary binary notation. For this question charge one basic step per item-weight-limit pair and ignore the extra boundary column when approximating the leading operation count.
+
+Compare this instance with another that has the same items but limit 2000000000. The input file stores each limit as a binary integer without leading zeros; it does not contain one symbol for every unit of weight-limit. A rolling-row version may discard old item rows, but it still allocates one entry for each weight-limit from zero through the current limit. Determine how the operation count, encoded limit length and number of live table entries change. Distinguish reducing the number of stored rows from eliminating the weight-limit table axis altogether. Which statements are correct? Select all that apply.
+[x] The DP performs about $10^{11}$ steps.
+[x] Written in binary, $W$ needs 30 bits.
+[ ] Writing $W$ takes about $10^9$ bits, so the running time is linear in the length of the input.
+[x] If $W$ is doubled to $2\times10^9$, its binary form grows by only one bit, yet the number of steps doubles.
+[x] A standard rolling-row implementation stores $W+1$ table entries rather than only the item list.
+---
+「一千億步」對：100×10⁹＝10¹¹。「三十位」對：2²⁹≤10⁹<2³⁰。「十億位」錯：混淆數值與編碼長度。「加倍增一位、步數加倍」對：2×10⁹ 在 2³⁰ 與 2³¹ 之間，模型工作量也乘二。「一列 W＋1 格」對：空間可壓掉物品維度，但不能把容量維度當成只有物品清單。
+
+@q dp4-03 | al-dp#4 | 3 | 陷阱
+判斷一個數 $N$ 是不是質數：「試除 2 到 $\sqrt N$，$O(\sqrt N)$，所以是多項式時間」對嗎？
+[ ] 對
+[x] 不對
+---
+輸入長度是 $b=\lg N$ 位元，$\sqrt N=2^{b/2}$，對 $b$ 是指數。跟背包一樣是偽多項式。
+
+@q dp4-04 | al-dp#4 | 2 | 比較
+A numeric problem has n positive integers, each stored using exactly b bits including any leading padding. Take n and b to be positive and variable, and use L equal to nb for the numeric payload length. Fixed-format separators and the encoding of n and b do not change the polynomial-versus-exponential distinctions considered here. W and N denote values of individual input integers rather than their encoded lengths.
+
+For a numerical comparison, set n to 10 and b to 30. A value such as W equal to 1000000000 fits within one integer entry, yet iterating W times is very different from iterating b times. For the asymptotic question, allow b to grow while n remains fixed, so there is no promise that the integer values are bounded by a polynomial in n. Decide which listed expressions themselves supply a polynomial upper-bound guarantee in L for every permitted input, rather than whether a particular faster algorithm could also satisfy a looser bound. Which statements are correct? Select all that apply.
+[x] $O(n^2b)$
+[ ] $O(nW)$, where $W$ is the value of one of the input numbers
+[ ] $O(\sqrt N)$, where $N$ is the value of one of the input numbers
+[ ] $O(2^b)$
+[x] $O(nb^3)$
+---
+輸入長度約 $nb$。
+
+「$O(n^2b)$」是：$\le(nb)^2$。
+
+「$O(nW)$」不是：$W$ 最大可到 $2^b$，對 $b$ 是指數；這就是虛擬多項式。
+
+「$O(\sqrt N)$」不是：$\sqrt N$ 最大約 $2^{b/2}$，一樣是指數。用試除法判斷質數就是這種。
+
+「$O(2^b)$」不是：直接就是指數。
+
+「$O(nb^3)$」是：$\le(nb)^3$。相對地，像 $O(n\lg W)$ 也是多項式，因為 $\lg W\le b$：對數值取對數，就回到位元數了。
+
+@q dp4-05 | al-dp#4 | 3 | 情境
+A 0/1 knapsack solver receives positive integer weights and values. Every value is at most 100, while weights and the weight-limit W may reach 1000000000. A weight-limit-indexed table could therefore be enormous even when the total value is small. Instead, define a table whose state records an exact total value and stores the minimum weight achieving it using a prefix of the item list.
+
+Use zero weight for total value zero and infinity for unreachable positive totals before any items are processed. When handling a new item, either omit it or add its weight to a reachable state from the preceding item row. Every item may be selected at most once. As a small separate check, consider weights 2 and 3, values 3 and 4, and weight-limit 3; both values satisfy the same upper bound. Compare the optimal feasible subset with decreasing value-per-weight order, and distinguish a value bound from a weight bound. Which statements are correct? Select all that apply.
+[x] We can let $M[i][v]$ be the minimum total weight needed to reach total value exactly $v$ using the first $i$ items, and answer with the largest $v$ such that $M[n][v] \le W$.
+[x] This value-indexed DP runs in $O(nV)$ time, where $V \le 100n$ is the sum of all values, so it is $O(n^2)$ here.
+[x] The value-indexed table has at most $100n+1$ columns, regardless of the numeric size of W.
+[x] The recurrence is $M[i][v] = \min\bigl(M[i-1][v],\ M[i-1][v - v_i] + w_i\bigr)$, where the second term is used only when $v_i \le v$.
+[ ] Taking items in decreasing order of value per unit weight always gives an optimal solution to this problem.
+---
+「價值對最小重量」對：最後找重量未超 W 的最大價值。「O(nV) 此處平方」對：V≤100n。「至多 100n＋1 欄」對：涵蓋價值零至 V，欄數由總價值決定，不直接由 W 決定。「拿或不拿取最小重量」對：選該件時從前一列的較小價值加上重量，不可達狀態保持無窮。「密度貪婪必最佳」錯：重二值三、重三值四且容量三時，先拿密度高的前者只得三，後者單拿可得四。
+
+@q dp4-06 | al-dp#4 | 2 | 觀念
+A 0/1 knapsack program explicitly fills nW item-weight-limit states. Compare binary and tally-mark encodings of the weight-limit, without changing the algorithm. In a small run n=4 and W=32, the leading count is 128 states; replacing W by 64 changes that count even though the binary weight-limit gains just one digit. Separately consider a family promised to satisfy W at most n cubed. Evaluate numeric size, encoded length and the resulting running-time guarantee. Which statements are correct? Select all that apply.
+[x] $O(nW)$ is polynomial in the value $W$ but not in the length of the input, so it is pseudo-polynomial.
+[x] If W is encoded using W tally marks, the $O(nW)$ bound is polynomial in the resulting input length.
+[x] If $W\le n^3$ is guaranteed, the DP runs in time polynomial in the input length.
+[x] For the full-table operation-count model with fixed n, doubling W doubles the nW term.
+[x] A positive binary-encoded W requires $\lfloor\lg W\rfloor+1$ bits.
+---
+「二進位下虛擬多項式」對：表依 W 數值展開，不能一般地以其對數位數的多項式控制。「一元記號則多項式」對：輸入長度至少 W，也至少物品數 n，乘積對輸入長度為多項式。「W≤n³ 則多項式」對：nW≤n⁴。「固定 n 加倍 W」對：題設操作數主項 nW 隨容量加倍。「二進位位數公式」對：2ᵇ⁻¹≤W<2ᵇ 等價於 b＝floor(lg W)＋1。
+
+@q dp4-07 | al-dp#4 | 2 | 計算
+A solver scans every integer weight-limit in a 0/1 knapsack table, without dividing weights by a common factor. Begin with weights 2 and 3, values 3 and 4, and limit 3. Now multiply both weights and the limit by 1000, leaving the values unchanged. Compare feasible subsets, the optimum, binary encoding lengths and the leading nW work term. Treat runtime ratios as operation-count estimates that ignore the extra zero-weight-limit column. Which statements are correct? Select all that apply.
+?? 複選
+[x] The DP takes about 1000 times as long.
+[ ] Each positive weight gains about 1000 binary digits after multiplication by 1000.
+[ ] The optimal total value changes.
+[ ] The running time stays the same, since the problem is essentially unchanged.
+[ ] Dividing all weights and W by their common positive greatest divisor necessarily changes which item subsets fit.
+---
+「時間約千倍」對：未作尺度化的表寬隨容量數值乘千，忽略邊界的一格。「多千個二進位數字」錯：位數增量約 log₂1000≈9.97，只是九或十位。「最佳值改變」錯：同除或同乘正尺度不改變任何子集的可行性。「原表時間不變」錯：實作若仍逐容量掃描，數值變大即表變寬。「除公因數必改可行性」錯：總重量≤容量的兩邊同除正數保留不等式，最佳值不變，表反而可縮小。
+
+@q dp4-08 | al-dp#4 | 3 | 證明
+說明：若演算法時間是 $O(nW)$，輸入長度 $L\ge\lg W$，則時間對 $L$ 不是多項式。
+---
+取 $n$ 固定、$W=2^{L/2}$ 左右（輸入長度約 $L$）：時間 $\Theta(n\,2^{L/2})$，對 $L$ 是指數，不能被任何 $L^k$ 壓住。所以 $O(nW)$ 只在 $W$ 被 $n$ 的多項式限制住時才算有效率。
+
+@q dp5-01 | al-dp#5 | 2 | 計算
+序列 `5, 2, 8, 6, 3, 6, 9, 7` 的最長（嚴格）遞增子序列長度是？
+== 4
+---
+例如 2、3、6、9 或 2、3、6、7。
+
+@q dp5-02 | al-dp#5 | 3 | 追蹤
+用 tail 陣列（tail[k]＝長度 $k+1$ 的遞增子序列裡最小的結尾）處理 `5, 2, 8, 6, 3, 6, 9, 7`。最後 tail 是？
+== 2 3 6 7
+== 2,3,6,7
+---
+依序：[5] → [2] → [2,8] → [2,6] → [2,3] → [2,3,6] → [2,3,6,9] → [2,3,6,7]。每個數用二分搜尋找「第一個 ≥ 它」的位置取代，或接在最後。
+
+@q dp5-03 | al-dp#5 | 3 | 陷阱
+序列 `3, 1, 4, 1, 5, 9, 2, 6` 的 tail 陣列最後是 `[1, 2, 5, 6]`。它一定是原序列的一個合法遞增子序列。對嗎？
+[ ] 對
+[x] 不對
+---
+2 在原序列的位置（第 7 個）比 5（第 5 個）後面。tail 只保證「長度」對；要拿到序列本身要另外記前一個是誰。
+
+@q dp5-04 | al-dp#5 | 2 | 計算
+序列 `3, 1, 4, 1, 5, 9, 2, 6`，用 $O(n^2)$ DP：$L[i]$＝以第 $i$ 個結尾的 LIS 長度。$L$ 陣列是？
+== 1 1 2 1 3 4 2 4
+== 1,1,2,1,3,4,2,4
+---
+$L[i]=1+\max\{L[j]:j<i,\ a_j<a_i\}$。例如 9（第 6 個）前面最長的是 5 的 3，所以 4；6（第 8 個）接在 5 後面得 4。
+
+@q dp5-05 | al-dp#5 | 2 | 比較
+Trace strict LIS on the sequence 3,1,4,1,5,9,2,6, processing values left to right. The quadratic DP compares earlier positions. The faster method maintains tail[k], the smallest attainable ending value of a strict increasing subsequence of length k+1 in the prefix already processed, replacing the first tail entry not smaller than the new value. Compare the final summary with an actual subsequence: entries representing different lengths need not come from one common chain. Which statements are correct? Select all that apply.
+[x] The straightforward DP takes $O(n^2)$ time, and the $\mathit{tail}$ method takes $O(n \lg n)$ time.
+[x] The length of an LIS of this sequence is 4.
+[x] The $\mathit{tail}$ array is always strictly increasing.
+[x] The final tail [1,2,5,6] need not itself be an input subsequence, since the input 2 occurs after the input 5.
+[ ] Both methods take $O(n \lg n)$ time.
+---
+「平方 DP、n lg n 尾值法」對：前者逐一比較先前位置，後者每個元素二分查位置。「長四」對：可取 3,4,5,6，尾值法也產生四個位置。「尾值嚴格遞增」對：較長嚴格遞增子序列的最小尾值必大於較短者。「尾值本身未必是子序列」對：末尾 [1,2,5,6] 的二在原序列的五之後，不能依此順序取出。「兩法都 n lg n」錯：指定的逐對比較 DP 在一般輸入需平方工作。
+
+@q dp5-06 | al-dp#5 | 2 | 計算
+`7, 6, 5, 4` 和 `2, 2, 2` 的（嚴格）LIS 長度各是？
+== 1,1
+?? 遞減序列,全相同
+---
+嚴格遞增不能相等；全部相同或全部遞減都只能選一個。
+
+@q dp5-07 | al-dp#5 | 3 | 陷阱
+Read the input sequence 1,2,2,3 with a tail-array subsequence algorithm. Run two separate versions: one requires a strictly increasing subsequence, and the other permits equal consecutive values. In each version, an absent replacement position appends the value. Trace the effect of the second 2 before choosing the search boundary. Also compare a tight n-log-n running-time description with a valid looser upper bound; a looser bound need not be false. Which statements are correct? Select all that apply.
+[x] For a strictly increasing subsequence, each new element replaces the first entry of tail that is $\ge$ it.
+[x] For a non-decreasing subsequence (equal values allowed), each new element should replace the first entry of tail that is $>$ it.
+[ ] The same search works unchanged for both versions.
+[x] For the sequence 1, 2, 2, 3, the strictly increasing answer is 3 and the non-decreasing answer is 4.
+[x] The $O(n\lg n)$ time bound also implies a looser $O(n^2)$ upper bound.
+---
+「嚴格版第一個不小於」對：相等不能延長嚴格子序列，只能取代。「非遞減版第一個大於」對：相等可以接在後面。「搜尋完全不變」錯：邊界是否包含等號決定重複值能否延長。「範例三與四」對：1,2,2,3 嚴格只能取三個，非遞減可全取。「較鬆平方上界」對：n lg n＝O(n²)；這不表示平方是緊界，也不是因二分搜尋而需要平方工作。
+
+@q dp5-08 | al-dp#5 | 2 | 情境
+Six people have (height,age) pairs (160,20), (160,25), (170,21), (170,30), (180,22), (190,31). We want a line in which both coordinates strictly increase, so two equal-height people cannot both appear. Compare sorting height ties by increasing or decreasing age before taking a strict age LIS. The complexity claim refers to the correct tie-handling method, including sorting, rather than to a method that ignores ties. Which statements are correct? Select all that apply.
+?? 複選
+[ ] Sort by increasing height, breaking equal heights by increasing age, then take a strictly increasing subsequence of ages without any other restriction.
+[ ] Sort by age and take everyone.
+[ ] Find a longest increasing subsequence of the heights and of the ages separately, and take the smaller length.
+[ ] Breaking equal heights by decreasing age allows every person of the same height to be selected by a strictly increasing age subsequence.
+[x] Using the $O(n\lg n)$ method for the longest increasing subsequence, the whole algorithm takes $O(n\lg n)$ time.
+---
+「同身高年齡遞增仍安全」錯：同身高的年齡一、二可被年齡 LIS 同時選入，卻違反身高嚴格遞增。「只按年齡全選」錯：身高可能相等或下降。「兩維各算取小」錯：兩個最佳子序列可能使用不同的人，不能合成同一條鏈。「反排允許全選同身高」錯：反排是阻止同身高多選，嚴格 LIS 至多取其中一人。「整體 n lg n」對：正確同身高反排，再對年齡求嚴格 LIS，排序與 LIS 各此成本。
+
+@q dp5-09 | al-dp#5 | 3 | 證明
+說明為什麼 tail 陣列永遠是嚴格遞增的。
+---
+假設 tail[k] ≥ tail[k+1]。長度 $k+2$、結尾 tail[k+1] 的遞增子序列，去掉最後一個得到長度 $k+1$ 的遞增子序列，它的結尾 < tail[k+1] ≤ tail[k]，跟 tail[k] 是「最小結尾」矛盾。所以可以二分搜尋。
+
+@q dp5-10 | al-dp#5 | 2 | 計算
+序列 `10, 20, 10, 30, 20, 50` 的 LIS 長度是？
+== 4
+---
+10、20、30、50。第二個 10 和 20 不能用（不比前一個大），所以最多 4 個。
+
+@q gd1-01 | al-greedy#1 | 2 | 觀念
+A student designs a greedy algorithm for scheduling 50 lectures in as few rooms as possible: sort the lectures by start time and put each one into any room that is free, opening a new room only when necessary; on a first test with 12 lectures it uses 3 rooms. Before submitting, the student must prove the algorithm correct, and a teaching assistant says that such proofs usually establish two properties. The student lists several candidates, including some borrowed from dynamic programming and from complexity analysis. To prove a greedy algorithm correct, which of the following are the two things usually proved? Select all that apply.
+[x] Greedy-choice property: some optimal solution begins with the greedy choice.
+[x] Optimal substructure: combining the greedy choice with an optimal solution of the remaining subproblem gives an optimal solution.
+[ ] Overlapping subproblems.
+[ ] Polynomial running time and linear space.
+[ ] Each step is locally best, so the result is automatically globally best, which is why greedy proofs only check each step separately.
+---
+貪婪的正確性證明就是這兩件：第一步選貪婪的仍能得到某個最佳解，剩下的子問題的最佳解拼回去還是最佳，「Greedy-choice property: some optimal…」、「Optimal substructure: combining the…」對。重疊子問題是 DP 的條件；時間空間是效率，不是正確性。最後一個是「直覺」，不是證明；很多貪婪是錯的，就錯在這裡。
+
+@q gd1-02 | al-greedy#1 | 2 | 比較
+Two students solve the same optimization problem with 1000 items: one with a greedy algorithm that makes one choice per step, and one with dynamic programming over all subproblems. Both rely on optimal substructure, the property that an optimal solution contains optimal solutions to subproblems. Their programs give the same answer on every test, but the greedy one runs in $O(n\lg n)$ time and the dynamic program in $O(n^2)$; on $10^5$ items the greedy program finishes in about 0.1 s. A reviewer asks them to explain how the two approaches differ and what extra work the greedy solution needs. Which of the following statements about their difference are correct? Select all that apply.
+[x] A greedy algorithm makes one choice at each step and never revisits it.
+[x] Dynamic programming compares the subproblem answers for all possible choices.
+[x] A greedy algorithm additionally requires proving the greedy-choice property.
+[x] A greedy-choice proof does not require the recursion to repeat identical subproblems.
+[ ] Dynamic programming is always faster than a greedy algorithm.
+---
+「貪婪選了不回頭」對：標準貪婪逐步固定局部選擇。「DP 比較狀態轉移的候選」對：以子問題最佳值評估選擇。「還需貪婪選擇性質」對：必須證明局部選擇可延伸為某個全域最佳解。「不要求重複子問題」對：貪婪正確性不依賴記憶化可否省工作。「DP 一定更快」錯：速度取決於具體演算法，不能由方法名稱作此保證。
+
+@q gd1-03 | al-greedy#1 | 2 | 觀念
+A conference has one room and a set of activities with start and finish times, and we want as many pairwise non-overlapping activities as possible. The greedy algorithm repeatedly picks, among the activities compatible with those already chosen, the one that finishes earliest. For example, with activities $[1,4)$, $[3,5)$, $[0,6)$, $[5,7)$, and $[8,9)$, it picks $[1,4)$, $[5,7)$, and $[8,9)$. The textbook proves it correct with an exchange argument: take any optimal schedule, replace its earliest-finishing activity by the greedy choice, and check that the result is still a valid schedule of the same size. A student studies this proof and also tests a different rule that always picks the compatible activity that starts earliest, on the same 5 activities, to see whether it is just as good. Which of the following statements about the exchange argument for its correctness are correct? Select all that apply.
+?? 複選
+[ ] Replacing the earliest-finishing activity of an optimal schedule by the latest-finishing activity always preserves compatibility.
+[ ] A valid exchange proof must strictly change the number of selected activities at every exchange.
+[ ] The argument shows that every optimal solution contains the greedy choice.
+[ ] The argument works by listing all possible solutions and comparing them.
+[x] Greedily picking the activity that starts earliest can fail: one long activity that starts first may overlap two short ones.
+---
+「換成最晚結束仍相容」錯：[0,1)、[1,2)、[0,10) 中，最佳前兩個；換入最晚結束的長活動會與 [1,2) 衝突。「交換必改數量」錯：證明是維持相同最優數量，讓某個最佳解包含貪婪選擇。「每個最佳解都包含指定選擇」錯：只需存在，並列時可有別的最佳解。「列舉所有解」錯：交換論證直接變換任一最佳解，不需暴力列舉。「最早開始可失敗」對：同一長活動先開始而擋住兩個短活動，只得一個而非兩個。
+
+@q gd1-04 | al-greedy#1 | 3 | 陷阱
+「每一步都選當下最好的，最後就一定是全域最好的」對嗎？
+[ ] 對
+[x] 不對
+---
+找零錢面額 1、3、4 湊 6：貪婪拿 4+1+1（3 枚），最佳是 3+3（2 枚）。貪婪要證明才能用。
+
+@q gd1-05 | al-greedy#1 | 2 | 情境
+A print shop has one printer and $n$ jobs, where job $i$ needs $t_i$ minutes; only one job can print at a time, and jobs cannot be interrupted. Each customer waits from time 0 until his or her own job is finished, so the shop wants to minimize the sum of the completion times of all jobs. For example, the processing times might be 3, 1, and 2, in the order in which the jobs arrived. The manager considers sorting the jobs in increasing order of $t_i$, sorting them in decreasing order, or simply keeping the order of arrival, and asks a student to compare the totals on this example and to prove which rule is optimal in general, for any number of jobs and any processing times, using an exchange of two adjacent jobs in the schedule. Which of the following statements are correct? Select all that apply.
+[x] Greedily scheduling the jobs in increasing order of $t_i$ is optimal.
+[x] For processing times 3, 1, 2, the minimum total completion time is 10.
+[ ] Scheduling the jobs in decreasing order of $t_i$ is optimal.
+[ ] For processing times 3, 1, 2 run in the given order, the total completion time is 10.
+[ ] Every order gives the same total.
+---
+交換論證：相鄰兩個若長的在前，交換後短的提早完成、長的延後同樣的量，總和變小或不變，所以由短到長最佳，「increasing order」對、「decreasing order」錯。工時 3、1、2：照 1、2、3 排，完成時間 1、3、6，總和 10，「minimum … 10」對；照給的順序 3、1、2，完成時間 3、4、6，總和 13，「given order … 10」錯，也說明順序會影響總和。
+
+@q gd1-06 | al-greedy#1 | 2 | 計算
+工時 3、1、2 的三個工作，照最短優先排，完成時間總和是多少？
+== 10
+---
+順序 1、2、3：完成時間 1、3、6，總和 10。
+
+@q gd1-07 | al-greedy#1 | 3 | 證明
+用交換論證證明：完成時間總和最小的排法是「工時由短到長」。
+---
+設某個排法中相鄰的 $i$、$j$（$i$ 在前）有 $t_i>t_j$。交換它們：前面和後面的工作完成時間都不變；原本兩者完成時間是 $T+t_i$、$T+t_i+t_j$，交換後是 $T+t_j$、$T+t_j+t_i$，總和少了 $t_i-t_j>0$。所以最佳解中不會有這種相鄰對，也就是由短到長。
+
+@q gd1-08 | al-greedy#1 | 2 | 找錯
+Someone says: "This problem has optimal substructure, so a greedy algorithm must be correct for it," and uses this argument to justify a greedy solution for the 0/1 knapsack problem: take items in decreasing order of value per unit weight while they fit. A classmate tests it with weight limit 50 and items, given as (weight, value), $(10, 60)$, $(20, 100)$, and $(30, 120)$; the greedy rule gives a total value of 160, but taking the last two items gives 220, and the classmate asks what the argument is missing. Which of the following statements are correct? Select all that apply.
+[x] Optimal substructure alone does not prove that a proposed greedy choice is safe.
+[x] A greedy algorithm additionally needs the greedy-choice property.
+[x] 0/1 knapsack has optimal substructure, yet greedy by value per unit weight can fail on it.
+[ ] Problems with optimal substructure can never be solved greedily.
+[x] Replacing optimal substructure by overlapping subproblems would still be insufficient to prove the claim.
+---
+「最佳子結構本身不夠」對：還未證明當下那個選擇可保留最佳解。「還需貪婪選擇性質」對：它補足這個證明缺口。「0/1 背包密度貪婪可錯」對：重二值三、重三值四、容量三，密度法先取前者得三，最佳是四。「有最佳子結構都不能貪婪」錯：活動選擇已有反例，能否貪婪要看額外性質。「改成重疊仍不足」對：重疊描述相同子問題重複出現，不保證局部選擇最佳。
+
+@q gd2-01 | al-greedy#2 | 2 | 追蹤
+活動 (開始, 結束)：(1,3)、(2,5)、(4,7)、(6,9)、(8,10)、(9,12)、(11,13)。用「最早結束」貪婪，選出哪些？
+== (1,3),(4,7),(8,10),(11,13)
+== 1 3 4 7 8 10 11 13
+---
+選 (1,3)；下一個開始 ≥ 3 而且最早結束的是 (4,7)；接著 (8,10)；接著 (11,13)。共 4 個。
+
+@q gd2-02 | al-greedy#2 | 2 | 計算
+同上的活動（(1,3)、(2,5)、(4,7)、(6,9)、(8,10)、(9,12)、(11,13)），全部都要辦，最少要幾間教室？
+== 2
+---
+最少教室數＝同一時刻最多重疊的活動數。掃描時間軸最多同時 2 個（例如 4～5 之間只有 (2,5) 和 (4,7)）。
+
+@q gd2-03 | al-greedy#2 | 2 | 反例
+活動 (1,5)、(4,7)、(6,10)。「選最短的」貪婪會得到幾個？最多能選幾個？
+== 1,2
+?? 選最短,最多
+---
+最短的是 (4,7)（長 3），它跟另外兩個都衝突，只能選 1 個。最早結束：(1,5)、(6,10)，2 個。
+
+@q gd2-04 | al-greedy#2 | 2 | 反例
+活動 (0,10)、(1,2)、(3,4)。「選最早開始」貪婪會得到幾個？最多能選幾個？
+== 1,2
+?? 最早開始,最多
+---
+(0,10) 最早開始但佔掉全部時間；(1,2)、(3,4) 可以都選。
+
+@q gd2-05 | al-greedy#2 | 2 | 計算
+Use the standard implementation that first comparison-sorts unsorted input by finish time, then scans it once.
+Which of the following statements about the running time of the greedy activity-selection algorithm on $n$ activities are correct?
+[x] It takes $O(n\lg n)$ time overall, dominated by sorting by finish time.
+[x] If the activities are already sorted by finish time, it takes $O(n)$ time.
+[x] The $O(n\lg n)$ implementation also satisfies a looser $O(n^2)$ upper bound.
+[x] Its $O(n\lg n)$ bound also implies an $O(2^n)$ upper bound.
+[ ] It takes $O(n)$ time even when the input is unsorted.
+---
+「排序主導 n lg n」對：指定先依結束時間比較排序，再掃描的版本如此。「已排序只線性」對：每個活動只跟最近選中者的結束時間比較。「平方鬆上界」對：n lg n＝O(n²)，但不是逐一與所有選中活動比。「指數鬆上界」對：n lg n＝O(2ⁿ)，有效卻不緊。「此指定排序版本未排序仍線性」錯：一般比較排序的最壞成本為 Θ(n lg n)。不能因較慢界不緊，就把 O 上界本身判錯。
+
+@q gd2-06 | al-greedy#2 | 3 | 證明
+證明：活動選擇中，結束最早的活動 $a_1$ 一定在某個最佳解裡。
+---
+任取一個最佳解 $S$，設其中結束最早的是 $a_k$。若 $a_k=a_1$ 已成立。否則把 $a_k$ 換成 $a_1$：$a_1$ 結束得不比 $a_k$ 晚，所以不會跟 $S$ 裡其他活動（都在 $a_k$ 結束後才開始）衝突。換完個數不變，仍是最佳解，而且包含 $a_1$。
+
+@q gd2-07 | al-greedy#2 | 3 | 陷阱
+「最早結束」貪婪也能用來解「每個活動有不同權重，要讓選到的權重總和最大」。對嗎？
+[ ] 對
+[x] 不對
+---
+例如 (0,10) 權重 100、(1,2) 權重 1：最早結束選到 (1,2) 後就不能選 (0,10)。加權版要用 DP（照結束時間排序後，$d[i]=\max(d[i-1],w_i+d[p(i)])$）。
+
+@q gd2-08 | al-greedy#2 | 2 | 情境
+One meeting room has 7 booking requests today with different start and end times, and the organizer wants to accept as many meetings as possible. Which of the following statements are correct?
+[x] Repeatedly choosing the compatible request that ends earliest is optimal.
+[x] The optimality of this rule can be proved by an exchange argument.
+[ ] Repeatedly choosing the shortest meeting is optimal.
+[ ] Repeatedly choosing the meeting that starts earliest is optimal.
+[ ] Repeatedly choosing the meeting with the fewest conflicts is optimal.
+---
+只有「最早結束」能被證明一定最佳：任何最佳解的第一場都能換成最早結束的那場而不衝突，「Repeatedly choosing the compatible…」、「The optimality of this…」對。最短的可能卡在兩場長會議中間；最早開始的可能是一場佔滿整天的會議；「衝突最少」也有已知的反例，「Repeatedly choosing the shortest…」、「Repeatedly choosing the meeting that…」、「Repeatedly choosing the meeting with…」錯。
+
+@q gd3-01 | al-greedy#3 | 2 | 計算
+字元頻率 a:10、b:15、c:30、d:16、e:29。Huffman 編碼後，總共要幾個位元？
+== 225
+---
+合併過程：10+15=25、16+25=41、29+30=59、41+59=100。總位元數＝所有合併的和：$25+41+59+100=225$。
+
+@q gd3-02 | al-greedy#3 | 2 | 計算
+同上（a:10、b:15、c:30、d:16、e:29），a 和 c 的碼各幾個位元？
+== 3,2
+?? a,c
+---
+a、b 最先合併、再跟 d 合併，最後到根：深度 3。c、e 合成 59 再直接到根：深度 2。d 也是 2。
+
+@q gd3-03 | al-greedy#3 | 2 | 計算
+頻率 A:1、B:1、C:2、D:4、E:8。Huffman 碼長各是？總位元數？
+== 4 4 3 2 1,30
+?? 碼長ABCDE,總位元
+---
+每次最小的兩個合併：1+1=2、2+2=4、4+4=8、8+8=16，樹變成一條長鏈。總位元 $2+4+8+16=30$。頻率是 2 的次方時，Huffman 會這麼「歪」。
+
+@q gd3-04 | al-greedy#3 | 1 | 觀念
+Huffman codes are prefix codes. Which of the following statements are correct?
+?? 複選
+[x] No codeword is the beginning of another codeword.
+[ ] A prefix code requires a separator after every encoded character to determine where that character ends.
+[ ] Every character is placed at an internal node with at least one child in the code tree.
+[ ] All codewords have the same length.
+[ ] Frequent characters get longer codewords.
+---
+「沒有碼字是別碼字開頭」對：這是前綴碼的定義。「每字必加分隔」錯：沿樹到代表字元的葉子即可辨識碼字結束，再從根繼續。「字元都在內部點」錯：字元在葉子，否則其碼會成為後代碼的前綴。「碼長全相同」錯：Huffman 一般可有不同深度的葉子。「常見字元反而較長」錯：優化加權長度時，高頻字元不應比更低頻者使用更長的碼；交換即可減少成本。
+
+@q gd3-05 | al-greedy#3 | 2 | 計算
+6 個字元用固定長度編碼，每個字元要幾位元？
+== 3
+---
+$\lceil\lg6\rceil=3$。Huffman 讓常見的字元用更短的碼，總長通常更少。
+
+@q gd3-06 | al-greedy#3 | 2 | 計算
+Huffman's algorithm builds a code for $n$ characters by repeatedly merging the two least-frequent trees. Which of the following statements are correct? Select all that apply.
+[x] With a min-heap, the algorithm runs in $O(n\lg n)$ time.
+[x] The algorithm performs exactly $n-1$ merges.
+[x] The construction removes two trees for each of its $n-1$ merges.
+[x] If the frequencies are already sorted, the algorithm can be implemented in $O(n)$ time with two queues.
+[x] In the sorted two-queue implementation, each original tree and each merged tree is removed at most once from its queue.
+---
+「最小堆 O(n lg n)」對：線性次合併，每次固定個對數堆操作。「n−1 次合併」對：每合併減少一棵，從 n 到一。「每合併拿兩棵」對：這是二元合併的步驟，共 2(n−1) 次取出。「已排序雙佇列線性」對：原頻率與新合併頻率各自遞增，每次比較兩隊首。「每棵至多出隊一次」對：出隊即被組成新樹，不再以原樹重入；總樹數 n＋n−1，因此總處理線性。
+
+@q gd3-07 | al-greedy#3 | 3 | 觀念
+Which of the following statements are the two lemmas used to prove that Huffman coding is optimal?
+[x] Some optimal tree has the two least frequent characters as sibling leaves at the maximum depth.
+[x] After merging those two characters into one, an optimal tree for the smaller problem, expanded back, is optimal for the original problem.
+[ ] The most frequent character is always at the root.
+[ ] An optimal tree is always balanced.
+[ ] Every prefix code is optimal.
+---
+第一個是貪婪選擇性質（用交換論證把最小的兩個換到最深處），第二個是最佳子結構，兩個合起來證明 Huffman 最佳。根不放字元，最常見的字元碼最短但不在根；最佳樹常常不平衡；前綴碼很多，大部分不是最佳。
+
+@q gd3-08 | al-greedy#3 | 2 | 陷阱
+「Huffman 碼一定唯一」對嗎？
+[ ] 對
+[x] 不對
+---
+頻率相同時合併順序可以不同，左右也可以對調；碼不同，但總長度一樣都是最小。
+
+@q gd3-09 | al-greedy#3 | 3 | 證明
+說明為什麼「Huffman 總位元數＝所有合併時新節點頻率的總和」。
+---
+字元 $c$ 的碼長＝它在樹裡的深度＝它被包在幾個合併出來的節點裡。每個合併節點的頻率是它底下所有字元的頻率和；把所有合併節點的頻率加起來，每個字元 $c$ 被加了「深度」次，正好是 $\sum f(c)\cdot\text{depth}(c)$。
+
+@q gd3-10 | al-greedy#3 | 2 | 追蹤
+Huffman's algorithm is run on the frequencies a: 5, b: 7, c: 10, d: 15, e: 20. Which of the following statements are correct?
+?? 複選
+[x] The first merge combines a and b into 12.
+[ ] The weight created by the second merge is 25.
+[ ] The third merge combines weights 12 and 22.
+[ ] The final weighted code length is 57.
+[ ] The first merge combines d and e.
+---
+「先合五七成十二」對：它們最小。「第二成二十五」錯：此時有 10、12、15、20，應合 10＋12＝22。「第三合十二與二十二」錯：十二已在上一輪被用掉；剩 15、20、22，應合 15＋20＝35。「加權碼長五十七」錯：57 只是總頻率；加權路徑長為各合併權重總和 12＋22＋35＋57＝126。「第一先合最大兩個」錯：20 與 15 不是當時最小兩個。
+
+@q gd4-01 | al-greedy#4 | 2 | 計算
+分數背包：容量 20，物品（重, 價）＝(5,30)、(10,40)、(15,45)。最大價值？
+== 85
+---
+單位價值 6、4、3：拿 (5,30)、(10,40)，剩 5 拿 (15,45) 的三分之一＝15。共 85。
+
+@q gd4-02 | al-greedy#4 | 2 | 反例
+同樣的物品 (5,30)、(10,40)、(15,45)，改成 0/1 背包（容量 20）。照單位價值貪婪得多少？最佳是多少？
+== 70,75
+?? 貪婪,最佳
+---
+貪婪拿 (5,30)、(10,40)，剩 5 放不下 (15,45)，得 70。最佳是 (5,30)＋(15,45)＝75，剛好裝滿。
+
+@q gd4-03 | al-greedy#4 | 2 | 觀念
+Which of the following statements explain why fractional knapsack can be solved greedily but 0/1 knapsack cannot?
+?? 複選
+[ ] In fractional knapsack, each item must be taken whole or rejected whole.
+[ ] In 0/1 knapsack, choosing the highest value per unit weight never prevents reaching an optimal solution.
+[x] 0/1 knapsack has optimal substructure but lacks the greedy-choice property.
+[ ] 0/1 knapsack instances have more items.
+[ ] Fractional knapsack has no weight limit.
+---
+「分數背包不可切」錯：能取部分物品正是與 0/1 版本的差別。「0/1 先取最高密度永遠安全」錯：容量三、重二值三與重三值四，先取高密度者只得三而最佳四。「缺一般貪婪選擇性質」對：0/1 有最佳子結構，但上述密度規則不能保證最佳；分數版本可交換等重量份額證明。「0/1 物品必更多」錯：兩者可用同一份物品清單。「分數版本沒容量」錯：它仍有相同重量上限。
+
+@q gd4-04 | al-greedy#4 | 2 | 計算
+Here W is an arbitrary positive weight limit. Analyze the stated ratio-sorting implementation, with unit-cost arithmetic.
+Fractional knapsack with $n$ items is solved greedily. Which of the following statements are correct?
+[x] Sorting the items by value per unit weight gives an $O(n\lg n)$ algorithm.
+[x] Taking items from the highest ratio downward after sorting needs only one scan.
+[ ] The ratio-sorting implementation has tight worst-case time $\Theta(nW)$ for every positive weight limit W.
+[x] The stated $O(n\lg n)$ implementation also has a loose $O(2^n)$ upper bound.
+[x] The stated $O(n\lg n)$ implementation also has a loose $O(n^2)$ upper bound.
+---
+「比值排序給 n lg n」對：算各價值重量比後排序。「排序後掃一次」對：由高往低選，最後可取一部分。「每個容量都 nW 緊界」錯：此演算法不按容量逐格建表，工作主界取決於物品數，不隨 W 數值線性展開。「指數上界」對：「平方上界」也對，因 n lg n 同時屬 O(2ⁿ) 與 O(n²)，兩者都只是較鬆界。分數背包還可用線性選擇法，與此指定排序版本的分析不衝突。
+
+@q gd4-05 | al-greedy#4 | 3 | 陷阱
+0/1 背包「照價值由大到小拿」和「照重量由小到大拿」，有沒有一個保證最佳？
+[ ] 照價值保證最佳
+[ ] 照重量保證最佳
+[x] 都沒有
+---
+價值反例：容量 10，(10,10) 和兩個 (5,6)：照價值拿 10，最佳 12。重量反例：(1,1) 和 (10,100)，容量 10：照重量先拿 (1,1) 後放不下 (10,100)。0/1 背包要用 DP。
+
+@q gd4-06 | al-greedy#4 | 3 | 證明
+用交換論證說明分數背包「先拿單位價值最高的」是對的。
+---
+設最佳解中單位價值最高的物品 $i$ 沒拿滿，而拿了某個單位價值較低的 $j$ 的一部分 $x>0$。把 $j$ 拿掉 $\delta=\min(x,\ i\text{ 還剩的量})$，換成同重量的 $i$：總重不變，價值增加 $\delta(v_i/w_i-v_j/w_j)\ge0$。重複下去，可以讓 $i$ 拿滿而不變差。
+
+@q gd5-01 | al-greedy#5 | 2 | 觀念
+The ground set is finite, the family of independent sets is nonempty, and all element weights are nonnegative.
+Which of the following statements about the definition of a matroid are correct?
+[x] Hereditary property: every subset of an independent set is independent.
+[x] Exchange property: if $A$ and $B$ are independent and $|A|<|B|$, some element of $B\setminus A$ can be added to $A$ keeping it independent.
+[x] When both properties hold, greedy by decreasing weight ("add an element if the set stays independent") finds a maximum-weight independent set.
+[ ] The two defining properties are optimal substructure and overlapping subproblems.
+[x] All maximal independent sets of a matroid have the same size.
+---
+「遺傳性」對：獨立集合的子集仍獨立。「交換性」對：較小獨立集可由較大者補入某元素。「非負權重遞減貪婪最佳」對：在有限擬陣中依權重取可行元素，由交換性可逐步保留最佳解。「兩定義是 DP 性質」錯：題設的擬陣條件是非空獨立族、遺傳與交換。「極大獨立集同大小」對：若一個較小，交換性仍能補入元素，與它已極大矛盾；一般未極大的獨立集不必同大小。
+
+@q gd5-02 | al-greedy#5 | 2 | 觀念
+Which of the following statements about the graphic matroid of a graph are correct?
+[x] Its independent sets are the edge sets containing no cycle (forests).
+[x] Kruskal's algorithm is the matroid greedy algorithm applied to it.
+[ ] Its independent sets are the sets of pairwise non-adjacent vertices.
+[ ] Its independent sets are exactly the single paths.
+[ ] Its only independent set is the set of all edges.
+---
+圖擬陣的元素是邊，不含環的邊集合（森林）才算獨立，「Its independent sets are the edge…」對。Kruskal 照權重由小到大加邊、不形成環就加，正是擬陣上的貪婪，「Kruskal's algorithm is the…」對。不相鄰的點集合不是擬陣；路徑只是森林的一種；整張圖通常有環，不獨立。
+
+@q gd5-03 | al-greedy#5 | 3 | 反例
+Consider the three-vertex path a-b-c with edges a-b and b-c only, and the family of its vertex sets containing no adjacent pair. Which of the following statements are correct?
+?? 複選
+[ ] Every superset of an independent vertex set is also independent.
+[x] The exchange property fails: on the path $a$–$b$–$c$, the set $\{b\}$ cannot be extended by any vertex of $\{a,c\}$.
+[ ] Because the hereditary property holds, decreasing-weight greedy selection is guaranteed to find a maximum-weight independent vertex set on this path.
+[ ] This family is a matroid.
+[ ] This family is a matroid whenever the graph is a tree.
+---
+「超集仍獨立」錯：{a} 加入相鄰 b 即不獨立；遺傳是子集方向。「交換失敗」對：小集合 {b} 無法從大集合 {a,c} 補任何點，兩個候選都鄰 b。「只靠遺傳貪婪保證最佳」錯：設 b 權三、a 與 c 各二，先取 b 只得三，a、c 合計四。「此族是擬陣」錯：已違反交換。「樹就必擬陣」錯：本題三點路徑就是樹，仍違反交換。
+
+@q gd5-04 | al-greedy#5 | 2 | 計算
+集合 {1,2,3,4}，「大小 ≤ 2 的子集合都算獨立」。這是擬陣嗎？最大獨立集有幾個元素？
+== 是,2
+?? 是不是,最大大小
+---
+遺傳性：子集更小，仍 ≤ 2。交換性：$|A|<|B|\le2$ 時 $|A|\le1$，從 $B$ 借一個不在 $A$ 的元素，大小 ≤ 2。這叫均勻擬陣。
+
+@q gd5-05 | al-greedy#5 | 3 | 證明
+說明「交換性」在證明擬陣貪婪正確時的作用。
+---
+所有極大獨立集大小都相同（由交換性：小的可以一直從大的借，直到一樣大），所以貪婪得到的也是「最大」的。再用交換論證：若貪婪的第一個（權重最大的可加元素）$x$ 不在某最佳解 $B$ 中，從 $\{x\}$ 出發用交換性一直從 $B$ 借，得到大小跟 $B$ 一樣、只差一個元素的 $A$，它的權重 $\ge B$ 的，所以存在包含 $x$ 的最佳解。
+
+@q gd5-06 | al-greedy#5 | 2 | 情境
+Each job takes one time unit and has a deadline and a penalty paid if it misses the deadline; we want to minimize the total penalty. Which of the following statements are correct?
+[x] Consider the jobs in decreasing order of penalty, and add a job whenever the chosen set can still all finish on time.
+[x] The sets of jobs that can all finish on time form a matroid.
+[ ] Scheduling all the jobs in increasing order of deadline is always optimal.
+[ ] Considering the jobs in increasing order of penalty is optimal.
+[ ] Every order gives the same total penalty.
+---
+「能全部準時完成的工作集合」構成擬陣，所以照罰金由大到小、能排就排的貪婪最佳，「Consider the jobs in…」、「The sets of jobs…」對。全部照截止時間排會讓誰錯過完全不看罰金；由小到大剛好保住不重要的工作；順序當然會影響罰金。
+
+@q gd6-01 | al-greedy#6 | 2 | 反例
+硬幣面額 1、7、10，湊 14 元。貪婪（先拿最大的）用幾枚？最少幾枚？
+== 5,2
+?? 貪婪,最少
+---
+貪婪 10+1+1+1+1；最佳 7+7。
+
+@q gd6-02 | al-greedy#6 | 2 | 反例
+硬幣面額 1、5、12，湊 15 元。貪婪用幾枚？最少幾枚？
+== 4,3
+?? 貪婪,最少
+---
+貪婪 12+1+1+1；最佳 5+5+5。
+
+@q gd6-03 | al-greedy#6 | 2 | 觀念
+Greedy change-making is used with the U.S. coin values 1, 5, 10, 25. Which of the following statements are correct?
+[x] For these coin values, greedy always uses the minimum number of coins.
+[x] For 30, greedy uses 25 + 5, which is optimal.
+[ ] Greedy fails for the amount 30.
+[ ] Greedy fails for the amount 6.
+[ ] Greedy is correct only for amounts that are multiples of 5.
+---
+程式檢查 1～59 全部金額，貪婪都等於 DP 的最佳解（超過 59 時多拿一枚 25 就化成同樣的情況），「For these coin values,…」、「For 30, greedy uses…」對。30 用 25+5 兩枚、6 用 5+1 兩枚都最佳；其他金額也都對，「Greedy fails for the amount 30.」、「Greedy fails for the amount 6.」、「Greedy is correct only…」錯。不是每組面額都這麼好，例如 1、4、6 湊 8。
+
+@q gd6-04 | al-greedy#6 | 2 | 計算
+面額 1、3、4，哪個最小的金額讓貪婪出錯？
+== 6
+---
+1～5 貪婪都最佳；6 時貪婪 4+1+1（3 枚），最佳 3+3（2 枚）。
+
+@q gd6-05 | al-greedy#6 | 2 | 比較
+Assume a positive integer target, distinct positive integer denominations not exceeding it, and the standard full amount table.
+Coin change is solved by dynamic programming with $n$ denominations and target amount $A$. Which of the following statements are correct?
+[x] It takes $O(nA)$ time.
+[x] This time is proportional to the value of $A$, not to the number of digits of $A$.
+[x] The full amount-indexed table has $A$ plus one states, including amount zero.
+[x] Under the stated denomination restriction, $O(A^2)$ is also a valid upper bound.
+[ ] The full-table method guarantees $O(2^n)$ time regardless of how large $A$ is.
+---
+「nA」對：$A$ 個正金額狀態，各試 n 種面額。「依 $A$ 數值」對：不是只依其二進位位數。「$A$＋1 個狀態」對：還含金額零基底。「平方上界」對：題設面額為一至 $A$ 的相異正整數，故 n≤$A$，nA≤$A$²；這是有效較鬆界。「不管 $A$ 都只依 n 指數」錯：固定 n＝1，逐金額填表的 $A$ 仍可任意大，不能只以常數 2ⁿ 控制。
+
+@q gd6-06 | al-greedy#6 | 2 | 情境
+A desk holds only $k$ books; when a needed book is not on the desk, it must be fetched from the shelf after returning one book from the desk. The order in which books will be needed is known in advance. Which of the following statements are correct?
+[x] To minimize trips to the shelf, return the book whose next use is farthest in the future (or that is never needed again).
+[x] This rule (Belady's) can be proved optimal by an exchange argument.
+[ ] Returning the book that was brought to the desk earliest is optimal.
+[ ] Returning the book that has gone unused the longest is optimal even when the future is known.
+[ ] Any book may be returned; the number of trips is the same.
+---
+放回「下一次要用到最晚」的那本是 Belady 的最佳替換規則，用交換論證可證，「To minimize trips to…」、「This rule (Belady's) can…」對。最早拿來（先進先出）和最久沒用（LRU）只看過去，在知道未來時都可能比較差；放回哪本當然會影響次數。真實情況不知道未來，才會用「最久沒用」之類的規則去近似。
+
+@q gd6-07 | al-greedy#6 | 3 | 追蹤
+書桌只能放 2 本書，接下來依序要用 A B C A B C。用「放回下次用到最晚的」規則，一共要跑幾次書架（第一次拿也算）？
+== 4
+---
+A、B 各跑一次（桌子放滿）；C 跑一次，A 下次在第 4 個、B 在第 5 個，放回 B → {A,C}；A 在桌上；B 跑一次，A 之後不再用，放回 A → {B,C}；C 在桌上。共 4 次。
+
+@q gd6-08 | al-greedy#6 | 3 | 陷阱
+「一組面額只要包含 1，貪婪找零就一定最佳」對嗎？
+[ ] 對
+[x] 不對
+---
+包含 1 只保證湊得出來。1、3、4 湊 6 就是反例。

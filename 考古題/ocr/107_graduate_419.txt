@@ -1,0 +1,67 @@
+=== PAGE p-1.pgm
+AGRE: «419 ALAS 107 SF RALHBEFRRR
+AB: BRS ae: 419
+fick: A zx [| R2B/s #
+
+ 
+
+ 
+
+1. (10%) The number of nonnegative integer solutions to
+Lx txXgtertxy, SH
+
+is
+
+2. (10%) The solution to the recurrence equation
+a, = 2a,_,+3a
+
+nol na
+
+with a,=1 and a,=1 is a,=
+3. (10%) The generating function for the square numbers 17, 2?, 3?,... is
+4. (10%) The number of reflexive symmetric relations on A where [A] =m is
+5. (10%) The number of simple, labeled graphs (with self-loops allowed) with n nodes is
+
+The number of simple, labeled graphs with n nodes and m edges is
+6. (10%) Let A = [; ‘I: Please find f(A), where f(t) = t* —3t? —6t2 47 +2.
+
+0 0 0 0 4
+-1 00 0 &%
+7.G0%)Let A=|}0 -1 0 0 % and J, be the nxn identity matrix. Find det(A + tI,).
+
+0 0 O 1 G-
+
+1"nxn
+8. (10%) Consider a subspace V = P,(t) of P(t) with inner product defined as
+
+(f,.9) = fo fOg (tat.
+
+Please find an orthogonal set of {1,¢, t?} with integer coefficients and the projection of t? onto V.
+
+9. (10%) Your answer will be considered correct only if all the true statements are selected.
+Let A bean nxn matrix.
+(a) If x, and x are the eigenvectors of A, then x, +x, is also an eigenvector of A.
+(b) If A? = ~—A, then A is singular.
+(c)If AZ=A. (AF D™=14+(2" 4 1)A.
+(d) If A = A’, then A is diagonalizable.
+
+BC
+
+@if a={[/ D
+
+“1 _p-ir¢p-i
+| and B and D are invertible, then A7? = [? B'cD |.
+
+Oo Do
+
+10. (10%) Your answer will be considered correct only if all the true statements are selected.
+(a) Suppose {u,v,w} is linearly independent, then {u + v,v + w,w + u} is also linearly independent.
+(b) Iftwo matrices A and B are similar, then they have the same eigenvalues.
+(c) Iftwo matrices A and B are similar, then they have the same eigenvectors.
+(d) Let V be a vector space of mxn matrices over R. (A,B) = tr(B7A) defines an inner product in V.
+(e) If U and W are subspaces of a finite-dimensional inner product space V, then (U + W)+ = U+UW!?.
+
+BR AR
+
+ 
+

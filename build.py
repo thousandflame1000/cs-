@@ -39,6 +39,8 @@ SUBJECTS = [
          desc='邏輯與證明、計數與排容、遞迴與生成函數、關係、圖論、數論與代數結構。'),
     dict(id='la', name='線性代數', short='線代', exam='數學（線代＋離散）', refs='Strang《Introduction to Linear Algebra》；Friedberg；Leon',
          desc='線性系統、向量空間與線性變換、行列式、特徵值與對角化、正交與最小平方、對稱矩陣與 SVD。台大線代證明題比例高。'),
+    dict(id='en', name='英文（A）', short='英文', exam='英文（A）（只占總分 10%）', refs='自己蒐集的科普、技術文章；考古題題本',
+         desc='字根字首、學術高頻字、長句拆解、閱讀測驗與克漏字的解題流程。英文只占總分 10%，每天少量、穩定練。'),
 ]
 
 PLAN = [
@@ -114,9 +116,11 @@ def parse_cards(lessons):
     cards = []
     for l in lessons:
         cid, sid = l['id'], l['subject']
-        lines = l['body'].split('\n'); j = 0; ntf = nk = 0
+        lines = l['body'].split('\n'); j = 0; ntf = nk = 0; sec = 0
         while j < len(lines):
             t = lines[j].strip()
+            if lines[j].startswith('## '):
+                sec += 1
             m = re.match(r'^>\s*\[!(陷阱|考點|定理)\]\s*(.*)$', t)
             if not m:
                 j += 1
@@ -134,16 +138,67 @@ def parse_cards(lessons):
                         ex = ex.strip(' ：:；;。，,')
                         if ex.startswith('（') and ex.endswith('）'):
                             ex = ex[1:-1]
-                        cards.append(dict(id=f'tf:{cid}:{ntf}', kind='tf', ch=cid, subject=sid, front=st, ans=(mk == '✓'), back=ex))
+                        cards.append(dict(id=f'tf:{cid}:{ntf}', kind='tf', ch=cid, kp=f'{cid}#{max(1, sec)}', subject=sid, front=st, ans=(mk == '✓'), back=ex))
             else:
                 nk += 1
-                cards.append(dict(id=f'key:{cid}:{nk}', kind='key', ch=cid, subject=sid, front=title or ('定理' if kind == '定理' else '考點'), back='\n'.join(body), tag=kind))
+                cards.append(dict(id=f'key:{cid}:{nk}', kind='key', ch=cid, kp=f'{cid}#{max(1, sec)}', subject=sid, front=title or ('定理' if kind == '定理' else '考點'), back='\n'.join(body), tag=kind))
         for n, q in enumerate(l.get('recall') or [], 1):
-            cards.append(dict(id=f'rc:{cid}:{n}', kind='recall', ch=cid, subject=sid, front=q, back=''))
+            cards.append(dict(id=f'rc:{cid}:{n}', kind='recall', ch=cid, kp=f"{cid}#{len(re.findall(r'^## ', l['body'], flags=re.M))}", subject=sid, front=q, back=''))
     return cards
+
+def _refs_letters(t):
+    """詳解／提示／選項裡有沒有用字母指選項（數學式裡的 A、B 不算）"""
+    t = re.sub(r'\$\$.*?\$\$|\$[^$]*\$', '', t or '', flags=re.S)
+    # 英文冠詞 A（A single rotation…、a list of…）不是在指選項；「A and C」「A is correct」才是
+    t = re.sub(r'(?<![A-Za-z0-9_\\])A(?= (?!(?:and|or|is|are|was|were|only|both)\b)[a-z])', '', t)
+    return bool(re.search(r'(?<![A-Za-z0-9_\\])[A-H](?![A-Za-z0-9_+])', t)) or '以上' in t
+
+
+def _perm(key, n):
+    import hashlib
+    h = int(hashlib.md5(key.encode('utf-8')).hexdigest(), 16)
+    p = list(range(n))
+    for i in range(n - 1, 0, -1):
+        h, r = divmod(h, i + 1)
+        p[i], p[r] = p[r], p[i]
+    return p
+
+
+def shuffle_options(quiz, nodes):
+    """課程規格 I15：選項依題號洗牌（固定的亂數，每次 build 一樣），正解不再集中在 A。
+    詳解、提示或選項本身用字母指選項的題目不洗。"""
+    n_q = n_i = 0
+    for q in quiz:
+        if q.get('type') not in ('single', 'multi') or not q.get('opts') or len(q['opts']) < 2:
+            continue
+        letters_only = all(re.fullmatch(r'[A-Z]', o.strip()) for o in q['opts'])
+        if _refs_letters(q.get('expl', '')) or (not letters_only and any(_refs_letters(o) for o in q['opts'])):
+            continue
+        p = _perm('q:' + q['id'], len(q['opts']))
+        q['opts'] = [q['opts'][i] for i in p]
+        q['ans'] = sorted(p.index(a) for a in q['ans'])
+        n_q += 1
+    for k, v in nodes.items():
+        for idx, x in enumerate(v.get('items') or []):
+            if x.get('t') != 'mc' or not x.get('opts') or len(x['opts']) < 2:
+                continue
+            if _refs_letters(x.get('why', '')) or _refs_letters(x.get('hint', '')) or any(_refs_letters(o) for o in x['opts']):
+                continue
+            p = _perm('kp:%s:%d' % (k, idx), len(x['opts']))
+            x['opts'] = [x['opts'][i] for i in p]
+            x['ans'] = sorted(p.index(a) for a in x['ans'])
+            n_i += 1
+    print(f'選項洗牌：題庫 {n_q} 題、知識點互動 {n_i} 題')
+
+
+def foundations():
+    gp = C('content', 'graph.json')
+    return {f['id']: f for f in json.load(io.open(gp, encoding='utf-8'))['foundation']} if os.path.exists(gp) else {}
+
 
 def parse_quiz(lesson_ids):
     qs, errs = [], []
+    found = foundations()
     qdir = C('content', 'quiz')
     for fn in sorted(os.listdir(qdir)):
         if not fn.endswith('.txt'):
@@ -152,7 +207,8 @@ def parse_quiz(lesson_ids):
         for blk in re.split(r'^@q ', txt, flags=re.M)[1:]:
             head, _, rest = blk.partition('\n')
             f = [x.strip() for x in head.split('|')]
-            qid, ch, diff = f[0], f[1], int(f[2]) if len(f) > 2 and f[2] else 2
+            qid, ch, diff = f[0], f[1].split('#')[0], int(f[2]) if len(f) > 2 and f[2] else 2
+            kp = f[1] if '#' in f[1] else ''  # 可直接標主知識點：章id#節（課程規格 H4）
             q_part, sep, expl = rest.partition('\n---\n')
             if not sep:
                 q_part, expl = rest, ''
@@ -170,17 +226,22 @@ def parse_quiz(lesson_ids):
                 elif not opts and not fill:
                     stem.append(line)
             if opts:
-                typ = 'multi' if len(ans) > 1 else 'single'
+                # 「?? 複選」：只有一個正解也當複選題出（台大「選出所有正確」不會透露正解個數）
+                typ = 'multi' if len(ans) > 1 or fmt == '複選' else 'single'
+                if fmt == '複選':
+                    fmt = ''
                 if not ans:
                     errs.append(f'{qid}: 沒有正確選項')
             elif fill:
                 typ, ans = 'fill', fill
             else:
                 typ, ans = 'essay', []
-            if ch not in lesson_ids:
+            if ch not in lesson_ids and ch not in found:
                 errs.append(f'{qid}: 章節 {ch} 不存在')
-            qs.append(dict(id=qid, ch=ch, subject=ch.split('-')[0], diff=diff, type=typ, stem='\n'.join(stem).strip(),
-                           opts=opts, ans=ans, expl=expl.strip(), fmt=fmt, src='bank'))
+            if ch in found:
+                kp = ch
+            qs.append(dict(id=qid, ch=ch, subject=found[ch]['subject'] if ch in found else ch.split('-')[0], diff=diff, type=typ, stem='\n'.join(stem).strip(),
+                           opts=opts, ans=ans, expl=expl.strip(), fmt=fmt, src='bank', kp=kp))
     ids = [q['id'] for q in qs]
     dup = {x for x in ids if ids.count(x) > 1}
     if dup:
@@ -238,43 +299,11 @@ def main():
         l['intuit'] = intu.get(l['id'], '')
     miss = [l['id'] for l in lessons if not l['intuit']]
     print('直觀版：%d/%d 章%s' % (len(lessons) - len(miss), len(lessons), ('，缺 ' + ', '.join(miss)) if miss else ''))
-    # 跟著做一題：content/examples/*.md，「=== 章節 id」分段；【題目】【步驟】標題【答案】【常錯】
+    # 舊的「跟著做一題」（content/examples，一章一題、只能看步驟）不再放進網站：課程規格 H8 要求例題至少一步讓學生先寫。
+    # 這些例題是知識點例題（content/kp/*.md 的 @例題）的素材，逐題改寫進去。
     wk = {}
-    edir = C('content', 'examples')
-    if os.path.isdir(edir):
-        for fn in sorted(os.listdir(edir)):
-            if not fn.endswith('.md'):
-                continue
-            txt = io.open(os.path.join(edir, fn), encoding='utf-8').read()
-            for part in re.split(r'^=== ', txt, flags=re.M)[1:]:
-                head, _, body = part.partition('\n')
-                w = dict(q='', steps=[], ans='', err='')
-                cur, buf = None, []
-
-                def flush():
-                    t = '\n'.join(buf).strip()
-                    if cur is None:
-                        return
-                    if cur[0] == 'step':
-                        w['steps'].append(dict(t=cur[1], b=t))
-                    else:
-                        w[cur[0]] = t
-                for line in body.split('\n'):
-                    m = re.match(r'^【(題目|步驟|答案|常錯)】(.*)$', line)
-                    if m:
-                        flush()
-                        cur, buf = ({'題目': ('q',), '答案': ('ans',), '常錯': ('err',)}.get(m.group(1)) or ('step', m.group(2).strip())), []
-                    else:
-                        buf.append(line)
-                flush()
-                hid = head.strip()
-                if hid not in lids:
-                    errs.append(f'例題 {hid} 對不到章節')
-                elif not w['q'] or not w['steps'] or not w['ans']:
-                    errs.append(f'例題 {hid} 缺題目、步驟或答案')
-                wk[hid] = w
     for l in lessons:
-        l['worked'] = wk.get(l['id'])
+        l['worked'] = None
     # 每段配圖：content/figs/*.md，「=== 章節id 段號」後面接一或多個 ```fig 區塊，插在第 N 個「## 」標題下面
     fdir = C('content', 'figs')
     nfig = 0
@@ -339,8 +368,6 @@ def main():
             l['body'] = '\n'.join(out)
     nsec = sum(len(re.findall(r'^## ', l['body'], flags=re.M)) for l in lessons)
     print('先記住：%d / %d 段' % (nlead, nsec))
-    miss = [l['id'] for l in lessons if not l['worked']]
-    print('跟著做：%d/%d 章，%d 步%s' % (len(lessons) - len(miss), len(lessons), sum(len(w['steps']) for w in wk.values()), ('，缺 ' + ', '.join(miss)) if miss else ''))
     methods = io.open(C('content', 'methods.md'), encoding='utf-8').read() if os.path.exists(C('content', 'methods.md')) else ''
     cards = parse_cards(lessons)
     # 卡片的白話理由（含圖）：content/card_reasons.md，以「=== 卡片 id」分段；只補沒有理由的卡
@@ -371,7 +398,7 @@ def main():
             ln = ln.strip()
             if not ln or ln.startswith('#'):
                 continue
-            m = re.match(r'^(\d{2,3})\s+(dsal|coos|math)\s+(\S+)\s+([\w,-]+)\s+(\d+(?:\.\d+)?)$', ln)
+            m = re.match(r'^(\d{2,3})\s+(dsal|coos|math)\s+(\S+)\s+([\w,-]+)\s+(\d+(?:\.\d+)?)(?:\s+(選|算|證|設|釋))?$', ln)
             if not m:
                 errs.append('考古題格式錯誤：' + ln)
                 continue
@@ -381,7 +408,7 @@ def main():
                 errs.append('考古題章節不存在：%s（%s）' % (','.join(bad), ln))
                 continue
             y, pts = int(m.group(1)), float(m.group(5))
-            exams.append(dict(y=y, paper=m.group(2), no=m.group(3), ch=chs, pts=pts))
+            exams.append(dict(y=y, paper=m.group(2), no=m.group(3), ch=chs, pts=pts, t=m.group(6) or ''))
         if exams:
             ymax = max(e['y'] for e in exams)
             for e in exams:
@@ -391,7 +418,38 @@ def main():
             tot = sum(freq.values()) or 1
             freq = {k: round(v / tot, 4) for k, v in freq.items()}
     print('考古題：%d 題，%d 年，涵蓋 %d 章' % (len(exams), len({e['y'] for e in exams}), len(freq)))
-    data = dict(subjects=SUBJECTS, lessons=lessons, quiz=quiz, plan=plan, methods=methods, cards=cards, exams=exams, examFreq=freq, built=__import__('datetime').date.today().isoformat())
+    # 新版短影音（影片/工程 產出、_lib/webenc.sh 壓成網頁版）：web/media/<clip id>.mp4 ＋ .jpg 海報 → DATA.shorts
+    # 動畫講解（Manim 影片＋旁白，web/videos/<id>.mp4）的清單在 content/videos.json → DATA.videos
+    shorts = {}
+    mdir = C('web', 'media')
+    if os.path.isdir(mdir):
+        for f in sorted(os.listdir(mdir)):
+            if f.endswith('.mp4') and not f.endswith('.tmp.mp4'):
+                k = f[:-4]
+                shorts[k] = dict(src='media/' + f, poster='media/' + k + '.jpg' if os.path.exists(os.path.join(mdir, k + '.jpg')) else '')
+    vpath = C('content', 'videos.json')
+    videos = json.load(open(vpath, encoding='utf-8')) if os.path.exists(vpath) else {}
+    print('新版短影音：%d 支；動畫講解影片：%d 部' % (len(shorts), len(videos)))
+    # 知識點圖（課程規格）：π、每個知識點的教學序列、題目指派 → DATA.kp；地基節點的假章節 → DATA.found
+    sys.path.insert(0, C('tools'))
+    import curriculum as _cu
+    kp = _cu.curriculum()
+    secs = {}
+    for l in lessons:
+        for i, part in enumerate(re.split(r'^## ', l['body'], flags=re.M)[1:], 1):
+            secs[f"{l['id']}#{i}"] = part.partition('\n')[2].strip()
+    for k, n in kp['nodes'].items():
+        if n['kind'] == 's':
+            n['notes'] = secs.get(k, n['notes'])
+    qmap = kp['qmap']
+    for q in quiz:
+        q['kp'] = qmap.get(q['id'], q.get('kp') or '')
+        q['req'] = kp['qreq'].get(q['id'], [])
+    found = [dict(id=f['id'], subject=f['subject'], title=f['title'], mins=f.get('mins', 30), summary='', feynman='', recall=[], rubric=[], labs=[], body='', found=True)
+             for f in foundations().values()]
+    print('知識點：%d 個，有白話教學 %d 個' % (len(kp['nodes']), sum(1 for n in kp['nodes'].values() if n['items'])))
+    shuffle_options(quiz, kp['nodes'])
+    data = dict(kp=dict(order=kp['order'], nodes=kp['nodes'], vids=kp['vids']), found=found, subjects=SUBJECTS, lessons=lessons, quiz=quiz, plan=plan, methods=methods, cards=cards, exams=exams, examFreq=freq, videos=videos, shorts=shorts, built=__import__('datetime').date.today().isoformat())
     js = 'window.CSDATA = ' + json.dumps(data, ensure_ascii=False) + ';\n'
     io.open(C('web', 'js', 'data.js'), 'w', encoding='utf-8').write(js)
     # 自我檢查頁：跟 index.html 同一套腳本，多一個 selftest.js，不連 bridge、不動到真正的進度
@@ -401,6 +459,8 @@ def main():
     io.open(C('web', 'selftest.html'), 'w', encoding='utf-8').write(st)
     # single-file build
     html = io.open(C('web', 'index.html'), encoding='utf-8').read()
+    # 單檔版直接用 file:// 打開時旁邊沒有 media/：短影音拿掉，免得出現壞掉的播放器（線上版有帶 media/，照常播）
+    html = html.replace('<script src="js/data.js"></script>', '<script src="js/data.js"></script>\n<script>if (window.CSDATA && location.protocol === \'file:\') window.CSDATA.shorts = {};</script>', 1)
     css = io.open(C('web', 'style.css'), encoding='utf-8').read()
     import base64 as _b64
     kcss = io.open(C('web', 'vendor', 'katex.min.css'), encoding='utf-8').read()
@@ -444,7 +504,7 @@ self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.a
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
   const u = new URL(e.request.url);
-  if (e.request.method !== 'GET' || u.origin !== location.origin || u.pathname.indexOf('/api/') >= 0) return;
+  if (e.request.method !== 'GET' || u.origin !== location.origin || u.pathname.indexOf('/api/') >= 0 || u.pathname.indexOf('/media/') >= 0) return;
   e.respondWith(fetch(e.request).then(r => { if (r.ok) { const c = r.clone(); caches.open(V).then(x => x.put(e.request, c)); } return r; })
     .catch(() => caches.match(e.request, { ignoreSearch: true }).then(r => r || caches.match('index.html'))));
 });

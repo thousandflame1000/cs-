@@ -1,0 +1,55 @@
+=== PAGE p-1.pgm
+MR: 411 ALEMWAS 108 RFR Rt E SR
+HB > a RB) Me: All
+mR: 6 x | Hee] BR
+
+. (15 points) For all positive integers n, compute
+
+n
+
+S-(k3'"" - C(n, k)),
+
+k=0
+
+where C'(n, k) is the coefficient of the 2* term in the expansion of (1 + x)”
+
+. (15 points) Solve the following recurrence:
+
+ay = 3,
+
+1
+(l--)a, = ant +1, for all n > 2.
+n n-1l
+
+. (LO points) Let 7 be a positive integer such that n° + (n + 1)> = 0 (mod 25). Find all possible
+values for (n-+2)> mod 10. Show your derivations. You must briefly justify that no other values
+are possible.
+
+. (35 points) For each of the following statements, determine whether it is true of false. No
+explanation is needed. You get +5 points for every correct answer and -6 points for every
+incorrect one. (0 points if you do not answer.)
+
+(a) >(22(P(2) A Q(2))) = V2(P(x) + Q(z).
+(b) In propositional logic, {@, +} is a functionally complete set.
+
+(c) Given five propositional logic statements using a single variable p, there exists two of
+them which are equivalent to each other.
+
+(d) There exists an injection from Q to R.
+(e) If A and B are two uncountable sets, then |Aj = |B].
+(f) Ifa relation 2 is symmetric, then R° is also symmetric.
+
+(g) If Ris a partial ordering on a finite set A, then & has at least one maxima! element.
+
+. (15 points) Let G = (V, E) be a simple planar undirected graph with at least 3 edges. All
+simple cycles in G have length at least 5. Is it always true that 3|E| < 5|V| — 10? Prove your
+answer formally.
+
+. (10 points) Let G be a connected undirected graph with 15 vertices. If G is not planar but
+removing any edge from G results in a planar graph, how many edges does G have? List all
+possible answers and prove the correctness of your answer.
+
+aR
+
+ 
+

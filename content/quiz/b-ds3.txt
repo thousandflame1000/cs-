@@ -1,0 +1,2167 @@
+@q hs1-01 | ds-hash#1 | 1 | 計算
+除法法 $h(k)=k\bmod13$。$h(100)$ 是多少？
+== 9
+---
+$100=7\times13+9$，所以是 9。
+
+@q hs1-02 | ds-hash#1 | 2 | 陷阱
+A teaching assistant builds a hash table with the division method, $h(k) = k \bmod m$, and chooses $m = 16$ because the table size is then a power of two and the remainder can be computed with a bit mask. The first four student IDs to be inserted are 37, 53, 69, and 85, whose binary forms are 100101, 110101, 1000101, and 1010101. The assistant notices that the table is badly unbalanced right away and wants to know why, and what choice of $m$ would avoid the problem for IDs that follow such regular patterns. Which of the following statements are correct? Select all that apply.
+[x] All four keys go to slot 5.
+[x] With $m=2^4$, $h(k)$ depends only on the lowest 4 binary digits of $k$.
+[x] Choosing $m$ as a prime not close to a power of 2 avoids this problem.
+[x] Keys that differ by a multiple of 16 always collide when $m=16$.
+[ ] The keys go to four different slots, since the keys themselves are all different.
+---
+37、53、69、85 相差 16，除以 16 的餘數「都是 5」；相差 16 的倍數就「一定撞」。$m=2^p$「只看最低 $p$ 個二進位數字」，鍵的低位有規律時會大量碰撞；「取不接近 2 的次方的質數」，每一位都會影響結果。鍵不同不代表雜湊值不同。
+
+@q hs1-03 | ds-hash#1 | 2 | 情境
+A phone company stores customer records in a hash table with 100 slots and uses $h(k) = k \bmod 100$, where $k$ is the 9-digit phone number written as an integer. Numbers are assigned in blocks, and many businesses choose numbers ending in 00 or 88 because they are easy to remember; for example, 223456700, 229876500, and 281234588 are all in the table. The engineer in charge wants to know how the slot depends on the digits of a number, and whether changing $m$ to 1000 would help. Which of the following statements are correct? Select all that apply.
+[x] Only the last two digits affect the slot.
+[x] All numbers with the same last two digits collide.
+[ ] Using $m=1000$ instead would make every digit matter.
+[ ] There is no problem, because 100 slots are enough for random phone numbers.
+[ ] The function sometimes produces negative slot numbers for long phone numbers.
+---
+除以 100 的餘數就是末兩碼，「只有末兩碼有影響」，末兩碼一樣的「全部撞在一起」。換成 1000 只是改成看末三碼，問題一樣；要取不接近 10 或 2 的次方的質數。號碼的末兩碼常有規律，不能當成隨機；非負整數的餘數不會是負的。
+
+@q hs1-04 | ds-hash#1 | 2 | 計算
+乘法法 $h(k)=\lfloor m(kA\bmod1)\rfloor$，$m=8$、$A=0.375$。算 $h(6)$ 和 $h(7)$。
+== 2,5
+?? h(6),h(7)
+---
+$6\times0.375=2.25$，小數 0.25，$8\times0.25=2$。$7\times0.375=2.625$，小數 0.625，$8\times0.625=5$。
+
+@q hs1-05 | ds-hash#1 | 3 | 計算
+乘法法，$m=16$、$A=0.618$。算 $h(10)$ 和 $h(11)$。
+== 2,12
+?? h(10),h(11)
+---
+$10\times0.618=6.18$，小數 0.18，$16\times0.18=2.88$，取整 2。$11\times0.618=6.798$，小數 0.798，$16\times0.798=12.768$，取整 12。相鄰的鍵被打散到很遠的地方。
+
+@q hs1-06 | ds-hash#1 | 2 | 比較
+A library must pick a hash function for integer keys and offers two choices: the division method $h(k) = k \bmod m$, and the multiplication method $h(k) = \lfloor m \cdot (kA \bmod 1) \rfloor$ for a constant $0 < A < 1$, such as $A \approx 0.618$. The keys in one test set are all multiples of 16, for example 16, 32, 48, and 64, because they are memory addresses of 16-byte objects. The developers also want a table size that is cheap to compute with, and they ask whether either method can guarantee that no two keys collide. Which of the following statements are correct? Select all that apply.
+[x] With the division method and $m = 16$, the keys 16, 32, 48, and 64 all hash to slot 0.
+[x] For the division method, a prime $m$ that is not close to a power of 2 is usually a good choice.
+[ ] The multiplication method also requires $m$ to be a prime.
+[x] For the multiplication method, choosing $m = 2^p$ works well and lets the computation use shifts instead of division.
+[ ] With the multiplication method, no two distinct keys can collide as long as $m$ is at least the number of keys.
+---
+「$m=16$ 時 16、32、48、64 都落在 0」對：它們都是 16 的倍數。$m=2^p$ 時 $k\bmod m$ 只看 $k$ 的最低 $p$ 個二進位位，高位完全沒用到，有規律的鍵就會擠在一起。
+
+「除法法取不接近 2 的次方的質數」對：讓鍵的每一位都影響餘數。
+
+「乘法法也要質數」錯：乘法法靠 $A$ 把鍵的所有位攪進小數部分，再取小數的前幾位，$m$ 是多少都可以。
+
+「乘法法 $m=2^p$ 好算」對：$kA$ 用整數乘法算出來後，取某一段位元就是答案，不用除法。
+
+「$m$ 夠大就不會碰撞」錯：任何雜湊函數把很多可能的鍵壓到 $m$ 格，都一定有碰撞的鍵；鍵的數量少於 $m$ 也不保證這幾個剛好不撞。
+
+@q hs1-07 | ds-hash#1 | 2 | 計算
+1000 個不同的鍵放進 100 格的雜湊表。保證至少有一格有幾個鍵以上？
+== 10
+---
+鴿籠原理：平均每格 10 個，所以最多那格至少 $\lceil1000/100\rceil=10$ 個。鍵比格子多，碰撞就避免不了。
+
+@q hs1-08 | ds-hash#1 | 3 | 計算
+用 universal hashing，表有 500 格，已有 1000 個鍵。對一個新鍵 $k$，「跟 $k$ 碰撞的舊鍵個數」的期望值最多是多少？
+== 2
+---
+任兩個不同的鍵碰撞機率 $\le\frac1m$。期望的線性性：$1000\times\frac1{500}=2$。這個保證對任何鍵的集合都成立，因為隨機的是函數，不是鍵。
+
+@q hs1-09 | ds-hash#1 | 2 | 計算
+Universal family $h_{a,b}(k)=((ak+b)\bmod p)\bmod m$，取 $p=13$、$a=5$、$b=2$、$m=4$。算 $h(7)$ 和 $h(3)$。
+== 3,0
+?? h(7),h(3)
+---
+$h(7)$：$5\cdot7+2=37$，$37\bmod13=11$，$11\bmod4=3$。$h(3)$：$17\bmod13=4$，$4\bmod4=0$。
+
+@q hs1-10 | ds-hash#1 | 2 | 陷阱
+「用 universal hashing 就保證不會碰撞」對嗎？
+[ ] 對
+[x] 不對
+---
+它保證的是「任兩個不同的鍵碰撞的**機率** $\le\frac1m$」——平均下來分散，沒人能故意挑出一組一定撞在一起的鍵。碰撞還是會發生。
+
+@q hs1-11 | ds-hash#1 | 3 | 情境
+A website stores the parameter names of each incoming request in a hash table that keeps every key that lands in a slot in a list stored at that slot, and every server uses the same fixed, publicly documented hash function. An attacker sends a single request with 50,000 parameter names that were computed offline to hash to the same slot, so each insertion walks a list that keeps growing. The server spends several seconds on that one request, and about 3 such requests per minute make the site unusable for everyone else. Before the next release, the operators consider several changes to the table. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] Choosing the hash function at random from a universal family when the server starts prevents the attacker from predicting colliding keys.
+[ ] Enlarging the table fixes the problem, since collisions then become less likely.
+[ ] Switching to the division method with a prime $m$ fixes the problem.
+[ ] Switching to $m=2^p$ fixes the problem, since table indexing becomes faster.
+[ ] Sorting the parameter names before inserting them fixes the problem.
+---
+固定的函數可以被反推；「每次啟動從一族函數裡隨機挑一個」，攻擊者不知道是哪個函數就挑不出會撞的鍵。全部撞同一格時表再大也一樣；除法法或 $m=2^p$ 還是固定函數，一樣能被反推；插入順序不影響誰跟誰撞。
+
+@q hs1-12 | ds-hash#1 | 3 | 計算
+100 個鍵、1000 格，假設每個鍵均勻落在任一格。「發生碰撞的配對」的期望個數是多少？
+== 4.95
+---
+共 $\binom{100}2=4950$ 對，每對碰撞機率 $\frac1{1000}$：期望 $4.95$。鍵只佔一成的格子，碰撞還是幾乎一定會有。
+
+@q hs1-13 | ds-hash#1 | 1 | 觀念
+A hash table for a dictionary application has 1000 slots, while the keys are English words of up to 20 lowercase letters, so there are more than $26^{20}$ possible keys. During testing, a developer inserts the word apple twice and sees that both insertions compute slot 417; later, the different words lemon and melon also both compute slot 417. The developer writes some notes on what counts as a collision and on what the table must do when one happens, for a code review the next day. Which of the following statements about collisions in a hash table are correct? Select all that apply.
+[x] A collision occurs when two different keys are mapped to the same slot.
+[x] Collisions cannot be avoided in general, because there are far more possible keys than slots.
+[x] Even a good hash function cannot prevent collisions for every set of keys.
+[x] A table must therefore include some rule for what to do when a collision happens.
+[ ] A collision occurs when the same key is inserted twice into the table.
+---
+碰撞是「兩個不同的鍵算到同一格」；鍵的可能值比格子多得多，「碰撞免不了」，再好的函數也有某組鍵會撞，重點是讓它少、發生時「要有處理碰撞的規則」（例如鏈結、開放定址）。同一個鍵算到同一格是應該的，不叫碰撞。
+
+@q hs1-14 | ds-hash#1 | 2 | 找錯
+A student creates a hash table with 100 slots, numbered 0 to 99, but by mistake writes the hash function as $h(k) = k \bmod 2$ instead of $h(k) = k \bmod 100$. The program then inserts 10,000 customer IDs, about half of them odd, keeping every key that lands in a slot in a list stored at that slot, and the student is surprised that searching takes far longer than expected. A classmate points out that the odd and even IDs are split almost evenly, so the hash function seems fair. Which of the following statements are correct? Select all that apply.
+[x] Only slots 0 and 1 are ever used.
+[x] The other 98 slots stay empty forever.
+[x] For $h(k)=k\bmod m$, $m$ should equal the size of the table.
+[x] Each of the two used slots ends up holding roughly half of all keys.
+[ ] There is no problem, because odd and even keys are split evenly between the two slots.
+---
+$k\bmod2$ 只有 0、1 兩種值，「只用到兩格」，「其他 98 格永遠空著」，兩格「各擠一半的鍵」；值域要涵蓋整個表，所以「$m$ 要等於表的大小」。分得平均也沒用，每格還是很長。
+
+@q hs1-15 | ds-hash#1 | 2 | 陷阱
+A spell checker stores dictionary words in a hash table with $m = 101$ slots, which is a prime. Its string hash function adds up the character codes of a word and takes the sum mod $m$; in ASCII, the codes of a, b, and c are 97, 98, and 99. A tester notices that the words abc, cab, and bca end up in the same slot, and that many other groups of words made of the same letters do as well, such as listen and silent, even though the table is far from full. Which of the following statements are correct? Select all that apply.
+[x] "abc", "cab" and "bca" all go to the same slot.
+[x] Making the position matter, for example with $\sum c_i\cdot b^i$, fixes this.
+[ ] Only "abc" and "cab" collide, because "bca" ends with a different letter.
+[ ] Taking the sum modulo a prime $m$ instead fixes the problem.
+[ ] The three strings collide only when $m$ is a power of 2.
+---
+加法不管順序，字母相同的字串總和一樣，「三個全部撞在同一格」，和結尾字母、$m$ 是不是質數或 2 的次方都無關。要「讓位置有影響」，例如乘上底數的次方再相加。
+
+@q hs1-16 | ds-hash#1 | 3 | 計算
+所有鍵都是 4 的倍數，用 $h(k)=k\bmod12$。實際上只會用到幾格？改成 $m=13$ 呢？
+== 3,13
+?? m=12,m=13
+---
+$4j\bmod12$ 只可能是 0、4、8（$\gcd(4,12)=4$，只用到 $12/4$ 格）。13 是質數，跟 4 互質，4 的倍數會走遍 13 格。所以 $m$ 取質數比較安全。
+
+@q hs1-17 | ds-hash#1 | 2 | 計算
+$h(k)=k\bmod11$，鍵 22、33、44 各落在哪一格？
+== 0 0 0
+== 0,0,0
+---
+都是 11 的倍數，全落在 0。除法法的鍵如果剛好有 $m$ 的因數規律，就會大量碰撞。
+
+@q hs1-18 | ds-hash#1 | 2 | 觀念
+A course project measures the average search time of a hash table that keeps every key that lands in a slot in a list stored at that slot. In one experiment the table has $m = 1000$ slots and stores $n$ keys, where $n$ grows from 1000 to 100,000 while $m$ stays fixed; in a second experiment, $m$ is doubled whenever $n$ reaches $m$. In a third experiment, a badly chosen hash function sends almost every key to the same 10 slots, even though the table has 100,000 slots. The students must explain which conditions make the average time per operation constant. Which of the following conditions are needed for a hash table to take $O(1)$ time on average? Select all that apply.
+?? 複選
+[x] The hash function spreads the keys evenly, and the number of elements is on the order of the number of slots.
+[ ] The keys must be kept in sorted order inside each slot.
+[ ] There must be no collisions at all.
+[ ] The table must be large enough, whatever the hash function is.
+[ ] The keys must be integers rather than strings.
+---
+分得不均勻，某格會很擠；元素比格子多太多，每格平均也會很長，所以「分得均勻、而且元素數和格數同階」兩個都要顧。不需要排序；碰撞免不了，只要少；函數很差時（例如全算到同一格）表再大也沒用；字串也能雜湊。
+
+@q hs1-19 | ds-hash#1 | 3 | 比較
+A ticketing system stores $10^6$ seat reservations keyed by an integer reservation time, and the team must choose between a hash table and an array kept sorted by key. Typical requests are: show all reservations in time order; find the first reservation made after a given time $x$, such as 10:30, that is, the smallest key greater than $x$; report the earliest reservation; add a new reservation; and check whether a given reservation time exists. Assume a good hash function. Which of the following operations can a sorted array support efficiently but a hash table cannot? Select all that apply.
+[x] Listing all keys in increasing order
+[x] Finding the smallest key greater than $x$
+[x] Finding the minimum key
+[ ] Inserting a new key
+[ ] Checking whether a key is present
+---
+雜湊把鍵打散，大小關係完全不見了，「依序列出」「找下一個比較大的」「找最小值」都只能全部掃一遍；排好序的陣列順序資訊都在。插入時排序陣列要搬元素，反而是雜湊表比較快；查在不在兩者都快。
+
+@q hs2-01 | ds-hash#2 | 2 | 追蹤
+鏈結法，$m=7$、$h(k)=k\bmod7$，新的鍵插在串列**開頭**。依序插入 15、8、23、4、30、12、19、26、9。第 2 格的串列由前到後是？
+== 9 30 23
+== 9,30,23
+---
+23、30、9 的餘數都是 2，依序插入、每次放開頭，所以最後插的 9 在最前面。
+
+@q hs2-02 | ds-hash#2 | 2 | 計算
+接上題，最長的串列有幾個元素？負載因子 $\alpha$ 是多少？
+== 3,9/7
+?? 最長,α
+---
+第 2 格（9、30、23）和第 5 格（26、19、12）都是 3 個。$\alpha=9/7\approx1.29$——鏈結法的 $\alpha$ 可以大於 1。
+
+@q hs2-03 | ds-hash#2 | 3 | 計算
+接上題，9 個鍵各搜尋一次（成功搜尋），平均要比較幾次？
+== 16/9
+== 1.78
+---
+第 1 格 8、15：1+2；第 2 格：1+2+3；第 4 格：1；第 5 格：1+2+3。合計 16，平均 $16/9\approx1.78$。
+
+@q hs2-04 | ds-hash#2 | 2 | 計算
+接上題，搜尋一個不在表裡、而且 $h=5$ 的鍵，要比較幾次？
+== 3
+---
+失敗搜尋要把第 5 格整條（26、19、12）看完才知道沒有。
+
+@q hs2-05 | ds-hash#2 | 2 | 計算
+鏈結法，簡單均勻雜湊，$n=3000$。要讓失敗搜尋平均比較不超過 0.75 次，$m$ 至少多大？
+== 4000
+---
+失敗搜尋平均比較 $\alpha=\frac nm\le0.75$，$m\ge4000$。
+
+@q hs2-06 | ds-hash#2 | 2 | 陷阱
+鏈結法的負載因子 $\alpha$ 不能超過 1。對嗎？
+[ ] 對
+[x] 不對
+---
+每格是一條串列，可以放任意多個，$\alpha$ 可以是 2、5……只是平均每條變長、搜尋變慢。開放定址才有 $\alpha\le1$ 的限制。
+
+@q hs2-07 | ds-hash#2 | 1 | 觀念
+鏈結法的搜尋，最壞情況是？
+[x] $\Theta(n)$：所有鍵都落在同一格
+[ ] $O(1)$
+[ ] $O(\lg n)$
+[ ] $\Theta(\alpha)$
+---
+$O(1+\alpha)$ 是在均勻雜湊假設下的**期望**。運氣差或被攻擊時，全部擠在一條串列。
+
+@q hs2-08 | ds-hash#2 | 2 | 比較
+A hash table with chaining keeps each slot's keys in a singly linked list, and a new key can be inserted either at the head or at the tail of its list. In one application, duplicate keys are impossible, so an insertion never needs to search; in another, the table must first check that the key is not already present. The table has 4096 slots, the lists hold about 3 keys each on average and at most 10, and a student wants to compare the two insertion positions, with and without a tail pointer for each list. Which of the following statements are correct? Select all that apply.
+[x] Inserting at the head takes $O(1)$ time.
+[x] Inserting at the tail requires walking to the end, unless a tail pointer is kept.
+[x] If the table must first check that the key is not already present, the whole list is walked anyway.
+[ ] Inserting at the tail makes later searches faster, since older keys stay near the head.
+[ ] Inserting at the head makes later searches slower, since the list becomes longer.
+---
+「放開頭 $O(1)$」；「放尾巴要先走到最後」，除非記了尾指標；「要先確認鍵不在表裡」時本來就要走完一條，放哪都一樣。放頭或放尾，串列長度一樣，搜尋時間的期望也一樣。
+
+@q hs3-91 | ds-hash#3 | 3 | 情境
+The number of records is unknown and may turn out several times larger than expected. Which of the following statements comparing chaining with open addressing are correct?
+[x] Chaining copes better: $\alpha>1$ only makes it slower.
+[x] Open addressing cannot hold more than $m$ elements at all.
+[x] Near full, the expected number of probes in open addressing, about $\frac1{1-\alpha}$, blows up.
+[x] Open addressing must grow the table well before $\alpha$ approaches 1.
+[x] In chaining, the expected search time grows roughly linearly with $\alpha$.
+---
+「鏈結法」退化得溫和，$\alpha>1$ 只是串列變長，「搜尋時間約隨 $\alpha$ 線性成長」。「開放定址」所有鍵都放在表格裡，「最多 $m$ 個」；「$\alpha\to1$ 時探測次數 $\frac1{1-\alpha}$ 爆掉」，必須「提早換大表」。五句都對。
+
+@q hs2-10 | ds-hash#2 | 3 | 觀念
+鏈結法要 $O(1)$ 刪除「已經拿到指標的那個節點」，串列要用單向還是雙向？
+[x] 雙向：可以直接改前一個節點的指標；單向要從頭找前一個，$O(\alpha)$
+[ ] 單向就夠
+[ ] 都要 $O(n)$
+[ ] 都不行，刪除一定要先搜尋
+---
+只有鍵（沒有指標）時要先搜尋，那就是 $O(1+\alpha)$，單雙向都一樣。
+
+@q hs2-11 | ds-hash#2 | 3 | 計算
+A teaching assistant hashes $n = 1000$ keys uniformly and independently into $m = 1000$ slots of a table with chaining, so the load factor is $\alpha = 1$, and then counts how many slots hold 0, 1, 2, and 3 or more keys. A student expected every slot to hold exactly one key, because $\alpha = 1$. For a fixed slot, the probability that one given key misses it is $1 - \frac{1}{1000}$, and the keys are hashed independently, so the probability that the slot stays empty is $(1 - \frac{1}{1000})^{1000}$. The assistant runs the experiment 50 times, reports the averages, and asks the class to predict them first, to the nearest 10 slots or so. A second student argues that each slot is equally likely to be hit or missed, so about half of the slots should be empty. Which of the following statements are correct? Select all that apply.
+[x] About 368 slots are expected to be empty.
+[x] The probability that a given slot receives no key is about $e^{-1}$.
+[x] Many other slots hold two or three keys, even though $\alpha=1$.
+[x] The expected number of keys in each slot is exactly 1.
+[ ] About 500 slots are expected to be empty, since each slot is equally likely to be hit or missed.
+---
+某格沒被選到的機率 $(1-\frac1{1000})^{1000}\approx e^{-1}\approx0.368$，「約 368 格空著」；每格期望「剛好 1 個」，空格那麼多，「其他格就有兩三個」。被選中和沒被選中的機率不是各半。
+
+@q hs2-12 | ds-hash#2 | 2 | 計算
+鏈結法，$m=1000$、$n=2000$。失敗搜尋平均比較幾次？
+== 2
+---
+要把那一格整條看完，平均長度 $\alpha=2$。
+
+@q hs2-13 | ds-hash#2 | 3 | 找錯
+In a hash table with chaining, a search walks a key's list from the head until it finds the key or reaches the end, and the lists are not sorted. A student analyzes a table with $n$ keys in $m$ slots and load factor $\alpha = n/m$ under simple uniform hashing, and claims: "An unsuccessful search scans half a list on average, so it takes $\alpha/2$ comparisons." To check the claim, the student builds a table with $m = 1000$ and $n = 3000$, performs $10^4$ searches for absent keys and $10^4$ searches for present keys, and counts key comparisons, not the hash computation. A classmate suggests that keeping each list sorted by insertion time would let an unsuccessful search stop halfway, and another says that a search scans the list twice, once to find the key and once to confirm it. Which of the following statements are correct? Select all that apply.
+[x] An unsuccessful search must scan the whole list, about $\alpha$ comparisons on average.
+[x] A successful search takes about $1+\frac\alpha2$ comparisons on average.
+[x] Both kinds of search take $\Theta(1+\alpha)$ time, including the hash computation.
+[ ] An unsuccessful search can stop halfway, since each list is kept sorted by insertion time.
+[ ] An unsuccessful search takes about $2\alpha$ comparisons, since it scans the list twice.
+---
+失敗搜尋「一定走到底」才能確定不在，平均 $\alpha$；走一半就停的是「成功搜尋，約 $1+\frac\alpha2$」；加上算雜湊的時間，兩者「都是 $\Theta(1+\alpha)$」。依插入時間排的串列不能提早判斷不存在；也不必走兩遍。
+
+@q hs2-14 | ds-hash#2 | 2 | 情境
+鏈結法的表用久了 $\alpha$ 變得很大。最常見的處理方式是？
+[x] 開一個大約兩倍大的新表，把所有鍵重新算雜湊放進去；平均下來每次插入仍是 $O(1)$
+[ ] 把每條串列排序
+[ ] 刪掉一半的資料
+[ ] 不用處理，$\alpha$ 大沒影響
+---
+跟「滿了就加倍」的陣列一樣，搬家很貴但很少發生，攤銷 $O(1)$。注意新表大小不同，每個鍵都要重算位置。
+
+@q hs2-15 | ds-hash#2 | 2 | 觀念
+Textbook analyses of hash tables with chaining often assume simple uniform hashing. A student reads the assumption and then tests a hash function by hashing 10000 student IDs into 100 slots, finding between 80 and 120 keys in every slot. The student wonders what exactly the assumption requires, what it says about the keys themselves, and what it does not guarantee about collisions or about particular hash functions such as $k \bmod m$. A classmate thinks the even counts already prove that the assumption holds for this function. Which of the following statements about the assumption of simple uniform hashing are correct? Select all that apply.
+?? 複選
+[x] Each key is equally likely to land in any slot, independently of where the other keys land.
+[ ] It assumes that the keys themselves are random integers.
+[ ] It assumes that every slot holds exactly one key.
+[ ] It guarantees that no two keys ever collide.
+[ ] It holds automatically for every hash function of the form $k\bmod m$.
+---
+「每個鍵等機率落在任一格，而且跟別的鍵無關」，這是分析期望時間的理想化假設。它說的是雜湊值的分布，不是鍵本身；不是每格剛好一個，碰撞照樣會有；$k\bmod m$ 遇到有規律的鍵就不成立，universal hashing 才是讓實際上接近它的方法。
+
+@q hs2-16 | ds-hash#2 | 3 | 比較
+A hash table with chaining stores $n$ keys in $m$ slots. To speed up long chains, a developer replaces each slot's linked list with an array kept in sorted order: a search in a slot repeatedly checks the middle element of the remaining range and discards half of it, and an insertion places the new key in order, shifting the larger keys one cell to the right. In the worst case, a poor hash function or an attacker sends all $n$ keys to the same slot, so one array holds every key. With the original lists, a search in this worst case may have to scan all $n$ keys. The developer tests $n = 10^6$ keys in this worst case, about 20 halving steps per search, and also asks what happens to deletions and to collisions, and whether a balanced search tree in each slot would do better. Which of the following statements are correct? Select all that apply.
+[x] The worst-case search time becomes $O(\lg n)$.
+[x] The worst-case insertion time becomes $O(n)$, because elements in the array may have to be shifted.
+[ ] The worst-case search time is still $\Theta(n)$.
+[x] The worst-case time to delete a key also becomes $O(n)$.
+[ ] Collisions can no longer happen.
+---
+「最壞搜尋 $O(\lg n)$」對：最壞時全部擠在同一格，那格有 $n$ 個，每次砍一半。
+
+「最壞插入 $O(n)$」對：插到排好序的陣列中間，後面的都要往後挪。
+
+「還是 $\Theta(n)$」錯：每次砍一半，最壞也只要 $O(\lg n)$。
+
+「最壞刪除也是 $O(n)$」對：刪掉中間的元素，後面的要往前挪。若想插入、刪除也是 $O(\lg n)$，每格改用平衡的二元搜尋樹；有些語言的雜湊表在某格太長時就這樣換，防止碰撞攻擊把搜尋拖到 $\Theta(n)$。
+
+「不會碰撞」錯：碰撞是雜湊函數造成的，跟每格用什麼結構裝無關。
+
+@q hs2-17 | ds-hash#2 | 2 | 計算
+A hash table with chaining has $m = 50$ slots and stores $n = 200$ keys, spread uniformly at random, so the lists are short but not all of the same length. An engineer counts only key comparisons, not the hash computation, and measures $10^5$ random lookups of keys that are present and $10^5$ lookups of keys that are absent. The engineer wants to predict the average cost of each kind of lookup, to decide whether doubling $m$ to 100 is worth the extra memory, and to bound the worst case for a single search. Which of the following statements are correct? Select all that apply.
+[x] The load factor is $\alpha=4$.
+[x] An unsuccessful search examines about 4 keys on average.
+[x] A successful search compares about 3 keys on average.
+[ ] Doubling $m$ to 100 halves the average number of keys compared in a successful search.
+[ ] In the worst case, a search examines at most 4 keys.
+---
+「$\alpha=4$」對：$200/50$。
+
+「不成功搜尋看約 4 個」對：整條串列要看完，平均長度 $\alpha$。
+
+「成功搜尋比較約 3 個」對：要找的鍵前面平均有一半的其他鍵，約 $1+\alpha/2=3$。
+
+「$m$ 加倍，成功搜尋減半」錯：$\alpha=2$ 時是 $1+1=2$，從 3 變 2，不是減半；那個 1（比較自己）不會變。
+
+「最壞最多看 4 個」錯：最壞時 200 個全擠在同一格。
+
+@q hs2-18 | ds-hash#2 | 2 | 陷阱
+鏈結法用得好，搜尋就保證最壞 $O(1)$。對嗎？
+[ ] 對
+[x] 不對
+---
+$O(1)$ 是期望。要最壞 $O(1)$ 搜尋，要用完美雜湊或 Cuckoo hashing。
+
+@q hs2-19 | ds-hash#2 | 2 | 計算
+鏈結法，$m=7$、$h(k)=k\bmod7$。依序插入 15、8、23、4、30、12、19、26、9 後，有幾格是空的？
+== 3
+---
+用到的格子：1（8、15）、2（9、30、23）、4（4）、5（26、19、12）。第 0、3、6 格空著。
+
+@q hs2-20 | ds-hash#2 | 3 | 證明
+在簡單均勻雜湊下，證明鏈結法失敗搜尋的期望比較次數是 $\alpha$。
+---
+要找的鍵 $k$ 不在表中，$h(k)$ 等可能是任一格。設 $n_j$ 是第 $j$ 格的串列長度，失敗搜尋要比 $n_{h(k)}$ 次。期望 $=\sum_j\frac1m\,E[n_j]$；每個鍵落在第 $j$ 格的機率 $\frac1m$，所以 $E[n_j]=\frac nm=\alpha$。期望比較次數 $\alpha$，加上算雜湊的 $O(1)$，共 $\Theta(1+\alpha)$。
+
+@q hs2-21 | ds-hash#2 | 1 | 計算
+鏈結法：$n=600$ 個鍵、$m=200$ 格。負載因子是多少？
+== 3
+---
+$\alpha=n/m=600/200=3$，平均每條串列 3 個。
+
+@q hs3-01 | ds-hash#3 | 2 | 追蹤
+開放定址、線性探測，$m=13$、$h(k)=k\bmod13$。依序插入 18、41、22、44、59、32、31、73。31 最後放在第幾格？
+== 10
+---
+31 的 $h=5$：5（18）、6（44）、7（59）、8（32）、9（22）都被佔，第 10 格空，放這裡，探測 6 次。
+
+@q hs3-02 | ds-hash#3 | 2 | 計算
+接上題，8 個鍵插入時一共探測了幾次？
+== 19
+---
+18、41、22、59 各 1 次；44 撞 18，2 次；32 撞 44、59，3 次；31 要 6 次；73（$h=8$）撞 32、22、31，4 次。$4+2+3+6+4=19$。
+
+@q hs3-03 | ds-hash#3 | 3 | 計算
+接上題的表（第 5～11 格連成一塊，第 2 格單獨一個）。下一個新鍵如果均勻落在 13 格中的任一格，它最後被放到第 12 格的機率是？
+== 8/13
+---
+起點落在 5～11 的任一格都會一路滑到第 12 格，起點是 12 本身也放 12：8 種起點。這就是 primary clustering：塊越大，越容易再變大。
+
+@q hs3-04 | ds-hash#3 | 3 | 計算
+接上題的表，對一個不在表裡的鍵做搜尋，起點均勻落在 13 格中的任一格。平均要探測幾次（遇到空格就停，空格那次也算）？
+== 42/13
+== 3.23
+---
+起點 0、1、3、4、12：1 次；起點 2：2 次；起點 5～11：分別 8、7、6、5、4、3、2 次。合計 42，平均 $42/13\approx3.23$。$\alpha=8/13$ 的理想值 $\frac1{1-\alpha}=2.6$，線性探測比較差。
+
+@q hs3-05 | ds-hash#3 | 2 | 追蹤
+同樣的鍵和 $m=13$，改用二次探測 $h(k,i)=(h(k)+i+3i^2)\bmod13$。44 被放在第幾格？
+== 6
+---
+44 的 $h=5$：$i=0$ 第 5 格（18）；$i=1$：$5+1+3=9$（22）；$i=2$：$5+2+12=19\bmod13=6$，空的。
+
+@q hs3-06 | ds-hash#3 | 3 | 追蹤
+同上的二次探測。31（$h=5$）要探測幾次才找到空位？
+== 8
+---
+依序看第 5、9、6、9、5、7、2、3 格（$i=0..7$）：前 7 個都被佔了，第 3 格空。31 和 18、44 起點一樣，走一模一樣的路——這就是 secondary clustering。
+
+@q hs3-07 | ds-hash#3 | 3 | 追蹤
+改用雙重雜湊 $h(k,i)=(k\bmod13+i\cdot h_2(k))\bmod13$，$h_2(k)=1+(k\bmod11)$。31 的探測序列前四格是？
+== 5 2 12 9
+== 5,2,12,9
+---
+$h_2(31)=1+9=10$。依序 $5$、$15\bmod13=2$、$25\bmod13=12$、$35\bmod13=9$。不同的鍵步伐不同，即使起點一樣也會分開走。
+
+@q hs3-08 | ds-hash#3 | 2 | 陷阱
+Double hashing is used with $m=12$. For some key, $h_2(k)=4$ and the starting slot is 5. Which of the following statements are correct?
+[x] The probe sequence visits only slots 5, 9 and 1.
+[x] It cannot reach every slot, because $\gcd(4,12)=4$.
+[ ] Double hashing visits every slot whenever $h_2(k)\ne0$.
+[ ] The probe sequence visits every even slot.
+[ ] Choosing $m$ as a power of 2 with $h_2$ always even fixes this.
+---
+5、9、13 mod 12＝1、5……「只在 5、9、1 打轉」，因為「步伐和 $m$ 的最大公因數是 4」，只走到 $12/4=3$ 格。$h_2\ne0$ 不夠，要和 $m$ 互質；這裡走的都是奇數格；$m$ 取 2 的次方時 $h_2$ 要永遠是**奇數**才互質，偶數正好相反。
+
+@q hs3-09 | ds-hash#3 | 2 | 比較
+Which of the following statements about clustering in linear probing, quadratic probing and double hashing are correct?
+[x] Linear probing suffers from primary clustering.
+[x] Quadratic probing avoids primary clustering but still has secondary clustering.
+[ ] Double hashing still has secondary clustering, because keys with the same starting slot follow the same path.
+[ ] Quadratic probing suffers from primary clustering just as linear probing does.
+[ ] None of the three methods has any clustering when $m$ is prime.
+---
+線性探測連成一塊的格子越滾越大，是「primary clustering」；二次探測跳著走不會連成一塊，但「起點一樣的鍵走同一條路」，仍有 secondary clustering。雙重雜湊的步伐也由鍵決定，起點一樣的鍵通常走不同的路，兩種群聚都大幅減少。$m$ 是質數不會讓群聚消失。
+
+@q hs3-10 | ds-hash#3 | 3 | 追蹤
+線性探測表（$m=13$）：`[_, _, 41, _, _, 18, 44, 59, 32, 22, 31, 73, _]`。刪除 44 時改放墓碑 D。接著搜尋 31 要探測幾次？
+== 6
+---
+31 的 $h=5$：18 → D（跳過，繼續）→ 59 → 32 → 22 → 31，第 6 次找到。
+
+@q hs3-11 | ds-hash#3 | 2 | 陷阱
+同一張表，刪除 44 時如果直接把第 6 格清成空的，再搜尋 31 會怎樣？
+[x] 第 2 次探測就碰到空格，誤以為 31 不在表裡
+[ ] 一樣找得到
+[ ] 會無限迴圈
+[ ] 會找到 44
+---
+31 當初是一路跳過第 6 格才放到第 10 格；清空後搜尋在第 6 格就停了。所以刪除要放墓碑。
+
+@q hs3-12 | ds-hash#3 | 3 | 追蹤
+接 hs3-10（第 6 格是墓碑 D），插入 57（$57\bmod13=5$）。57 放在哪一格？
+== 6
+---
+第 5 格 18 被佔；第 6 格是墓碑，插入時可以覆蓋。（實作上應該先確認 57 不在表裡再覆蓋。）
+
+@q hs3-13 | ds-hash#3 | 2 | 計算
+理想的開放定址（均勻雜湊），插入或失敗搜尋期望最多探測 $\frac1{1-\alpha}$ 次。$\alpha=0.75$ 和 $\alpha=0.95$ 時各是？
+== 4,20
+?? α=0.75,α=0.95
+---
+$\frac1{0.25}=4$、$\frac1{0.05}=20$。表從 75% 滿到 95% 滿，探測次數變 5 倍——所以開放定址通常在 $\alpha$ 到 0.5～0.75 時就換大表。
+
+@q hs3-14 | ds-hash#3 | 3 | 比較
+$\alpha=0.9$ 時，失敗搜尋：理想的均勻雜湊約 10 次，線性探測約 $\frac12(1+\frac1{(1-\alpha)^2})$ 次。線性探測大約幾次？
+== 50.5
+---
+$\frac12(1+100)=50.5$。primary clustering 讓線性探測在表很滿時特別慘。
+
+@q hs3-15 | ds-hash#3 | 2 | 追蹤
+線性探測，$m=10$、$h(k)=k\bmod10$。依序插入 23、43、13、27、37、18。18 放在第幾格？
+== 9
+---
+23→3；43→4；13→5；27→7；37→8；18 想去 8，被 37 佔了，放 9。
+
+@q hs3-16 | ds-hash#3 | 1 | 觀念
+Which of the following statements about the load factor $\alpha$ in open addressing are correct?
+?? 複選
+[x] $\alpha$ is at most 1, since all keys are stored in the table itself.
+[ ] $\alpha$ has no upper limit, just as in chaining.
+[ ] $\alpha$ is at most 0.5, since half of the table must always stay empty.
+[ ] $\alpha$ can reach 2 when tombstones are counted as free slots.
+[ ] $\alpha$ must be exactly 1 for open addressing to work at all.
+---
+開放定址沒有串列，所有鍵都放在表格裡，最多 $m$ 個，所以「$\alpha\le1$」。沒有上限的是鏈結法；0.5 是二次探測常用的安全門檻，不是上限；墓碑不是元素，$\alpha$ 也不會超過 1；表通常遠沒滿也照常運作。
+
+@q hs3-17 | ds-hash#3 | 2 | 觀念
+Which of the following statements about how tombstones (DELETED markers) are treated in open addressing are correct?
+[x] A search treats a tombstone as occupied and keeps probing.
+[x] An insertion may reuse a tombstone's slot.
+[x] When tombstones pile up, searches slow down.
+[x] Rebuilding the table periodically removes the tombstones.
+[ ] A search may stop at a tombstone, since the key it marks has already been deleted.
+---
+「搜尋不能停在墓碑」，後面可能還有要找的鍵；「插入可以重複利用那格」。墓碑太多時「搜尋變慢」，要「定期重建」清掉。墓碑代表的鍵雖然刪了，但它當初可能擋住過別的鍵，所以不能停。
+
+@q hs3-18 | ds-hash#3 | 3 | 情境
+An open-addressing table sees many insertions and deletions. Its load factor $\alpha$ stays low, but searches keep getting slower. Which of the following statements are correct?
+[x] Deleted markers (tombstones) accumulate, and searches must skip over them.
+[x] $\alpha$ counts only real elements, not tombstones.
+[x] Rebuilding the table periodically removes the tombstones.
+[ ] The hash function has become worse, because deletions change its output.
+[ ] Searches slow down because a low $\alpha$ makes probe sequences longer.
+---
+「墓碑越積越多」，搜尋要跳過它們，實際被佔用的格子很多，但「$\alpha$ 只算真正的元素」所以看起來很低；「定期重建」清掉墓碑。雜湊函數不受刪除影響；$\alpha$ 低只會讓探測變短。
+
+@q hs3-19 | ds-hash#3 | 2 | 計算
+二次探測 $h(k,i)=(h(k)+i^2)\bmod m$，$h(k)=3$、$m=11$。前五個探測位置是？
+== 3 4 7 1 8
+== 3,4,7,1,8
+---
+$3+0=3$、$3+1=4$、$3+4=7$、$3+9=12\bmod11=1$、$3+16=19\bmod11=8$。
+
+@q hs3-20 | ds-hash#3 | 3 | 陷阱
+Quadratic probing uses $h(k,i)=(h(k)+i^2)\bmod m$. Which of the following statements are correct?
+[x] It does not always find an empty slot, even when the table is not full.
+[x] When $m$ is prime and the table is at most half full, an empty slot is always found.
+[ ] It always finds an empty slot, because $i$ keeps increasing.
+[ ] When $m$ is prime, it always finds an empty slot however full the table is.
+[ ] When $m$ is prime, $i^2\bmod m$ takes all $m$ values as $i$ runs from 0 to $m-1$.
+---
+$m$ 是質數時 $i^2\equiv j^2$ ⇔ $i\equiv\pm j$，$i^2\bmod m$ 只有 $\frac{m+1}2$ 種值，所以「表沒滿也可能找不到空位」；「表至少一半是空的」就一定碰得到空格。$i$ 一直加，值還是在那一半裡繞。
+
+@q hs3-21 | ds-hash#3 | 2 | 找錯
+Someone keeps inserting into an open-addressing table that is already 98% full and says "hash tables take $O(1)$ time on average." Which of the following statements are correct?
+[x] The expected number of probes for an insertion is about $\frac1{1-\alpha}=50$.
+[x] The $O(1)$ claim assumes that $\alpha$ is bounded by a constant less than 1.
+[x] The table should be enlarged and rebuilt when $\alpha$ reaches some threshold.
+[x] Open addressing can keep inserting until the table is full, just more and more slowly.
+[ ] Hash tables take $O(1)$ time even in the worst case, so such a slowdown is impossible.
+---
+「$\frac1{1-0.98}=50$」，$\alpha$ 接近 1 時不再是常數，$O(1)$「要假設 $\alpha$ 有小於 1 的上界」，所以要「到門檻就加倍重建」。開放定址「可以塞到滿，只是越來越慢」。雜湊表最壞是 $O(n)$。
+
+@q hs3-22 | ds-hash#3 | 3 | 證明
+說明為什麼在均勻雜湊下，開放定址失敗搜尋的期望探測次數不超過 $\frac1{1-\alpha}$。
+---
+第 1 次探測一定發生；第 1 格被佔的機率 $\frac nm=\alpha$，才需要第 2 次；第 2 格也被佔（機率約 $\le\alpha$），才需要第 3 次……需要第 $i$ 次的機率 $\le\alpha^{i-1}$。期望 $\le1+\alpha+\alpha^2+\cdots=\frac1{1-\alpha}$。
+
+@q hs3-23 | ds-hash#3 | 2 | 比較
+Which of the following are advantages of open addressing over chaining?
+?? 複選
+[x] It needs no pointers, so it uses less space, and its probes access nearby memory.
+[ ] Its load factor $\alpha$ can exceed 1 when the table fills up.
+[ ] Deletion is simpler, because a removed slot can simply be marked empty.
+[ ] Its worst-case search time is $O(1)$, unlike that of chaining.
+[ ] It copes better with an unknown, possibly huge number of records.
+---
+資料都在一個陣列裡，「不用指標、省空間、存取連續」，對 cache 友善。$\alpha$ 不能超過 1；刪除要用墓碑，直接標空會讓後面的鍵找不到；最壞一樣是 $O(n)$；筆數不確定時鏈結法比較能撐。
+
+@q hs3-24 | ds-hash#3 | 3 | 計算
+線性探測，$m=10$、$h(k)=k\bmod10$。依序插入 23、43、13、27、37、18 後，搜尋 33（不在表裡）要探測幾次？
+== 4
+---
+33 的 $h=3$：第 3（23）、4（43）、5（13）格都不是，第 6 格空：4 次。
+
+@q hs3-25 | ds-hash#3 | 2 | 情境
+In double hashing, the step $h_2(k)$ should always be coprime to $m$. Which of the following are common designs that guarantee this?
+[x] Choose $m$ prime and make $1\le h_2(k)\le m-1$.
+[x] Choose $m$ as a power of 2 and make $h_2(k)$ always odd.
+[ ] Choose $m$ even and make $h_2(k)$ always even.
+[ ] Choose $m$ prime and allow $h_2(k)=0$ for some keys.
+[ ] Choose $m$ as a power of 2 and make $h_2(k)$ always a power of 2 greater than 1.
+---
+「質數 $m$」和任何 1～$m-1$ 的數互質；「2 的次方」和任何奇數互質。偶數配偶數有公因數 2；$h_2=0$ 會原地打轉；2 的次方配大於 1 的 2 的次方也有公因數。
+
+@q hs4-01 | ds-hash#4 | 2 | 計算
+完美雜湊（FKS）：第一層把 10 個鍵分到 10 格，各格的鍵數是 3、0、2、1、0、1、2、0、1、0。第二層的表總共要開幾格（第 $j$ 格開 $n_j^2$ 格）？
+== 20
+---
+$9+0+4+1+0+1+4+0+1+0=20$。只要第一層分得均勻，$\sum n_j^2$ 的期望 $<2n$，總空間 $O(n)$。
+
+@q hs4-02 | ds-hash#4 | 2 | 觀念
+In perfect hashing, the second-level table for $n_j$ keys has $n_j^2$ slots. Which of the following statements are correct?
+[x] With $n_j^2$ slots, a function chosen at random from a universal family causes no collision with probability at least $\frac12$.
+[x] The expected number of colliding pairs is $\frac{n_j(n_j-1)}2\cdot\frac1{n_j^2}<\frac12$.
+[x] So a few random tries find a collision-free function.
+[ ] With only $n_j$ slots, a random function would never cause a collision.
+[ ] The squared size is needed so that new keys can be inserted later.
+---
+$n_j$ 個鍵有 $\frac{n_j(n_j-1)}2$ 對，每對碰撞機率 $\frac1{n_j^2}$，「期望碰撞數 $<\frac12$」，由 Markov 不等式「至少一半機率 0 碰撞」，「多試幾次就找得到」。只有 $n_j$ 格時碰撞很可能發生；完美雜湊處理的是固定的鍵集合，不支援插入。
+
+@q hs4-03 | ds-hash#4 | 1 | 計算
+完美雜湊的搜尋最壞要看幾格？
+== 2
+---
+第一層算一次找到第 $j$ 格，第二層再算一次直接到位，沒有碰撞，最壞 2 次。
+
+@q hs4-04 | ds-hash#4 | 2 | 陷阱
+完美雜湊適合用在鍵會一直增加、刪除的情況。對嗎？
+[ ] 對
+[x] 不對
+---
+FKS 要事先知道整組鍵，才能挑出讓第二層完全不碰撞的函數。鍵的集合固定（例如程式語言的保留字、字典檔）時最適合。
+
+@q hs4-05 | ds-hash#4 | 2 | 計算
+365 天，至少要幾個人，「有兩人同一天生日」的機率才超過一半？
+== 23
+---
+23 人時沒有人同一天的機率 $\frac{365}{365}\cdot\frac{364}{365}\cdots\frac{343}{365}\approx0.493$，所以有人同天的機率約 0.507。大約是 $1.18\sqrt{365}\approx22.5$。
+
+@q hs4-06 | ds-hash#4 | 3 | 計算
+A hash table has $10^6$ slots, and keys are spread uniformly. Which of the following statements about when the probability of at least one collision reaches one half are correct?
+?? 複選
+[x] It happens at about 1180 keys.
+[ ] It happens at about 500,000 keys, when half of the slots are in use.
+[ ] It happens at exactly 1000 keys, since $\sqrt{10^6}=1000$.
+[ ] It happens at about 10 million keys.
+[ ] It happens only when the table is completely full.
+---
+約 $1.18\sqrt m$：「1180 個鍵左右」（程式算 1178 個時剛好約 0.500），只用了 0.1% 的格子。1000 個時機率約 0.39，還不到一半。所以碰撞一定要處理。
+
+@q hs4-07 | ds-hash#4 | 2 | 計算
+People are assigned one of 365 equally likely days at random, like keys hashed into 365 slots. Which of the following statements about the chance that two of them get the same day are correct?
+[x] With 50 people, the probability is about 97%.
+[x] With 30 people, the probability is about 70%.
+[x] With 23 people, the probability is just over 50%.
+[x] Collisions become likely once the number of keys is on the order of $\sqrt m$.
+[ ] With 50 people, the probability is about 14%, since 50 is small compared with 365.
+---
+$1-\prod_{i=0}^{49}\frac{365-i}{365}\approx0.970$，30 人約 0.706，23 人約 0.507，所以「50 人約 97%」「30 人約 70%」「23 人剛過一半」。$\sqrt{365}\approx19$，「二十幾個鍵就很可能碰撞」，和格子總數相比小很多。
+
+@q hs4-08 | ds-hash#4 | 3 | 追蹤
+Cuckoo hashing：兩個表各 3 格。每個鍵的兩個位置（$T_1$ 的格, $T_2$ 的格）：A (0,1)、B (0,2)、C (1,1)、D (1,2)。依序插入 A、B、C、D（先試 $T_1$，被佔就把佔位者踢到它的另一個位置）。插入 D 時總共踢了幾次？最後 $T_1$ 的第 0 格是誰？
+== 3,A
+?? 踢幾次,T1[0]
+---
+D 進 $T_1[1]$ 踢走 C；C 去 $T_2[1]$ 踢走 A；A 去 $T_1[0]$ 踢走 B；B 去 $T_2[2]$，空的，停。最後 $T_1=[A,D,\_]$、$T_2=[\_,C,B]$（程式模擬確認）。
+
+@q hs4-09 | ds-hash#4 | 3 | 反例
+接上題，再插入 E，位置 (0,1)。會怎樣？
+[x] 一定失敗：A～E 五個鍵只用得到 $T_1[0]$、$T_1[1]$、$T_2[1]$、$T_2[2]$ 四格，會一直互踢；要換雜湊函數重建
+[ ] 踢一次就放進 $T_1[2]$
+[ ] 直接放進 $T_2[0]$
+[ ] 把 E 丟掉
+---
+每個鍵只能待在自己的兩個位置。五個鍵擠四格，鴿籠原理保證放不下。實作上踢超過某個次數就重建整張表。
+
+@q hs4-10 | ds-hash#4 | 2 | 觀念
+Which of the following statements about cuckoo hashing are correct?
+[x] A search examines at most 2 slots.
+[x] An insertion takes expected $O(1)$ time.
+[x] An insertion may trigger a long chain of evictions.
+[x] An insertion may even force a rebuild of the table with new hash functions.
+[x] The worst-case cost is moved from searches to insertions.
+---
+每個鍵只可能在兩個地方，「搜尋最壞 2 格」。代價放在插入：「期望 $O(1)$」，但「可能連鎖踢很多次」，甚至踢成迴圈「要換函數重建」，也就是「最壞成本從搜尋搬到插入」。五句都對。
+
+@q hs4-11 | ds-hash#4 | 2 | 追蹤
+Bloom filter 有 12 個位元（0–11），$h_1(x)=x\bmod12$、$h_2(x)=(5x+1)\bmod12$。加入 3、8、15 之後，哪些位元是 1？
+== 3 4 5 8
+== 3,4,5,8
+---
+3：$h_1=3$、$h_2=16\bmod12=4$。8：$h_1=8$、$h_2=41\bmod12=5$。15：$h_1=3$、$h_2=76\bmod12=4$。所以 3、4、5、8。
+
+@q hs4-12 | ds-hash#4 | 3 | 追蹤
+A Bloom filter has 12 bits (0–11) with $h_1(x)=x\bmod12$ and $h_2(x)=(5x+1)\bmod12$. After inserting 3, 8 and 15, bits 3, 4, 5 and 8 are 1. Which of the following statements are correct?
+[x] Querying 20 answers "possibly present," a false positive.
+[x] Querying 27 answers "possibly present," a false positive.
+[x] Querying 6 answers "definitely absent," because bit 6 is 0.
+[ ] Querying 20 answers "definitely absent," since 20 was never inserted.
+[ ] The filter could answer "definitely absent" for one of 3, 8 or 15.
+---
+20：$h_1=8$、$h_2=101\bmod12=5$，都是 1；27：$h_1=3$、$h_2=136\bmod12=4$，都是 1，所以「20、27 都是偽陽性」。6：$h_1=6$，「位元 6 是 0，一定沒有」。沒加入過不代表會被判沒有；加入過的元素位元一定都是 1，不會被說成沒有。
+
+@q hs4-13 | ds-hash#4 | 2 | 陷阱
+Bloom filter 回答「一定沒有」時，有可能是錯的。對嗎？
+[ ] 對
+[x] 不對
+---
+加入過的東西，它的 $k$ 個位元一定都被設成 1，而且之後不會被清掉。所以只要有一位是 0，它就一定沒被加入過。
+
+@q hs4-14 | ds-hash#4 | 2 | 情境
+A browser must quickly check whether a URL is on a list of millions of malicious URLs, with limited memory; when the answer is "possibly," it asks a server to confirm. Which of the following statements are correct?
+[x] Bloom filters fit this task, because they are very space-efficient.
+[x] A false positive only costs one extra query to the server.
+[ ] A chained hash table storing full URLs would use less memory than a Bloom filter.
+[ ] The Bloom filter may wrongly report a listed URL as absent.
+[ ] Every URL reported as "possibly present" is certainly on the list.
+---
+每個元素只要幾個位元，「很省空間」；「可能在」才多查一次，「偽陽性只是多問一次伺服器」。存完整網址的雜湊表大得多；Bloom filter 不會把在名單上的說成「沒有」；「可能在」裡會有偽陽性，所以才要伺服器確認。
+
+@q hs4-15 | ds-hash#4 | 3 | 計算
+A Bloom filter has $m=1000$ bits, holds $n=100$ elements, and uses $k=3$ hash functions. Its false-positive rate is approximately $(1-e^{-kn/m})^k$. Which of the following statements are correct?
+[x] The false-positive rate is about 1.7%.
+[x] Each element uses only 10 bits of the filter on average.
+[x] Elements that were inserted are never reported absent.
+[x] Adding more elements without enlarging the filter raises the false-positive rate.
+[ ] The false-positive rate is about 26%, since about a quarter of the bits are 1.
+---
+$1-e^{-0.3}\approx0.259$ 是位元為 1 的比例，要 3 個位元都是 1 才誤判，$0.259^3\approx0.0174$，「約 1.7%」，不是 26%。$1000/100$「每個元素 10 位元」。「加入過的一定不會被判沒有」；元素多了 1 的比例上升，「誤判率跟著升高」。
+
+@q hs4-16 | ds-hash#4 | 2 | 陷阱
+一般的 Bloom filter 可以把一個元素刪掉：把它的 $k$ 個位元清成 0 就好。對嗎？
+[ ] 對
+[x] 不對
+---
+那些位元可能也是別的元素設的；清掉會讓別的元素被說成「一定沒有」，破壞唯一的保證。要支援刪除得把每一位改成計數器。
+
+@q hs4-17 | ds-hash#4 | 3 | 比較
+Perfect hashing and cuckoo hashing both give $O(1)$ worst-case search. Which of the following statements about their difference are correct?
+[x] Perfect hashing requires the whole set of keys to be fixed in advance.
+[x] Cuckoo hashing allows insertions at any time.
+[ ] Cuckoo hashing requires the whole set of keys to be fixed in advance.
+[ ] Perfect hashing only guarantees expected $O(1)$ search, not worst-case $O(1)$.
+[ ] Cuckoo hashing guarantees $O(1)$ worst-case insertion as well as search.
+---
+完美雜湊是「事先算好、不再變」，鍵集合要固定；Cuckoo「隨時可以插入」，但插入可能連鎖踢很多次甚至重建，只有期望 $O(1)$。兩者搜尋都是最壞常數格。
+
+@q hs4-18 | ds-hash#4 | 2 | 計算
+Bloom filter 用 $k$ 個雜湊函數。加入一個元素最多把幾個位元設成 1？查詢要看幾個位元？
+== k,k
+?? 加入,查詢
+---
+各算 $k$ 個位置。可能有重複的位置，所以「最多」$k$ 個。
+
+@q hs4-19 | ds-hash#4 | 3 | 情境
+A web crawler records the URLs it has visited in a Bloom filter with $m$ bits and $k$ hash functions. Before crawling a URL it queries the filter, and it skips the URL if the filter answers "possibly present". The requirement is that re-crawling a page occasionally is acceptable, but no new URL may ever be missed. The crawler plans to visit $n = 10^7$ URLs and allocates $m = 10^8$ bits with $k = 7$ hash functions. Which of the following statements are correct? Select all that apply.
+[x] A false positive makes the crawler skip a URL that it has never crawled.
+[x] Bloom filters never give false negatives: once a URL has been inserted, every later query for it answers "possibly present".
+[ ] This design meets the requirement, because the only errors of a Bloom filter are false positives, which can only cause re-crawling.
+[x] Assuming independent and uniform hash functions, after $n$ URLs are inserted, the probability that a particular bit is still 0 is $(1 - 1/m)^{kn}$.
+[ ] For fixed $m$ and $n$, using more hash functions always lowers the false-positive rate.
+---
+「偽陽性會跳過沒爬過的網址」對：偽陽性是「說有、其實沒有」；這裡「有」代表「爬過、跳過」，所以誤判就漏爬。
+
+「不會偽陰性」對：插入時把 $k$ 個位元都設成 1，之後不會被清掉，查詢一定全是 1。
+
+「符合需求，因為只會重爬」錯：上面說了，偽陽性在這個設計裡造成的是**漏爬**，正好是不能接受的那種錯。要看清楚「有」對應的動作是什麼。（反過來用 Bloom filter 記「待爬」也不行；這種需求要用不會出錯的集合，例如雜湊表。）
+
+「某個位元還是 0 的機率 $(1-1/m)^{kn}$」對：每次雜湊打到它的機率 $1/m$，總共打 $kn$ 次，每次都沒打到。
+
+「雜湊函數越多偽陽性越低」錯：$k$ 多了每次查詢要更多位元都是 1，但也讓表更快被填滿；最佳大約在 $k=\frac mn\ln2$，超過反而變差。
+
+@q hs4-20 | ds-hash#4 | 2 | 計算
+Cuckoo hashing 三個鍵的兩個位置都一樣，都是 ($T_1$ 第 4 格, $T_2$ 第 0 格)。能全部放進去嗎？
+== 不能
+== 不行
+---
+三個鍵只有兩個可能的位置，一定有一個放不下，插入時會無限互踢，只能換函數重建。
+
+@q hs4-21 | ds-hash#4 | 1 | 觀念
+Which of the following statements about the errors a Bloom filter can make are correct?
+?? 複選
+[x] An element never inserted may be reported as possibly present, but an inserted element is never reported absent.
+[ ] An inserted element may be reported as definitely absent when other elements share its bits.
+[ ] Both false positives and false negatives can occur.
+[ ] Bloom filters never make errors if their hash functions are good enough.
+[ ] Bloom filters report "possibly present" only for elements that were inserted.
+---
+「只會偽陽性、不會偽陰性」：加入過的東西位元一定全是 1，別人共用也只會再設成 1；沒加入過的東西，位元可能剛好被別人設成 1。函數再好也躲不掉這種誤判。
+
+@q gr1-01 | ds-graph#1 | 1 | 計算
+無向圖有 6 個點、8 條邊。相鄰串列總共有幾個串列節點（不算串列頭）？相鄰矩陣有幾格？
+== 16,36
+?? 串列節點,相鄰矩陣格數
+---
+每條無向邊在兩端的串列各出現一次：$2E=16$。相鄰矩陣 $V^2=36$ 格。
+
+@q gr1-02 | ds-graph#1 | 2 | 計算
+有向圖 5 個點、7 條邊。相鄰串列有幾個串列節點？相鄰矩陣裡有幾個 1？
+== 7,7
+?? 串列節點,相鄰矩陣的1
+---
+有向邊只記在起點的串列裡，各 7 個。無向圖才會是 $2E$。
+
+@q gr1-03 | ds-graph#1 | 2 | 計算
+無向圖 5 個點的度數分別是 3、2、2、3、2。有幾條邊？
+== 6
+---
+每條邊貢獻兩個度數：$\sum\deg=2E$，$12=2E$，$E=6$。
+
+@q gr1-04 | ds-graph#1 | 2 | 比較
+要問「$u$ 和 $v$ 之間有沒有邊」：相鄰矩陣和相鄰串列各要多少時間？
+[x] 相鄰矩陣 $O(1)$；串列 $O(\deg u)$（要掃 $u$ 的串列）
+[ ] 都是 $O(1)$
+[ ] 相鄰矩陣 $O(V)$；串列 $O(1)$
+[ ] 都是 $O(V)$
+---
+相鄰矩陣直接看 $a_{uv}$；串列要一個一個比對 $u$ 的鄰居。
+
+@q gr1-05 | ds-graph#1 | 2 | 情境
+A social network has $10^8$ users, and each user has about 200 friends on average; a friendship is mutual, so it is one undirected edge between two users. The engineers must choose how to store the friendship graph in memory and estimate the number of stored entries for each choice. One option is an adjacency matrix with one entry for every ordered pair of users; another is an adjacency list for each user, in which each friendship appears in the lists of both of its endpoints, plus one list header per user. The most common query asks for all friends of a given user, while the query "are these two users friends?" is rare. A junior engineer suggests the adjacency matrix because a friendship check is then fastest, and a manager asks whether the two choices really differ much in space. Which of the following statements are correct? Select all that apply.
+[x] There are about $10^{10}$ friendship edges.
+[x] Adjacency lists need about $V+2E\approx2\times10^{10}$ entries.
+[ ] An adjacency matrix would need about $10^{12}$ entries.
+[ ] An adjacency matrix is the better choice, because checking a friendship is fastest.
+[ ] The two representations need about the same space.
+---
+$E\approx10^8\times200/2=10^{10}$（每段友誼被兩個人各算一次），「$10^{10}$」對；串列每條邊在兩端各記一次，「$2\times10^{10}$」對。相鄰矩陣是 $V^2=10^{16}$ 格，不是 $10^{12}$，「$10^{12}$」錯；大部分是 0，浪費到不可能，查詢再快也不能選，「better choice」「about the same space」都錯。
+
+@q gr1-06 | ds-graph#1 | 2 | 情境
+A chip-design tool stores an undirected graph with 1000 vertices, one per circuit block, and about 400000 edges, one per wire between two blocks. During placement, it asks "is there an edge between these two vertices?" about $10^9$ times, so each query must be fast. The developers compare an adjacency matrix with adjacency lists, in which each edge appears in the lists of both endpoints, and estimate the space and the time per query for each, measuring space in stored entries. A colleague insists that adjacency lists always use less space. Which of the following statements are correct? Select all that apply.
+[x] An adjacency matrix is a good choice: it has only $10^6$ entries and answers each query in $O(1)$ time.
+[x] Adjacency lists for this graph would hold about $8\times10^5$ entries in total.
+[ ] Adjacency lists always use less space than an adjacency matrix.
+[ ] Adjacency lists answer each such query in $O(1)$ time.
+[ ] Neither representation is able to store this graph.
+---
+$V^2=10^6$ 格不大，查詢 $O(1)$，「adjacency matrix is a good choice」對。無向圖每條邊在兩端各記一次，串列共 $2E\approx8\times10^5$ 個節點，「$8\times10^5$」對；每個節點還帶指標，稠密圖時串列不一定比較省，「always use less space」錯。串列查詢要掃度數那麼長，「$O(1)$」錯。兩種都存得下，「neither」錯。
+
+@q gr1-07 | ds-graph#1 | 3 | 計算
+無向圖 $V=1000$。相鄰矩陣每格佔 1 單位空間；相鄰串列每個節點佔 64 單位（不算串列頭）。邊數 $E$ 至少多少時，相鄰矩陣比串列省空間？
+== 7813
+---
+相鄰矩陣 $10^6$ 單位；串列 $2E\times64$ 單位。$128E>10^6$，$E>7812.5$，至少 7813 條（約佔完全圖的 1.6%）。
+
+@q gr1-08 | ds-graph#1 | 2 | 計算
+An undirected graph with no self-loops has $V$ vertices and $E$ edges, and it is stored in a $V\times V$ adjacency matrix with $a_{uv} = 1$ when $u$ and $v$ are joined by an edge and 0 otherwise. For example, the path 1–2–3–4 has $V = 4$ and $E = 3$. A student wants to relate the number of 1s and 0s in the adjacency matrix to $E$ and $V$, to describe its shape, and to check the answers on this small example before writing a general formula. Which of the following statements about its adjacency matrix are correct? Select all that apply.
+[x] It contains exactly $2E$ ones.
+[x] It is symmetric.
+[x] Every diagonal entry is 0.
+[ ] Each edge sets exactly one entry to 1, so the ones count the edges one-for-one.
+[ ] Its number of zeros is $V^2-E$.
+---
+「$2E$ 個 1」對：邊 $u$–$v$ 會讓 $a_{uv}$ 和 $a_{vu}$ 都是 1。
+
+「對稱」對：同上，$a_{uv}=a_{vu}$。
+
+「對角線全 0」對：沒有自己連自己的邊。
+
+「每條邊只設一格」錯：無向邊兩個方向各設一格；一條邊對一格是有向圖。
+
+「0 有 $V^2-E$ 個」錯：1 有 $2E$ 個，所以 0 是 $V^2-2E$ 個。
+
+@q gr1-09 | ds-graph#1 | 2 | 追蹤
+有向圖的相鄰串列：1: 2, 4；2: 3；3: 1, 4；4: （空）。相鄰矩陣第 3 列和第 4 行（column）各是？
+== 1 0 0 1,1 0 1 0
+?? 第3列,第4行
+---
+第 3 列記「3 指向誰」：1、4 → `1 0 0 1`。第 4 行記「誰指向 4」：1、3 → `1 0 1 0`。
+
+@q gr1-10 | ds-graph#1 | 3 | 計算
+A directed graph with $V = 10^5$ vertices and $E = 10^6$ edges is stored as adjacency lists: each vertex keeps the list of its outgoing edges only, and there is no list of incoming edges. A recommendation service needs the out-degree of single vertices many times per second, the in-degree of a single vertex occasionally, and, once per night, the in-degrees of all vertices together, for a report that must finish within a few seconds on a single machine, while the service keeps running. One developer proposes computing each in-degree separately by scanning the entire structure, and another proposes a single scan that increments a counter for the target of every edge it sees:
+```
+for each vertex u:
+    for each edge u -> v in u's list:
+        indeg[v] += 1
+```
+Which of the following statements are correct? Select all that apply.
+[x] Computing the in-degree of one given vertex takes $O(V+E)$ time in the worst case.
+[x] The in-degrees of all vertices can be computed together in $O(V+E)$ time by one scan of all lists.
+[x] The out-degree of a vertex $v$ can be found by walking only $v$'s own list.
+[ ] Computing the in-degree of one given vertex takes $O(1)$ time.
+[ ] Computing all in-degrees needs $O(V^2)$ time, because each vertex requires its own full scan.
+---
+相鄰串列只記「出去」的邊。出度看自己的串列就好，「own list」對。入度要知道誰指向它，只能把所有串列掃一遍，單一點也是 $O(V+E)$，「one given vertex … $O(V+E)$」對、「$O(1)$」錯。但掃一遍時每看到一條 $u\to v$ 就把 $v$ 的計數加一，所有點的入度一次就算完，所以「all vertices … one scan」對，不需要每個點各掃一次，「$O(V^2)$」錯。
+
+@q gr1-11 | ds-graph#1 | 2 | 計算
+完全圖 $K_{100}$（每兩點都有邊）有幾條邊？相鄰串列有幾個節點？
+== 4950,9900
+?? 邊數,串列節點
+---
+$\binom{100}2=4950$；串列 $2E=9900$。相鄰矩陣 10000 格，兩者差不多——稠密圖用相鄰矩陣不吃虧。
+
+@q gr1-12 | ds-graph#1 | 3 | 陷阱
+A weighted directed graph for a currency-exchange tool is stored in an adjacency matrix, with $a_{uv}$ holding the weight of the edge $u\to v$. Weights are transaction fees in cents and may be 0 for free transfers between accounts at the same bank; in a later version, rebates may make some weights negative, such as $-5$. The developers must decide which value in the adjacency matrix should mean "no edge", and a new team member proposes using 0, $-1$, or simply leaving the entries uninitialized. Which of the following statements about representing "no edge" are correct? Select all that apply.
+[x] A special value such as $\infty$ should be used to mean "no edge".
+[x] Storing 0 for "no edge" is unsafe, because an edge of weight 0 may exist.
+[ ] Storing $-1$ for "no edge" is always safe, because weights are never negative.
+[ ] Storing 0 for "no edge" is safe, because weights are always positive.
+[ ] Leaving the entry unset is fine, because unset entries automatically mean "no edge".
+---
+用 0 或 $-1$ 會跟真的邊混淆：權重可以是 0，有些問題也允許負權重，所以「special value」「weight 0 may exist」對，「$-1$ always safe」「always positive」錯。沒有初始化的格子內容不確定，「unset」錯；要明確填成代表「沒有邊」的特殊值。
+
+@q gr1-13 | ds-graph#1 | 2 | 比較
+A graph-export tool must write every edge of a graph to a file exactly once. It is used both on dense graphs, with $V = 2000$ and about $10^6$ edges, and on sparse graphs, with $V = 10^6$ and about $3\times10^6$ edges. The graph may be stored either as adjacency lists or as an adjacency matrix, and the developers want the running time of the export for each representation, in terms of $V$ and $E$, to decide which representation to use for each kind of graph. Which of the following statements are correct? Select all that apply.
+[x] With adjacency lists it takes $O(V+E)$ time.
+[x] With an adjacency matrix it takes $O(V^2)$ time, even if the graph has few edges.
+[ ] Both representations take $O(E)$ time.
+[ ] Both representations take $O(V^2)$ time.
+[ ] With adjacency lists it takes $O(V^2)$ time, and with an adjacency matrix $O(E)$.
+---
+串列只存真的邊，掃過每個點和每條串列是 $O(V+E)$，「lists $O(V+E)$」對。相鄰矩陣要看完每一格才知道哪些是 1，邊很少時大部分時間花在看 0，「matrix $O(V^2)$ … few edges」對。所以「both $O(E)$」「both $O(V^2)$」都錯，最後一個剛好說反。
+
+@q gr1-14 | ds-graph#1 | 3 | 情境
+A directed graph on $V$ vertices is stored in an adjacency matrix, with $a_{ij} = 1$ when there is an edge $i\to j$. We want a sink: a vertex that every other vertex points to and that points to no vertex, if one exists. For example, in a graph of who follows whom on a website, a sink would be an account that everyone follows and that follows nobody; a graph can have at most one such vertex. A student proposes the elimination procedure below, which keeps a candidate and inspects one entry per step, and then checks the final candidate's row and column:
+```
+c = 1
+for j = 2 to V:
+    if a[c][j] == 1: c = j
+check that row c is all 0 and column c is all 1 except a[c][c]
+```
+A classmate claims that every entry of the adjacency matrix must be examined. Which of the following statements are correct? Select all that apply.
+[x] It can be found in $O(V)$ time.
+[x] If $a_{ij}=1$ with $i\ne j$, then $i$ cannot be the answer.
+[x] If $a_{ij}=0$ with $i\ne j$, then $j$ cannot be the answer.
+[ ] Every entry of the adjacency matrix must be examined, so $V^2$ time is required.
+[ ] Such a vertex can be found in $O(\lg V)$ time.
+---
+$a_{ij}=1$ 代表 $i$ 有指出去的邊，$i$ 不是答案；$a_{ij}=0$ 代表 $j$ 少了 $i$ 指向它，$j$ 不是答案，兩個「cannot be」都對。從 $i=1,j=1$ 開始，每看一格就排除一個候選，$V-1$ 步後剩一個，再花 $O(V)$ 驗證它那一列全 0、那一行（除自己外）全 1，所以「$O(V)$」對、「must be examined … $V^2$」錯。只排除候選就要 $V-1$ 步，「$O(\lg V)$」錯。
+
+@q gr1-15 | ds-graph#1 | 1 | 觀念
+A student writes a validator that checks whether a square 0/1 table could be the adjacency matrix of an undirected graph, where $a_{uv} = 1$ means that $u$ and $v$ are joined by an edge. The validator is tested on graphs with 5 to 50 vertices: some with self-loops, some with isolated vertices that have no edges at all, and some whose edges all join low-numbered to high-numbered vertices. The student must decide which properties the validator may require of every input. Which of the following must be true for the adjacency matrix of an undirected graph? Select all that apply.
+[x] It is symmetric.
+[x] If there are no self-loops, the sum of row $u$ equals the degree of $u$.
+[ ] All of its diagonal entries are 1.
+[ ] All of its entries above the diagonal are 0.
+[ ] Every row contains at least one 1.
+---
+邊 $u$–$v$ 沒有方向，$a_{uv}=a_{vu}$，「symmetric」對（有向圖就不一定）。第 $u$ 列的 1 就是 $u$ 的鄰居，加起來是度數，「row $u$ … degree」對。沒有自環時對角線全是 0，「diagonal entries are 1」錯；上三角放的正是 $u<v$ 的邊，「above the diagonal are 0」錯；孤立點那一列全 0，「at least one 1」錯。
+
+@q gr1-16 | ds-graph#1 | 2 | 計算
+A directed graph with $V$ vertices and $E$ edges is stored as adjacency lists, and a program must build the reverse graph, in which every edge $u\to v$ is replaced by $v\to u$; for example, a web graph with $V = 10^6$ pages and $E = 10^7$ links is reversed to find, for each page, the pages that link to it. A student writes:
+```
+for each vertex u:
+    for each edge u -> v in u's list:
+        append u to rev[v]
+```
+where appending to a list takes $O(1)$ time. A classmate worries that each edge must be checked against every vertex's list, and another wants to search each list for duplicates before appending; the original graph has no repeated edges. The team also asks how the same task looks with an adjacency matrix of the same graph. Which of the following statements are correct? Select all that apply.
+[x] It takes $O(V+E)$ time.
+[x] For each edge $u\to v$ found while scanning the lists, $u$ is appended to $v$'s list in the new graph.
+[x] With an adjacency matrix instead, it means swapping $a_{ij}$ and $a_{ji}$ for all pairs, which takes $O(V^2)$ time.
+[ ] Each edge must be checked against every vertex's list, so the time is $O(V\cdot E)$.
+[ ] Before appending, every list must be searched for duplicates, which forces $O(E^2)$ time.
+---
+「$O(V+E)$」對：掃過每條串列，每條邊處理一次，加上 $V$ 個串列頭。
+
+「看到 $u\to v$ 就把 $u$ 加到新圖 $v$ 的串列」對：這就是反向。
+
+「相鄰矩陣要對調 $a_{ij}$、$a_{ji}$，$O(V^2)$」對：要看每一格。
+
+「每條邊要對每個點的串列檢查、$O(VE)$」錯：直接加到 $v$ 的串列，不用找。
+
+「要先查重複、$O(E^2)$」錯：原圖每條邊只出現一次，反向後也不會重複，不必查。
+
+@q gr1-17 | ds-graph#1 | 2 | 情境
+A national road map is modeled as a graph with about $10^7$ intersections as vertices and road segments as edges; most intersections meet only 3 or 4 roads, so the average degree is about 3.5. A navigation company must store the graph on each phone and repeatedly list the neighbors of the current intersection while computing routes. The developers compare adjacency lists with an adjacency matrix and estimate the memory each would need, measured in stored entries, for a phone that can hold about $4\times10^9$ entries. A junior developer prefers the adjacency matrix because it looks simpler. Which of the following statements are correct? Select all that apply.
+[x] The graph is sparse: $E$ is only a small constant times $V$.
+[x] Adjacency lists need $O(V+E)$ space, which is practical here.
+[ ] An adjacency matrix is better because listing a vertex's neighbors takes $O(1)$ time.
+[ ] An adjacency matrix needs space proportional to $E$.
+[ ] An adjacency matrix for this network would have about $10^{10}$ entries.
+---
+每點度數 3～4，$E\approx1.75V$，是典型的稀疏圖，「sparse」對；相鄰串列 $O(V+E)$，「practical」對。相鄰矩陣的空間是 $V^2$，跟 $E$ 無關，「proportional to $E$」錯；$V=10^7$ 時有 $V^2=10^{14}$ 格，不是 $10^{10}$，「$10^{10}$ entries」錯；就算每格只用 1 個位元也要約 12.5 TB。矩陣列出鄰居要掃整列 $O(V)$，「$O(1)$」錯。
+
+@q gr1-18 | ds-graph#1 | 2 | 找錯
+Someone says: "Listing all neighbors of $u$ with adjacency lists takes $O(V)$ time, the same as with an adjacency matrix." Which of the following statements are correct?
+[x] With adjacency lists it takes $O(\deg u)$ time.
+[x] Scanning a whole row in $O(V)$ time is the cost for an adjacency matrix.
+[x] Visiting every vertex and listing its neighbors once therefore takes $O(V+E)$ time with lists but $O(V^2)$ with an adjacency matrix.
+[ ] With adjacency lists it takes $O(E)$ time.
+[ ] With an adjacency matrix it takes only $O(\deg u)$ time.
+---
+串列只放真的鄰居，掃完是 $O(\deg u)$，「$O(\deg u)$」對、「$O(E)$」錯；相鄰矩陣要掃整列 $V$ 格才知道哪些是 1，「whole row in $O(V)$」對、「matrix … $O(\deg u)$」錯。BFS、DFS 每個點列鄰居一次，加總就是串列 $O(V+E)$、矩陣 $O(V^2)$，「every vertex … once」對。
+
+@q gr2-01 | ds-graph#2 | 2 | 追蹤
+無向圖：s–a、s–b、a–c、b–d、c–d、c–e、d–f、e–f。從 s 做 BFS（鄰居照字母順序），點被拜訪的順序是？
+== s a b c d e f
+== s,a,b,c,d,e,f
+---
+s → a、b（距離 1）→ 處理 a：c；處理 b：d（距離 2）→ 處理 c：d 已拜訪，加 e；處理 d：加 f（距離 3）。
+
+@q gr2-02 | ds-graph#2 | 2 | 追蹤
+接上題，f 的父親是誰？從 s 到 f 的最短路徑是？
+== d,s b d f
+?? 父親,路徑
+---
+處理 d 時先發現 f（e 還在佇列後面），所以父親是 d。沿父親往回：f ← d ← b ← s。
+
+@q gr2-03 | ds-graph#2 | 2 | 追蹤
+接上題，處理完 a 和 b 之後（還沒處理 c），佇列裡依序是？
+== c d
+---
+一開始 [s]；處理 s 後 [a, b]；處理 a 加 c：[b, c]；處理 b 加 d：[c, d]。
+
+@q gr2-04 | ds-graph#2 | 3 | 追蹤
+無向圖：1–2、1–3、2–4、3–4、4–5、3–6、5–6。從 1 做 BFS（鄰居照編號）。拜訪順序和點 5 的距離各是？
+== 1 2 3 4 6 5,3
+?? 順序,點5距離
+---
+1 → 2、3 → 處理 2：4；處理 3：4 已拜訪，加 6 → 處理 4：5；處理 6：5 已拜訪。5 的距離 3（父親 4），雖然 5 也跟 6（距離 2）相鄰，距離一樣是 3。
+
+@q gr2-05 | ds-graph#2 | 2 | 陷阱
+BFS is run on the same undirected graph from the same start vertex, but the neighbors of each vertex are processed in different orders. Which of the following can never change?
+[x] The distance of every vertex from the start
+[x] The set of vertices reachable from the start
+[ ] The order in which the vertices are visited
+[ ] The BFS tree (the parent of every vertex)
+[ ] The contents of the queue at each step
+---
+距離就是最少邊數，跟處理順序無關；能走到哪些點也只看圖本身，這兩個都不會變。但誰先發現誰（父親）會隨順序改變，所以拜訪順序、BFS 樹、每一步佇列的內容都可能不同。
+
+@q gr2-06 | ds-graph#2 | 3 | 反例
+有權重的圖：s–t 權重 10、s–a 權重 1、a–t 權重 1。BFS 從 s 找到的 s 到 t 的路徑，是最短（權重和最小）的嗎？
+[x] 不是：BFS 找到邊數最少的 s–t（權重 10），但 s–a–t 只有 2
+[ ] 是
+[ ] BFS 找不到 t
+[ ] 是，因為 BFS 一定找最短
+---
+BFS 只數「幾步」，不看權重。邊權重不一樣時要用之後最短路徑章的方法。
+
+@q gr2-07 | ds-graph#2 | 2 | 情境
+A maze is a grid, and each step moves one cell up, down, left or right. We want the fewest steps from the entrance to the exit. Which of the following statements are correct?
+[x] BFS works here, because every step has the same cost.
+[x] The first time BFS reaches the exit, its distance is the minimum number of steps.
+[ ] Going forward until stuck and then backing up always finds the fewest steps.
+[ ] Walking randomly until the exit is reached finds the fewest steps.
+[ ] Sorting the cells gives the answer.
+---
+每一步權重一樣，BFS 一圈一圈擴散，第一次碰到出口的距離就是最少步數，「BFS works here, because…」、「The first time BFS…」對。一路走到底再回頭（DFS）找到的路不一定最短；隨便走更不保證；排序格子跟路徑無關，「Going forward until stuck…」、「Walking randomly until the…」、「Sorting the cells gives…」錯。
+
+@q gr2-08 | ds-graph#2 | 2 | 觀念
+Consider the undirected graph with edges 1–2, 2–3, 3–4, 4–5, 5–1 (five vertices around a cycle). Which of the following statements are correct?
+[x] It is not bipartite.
+[x] In a BFS from vertex 1, vertices 3 and 4 both get distance 2, and the edge 3–4 joins them.
+[ ] It is bipartite, because every vertex has degree 2.
+[ ] Bipartiteness cannot be tested with BFS.
+[ ] Removing vertex 1 leaves a graph that is still not bipartite.
+---
+從 1 出發：2、5 距離 1，3（從 2）、4（從 5）距離 2，同一層之間有邊 3–4，代表有奇環，「not bipartite」「vertices 3 and 4」對。長度 5 的環是奇環，二分圖 ⇔ 沒有奇環；度數都是 2 不代表二分（偶環才是），「every vertex has degree 2」錯。BFS 正是判斷二分圖的標準作法，「cannot be tested」錯。拿掉 1 後剩 2–3–4–5 一條路，可以二分，「still not bipartite」錯。
+
+@q gr2-09 | ds-graph#2 | 2 | 計算
+無向圖 1–2、2–3、3–4、4–1、4–5、5–6。是二分圖嗎？兩邊各是哪些點？
+== 是,1 3 5,2 4 6
+?? 是不是,一邊,另一邊
+---
+從 1 做 BFS：1（0）；2、4（1）；3、5（2）；6（3）。偶數層 {1,3,5}、奇數層 {2,4,6}，每條邊都連到不同層，沒有同層的邊。
+
+@q gr2-10 | ds-graph#2 | 2 | 比較
+BFS 用相鄰串列和相鄰矩陣各要多少時間？
+[x] 串列 $O(V+E)$；相鄰矩陣 $O(V^2)$
+[ ] 都是 $O(V+E)$
+[ ] 都是 $O(V^2)$
+[ ] 串列 $O(V^2)$；相鄰矩陣 $O(V+E)$
+---
+每個點出佇列時要列出所有鄰居：串列 $O(\deg)$，相鄰矩陣 $O(V)$。
+
+@q gr2-11 | ds-graph#2 | 3 | 計算
+3×3 的格子點（9 個點，相鄰的上下左右有邊），從左上角到右下角，最短路徑有幾條？
+== 6
+---
+最短要 4 步（右 2、下 2）。BFS 時每個點的「最短路徑數」＝上一層所有鄰居的路徑數加總，算到右下角是 6，也就是 $\binom42$。
+
+@q gr2-12 | ds-graph#2 | 2 | 觀念
+BFS 為什麼用佇列，不用堆疊？
+[x] 要「先發現的先處理」，才會一層處理完再處理下一層
+[ ] 佇列比較省空間
+[ ] 堆疊不能放點
+[ ] 兩個都可以，結果一樣
+---
+換成堆疊就變成後發現的先處理，會一路往深處走，距離就不保證是最短了。
+
+@q gr2-13 | ds-graph#2 | 3 | 找錯
+A student's BFS marks a vertex as visited when it is **taken out of** the queue, instead of when it is put in. Which of the following statements are correct?
+[x] The same vertex may be put into the queue several times by different neighbors.
+[x] On a dense graph, the queue can grow to $O(E)$ entries.
+[ ] The result and the running time are exactly the same as the usual BFS.
+[ ] Some reachable vertices will never be visited.
+[ ] The program loops forever.
+---
+在它被拿出來之前，另一個鄰居看到它還沒標記，又放一次，所以「several times」對；稠密圖時每條邊都可能放一次，佇列膨脹到 $O(E)$，「$O(E)$」對，時間也變多，「exactly the same」錯。每個點最後還是會被拿出來處理，不會漏掉，「never be visited」錯；放進佇列的次數有上限（每條邊至多一次），會結束，「loops forever」錯。正確做法是放進佇列時就標記。
+
+@q gr2-14 | ds-graph#2 | 2 | 計算
+無向圖有兩個連通塊：{1,2,3}（1–2、2–3）和 {4,5}（4–5）。從 1 做 BFS，點 5 的距離是？BFS 拜訪了幾個點？
+== ∞,3
+?? 點5距離,拜訪幾個點
+== 無限大,3
+---
+BFS 只走得到同一個連通塊，4、5 永遠不會被拜訪，距離 $\infty$。要遍歷整張圖，就要對每個還沒拜訪的點再做一次 BFS。
+
+@q gr2-15 | ds-graph#2 | 3 | 情境
+一條路 1–2–3–4–5–6–7，1 號和 6 號著火，每分鐘火往相鄰的點延燒。全部燒完要幾分鐘？
+== 2
+---
+多起點 BFS：一開始把 1、6 都放進佇列（距離 0）。2、5、7 距離 1；3、4 距離 2。最大距離 2。
+
+@q gr2-16 | ds-graph#2 | 3 | 證明
+說明為什麼 BFS 第一次發現 $v$ 時，給的距離就是 $s$ 到 $v$ 的最短邊數。
+---
+佇列裡點的距離永遠是非遞減的，而且頭尾最多差 1（歸納：拿出距離 $k$ 的點，只會放進 $k+1$ 的點）。所以所有距離 $k$ 的點都在任何距離 $k+1$ 的點之前處理。若 $v$ 的最短距離是 $\delta$，它的最短路徑上前一個點 $u$ 距離 $\delta-1$，會在任何距離 $\ge\delta$ 的點之前被處理，所以 $v$ 最晚在處理 $u$ 時被發現，距離 $\le\delta$；BFS 給的距離又一定是某條真實路徑的長度，$\ge\delta$。所以剛好等於 $\delta$。
+
+@q gr2-17 | ds-graph#2 | 2 | 情境
+A social network wants to compute how many levels of friends separate you from another person. Which of the following statements are correct?
+[x] Run BFS from you; the distance at which that person is first reached is the answer.
+[x] Running BFS from both people at the same time and stopping when the two searches meet is usually much faster.
+[ ] Walking forward as far as possible and reporting the number of steps taken gives the answer.
+[ ] Comparing the two people's numbers of friends gives the answer.
+[ ] Sorting all users gives the answer.
+---
+「隔幾層」就是無權圖的最少邊數，BFS 第一次碰到那個人時的距離就是答案，「Run BFS from you」對。實務上從兩邊同時做 BFS，兩邊各只要擴散一半的深度，會面時就停，「both people … meet」對。一路往前走到底（DFS）不保證最少；朋友數、排序跟距離無關。
+
+@q gr2-18 | ds-graph#2 | 1 | 觀念
+BFS 的時間複雜度（用相鄰串列）是？
+[x] $O(V+E)$
+[ ] $O(V^2)$
+[ ] $O(E\lg V)$
+[ ] $O(VE)$
+---
+每個點進出佇列一次，每條邊在兩端各被看一次（無向）或一次（有向）。
+
+@q gr2-19 | ds-graph#2 | 2 | 陷阱
+BFS 的佇列裡，任何時候最多只會有兩種不同的距離值。對嗎？
+[x] 對
+[ ] 不對
+---
+拿出距離 $k$ 的點時只會放進 $k+1$ 的點，所以佇列裡只有 $k$ 和 $k+1$。這正是 BFS 一層一層處理的原因。
+
+@q gr3-91 | ds-graph#3 | 2 | 比較
+Which of the following statements about how many vertices BFS and DFS must keep in memory at the same time are correct?
+[x] BFS may need to keep a whole level, which can be very wide.
+[x] DFS keeps the current path, which can be very deep.
+[ ] Both keep only one vertex at a time.
+[ ] BFS always keeps fewer vertices than DFS.
+[ ] DFS always keeps fewer vertices than BFS.
+---
+BFS 的佇列裡是一整層（加下一層的一部分），「whole level」對；DFS 的堆疊是目前這條路，「current path」對。圖很寬很淺時 BFS 吃記憶體，很深很窄時 DFS 吃記憶體，所以兩個「always」都錯；兩者都不是只存一個點。
+
+@q gr3-01 | ds-graph#3 | 2 | 追蹤
+有向圖：a→b、a→c、b→d、c→b、c→d、d→a、e→d、e→f。從 a 開始 DFS（鄰居照字母、外層也照字母），time 從 1 起算。各點的 $d/f$？寫出 a、b、c、d 的 $d/f$。
+== 1/8,2/5,6/7,3/4
+?? a,b,c,d
+---
+a(1) → b(2) → d(3)：d 只連 a（灰色，後向邊），d 完成 4；b 完成 5；回 a → c(6)：b、d 都黑了，c 完成 7；a 完成 8。外層再從 e 開始：e 9/12、f 10/11。
+
+@q gr3-02 | ds-graph#3 | 3 | 追蹤
+接上題，邊 c→b、d→a、e→d 各是哪一種邊？
+== 交叉,後向,交叉
+?? c→b,d→a,e→d
+---
+d→a：a 還是灰色（在堆疊上），後向邊，圖有環 a→b→d→a。c→b：b 已經黑了，而且 b 不是 c 的後代（$b.d=2<c.d=6$），交叉邊。e→d：d 黑、在別的樹上，交叉邊。
+
+@q gr3-03 | ds-graph#3 | 3 | 追蹤
+有向圖：1→2、2→3、3→4、1→3、4→2、5→4、5→6。從 1 開始 DFS（鄰居照編號）。邊 1→3 和 4→2 各是哪一種？
+== 前向,後向
+?? 1→3,4→2
+---
+1 → 2 → 3 → 4，4 看到 2 是灰色：後向邊。回到 1 時看 1→3：3 已經黑了，而且是 1 的後代（$1.d=1<3.d=3$）：前向邊。
+
+@q gr3-04 | ds-graph#3 | 2 | 計算
+接上題（1→2、2→3、3→4、1→3、4→2、5→4、5→6），各點的完成時間 $f$ 由大到小排是？
+== 5 6 1 2 3 4
+== 5,6,1,2,3,4
+---
+$d/f$：1 1/8、2 2/7、3 3/6、4 4/5、5 9/12、6 10/11。由 $f$ 大到小：5(12)、6(11)、1(8)、2(7)、3(6)、4(5)。
+
+@q gr3-05 | ds-graph#3 | 2 | 陷阱
+During DFS on a directed graph, an edge is found that points to a **black** (finished) vertex. Which of the following statements are correct?
+[x] The edge is a forward edge or a cross edge.
+[x] This edge by itself does not show that the graph has a cycle.
+[ ] The graph must contain a cycle.
+[ ] The graph cannot contain a cycle.
+[ ] The edge is a back edge.
+---
+黑色點已經處理完，指向它的是前向邊或交叉邊，「forward edge or a cross edge」對、「back edge」錯。這兩種邊都不會形成環，所以這條邊本身不能說明有環，「by itself does not show」對、「must contain」錯；但圖的其他地方仍可能有環，「cannot contain」也錯。只有指向**灰色**（還在目前路徑上）的點才是後向邊、才代表有環。
+
+@q gr3-06 | ds-graph#3 | 2 | 觀念
+In a depth-first search, every vertex $u$ gets a discovery time $u.d$ and a finish time $u.f$. For two vertices $u$ and $v$, which of the following statements are correct?
+[x] The intervals $[u.d,u.f]$ and $[v.d,v.f]$ may be disjoint.
+[x] If $[v.d,v.f]$ lies entirely inside $[u.d,u.f]$, then $v$ is a descendant of $u$ in the DFS forest.
+[ ] It is possible that $u.d<v.d<u.f<v.f$.
+[ ] The two intervals always overlap partially.
+[ ] If the two intervals are disjoint, one of the vertices must still be an ancestor of the other.
+---
+括號定理：兩個區間只有兩種關係，完全分開，或一個包住另一個，包住的那個是祖先，所以「disjoint」「inside … descendant」對。像括號一樣巢狀，「$u.d<v.d<u.f<v.f$」這種交錯不可能，「overlap partially」也錯。區間完全分開代表兩點互不是祖孫，例如不同子樹裡的兩個點，「must still be an ancestor」錯。
+
+@q gr3-07 | ds-graph#3 | 2 | 計算
+After a DFS, vertex $u$ has interval $[3,10]$, $v$ has $[5,8]$, and $w$ has $[11,14]$ (discovery time, finish time). Which of the following statements are correct?
+[x] $v$ is a descendant of $u$.
+[x] $w$ and $u$ are not in an ancestor–descendant relationship.
+[x] $v$ and $w$ are not in an ancestor–descendant relationship.
+[ ] $u$ is a descendant of $v$.
+[ ] $w$ is a descendant of $u$.
+---
+括號定理：區間包住代表祖孫、分開代表不是。$[5,8]$ 在 $[3,10]$ 裡面，$v$ 是 $u$ 的後代，「$v$ is a descendant of $u$」對、反過來的「$u$ is a descendant of $v$」錯。$[11,14]$ 跟 $[3,10]$、$[5,8]$ 都分開，「$w$ and $u$」「$v$ and $w$」對、「$w$ is a descendant」錯。
+
+@q gr3-08 | ds-graph#3 | 2 | 追蹤
+無向圖：1–2、2–3、3–4、4–1、2–5。從 1 做 DFS（鄰居照編號）。哪一條是後向邊？
+== 4 1
+== 4–1
+---
+1 → 2 → 3 → 4，4 看到 1 是灰色（祖先，不是爸爸）：後向邊。然後回到 2 → 5。無向圖只有樹邊和後向邊。
+
+@q gr3-09 | ds-graph#3 | 3 | 陷阱
+無向圖做 DFS，可能出現交叉邊嗎？
+[x] 不可能：無向邊 $u$–$v$，先被發現的那個一定會在完成前走到另一個
+[ ] 可能
+[ ] 只有在不連通的圖才可能
+[ ] 只有鄰居順序不好時才可能
+---
+若 $u$ 先被發現，$v$ 還是白色，$u$ 處理鄰居時就會走到 $v$（樹邊），或 $v$ 已被 $u$ 的後代發現（那 $v$ 是後代）。不會有「指向別的分支、已完成的點」的情況。
+
+@q gr3-10 | ds-graph#3 | 2 | 比較
+從同一點出發，圖 1→2、1→3、2→4、3→4（鄰居照編號）。BFS 和 DFS 的拜訪順序各是？
+== 1 2 3 4,1 2 4 3
+?? BFS,DFS
+---
+BFS 一層一層：1；2、3；4。DFS 一路到底：1 → 2 → 4，退回再走 3。
+
+@q gr3-11 | ds-graph#3 | 2 | 觀念
+Which of the following statements about detecting cycles in a directed graph with DFS are correct?
+[x] The graph has a cycle if and only if DFS finds a back edge (an edge to a gray vertex).
+[x] If the graph has no cycle, every edge $u\to v$ satisfies $u.f>v.f$.
+[ ] A cross edge always indicates a cycle.
+[ ] A forward edge always indicates a cycle.
+[ ] The graph has a cycle if and only if the number of tree edges differs from $V-1$.
+---
+後向邊指向還在遞迴中的祖先，和樹上的路合起來就是環；反過來有環時，環上第一個被發現的點會在 DFS 結束前碰到指回它的邊，所以「back edge」對。DAG 沒有後向邊，樹邊、前向邊、交叉邊都滿足 $u.f>v.f$，「$u.f>v.f$」對，這也是拓撲排序用完成時間的原因。前向、交叉邊都不會形成環，那兩個「always indicates」錯。樹邊數只跟 DFS 森林有幾棵樹有關，「$V-1$」錯。
+
+@q gr3-12 | ds-graph#3 | 2 | 計算
+有 $V$ 個點的圖做 DFS，所有點的 $d$ 和 $f$ 一共用掉幾個時間值？
+[x] $2V$：每個點發現一次、完成一次
+[ ] $V$
+[ ] $V+E$
+[ ] $2E$
+---
+time 每次加 1，每點兩次，最大的時間值剛好是 $2V$。
+
+@q gr3-13 | ds-graph#3 | 3 | 證明
+證明：有向圖 $G$ 有環 ⇔ DFS 出現後向邊。
+---
+（⇐）後向邊 $(u,v)$ 指向祖先 $v$，樹上有路 $v\leadsto u$，加上這條邊就是環。（⇒）設環上第一個被發現的點是 $v$，環上 $v$ 的前一個點是 $u$。$v.d$ 時環上其他點都是白的，由白色路徑定理，它們（包括 $u$）都會成為 $v$ 的後代。所以處理 $u$ 時 $v$ 還是灰色，$(u,v)$ 是後向邊。
+
+@q gr3-14 | ds-graph#3 | 2 | 追蹤
+有向圖 a→b、b→c、c→a、a→d。從 a 做 DFS（鄰居照字母）。各點的 $d/f$？寫出 b 和 d 的。
+== 2/5,6/7
+?? b,d
+---
+a 1 → b 2 → c 3：c 看到 a 灰色（後向邊），c 完成 4；b 完成 5；a → d 6，完成 7；a 完成 8。
+
+@q gr3-15 | ds-graph#3 | 3 | 觀念
+Which of the following statements about the white-path theorem for depth-first search are correct?
+[x] $v$ becomes a descendant of $u$ in the DFS forest if and only if, at time $u.d$, there is a path from $u$ to $v$ consisting entirely of white vertices.
+[x] It is a key step in proving that a directed graph has a cycle if and only if DFS finds a back edge.
+[ ] Every vertex that is white at time $u.d$ eventually becomes a descendant of $u$.
+[ ] Every vertex that is white at time $u.d$ ends up with no children in the DFS forest.
+[ ] Every edge leading to a white vertex is classified as a back edge.
+---
+定理本身就是「白色路徑 ⇔ 後代」，所以「$v$ becomes a descendant…」對；有環 ⇔ 有後向邊、SCC 演算法的正確性，證明都靠它，「key step」對。在 $u.d$ 時白色但從 $u$ 走不到（或路上要經過灰、黑點）的點不會變成 $u$ 的後代，「every vertex that is white … descendant」錯；白色點之後也可能有自己的孩子，「no children」錯。走向白色點的邊會變成樹邊，不是後向邊，「back edge」錯。
+
+@q gr3-16 | ds-graph#3 | 2 | 情境
+In a maze, a walker keeps one hand on the wall and turns back at every dead end. Which of the following statements are correct?
+[x] This resembles DFS: go as deep as possible, then back up to the last junction.
+[x] It finds the exit, but the path found does not necessarily have the fewest steps.
+[ ] This resembles BFS.
+[ ] This resembles neither DFS nor BFS.
+[ ] This visits the cells in increasing numeric order.
+---
+「走不下去才退回上一個岔路」就是 DFS 的回溯，「resembles DFS」對、「BFS」「neither」錯。DFS 能找到出口，但可能先繞一大圈，不保證最少步數，「not necessarily」對。走法跟格子的編號無關。
+
+@q gr3-17 | ds-graph#3 | 1 | 觀念
+Which of the following statements about a **gray** vertex during DFS are correct?
+[x] It has been discovered but has not finished yet.
+[x] The gray vertices are exactly the vertices on the current recursion path.
+[ ] It has not been discovered yet.
+[ ] It has already finished.
+[ ] An edge leading to a gray vertex is a cross edge.
+---
+白＝沒碰過；灰＝正在處理（在遞迴的堆疊上）；黑＝處理完。所以「It has been discovered…」、「The gray vertices are…」對，「not been discovered」是白色、「already finished」是黑色。指向灰色點的邊是後向邊，代表有環，不是交叉邊。
+
+@q gr3-18 | ds-graph#3 | 3 | 找錯
+Someone says: "After DFS on a directed graph, if an edge $(u,v)$ satisfies $u.d<v.d$, it must be a tree edge." Which of the following statements are correct?
+[x] The claim is wrong, because a forward edge also satisfies $u.d<v.d$.
+[x] Tree edges and forward edges both satisfy $u.d<v.d<v.f<u.f$.
+[x] Whether $(u,v)$ is a tree edge depends on whether $v$ was discovered through this very edge.
+[ ] Tree edges satisfy $u.d>v.d$.
+[ ] Only back edges satisfy $u.d<v.d$.
+---
+前向邊指向已經完成的後代，也滿足 $u.d<v.d$，所以原說法錯，「forward edge」對。樹邊和前向邊的時間關係完全一樣，「both satisfy」對；差別只在發現 $v$ 時走的是不是這條邊，「discovered through this very edge」對。樹邊是 $u.d<v.d$，「$u.d>v.d$」說反；後向邊指向祖先，是 $u.d>v.d$，「only back edges」錯。
+
+@q gr3-19 | ds-graph#3 | 2 | 計算
+Use a simple graph and the standard full DFS forest that visits all vertices.
+Which of the following statements about the running time of DFS are correct?
+[x] With adjacency lists, DFS runs in $O(V+E)$ time.
+[x] With an adjacency matrix, DFS runs in $O(V^2)$ time.
+[x] For a simple graph, adjacency-list DFS also has an $O(V^2)$ upper bound because $E\le V^2$.
+[x] With an adjacency matrix, the standard DFS forest examines all $V^2$ entries even on an edgeless graph.
+[ ] Both representations give $O(E\lg V)$.
+---
+「串列 V＋邊數」對：每點一次、每條鄰接項一次。「矩陣平方」對：每個點的整列都掃描。「簡單圖串列也可平方上界」對：邊數至多 V²，所以線性於點邊總數的界也被平方控制。「無邊矩陣仍掃平方格」對：指定版本不會因零邊略過整列。「兩者一般都邊數乘對數」錯：無邊圖已需要處理 V 個點，不能由零邊乘對數控制；是否使用堆不是判斷較鬆上界真假的依據。
+
+@q gr3-20 | ds-graph#3 | 2 | 陷阱
+有向圖從某一點做一次 DFS（只呼叫一次 DFS(s)），一定會拜訪所有的點。對嗎？
+[ ] 對
+[x] 不對
+---
+只會走到 $s$ 走得到的點。所以完整的 DFS 會在外層對每個還是白色的點再呼叫一次，得到一片「DFS 森林」。
+
+@q gr4-01 | ds-graph#4 | 2 | 追蹤
+DAG：a→b、a→c、b→d、c→d、d→e、c→f、f→e。從 a 做 DFS（鄰居照字母），照完成時間由大到小排出的拓撲順序是？
+== a c f b d e
+== a,c,f,b,d,e
+---
+$d/f$：a 1/12、b 2/7、d 3/6、e 4/5、c 8/11、f 9/10。依 $f$ 由大到小：a(12)、c(11)、f(10)、b(7)、d(6)、e(5)。
+
+@q gr4-02 | ds-graph#4 | 2 | 追蹤
+同一張 DAG，用 Kahn 演算法，每次有好幾個入度 0 的點時拿字母最小的。順序是？
+== a b c d f e
+== a,b,c,d,f,e
+---
+入度 0：a。拿 a → b、c 入度 0；拿 b（d 入度剩 1）；拿 c → d、f 入度 0；拿 d（e 剩 1）；拿 f → e 入度 0；拿 e。
+
+@q gr4-03 | ds-graph#4 | 3 | 計算
+同一張 DAG（a→b、a→c、b→d、c→d、d→e、c→f、f→e），一共有幾種合法的拓撲順序？
+== 5
+---
+a 一定第一、e 一定最後。中間 b、c、d、f：d 要在 b、c 之後；f 要在 c 之後。窮舉：a b c d f e、a b c f d e、a c b d f e、a c b f d e、a c f b d e，共 5 種（程式窮舉確認）。
+
+@q gr4-04 | ds-graph#4 | 2 | 陷阱
+A DFS-based topological sort is run, but the vertices are listed in **increasing** order of finish time. Which of the following statements are correct?
+[x] The result is a topological order reversed: every edge points from a later vertex to an earlier one.
+[x] Every edge $u\to v$ of a DAG satisfies $u.f>v.f$.
+[ ] The result is still a valid topological order.
+[ ] The result is a random order.
+[ ] The result is the order of discovery times.
+---
+DAG 裡每條邊 $u\to v$ 都有 $u.f>v.f$，「$u.f>v.f$」對；由小到大排，$v$ 就排在 $u$ 前面，剛好全部反向，「reversed」對、「still valid」「random」錯。完成時間的順序和發現時間的順序一般不同（例如 $a\to b$ 從 $a$ 開始，發現順序 $a,b$、完成順序 $b,a$），「discovery times」錯。
+
+@q gr4-05 | ds-graph#4 | 2 | 計算
+課程先修：A→C、B→C、C→D、B→E（箭頭代表要先修）。一共有幾種合法的修課順序？
+== 7
+---
+C 要在 A、B 之後，D 在 C 之後，E 在 B 之後。程式窮舉 5! 種排列，符合的有 7 種。
+
+@q gr4-06 | ds-graph#4 | 2 | 觀念
+Which of the following statements about why topological orders exist only for DAGs are correct?
+[x] If the graph has a directed cycle, the order would need some vertex on the cycle to come after itself.
+[x] Every DAG has at least one vertex of in-degree 0.
+[ ] Topological sorting fails on cyclic graphs only because DFS cannot run on them.
+[ ] A directed graph with a cycle never has a vertex of in-degree 0.
+[ ] An undirected graph with at least one edge can also be topologically sorted.
+---
+例如 $a\to b\to c\to a$：$a$ 在 $b$ 前、$b$ 在 $c$ 前、$c$ 在 $a$ 前，繞一圈要求自己排在自己後面，「come after itself」對。DAG 從任一點一直往回走，因為沒有環，走不完就會停在入度 0 的點，「at least one … in-degree 0」對。DFS 在任何圖上都能跑，「DFS cannot run」錯。有環的圖也可以有入度 0 的點，例如在環外加一個指向環的點，「never has」錯。無向邊沒有方向，$u$—$v$ 要同時 $u$ 在前又 $v$ 在前，「undirected」錯。
+
+@q gr4-07 | ds-graph#4 | 3 | 追蹤
+Kahn's algorithm is run on the directed graph with edges $a\to b$, $b\to c$, $c\to a$, $c\to d$. Which of the following statements are correct?
+[x] At the start no vertex has in-degree 0, so nothing is output.
+[x] The algorithm thereby reports that the graph has a cycle.
+[ ] It outputs $a,b,c,d$.
+[ ] It outputs $d,c,b,a$.
+[ ] It loops forever.
+---
+$a$、$b$、$c$、$d$ 入度都是 1，一開始佇列就是空的，什麼都拿不出來，「nothing is output」對。輸出的點數少於 $V$，就知道有環，「reports … cycle」對。所以不會輸出任何順序；佇列空了就結束，不會無限迴圈。
+
+@q gr4-08 | ds-graph#4 | 3 | 證明
+證明：DAG 中每條邊 $(u,v)$ 都有 $u.f>v.f$。
+---
+DFS 看邊 $(u,v)$ 時 $v$ 不可能是灰色（灰色代表後向邊、有環）。若 $v$ 是白色，$v$ 成為 $u$ 的後代，會先完成：$v.f<u.f$。若 $v$ 是黑色，$v$ 已經完成，而 $u$ 還沒：$v.f<u.f$。兩種都成立。
+
+@q gr4-09 | ds-graph#4 | 2 | 計算
+DAG：1→2、1→3、2→4、3→4、4→5、3→5。有幾種拓撲順序？
+== 2
+---
+1 第一；2、3 的順序可以換；4 要在 2、3 後；5 要在 4、3 後。所以 1 2 3 4 5 或 1 3 2 4 5，共 2 種。
+
+@q gr4-10 | ds-graph#4 | 2 | 觀念
+For a DAG, when is the topological order unique? Which of the following statements are correct?
+[x] Exactly when every two consecutive vertices of the order are joined by an edge.
+[x] Exactly when Kahn's algorithm has only one vertex of in-degree 0 to choose at every step.
+[ ] Whenever the graph is connected.
+[ ] Whenever there is only one vertex of in-degree 0 at the start.
+[ ] Whenever the number of edges equals $V-1$.
+---
+Kahn 每一步都只有一個入度 0 的點可選，順序才唯一；這等於排出來相鄰的兩個點之間都有邊（有一條經過所有點的路徑），「Exactly when every two…」、「Exactly when Kahn's algorithm…」對。連通不夠：$a\to b$、$a\to c$ 連通但有兩種順序，「connected」錯；同一個例子開頭也只有一個入度 0 的點，「only one … at the start」錯；它也剛好 $V-1$ 條邊，「$V-1$」錯。
+
+@q gr4-11 | ds-graph#4 | 2 | 情境
+A large program is compiled file by file, and a file can be compiled only after every file it depends on. Which of the following statements are correct?
+[x] Model the dependencies as a directed graph and topologically sort it, so that each file comes after the files it depends on.
+[x] If Kahn's algorithm cannot output every file, there is a circular dependency and the build should report an error.
+[ ] BFS from any one file always gives a valid compile order.
+[ ] Sorting the files by name gives a valid compile order.
+[ ] A shortest-path algorithm is needed to find the compile order.
+---
+依賴關係是有向圖，被依賴的排前面，就是拓撲排序，「topologically sort」對。Kahn 輸出的點數少於檔案數代表有環，也就是循環依賴，「circular dependency」對。BFS 的層次不保證每條依賴邊都往後指（而且從一個檔案出發可能走不到全部），「BFS」錯；檔名和依賴無關，「by name」錯；這裡不需要距離，「shortest-path」錯。
+
+@q gr4-12 | ds-graph#4 | 3 | 情境
+A project consists of tasks with durations and precedence constraints, and several tasks may run at the same time. We want the shortest possible completion time of the whole project. Which of the following statements are correct?
+[x] The tasks should first be topologically sorted.
+[x] A task's earliest start time is the maximum of the earliest finish times of its prerequisite tasks.
+[x] The answer equals the total duration along a path of the DAG with the largest total duration.
+[ ] The answer is the sum of all task durations.
+[ ] The number of edges on a BFS path gives the answer.
+---
+照拓撲順序算「最早開始＝所有前置工作最早完成時間取最大」，「topologically sorted」「maximum of the earliest finish times」對；整個專案的時間就是工時總和最大的那條路，也就是關鍵路徑，「largest total duration」對。全部加起來是「一次只能做一項」的情況，「sum of all」錯；BFS 數邊數不考慮工時，「number of edges」錯。
+
+@q gr4-13 | ds-graph#4 | 2 | 計算
+Kahn 演算法：A→B、A→C、B→D、C→D、D→E。處理完 A（刪掉 A 的邊）後，入度 0 的點有哪些？
+== B C
+---
+A 拿走後 B、C 入度都變 0；D 還有 B、C 兩條邊進來，入度 2。
+
+@q gr4-14 | ds-graph#4 | 2 | 比較
+Which of the following statements comparing the DFS-based method and Kahn's method for topological sorting are correct?
+[x] Both run in $O(V+E)$ time with adjacency lists.
+[x] Kahn's method detects a cycle naturally, because it then outputs fewer than $V$ vertices.
+[x] The DFS-based method can detect a cycle by checking for back edges.
+[ ] The DFS-based method takes $O(V^2)$ time with adjacency lists.
+[ ] The two methods always produce the same order.
+---
+兩種方法都只把每個點、每條邊處理常數次，「both $O(V+E)$」對、「DFS-based … $O(V^2)$」錯。Kahn 剩下點出不來就是有環；DFS 法則看有沒有後向邊，兩個偵測環的說法都對。兩者排出的順序通常不同，但都合法，「always the same order」錯。
+
+@q gr4-15 | ds-graph#4 | 3 | 找錯
+Someone uses increasing DFS **discovery** time as a topological order. Test it on the graph with edges $a\to b$ and $c\to b$, starting DFS at $a$ with the outer loop in alphabetical order. Which of the following statements are correct?
+[x] The discovery times are $a$: 1, $b$: 2, $c$: 5.
+[x] The resulting order $a,b,c$ violates the edge $c\to b$.
+[x] Listing the vertices in decreasing order of finish time gives a valid topological order.
+[ ] The discovery order is a valid topological order for this graph.
+[ ] The method fails here because the graph contains a cycle.
+---
+$a.d=1$、$b.d=2$、$b.f=3$、$a.f=4$、$c.d=5$、$c.f=6$，「$a$: 1, $b$: 2, $c$: 5」對。照發現時間排得到 $a,b,c$，$c\to b$ 往前指，「violates」對、「valid … for this graph」錯。完成時間由大到小是 $c,a,b$，每條邊都往後指，「decreasing order of finish time」對；完成時間保證每條邊 $u.f>v.f$，發現時間沒有這種保證。這張圖沒有環，錯在方法本身，「contains a cycle」錯。
+
+@q gr4-16 | ds-graph#4 | 1 | 觀念
+Which of the following statements about a topological order of a DAG are correct?
+[x] For every edge $u\to v$, $u$ comes before $v$.
+[x] Any vertex of in-degree 0 may be placed first.
+[ ] Listing the vertices in increasing order of in-degree always gives a valid order.
+[ ] Every vertex comes after all of its neighbors.
+[ ] Every DAG has exactly one topological order.
+---
+定義就是每條邊都往後指，「every edge」對；入度 0 的點沒有人要排在它前面，「in-degree 0 … first」對。照入度排不一定對：邊 $a\to b$、$x\to b$、$b\to c$ 的入度是 $a,x$ 為 0、$b$ 為 2、$c$ 為 1，照入度會把 $c$ 排在 $b$ 前面，違反 $b\to c$，「increasing order of in-degree」錯。「after all of its neighbors」把方向搞反了。沒有邊的兩個點誰先都可以，順序通常不唯一，「exactly one」錯。
+
+@q gr4-17 | ds-graph#4 | 2 | 陷阱
+「照入度由小到大排序，就是一個拓撲順序」對嗎？
+[ ] 對
+[x] 不對
+---
+反例：a→b→c→d、e→d。入度：a 0、e 0、b 1、c 1、d 2，若排成 a e c b d，c 排在 b 前，但 b→c。要邊拿邊更新入度（Kahn），不能只看一開始的入度。
+
+@q gr4-18 | ds-graph#4 | 3 | 計算
+三件工作 A、B、C 彼此沒有任何先後限制。有幾種拓撲順序？再加一條 A→B 呢？
+== 6,3
+?? 沒限制,加A→B
+---
+沒有邊時任何順序都行：$3!=6$。加 A→B 後，A 要在 B 前，剛好一半：3。
+
+@q gr4-19 | ds-graph#4 | 2 | 情境
+This website arranges all knowledge points into a study route: each knowledge point lists its prerequisites, and the system produces a route in which all prerequisites come first. Which of the following statements are correct?
+[x] The route is produced by a topological sort.
+[x] The prerequisite graph must contain no cycle, or no such route exists.
+[ ] The route is produced by a BFS shortest-path computation.
+[ ] Sorting the knowledge points by chapter number always gives such a route.
+[ ] Such a route is always unique.
+---
+先修關係是有向圖，拓撲順序保證學每一點時先修都學過了，「topological sort」對；有環就學不完，「no cycle」對。BFS 最短路徑不保證先修在前；章節編號不一定符合跨章節的先修；沒有先後要求的兩點可以交換，路線通常不唯一，「The route is produced by a BFS…」、「Sorting the knowledge points…」、「Such a route is…」錯。
+
+@q gr5-01 | ds-graph#5 | 2 | 計算
+有向圖：1→2、2→3、3→1、2→4、4→5、5→6、6→4、6→7。有幾個強連通元件？各是哪些點？
+== 3,1 2 3,4 5 6,7
+?? 個數,第一個,第二個,第三個
+---
+1→2→3→1 一圈：{1,2,3}；4→5→6→4 一圈：{4,5,6}；7 只進不出：{7}。兩圈之間只有 2→4 單向，不互通。
+
+@q gr5-02 | ds-graph#5 | 3 | 追蹤
+接上題，Kosaraju 第一次 DFS（從 1、鄰居照編號）的完成時間：1 是 14、2 是 13、4 是 12、5 是 11、6 是 10、7 是 9、3 是 4。第二次在反向圖上照 $f$ 由大到小做 DFS，第一棵樹包含哪些點？
+== 1 2 3
+== 1,2,3
+---
+從 $f$ 最大的 1 開始。反向圖裡 1 只能走到 3、3 走到 2、2 走到 1——原本往 4 的邊 2→4 反向後變成 4→2，從 2 走不出去。所以第一棵樹剛好是 {1,2,3}。
+
+@q gr5-03 | ds-graph#5 | 3 | 陷阱
+The directed graph has edges 1→2, 2→3, 3→1, 2→4, 4→5, 5→6, 6→4, 6→7. The first DFS of Kosaraju's algorithm (starting at 1, neighbors in increasing order) gives finish times 1: 14, 2: 13, 4: 12, 5: 11, 6: 10, 7: 9, 3: 4. Suppose the second DFS, on the reversed graph, processes the vertices in **increasing** order of finish time (3, 7, 6, 5, 4, 2, 1). Which of the following statements are correct?
+[x] The first tree, started from 3, is $\{1,2,3\}$.
+[x] The second tree, started from 7, contains 4, 5, 6 and 7, wrongly merging two SCCs.
+[ ] The result is the same as with the correct order.
+[ ] Every vertex ends up in its own tree.
+[ ] Only one tree is produced.
+---
+反向圖的邊是 2→1、3→2、1→3、4→2、5→4、6→5、4→6、7→6。從 3 出發走到 2、1，回到 3，第一棵是 $\{1,2,3\}$，「first tree」對。接著從 7 出發，反向圖裡 7→6→5→4，2 已經拜訪過，第二棵是 $\{4,5,6,7\}$，把 $\{7\}$ 和 $\{4,5,6\}$ 錯合在一起，「wrongly merging」對，「same as … correct」「own tree」「only one tree」都錯。要從「最上游」的 SCC 開始，反向後才走不出去。
+
+@q gr5-04 | ds-graph#5 | 2 | 陷阱
+Kosaraju's algorithm is run on the directed graph with edges 1→2, 2→3, 3→1, 3→4, 4→5, 5→4, 5→6, 6→7, 7→6, with the first DFS started at vertex 1. Suppose the second DFS forgets to reverse the edges and runs on the original graph in decreasing order of finish time. Which of the following statements are correct?
+[x] The correct answer has 3 SCCs.
+[x] The faulty second pass, starting from vertex 1, reaches all 7 vertices and reports the whole graph as one SCC.
+[ ] The faulty version still finds the correct SCCs.
+[ ] The faulty version reports 7 SCCs.
+[ ] The faulty version never terminates.
+---
+正確的 SCC 是 $\{1,2,3\}$、$\{4,5\}$、$\{6,7\}$，「3 SCCs」對。第一次 DFS 從 1 出發一路走到 7，1 最後完成、$f$ 最大，第二次從 1 開始；原圖裡上游走得到下游，所以從 1 會把 7 個點全吃掉，「whole graph as one SCC」對，「correct SCCs」「7 SCCs」錯。DFS 會標記走過的點，一定會結束，「never terminates」錯。反向就是為了把「往下游的路」封住。
+
+@q gr5-05 | ds-graph#5 | 2 | 追蹤
+有向圖：a→b、b→c、c→b、c→d、d→e、e→c。SCC 有哪些？
+== a,b c d e
+?? 第一個,第二個
+---
+b⇄c 互通；c→d→e→c 一圈，所以 b、c、d、e 全部互通。a 只有出邊，自己一個。
+
+@q gr5-06 | ds-graph#5 | 2 | 計算
+有向圖：a→b、b→c、c→a、b→d、d→e、e→d、c→e、f→e、f→g、g→f。縮點後的圖有幾個點、幾條邊？
+== 3,2
+?? 點,邊
+---
+SCC：{a,b,c}、{d,e}、{f,g}。SCC 之間的邊：{a,b,c}→{d,e}（b→d、c→e 合成一條）、{f,g}→{d,e}。3 個點、2 條邊，是 DAG。
+
+@q gr5-07 | ds-graph#5 | 1 | 觀念
+有 $n$ 個點的 DAG，有幾個強連通元件？
+== n
+---
+沒有環，任兩點不可能互相到得了，每個點自己一個 SCC。
+
+@q gr5-08 | ds-graph#5 | 2 | 觀念
+為什麼 SCC 縮點後一定是 DAG？
+[x] 如果縮點後還有環，環上的 SCC 彼此都互通，應該合併成同一個 SCC，矛盾
+[ ] 因為縮點時把環都刪了
+[ ] 因為 SCC 之間沒有邊
+[ ] 不一定是 DAG
+---
+SCC 是「最大的」互通群組，所以縮點後不會再有環。這讓我們可以對縮點圖拓撲排序。
+
+@q gr5-09 | ds-graph#5 | 3 | 證明
+證明：$G$ 和 $G^T$（所有邊反向）的強連通元件完全一樣。
+---
+$u$、$v$ 在 $G$ 中強連通 ⇔ $G$ 有路 $u\leadsto v$ 和 $v\leadsto u$。把路上每條邊反向：$G^T$ 有路 $v\leadsto u$ 和 $u\leadsto v$。所以 $u$、$v$ 在 $G^T$ 中也強連通；反方向同理。互通關係相同，分出來的群組就相同。
+
+@q gr5-10 | ds-graph#5 | 2 | 情境
+Web pages link to one another, and we want to find clusters of pages in which every page can reach every other page by following links. Which of the following statements are correct?
+[x] Compute the strongly connected components of the directed link graph.
+[x] Ignoring the direction of links could merge pages that cannot actually reach each other.
+[ ] BFS distances from one page are enough to find all the clusters.
+[ ] A topological sort finds the clusters.
+[ ] The clusters are found by computing articulation points.
+---
+連結有方向，「互相到得了」正是強連通，「strongly connected components」對；不看方向時 $a\to b$ 的兩頁會被當成一群，但從 $b$ 回不到 $a$，「ignoring the direction」對。從一頁做 BFS 只知道它走得到誰，不知道誰走得回它；拓撲排序只適用沒有環的圖；關節點是無向圖的概念，都錯。
+
+@q gr5-11 | ds-graph#5 | 2 | 比較
+Kosaraju 和 Tarjan 找 SCC，哪一句對？
+[x] 兩者都是 $O(V+E)$；Kosaraju 做兩次 DFS 還要建反向圖，Tarjan 只做一次 DFS
+[ ] Tarjan 是 $O(V^2)$
+[ ] Kosaraju 只做一次 DFS
+[ ] 兩者結果可能不同
+---
+SCC 是圖本身的性質，任何正確的演算法結果都一樣。
+
+@q gr5-12 | ds-graph#5 | 2 | 計算
+$n$ 個點繞成一個有向環（1→2→⋯→$n$→1）。有幾個 SCC？拿掉任一條邊後呢？
+== 1,n
+?? 原本,拿掉一條邊後
+---
+整圈互通：1 個。拿掉一條邊變成一條有向路徑，沒有任何兩點互通：$n$ 個。
+
+@q gr5-13 | ds-graph#5 | 3 | 找錯
+Someone says: "After contracting each strongly connected component (SCC) to a single vertex, the resulting component graph may still contain cycles, just fewer of them." Which of the following statements are correct?
+[x] The claim is wrong: the component graph is always a DAG.
+[x] If two SCCs lay on a cycle of the component graph, all their vertices could reach one another, so they would form a single SCC.
+[x] If the original graph is a DAG, the component graph has as many vertices as the original graph.
+[ ] The component graph always has exactly one vertex.
+[ ] The component graph is always a tree.
+---
+縮點圖若有環，環上的 SCC 彼此互通，本來就該合成同一個 SCC，違反 SCC 是「最大」互通集合，所以「always a DAG」「form a single SCC」對。原圖是 DAG 時每個點自己就是一個 SCC，點數不變，「as many vertices」對。只有原圖強連通時才剩一個點，「exactly one vertex」錯；縮點圖是 DAG，但不一定是樹（例如菱形 $a\to b,a\to c,b\to d,c\to d$），「tree」錯。
+
+@q gr5-14 | ds-graph#5 | 1 | 計算
+Assume the directed graph is simple and has at least one vertex.
+Kosaraju's algorithm is run on a graph stored as adjacency lists. Which of the following statements are correct?
+[x] Its total running time is $O(V+E)$.
+[x] Building the reversed graph takes $O(V+E)$ time.
+[x] On a simple graph, $O(V^2)$ is a valid looser upper bound for the algorithm.
+[x] If $E\ge1$, then $O(VE)$ is also a valid looser upper bound.
+[ ] Its total running time is $O(E\lg V)$, because the vertices must be sorted by finish time.
+---
+「總 V＋邊數」對：兩次 DFS 與建立反圖皆線性於點邊總數。「反圖同界」對：各點建串列、每邊反向加入一次。「簡單圖平方上界」對：邊數≤V²，故 V＋邊數＝O(V²)。「至少一邊時乘積上界」對：V≥1 且邊數≥1，V＋邊數≤2V×邊數。「必排序導致邊數 lg V」錯：完成順序可直接記錄後反向取用，不需比較排序；零邊圖的點處理成本也否定此一般界。
+
+@q gr5-15 | ds-graph#5 | 3 | 觀念
+In Kosaraju's algorithm, consider the vertex with the largest finish time after the first DFS. Which of the following statements are correct?
+[x] It lies in an SCC that no edge of the component graph enters (a most upstream SCC).
+[x] If SCC $C$ has an edge into SCC $C'$, then the largest finish time in $C$ exceeds the largest finish time in $C'$.
+[ ] It always lies in the largest SCC.
+[ ] It lies in an SCC that no edge of the component graph leaves (a most downstream SCC).
+[ ] It always lies in the SCC with the fewest vertices.
+---
+關鍵引理：$C$ 有邊指到 $C'$ 時，$C$ 裡最大的 $f$ 一定大於 $C'$ 裡最大的 $f$，「largest finish time in $C$ exceeds」對。所以全域最大的 $f$ 在沒有人指向它的 SCC，「most upstream」對、「most downstream」錯。這跟 SCC 的大小無關，「largest SCC」「fewest vertices」都錯。第二次 DFS 在反向圖上從它出發，剛好走不出它自己的 SCC。
+
+@q gr5-16 | ds-graph#5 | 2 | 情境
+一個城市的單行道系統，市政府想確認「從任何路口都能開到任何其他路口」。怎麼檢查？
+[x] 看整張有向圖是不是只有一個強連通元件
+[ ] 看有沒有「拿掉就會斷開」的點
+[ ] 看能不能拓撲排序
+[ ] 看每個路口的度數是不是偶數
+---
+也可以簡化成：從任一點 DFS 能到所有點，且在反向圖上也能到所有點。
+
+@q gr5-17 | ds-graph#5 | 2 | 計算
+有向圖：a→b、b→a、b→c、c→d、d→c。縮點後的 DAG 有幾條邊？
+== 1
+---
+SCC {a,b}、{c,d}；它們之間只有 b→c，縮點後一條邊 {a,b}→{c,d}。
+
+@q gr6-01 | ds-graph#6 | 2 | 計算
+無向圖：1–2、2–3、3–1、3–4、4–5、5–6、6–4、5–7。從 1 做 DFS（鄰居照編號），發現時間依序 1～7 給點 1～7。點 4、5、6、7 的 low 值各是？
+== 4,4,4,7
+?? 4,5,6,7
+---
+6 有後向邊到 4（$d=4$），所以 low[6]=4，往上傳給 5、4；7 沒有後向邊，low=7。而 3 有後向邊到 1，low[3]=1。
+
+@q gr6-02 | ds-graph#6 | 2 | 追蹤
+接上題（1–2、2–3、3–1、3–4、4–5、5–6、6–4、5–7），關節點有哪些？
+== 3 4 5
+== 3,4,5
+---
+3：孩子 4 的 low 4 ≥ 3。4：孩子 5 的 low 4 ≥ 4。5：孩子 7 的 low 7 ≥ 5。2：孩子 3 的 low 1 < 2，不是。根 1 只有一個孩子，不是。
+
+@q gr6-03 | ds-graph#6 | 2 | 追蹤
+接上題（1–2、2–3、3–1、3–4、4–5、5–6、6–4、5–7），橋有哪些？
+== 3–4,5–7
+== 3 4,5 7
+---
+樹邊 $(u,v)$ 是橋 ⇔ low[v] > $u.d$：3–4（4 > 3）、5–7（7 > 5）。4–5 不是：low[5]=4 不大於 4。
+
+@q gr6-04 | ds-graph#6 | 3 | 追蹤
+無向圖：1–2、1–3、2–3、3–4、4–5、2–6、6–7、7–2。從 1 做 DFS（鄰居照編號）。low[6] 是多少？關節點有哪些？
+== 2,2 3 4
+?? low[6],關節點
+---
+DFS：1 → 2 → 3（3 有後向邊到 1）→ 4 → 5；回到 2 → 6 → 7（後向邊到 2）。$d$ 依序 1～7，low[6]=low[7]=2。2：孩子 6 的 low 2 ≥ 2，是關節點（拿掉 2，6、7 就斷了）。3：孩子 4 的 low 4 ≥ 3，是。4：孩子 5 的 low 5 ≥ 4，是。
+
+@q gr6-05 | ds-graph#6 | 2 | 觀念
+Which of the following statements about whether the root of a DFS tree is an articulation point are correct?
+[x] The root is an articulation point if and only if it has at least two children in the DFS tree.
+[x] In a cycle on 4 vertices, the DFS root has degree 2 but only one child, so it is not an articulation point.
+[ ] The root is an articulation point if and only if its degree in the graph is at least 2.
+[ ] The root is always an articulation point.
+[ ] The root is an articulation point if and only if its low value equals 1.
+---
+根有兩個孩子，代表兩棵子樹之間沒有不經過根的路（否則 DFS 會從一棵走到另一棵），拿掉根就斷，「at least two children」對。只看度數不夠：環上的根度數 2，但 DFS 從一邊走完整個環，只有一個孩子，拿掉它環還是一條路，「cycle on 4 vertices」對、「degree … at least 2」錯。根不一定是關節點，「always」錯；根的 low 值就是自己的發現時間，不能拿來判斷，「low value」錯。
+
+@q gr6-06 | ds-graph#6 | 2 | 陷阱
+During a DFS of a connected undirected graph, $(u,v)$ is a tree edge, $u$ is not the root, and $\mathrm{low}[v]=u.d$. Which of the following statements are correct? Select all that apply.
+[x] $u$ is an articulation point.
+[ ] $(u,v)$ is a bridge.
+[x] Some vertex in the subtree of $v$ has a back edge to $u$.
+[ ] After removing $u$, the subtree of $v$ is still connected to the ancestors of $u$.
+[x] If instead $\mathrm{low}[v]<u.d$, the edge $(u,v)$ would still not be a bridge.
+---
+「$u$ 是關節點」對：非根的 $u$ 只要有一個孩子 $v$ 滿足 $\mathrm{low}[v]\ge u.d$ 就是關節點；$v$ 的子樹最高只能回到 $u$，拿掉 $u$ 就斷。
+
+「是橋」錯：橋的條件是 $\mathrm{low}[v]>u.d$。這裡拿掉邊 $(u,v)$，子樹還能經由那條後向邊回到 $u$。
+
+「子樹裡有後向邊連到 $u$」對：$\mathrm{low}[v]$ 是子樹經由一條後向邊能到的最小發現時間；它等於 $u.d$，而且比 $v.d$ 小，只能來自連到 $u$ 的後向邊。
+
+「拿掉 $u$ 子樹還連得到 $u$ 的祖先」錯：這正是 $u$ 是關節點的意思。
+
+「$\mathrm{low}[v]<u.d$ 時也不是橋」對：子樹能繞到比 $u$ 更上面，拿掉 $(u,v)$ 更不會斷。
+
+@q gr6-07 | ds-graph#6 | 2 | 計算
+星形圖：中心 0 連到 1、2、3、4、5（沒有其他邊）。有幾個關節點、幾座橋？
+== 1,5
+?? 關節點,橋
+---
+拿掉中心就斷成 5 塊；每條邊都不在環上，都是橋。
+
+@q gr6-08 | ds-graph#6 | 1 | 計算
+4 個點繞成一圈（1–2–3–4–1）。有幾個關節點、幾座橋？
+== 0,0
+?? 關節點,橋
+---
+拿掉任一點或任一條邊，剩下的還是一條路、仍然連通。
+
+@q gr6-09 | ds-graph#6 | 2 | 計算
+Let $T$ be a tree with $n\ge3$ vertices. Which of the following statements are correct?
+[x] Every one of its $n-1$ edges is a bridge.
+[x] Every vertex of degree at least 2 is an articulation point.
+[ ] Its vertices of degree 1 are articulation points.
+[ ] It has no bridges.
+[ ] Only its root is an articulation point.
+---
+樹沒有環，每條邊拿掉都斷開，「every one … bridge」對、「no bridges」錯。拿掉度數至少 2 的點，它的鄰居們就分開了，所以所有非葉子都是關節點，「degree at least 2」對、「only its root」錯（而且樹本身沒有指定根）。拿掉葉子不影響其他點，「degree 1」錯。
+
+@q gr6-10 | ds-graph#6 | 3 | 陷阱
+「橋的兩個端點一定都是關節點」對嗎？
+[ ] 對
+[x] 不對
+---
+端點如果度數是 1（葉子），拿掉它不會讓剩下的圖斷開。例如星形圖的邊 0–1：0 是關節點，1 不是。只有度數 ≥ 2 的端點才是。
+
+@q gr6-11 | ds-graph#6 | 2 | 觀念
+為什麼橋一定不在任何環上？
+[x] 在環上的邊拿掉後，環的另一半仍連著兩端，圖不會斷
+[ ] 因為橋的端點度數是 1
+[ ] 因為 DFS 不會走到橋
+[ ] 橋可以在環上
+---
+反過來也成立：一條邊不在任何環上，它就是橋。
+
+@q gr6-12 | ds-graph#6 | 2 | 情境
+In a data center, machines are connected by cables, and the failure of any single machine must not split the system into two parts. Which of the following statements are correct?
+[x] To find the machines whose failure would split the system, find the articulation points of the graph whose vertices are machines.
+[x] To find the cables whose failure would split the system, find the bridges.
+[ ] To find the machines whose failure would split the system, find the bridges.
+[ ] To find those machines, find the strongly connected components.
+[ ] To find those machines, topologically sort the machines.
+---
+機器是點，拿掉點會斷就是關節點，「articulation points」對、「machines … bridges」錯；問的是哪條線路斷了會斷，才是找橋，「cables … bridges」對。線路沒有方向，強連通元件、拓撲排序都不適用。
+
+@q gr6-13 | ds-graph#6 | 1 | 計算
+完全圖 $K_4$ 有幾個關節點？
+== 0
+---
+任兩點之間都有邊，拿掉任一點剩下的 $K_3$ 仍連通。
+
+@q gr6-14 | ds-graph#6 | 3 | 找錯
+On the path 1–2–3–4, someone starts DFS at vertex 2 and checks the root 2 with the **non-root** rule: its child 1 has low value $2\ge2$, so 2 is declared an articulation point. The conclusion happens to be right. Which of the following statements are correct?
+[x] The root must instead be judged by whether it has at least two children in the DFS tree.
+[x] Applied to a root, the non-root rule always succeeds, because no child's low value can be smaller than the root's discovery time.
+[x] If the DFS had started at vertex 1, the non-root rule would wrongly declare the root 1 an articulation point.
+[ ] The method has no problem.
+[ ] Vertex 2 is not actually an articulation point.
+---
+2 的確是關節點，它在 DFS 樹裡有 1 和 3 兩個孩子，「not actually」錯。但根沒有祖先可以爬，孩子的 low 不可能小於根的發現時間，非根規則對根永遠成立，會把每個根都判成關節點，「always succeeds」對；從 1 開始時根 1 只有一個孩子，卻會被誤判，「started at vertex 1」對。所以根要用「孩子數至少 2」判斷，「two children」對、「no problem」錯。
+
+@q gr6-15 | ds-graph#6 | 3 | 證明
+證明：DFS 樹的根是關節點 ⇔ 根在 DFS 樹裡有至少兩個孩子。
+---
+（⇐）兩個孩子 $a$、$b$ 的子樹之間沒有邊（無向 DFS 沒有交叉邊），而它們只能透過根連起來，拿掉根就斷。（⇒）若只有一個孩子，拿掉根後，其餘所有點都在那個孩子的子樹裡，用樹邊仍連通。
+
+@q gr6-16 | ds-graph#6 | 2 | 觀念
+Which of the following statements about the value $\text{low}[u]$ used to find articulation points are correct?
+[x] $\text{low}[u]$ is the minimum of $u.d$ and the smallest discovery time reachable from $u$'s subtree by one back edge.
+[x] For a non-root vertex $u$ with a child $c$, if $\text{low}[c]\ge u.d$, then $u$ is an articulation point.
+[ ] $\text{low}[u]$ is the smallest discovery time among $u$'s children.
+[ ] $\text{low}[u]$ is the degree of $u$.
+[ ] $\text{low}[u]$ equals $u.f-u.d$.
+---
+定義就是「$\text{low}[u]$ is the minimum…」，意思是 $u$ 這棵子樹「最高能爬回哪裡」。孩子 $c$ 的子樹爬不過 $u$（$\text{low}[c]\ge u.d$），拿掉 $u$ 那棵子樹就和上面斷開，所以 $u$ 是關節點，「$\text{low}[c]\ge u.d$」對。孩子的發現時間一定比 $u$ 大，不能代表往上爬，「among $u$'s children」錯；度數、$u.f-u.d$ 跟能爬多高無關。
+
+@q gr6-17 | ds-graph#6 | 2 | 計算
+Which of the following statements about finding all articulation points and bridges of a graph are correct?
+[x] One DFS that also computes low values finds them in $O(V+E)$ time.
+[x] Removing each vertex in turn and testing connectivity also works, but takes $O(V(V+E))$ time.
+[ ] $O(V^2)$ is the best possible time with adjacency lists.
+[ ] $O(E^2)$ time is needed.
+[ ] Articulation points can be found in $O(V+E)$ time, but bridges need $O(VE)$ time.
+---
+low 值讓一次 DFS 就夠，關節點和橋都在同一次 DFS 裡判斷，「one DFS … $O(V+E)$」對、「bridges need $O(VE)$」錯。每個點拿掉試一次也行，每次 $O(V+E)$、共 $V$ 次，「$O(V(V+E))$」對。既然 $O(V+E)$ 做得到，$O(V^2)$ 不是最佳、也不需要 $O(E^2)$。
+
+@q gr6-18 | ds-graph#6 | 3 | 計算
+無向圖：1–2、2–3、3–1、3–4、4–5、5–6、6–4、5–7。拿掉關節點 5 之後，圖分成幾塊？
+== 2
+---
+拿掉 5：{1,2,3,4,6} 還連在一起（4–6 直接相連），{7} 單獨一塊。
+
+@q gr7-01 | ds-graph#7 | 1 | 觀念
+連通的無向圖，每個點度數都是偶數。它有什麼？
+[x] 歐拉迴路
+[ ] 只有歐拉路徑、沒有迴路
+[ ] 漢米頓迴路
+[ ] 都沒有
+---
+每次經過一個點都是「進一次、出一次」，用掉兩個度數；全部偶數就能走完回到起點。
+
+@q gr7-02 | ds-graph#7 | 2 | 計算
+Consider the undirected graph with edges 1–2, 2–3, 3–4, 4–1, 1–3. Which of the following statements are correct?
+[x] It has no Euler circuit.
+[x] It has an Euler path, and any Euler path must start at vertex 1 or vertex 3.
+[ ] It has an Euler circuit.
+[ ] It has neither an Euler circuit nor an Euler path.
+[ ] It has an Euler path starting at vertex 2.
+---
+度數：1 是 3、2 是 2、3 是 3、4 是 2。有奇度點就沒有迴路，「no Euler circuit」對、「has an Euler circuit」錯。奇度點剛好 2 個，有路徑，起點和終點是那兩個奇度點，例如 1–2–3–4–1–3，「start at vertex 1 or vertex 3」對，「neither」「starting at vertex 2」錯。
+
+@q gr7-03 | ds-graph#7 | 2 | 計算
+無向圖：1–2、2–3、3–4、4–5、5–1、1–3、3–5。有幾個奇度點？有歐拉路徑嗎？
+== 2,有
+?? 奇度點,歐拉路徑
+---
+度數：1 是 3、2 是 2、3 是 4、4 是 2、5 是 3。奇度點 1、5 兩個，連通，所以有從 1 到 5 的歐拉路徑。
+
+@q gr7-04 | ds-graph#7 | 2 | 計算
+有向圖：A→B、B→C、C→A、A→D、D→A。有歐拉迴路嗎？
+== 有
+---
+A：出 2（→B、→D）、入 2（C→、D→）；B、C、D 各出 1 入 1。每點入度＝出度，而且邊都連在一起，有迴路，例如 A→B→C→A→D→A。
+
+@q gr7-05 | ds-graph#7 | 2 | 計算
+有向圖：1→2、2→3、3→1、1→3、3→4。有歐拉路徑嗎？起點、終點？
+== 1,4
+?? 起點,終點
+---
+出度－入度：1：2－1＝+1；2：0；3：2－2＝0；4：0－1＝−1。剛好一個 +1（起點 1）、一個 −1（終點 4）。例如 1→2→3→1→3→4。
+
+@q gr7-06 | ds-graph#7 | 3 | 計算
+一張連通無向圖有 6 個奇度點。最少要幾筆才能把每條邊都畫到（每條邊只畫一次，筆可以抬起來）？
+== 3
+---
+每一筆（一條路徑）最多處理掉 2 個奇度點（起點和終點）。6 個奇度點至少 3 筆，而且 3 筆一定做得到。
+
+@q gr7-07 | ds-graph#7 | 2 | 計算
+Which of the following statements about the complete graphs $K_5$ and $K_6$ are correct?
+[x] $K_5$ has an Euler circuit.
+[x] In $K_n$, every vertex has degree $n-1$.
+[ ] $K_6$ has an Euler circuit.
+[ ] Both $K_5$ and $K_6$ have Euler circuits.
+[ ] $K_6$ has an Euler path.
+---
+$K_n$ 每點連其他 $n-1$ 個點，「degree $n-1$」對。$K_5$ 每點度數 4，偶數又連通，有歐拉迴路，「$K_5$」對。$K_6$ 每點度數 5，6 個奇度點，沒有迴路，也沒有路徑（路徑最多 2 個奇度點），「$K_6$ has an Euler circuit.」、「Both $K_5$ and $K_6$…」、「$K_6$ has an Euler path.」錯。
+
+@q gr7-08 | ds-graph#7 | 3 | 計算
+完全二分圖 $K_{m,n}$（左 $m$ 個、右 $n$ 個，左右兩兩相連），什麼時候有歐拉迴路？$K_{2,4}$、$K_{3,4}$ 各有沒有？
+== 有,沒有
+?? K(2,4),K(3,4)
+---
+左邊每點度數 $n$、右邊每點度數 $m$，兩個都要是偶數。$K_{2,4}$ 都偶：有。$K_{3,4}$ 右邊的點度數 3：沒有（左 3 個度數 4、右 4 個度數 3，奇度點 4 個，連歐拉路徑都沒有）。
+
+@q gr7-09 | ds-graph#7 | 2 | 陷阱
+「每個點度數都是偶數，就一定有歐拉迴路」對嗎？
+[ ] 對
+[x] 不對
+---
+還要（有邊的部分）連通。兩個分開的三角形每點度數都 2，但沒辦法一筆走完兩個。
+
+@q gr7-10 | ds-graph#7 | 2 | 比較
+Compare an Euler circuit with a cycle that visits every vertex exactly once. Which of the following statements are correct?
+[x] An Euler circuit uses every edge exactly once, and whether one exists can be decided from the vertex degrees and connectivity in $O(V+E)$ time.
+[x] For a cycle visiting every vertex exactly once, no polynomial-time algorithm is known for deciding whether one exists.
+[ ] Both can be decided just by checking the vertex degrees.
+[ ] There is a known $O(E)$ algorithm for deciding whether a cycle visiting every vertex exactly once exists.
+[ ] Deciding whether an Euler circuit exists requires trying all possible walks.
+---
+歐拉迴路：連通而且每點度數都是偶數就有，「edge exactly once … $O(V+E)$」對，不必試所有走法。漢米頓迴路：每個點一次，是 NP-complete 問題，目前沒有已知的多項式時間演算法，「every vertex exactly once, no polynomial-time」對，「$O(E)$」「just by checking the degrees」錯。名字很像，難度差很多，考試常用這個對比。
+
+@q gr7-11 | ds-graph#7 | 3 | 追蹤
+用 Hierholzer 在無向圖 1–2、2–3、3–1、3–4、4–5、5–3 找歐拉迴路（從 1 開始、能走就走編號小的）。先走出 1–2–3–1 卡住，接著要從哪個點接上另一圈？最後的迴路是？
+== 3,1 2 3 4 5 3 1
+?? 從哪接,迴路
+---
+1–2–3–1 後 1 沒有邊了；回頭找還有沒走過的邊的點：3（還有 3–4、3–5）。從 3 繞 3–4–5–3，接進原本的 3 那裡：1–2–3–4–5–3–1。
+
+@q gr7-12 | ds-graph#7 | 2 | 計算
+Which of the following statements about the running time of Hierholzer's algorithm for an Euler circuit are correct?
+[x] It runs in $O(E)$ time, plus $O(V)$ for initialization.
+[x] Each edge is traversed and marked only once.
+[ ] It runs in $O(V^2)$ time.
+[ ] It runs in $O(E^2)$ time.
+[ ] It runs in $O(2^V)$ time.
+---
+每條邊只被走過、標記一次，「traversed and marked only once」對；把小迴路接進路線用串列插入是 $O(1)$，所以總共 $O(E)$ 加上初始化 $O(V)$，「$O(E)$ … plus $O(V)$」對。它不用試不同走法，指數時間錯；也不會每條邊重複處理，$O(E^2)$、$O(V^2)$ 錯（稀疏圖時 $O(V^2)$ 也比 $O(E)$ 大）。
+
+@q gr7-13 | ds-graph#7 | 2 | 情境
+A mail carrier wants to walk along every street of a town exactly once and return to the post office. Which of the following statements are correct?
+[x] It is possible when the street graph is connected and every intersection meets an even number of streets.
+[x] If some intersections meet an odd number of streets, some streets must be walked more than once.
+[ ] It is possible only when every intersection meets exactly 2 streets.
+[ ] It is possible when the street graph is a tree.
+[ ] It is possible whenever the number of intersections is even.
+---
+這就是歐拉迴路：連通而且每點度數偶數，「connected … even」對；有奇度路口時沒有歐拉迴路，只能重複走某些街（中國郵差問題），「more than once」對。度數 4 的路口也可以，「exactly 2」錯；樹有度數 1 的葉子，走進去出不來，「tree」錯；路口數的奇偶不是條件，「number of intersections is even」錯。
+
+@q gr7-14 | ds-graph#7 | 3 | 陷阱
+有向圖每個點入度＝出度，但圖分成兩塊互不相連的環。這張圖有歐拉迴路。對嗎？
+[ ] 對
+[x] 不對
+---
+入度＝出度只保證每一塊各自有迴路；要一條迴路走遍所有邊，有邊的部分必須連在一起。
+
+@q gr7-15 | ds-graph#7 | 2 | 計算
+有向圖：A→B、B→C、C→D、D→B、B→A、A→C。有歐拉迴路還是歐拉路徑？如果是路徑，起點和終點？
+== 路徑,A,C
+?? 迴路或路徑,起點,終點
+---
+逐一數：A 出 {B,C}、入 {B}：+1。B 出 {C,A}、入 {A,D}：0。C 出 {D}、入 {B,A}：−1。D 出 {B}、入 {C}：0。一個 +1、一個 −1：有從 A 到 C 的歐拉路徑，例如 A→B→A→C→D→B→C。
+
+@q uf1-01 | ds-unionfind#1 | 2 | 追蹤
+Union by rank（rank 一樣時第二個根接到第一個下面，第一個 rank 加 1）。MAKE-SET 1～8，依序 UNION(1,2)、(3,4)、(5,6)、(7,8)、(1,3)、(5,7)、(1,5)。最後的根和它的 rank？
+== 1,3
+?? 根,rank
+---
+前四次各做出 rank 1 的根 1、3、5、7；(1,3)：rank 一樣，3 接到 1，1 的 rank 2；(5,7)：5 的 rank 2；(1,5)：一樣 2，5 接到 1，1 的 rank 3。
+
+@q uf1-02 | ds-unionfind#1 | 2 | 計算
+接上題，最深的點是誰、深度多少？
+== 8,3
+?? 點,深度
+---
+8 → 7 → 5 → 1：深度 3 $=\lg8$。union by rank 保證高度不超過 $\lg n$。
+
+@q uf1-03 | ds-unionfind#1 | 3 | 追蹤
+接上題，接著做 FIND-SET(8) 並用路徑壓縮。之後 7 和 6 的深度各是？
+== 1,2
+?? 7,6
+---
+路徑上的 8、7、5 都直接接到根 1：8、7、5 深度變 1。6 原本是 5 的孩子，5 上去了，6 的深度從 3 變 2——沒在路徑上的點不會被直接壓縮，但也跟著變淺。
+
+@q uf1-04 | ds-unionfind#1 | 2 | 陷阱
+不用任何改善，UNION 時一律把第一個參數的根接到第二個參數的根下面。依序 UNION(2,1)、UNION(3,2)、UNION(4,3)、UNION(5,4)。點 1 的深度是？
+== 4
+---
+每次都讓舊的樹接到新的單點下面：1→2→3→4→5 一條鏈。$n$ 個點時 FIND(1) 要 $n-1$ 步，這就是需要 union by rank 的原因。
+
+@q uf1-05 | ds-unionfind#1 | 2 | 觀念
+Which of the following statements about union by rank and path compression are correct?
+[x] With union by rank alone, each FIND takes $O(\lg n)$ worst-case time.
+[x] With both techniques, the average cost per operation over a long sequence is nearly constant.
+[ ] With path compression alone, each FIND takes $O(1)$ worst-case time.
+[ ] With union by rank alone, each FIND takes $O(1)$ worst-case time.
+[ ] Using both techniques is slower than union by rank alone, because compression adds work.
+---
+「只用 union by rank」樹高 $O(\lg n)$，每次 FIND 最壞 $O(\lg n)$，不是 $O(1)$；「兩個一起用」一長串操作平均每次幾乎是常數。只用路徑壓縮時第一次 FIND 仍可能很長。壓縮只是順手改走過的指標，長期反而省時間。
+
+@q uf1-06 | ds-unionfind#1 | 2 | 比較
+Which of the following statements comparing the linked-list representation (each element stores a pointer to its representative) with the forest representation are correct?
+[x] In the list representation, FIND takes $O(1)$ time.
+[x] In the list representation, UNION must update the representative pointers of a whole list.
+[x] In the forest representation, linking two roots changes one pointer.
+[x] In the forest representation, FIND must walk up to the root.
+[ ] In the list representation, appending the shorter list makes UNION $O(1)$ in the worst case.
+---
+串列每個元素直接存代表，「FIND $O(1)$」，但「UNION 要改一整條」；森林「接根只改一個指標」，但「FIND 要往上走」。四句都對。短的接到長的只讓總成本降到 $O(m+n\lg n)$，單次 UNION 仍要改短的那整條，不是 $O(1)$。
+
+@q uf1-07 | ds-unionfind#1 | 3 | 計算
+In the linked-list representation of $n$ elements, UNION always appends the shorter list to the longer one. Which of the following statements are correct?
+?? 複選
+[x] An element's representative pointer changes at most $\lfloor\lg n\rfloor$ times.
+[ ] An element's representative pointer can change $n-1$ times.
+[ ] An element's representative pointer changes at most once.
+[ ] All pointer updates together can take time proportional to $n^2$ in the worst case.
+[ ] Each time an element's pointer changes, the size of its set at least triples.
+---
+指標被改代表它在短的那組，合併後的組至少是原本的兩倍（不是三倍），組最大 $n$，所以「最多 $\lfloor\lg n\rfloor$ 次」對，總共 $O(n\lg n)$，不會到 $n^2$ 等級。$n-1$ 次是沒有「短的接到長的」時的最壞情況；只改一次則太樂觀。
+
+@q uf1-08 | ds-unionfind#1 | 1 | 觀念
+Which of the following statements about deciding whether $x$ and $y$ are in the same set are correct?
+[x] Compare FIND-SET$(x)$ with FIND-SET$(y)$.
+[x] Elements of the same set always have the same root.
+[x] Elements of different sets always have different roots.
+[x] Path compression changes how fast this test runs, not its answer.
+[ ] Compare the ranks of $x$ and $y$; equal ranks mean the same set.
+---
+同一組的代表一定是同一個根、不同組的根一定不同，所以「比較兩個 FIND-SET」就知道答案；路徑壓縮只改 parent 指標讓之後更快，根不變，答案也不變。rank 只跟樹高有關，兩組的根 rank 可以相同，「比 rank」錯。
+
+@q uf1-09 | ds-unionfind#1 | 2 | 找錯
+Someone implements UNION$(x,y)$ as "make $x$ a child of $y$", without finding any roots. Which of the following statements are correct?
+[x] The old set of $x$ may be split, because the link from $x$ to its old parent is cut.
+[x] The results can be wrong, not merely slow.
+[ ] The sets stay correct; only the trees may become taller.
+[ ] The code is correct whenever $y$ happens to be a root.
+[ ] Making $y$ a child of $x$ instead would fix the bug.
+---
+$x$ 原本的爸爸那一段被切斷，「舊組可能被拆開」，結果是錯的，不只是慢，這兩句對。問題出在 $x$ 不是根，$y$ 是不是根都一樣會拆開 $x$ 的舊組；反過來把 $y$ 接到 $x$ 下面也只是換成拆 $y$ 的舊組。UNION 一定要先 FIND 兩個根，再把根接到根下面。
+
+@q uf1-10 | ds-unionfind#1 | 3 | 計算
+只用 union by rank（不壓縮），$n=1024$。最壞情況一次 FIND 最多要往上走幾步？
+== 10
+---
+rank $r$ 的樹至少 $2^r$ 個點，所以 rank、高度都 $\le\lg1024=10$。用「一樣大的兩兩合併」可以造出高度剛好 10 的樹。
+
+@q uf1-11 | ds-unionfind#1 | 2 | 觀念
+Which of the following statements about path compression during FIND$(x)$ are correct?
+[x] Every node on the path from $x$ to the root becomes a direct child of the root.
+[x] Afterward, each of those nodes reaches the root in one step until that root gets a new parent.
+[ ] Every node of the tree, on the path or not, becomes a direct child of the root.
+[ ] Only $x$ itself becomes a direct child of the root; the other nodes keep their parents.
+[ ] It also resets the rank of the root to the new height of the tree.
+---
+路徑壓縮只改「$x$ 到根的路上」的點，每個都直接接到根，之後一步就到根，這兩句對。不在路上的點不受影響，所以「整棵樹都接到根」錯；路上每個點都會改，不只 $x$。rank 在壓縮時不更新，只是高度的上界。
+
+@q uf1-12 | ds-unionfind#1 | 2 | 陷阱
+用了路徑壓縮之後，每個根的 rank 仍然精確等於樹的高度。對嗎？
+[ ] 對
+[x] 不對
+---
+路徑壓縮會讓樹變矮，但 rank 不會跟著改。rank 變成高度的**上界**。
+
+@q uf1-13 | ds-unionfind#1 | 3 | 追蹤
+Union by rank（rank 一樣時第二個參數的根接到第一個參數的根下面，第一個 rank 加 1）：MAKE-SET 1～5，UNION(1,2)、UNION(3,1)、UNION(4,5)、UNION(5,3)。最後的根是誰？rank 是多少？
+== 4,2
+?? 根,rank
+---
+(1,2)：根 1、rank 1。(3,1)：3（rank 0）比 1（rank 1）小，3 接到 1。(4,5)：根 4、rank 1。(5,3)：5 的根是 4（rank 1）、3 的根是 1（rank 1），一樣大，第二個參數的根 1 接到第一個的根 4 下面，4 的 rank 變 2。要先 FIND 到根再比 rank。
+
+@q uf1-14 | ds-unionfind#1 | 2 | 情境
+Students are assigned to study teams by the rule "a friend of a friend is on the same team". Friendships arrive one at a time, and at any moment someone may ask whether Amy and Ben are on the same team. Which of the following statements are correct?
+?? 複選
+[x] Union-Find fits: UNION for each friendship, and comparing FINDs answers each question.
+[ ] Checking whether Ben appears in Amy's friend list answers each question correctly.
+[ ] Searching along friendships from Amy for each question is faster than Union-Find when questions are frequent.
+[ ] Union-Find fits, but each FIND must scan all friendships recorded so far.
+[ ] Sorting the students by number of friends answers each question.
+---
+「每筆好友關係 UNION、問的時候比 FIND」正是 Union-Find 的用法，合併和查詢都幾乎是常數。只看 Amy 的好友名單找不到「好友的好友」；每次沿好友關係搜尋，最壞要看過所有關係，問得多時比 Union-Find 慢得多；FIND 只沿 parent 往上走，不必掃所有關係。好友人數和分組無關。
+
+@q uf1-15 | ds-unionfind#1 | 2 | 計算
+8 個點，做了 5 次「真的合併了兩組」的 UNION（不算本來就同組的）。現在剩幾組？
+== 3
+---
+每次成功的 UNION 讓組數少 1：$8-5=3$。
+
+@q uf2-01 | ds-unionfind#2 | 2 | 計算
+只用 union by rank。rank 是 4 的根，它的樹至少有幾個點？
+== 16
+---
+rank 只在兩個一樣 rank 的根合併時加 1：rank $r$ 的樹至少是兩棵 rank $r-1$ 的樹，至少 $2^r$ 個點。$2^4=16$。
+
+@q uf2-02 | ds-unionfind#2 | 2 | 計算
+$n=1000$ 個元素，用 union by rank。任何點的 rank 最大可能是多少？
+== 9
+---
+rank $r$ 需要至少 $2^r$ 個點：$2^9=512\le1000<1024$，最大 9。
+
+@q uf2-03 | ds-unionfind#2 | 3 | 計算
+$n=1024$ 個元素，用 union by rank。rank 剛好是 3 的點最多有幾個？
+== 128
+---
+rank 剛好 $r$ 的點最多 $n/2^r$ 個（它們的子樹互不重疊，各至少 $2^r$ 個點）：$1024/8=128$。
+
+@q uf2-04 | ds-unionfind#2 | 2 | 觀念
+In a Union-Find forest that uses union by rank, with or without path compression, which of the following statements are correct?
+[x] Along the path from any node to its root, the ranks strictly increase.
+[x] When one root is linked under another, the new parent's rank is larger, or equal and then incremented.
+[x] Once a node stops being a root, its rank never changes again.
+[x] Path compression keeps the ranks strictly increasing along every path.
+[x] Every root of rank $r$ has at least $2^r$ nodes in its tree.
+---
+根被接到另一個根下面時，「新爸爸的 rank 較大，或相等後加 1」；之後它不再是根，「rank 不再變」，所以「往根走 rank 嚴格遞增」。路徑壓縮把點接到更高的祖先，祖先 rank 更大，「仍然嚴格遞增」。rank 要從 $r-1$ 升到 $r$，必須合併兩棵 rank $r-1$ 的樹，歸納可得「至少 $2^r$ 個點」，壓縮不會讓點離開這棵樹。五句都對。
+
+@q uf2-05 | ds-unionfind#2 | 2 | 陷阱
+「Union by rank＋路徑壓縮的每一次 FIND 都是 $O(\alpha(n))$」對嗎？
+[ ] 對
+[x] 不對
+---
+$O(m\,\alpha(n))$ 是 $m$ 個操作的**總和**（攤銷）。某一次 FIND 可能要走 $O(\lg n)$ 步（樹還沒被壓扁時）。
+
+@q uf2-06 | ds-unionfind#2 | 2 | 陷阱
+「$\alpha(n)\le4$，所以 Union-Find 是 $O(1)$」對嗎？
+[ ] 對
+[x] 不對
+---
+對任何實際的 $n$（小於 $10^{80}$）確實 $\le4$，但 $\alpha(n)$ 會隨 $n$ 無限增大，理論上不是常數。而且已經證明不可能做到攤銷 $O(1)$。
+
+@q uf2-07 | ds-unionfind#2 | 3 | 證明
+證明：只用 union by rank 時，rank 為 $r$ 的根，它的樹至少有 $2^r$ 個點。
+---
+對 $r$ 歸納。$r=0$：至少 1 個點。根的 rank 從 $r-1$ 變成 $r$，只發生在它跟另一個 rank $r-1$ 的根合併時；兩棵各至少 $2^{r-1}$ 個點，合起來至少 $2^r$。之後只會有別的樹接到它下面，點只會變多，rank 不變。
+
+@q uf2-08 | ds-unionfind#2 | 2 | 計算
+只用 union by rank，要做出一棵高度 3 的樹，最少要幾個點？
+== 8
+---
+高度 3 需要 rank 3 的根，至少 $2^3=8$ 個點：兩兩合併 8 個 → 4 棵 rank 1 → 2 棵 rank 2 → 1 棵 rank 3。
+
+@q uf2-09 | ds-unionfind#2 | 2 | 比較
+For $m$ operations on $n$ elements with $m\ge n$, which of the following statements about worst-case total running times are correct?
+[x] Using neither union by rank nor path compression: $O(mn)$.
+[x] Using union by rank only: $O(m\lg n)$.
+[x] Using path compression only: $O(m\lg n)$.
+[x] Using both techniques: $O(m\,\alpha(n))$.
+[x] With both techniques, some operation sequences really need $\Omega(m\,\alpha(n))$ time.
+---
+都不用時樹可能變成鏈，每次 FIND $O(n)$；只用 union by rank 樹高 $O(\lg n)$；只用路徑壓縮也是 $O(m\lg n)$ 等級；兩招一起用是 $O(m\,\alpha(n))$，而且這個界是緊的，存在需要 $\Omega(m\,\alpha(n))$ 的操作序列。五句都對。
+
+@q uf2-10 | ds-unionfind#2 | 2 | 觀念
+With path compression, which of the following statements about a node's rank and the actual height of its subtree are correct?
+?? 複選
+[x] The rank is at least the height.
+[ ] The rank always equals the height.
+[ ] The rank is at most the height.
+[ ] Path compression lowers the ranks of the nodes it moves.
+[ ] Ranks change both during UNION and during compression.
+---
+rank 只在 UNION 時改，壓縮時不動；路徑壓縮只會讓樹變矮，所以 rank 只是高度的上界，「rank 至少是高度」對。正因為壓縮後不更新，rank 和高度可能不相等，也不會比高度小。
+
+@q uf2-11 | ds-unionfind#2 | 3 | 情境
+A program performs $m$ operations on $n$ elements, and every LINK (joining two roots) comes before every FIND. Using union by rank and path compression, which of the following statements are correct?
+[x] Each LINK takes $O(1)$ time.
+[x] Once a FIND makes a node point directly to its root, that node's parent never changes again.
+[x] The total time is $O(m)$.
+[ ] Each FIND costs $\Theta(\lg n)$, so $\Theta(m\lg n)$ is a tight bound here.
+[ ] The total time is $\Theta(m\,\alpha(n))$, and no better bound holds for this order of operations.
+---
+LINK 只改一個根的指標，$O(1)$。之後沒有 LINK，根不會再變，「指向根後 parent 不再改」對；每個點最多被壓縮一次，FIND 的總工作量是 $O(m)$ 加上 $O(n)$，所以「總時間 $O(m)$」對。$\Theta(m\lg n)$ 和「只能到 $\Theta(m\,\alpha(n))$」都不是這種「先合併再查詢」順序下的緊界。
+
+@q uf2-12 | ds-unionfind#2 | 1 | 觀念
+$\alpha(n)$ 跟哪個函數有關？
+[x] 它是長得極快的 Ackermann 函數「反過來」：Ackermann 函數值到 $n$ 時的輸入
+[ ] 它是指數函數反過來，也就是 $\lg n$
+[ ] 它就是 $\sqrt n$
+[ ] 它跟費氏數列有關
+---
+Ackermann 函數長得極快，所以反過來的 $\alpha(n)$ 長得極慢，比 $\lg n$、$\lg\lg n$ 都慢得多。
+
+@q uf2-13 | ds-unionfind#2 | 3 | 找錯
+Someone says: "Union by rank keeps the height at most $\lg n$, and path compression then reduces it to 1, so every FIND takes $O(1)$ time." Which of the following statements are correct?
+[x] Path compression flattens only the paths that FIND actually walks.
+[x] Other nodes, and nodes brought in by later UNIONs, may still be deep.
+[x] Only the amortized cost per operation is $O(\alpha(n))$.
+[ ] Union by rank cannot keep the height at most $\lg n$.
+[ ] After any single FIND, every node of that tree is a direct child of the root.
+---
+壓縮是邊找邊做的，「只壓被 FIND 經過的路」；其他點和之後新 UNION 進來的「仍可能很深」，所以只有「攤銷」是 $\alpha(n)$。union by rank 確實讓高度 $\le\lg n$；一次 FIND 只改路上的點，不會讓整棵樹都接到根。
+
+@q uf2-14 | ds-unionfind#2 | 2 | 計算
+只用 union by rank，rank 為 2 的根在整個過程中，它的樹最少有幾個點？
+== 4
+---
+$2^2=4$：兩棵各 2 個點（rank 1）的樹合併。
+
+@q uf3-01 | ds-unionfind#3 | 2 | 追蹤
+8 個點，依序加入邊 (1,2)、(3,4)、(2,4)、(5,6)、(1,3)、(7,8)、(6,8)。用 Union-Find 判斷：哪一條邊加進去時會形成環？最後有幾個連通元件？
+== 1 3,2
+?? 形成環的邊,元件數
+---
+(1,2)、(3,4)、(2,4) 把 1～4 連成一組；(1,3) 加進去時 1、3 已經同組 → 形成環。(5,6)、(7,8)、(6,8) 把 5～8 連起來。最後 {1,2,3,4}、{5,6,7,8} 兩組。
+
+@q uf3-02 | ds-unionfind#3 | 2 | 觀念
+Before adding an edge $(u,v)$ to a graph, we query a Union-Find structure built from the edges added so far. Which of the following statements are correct?
+[x] If FIND$(u)$ and FIND$(v)$ are equal, adding the edge creates a cycle.
+[x] If they differ, the edge creates no cycle, and we then call UNION$(u,v)$.
+[x] Kruskal's algorithm uses exactly this test to skip edges.
+[x] With union by rank and path compression, each test takes nearly constant amortized time.
+[ ] If $u$ and $v$ have equal ranks, adding the edge creates a cycle.
+---
+FIND 相等代表 $u$、$v$ 已經連通，再加一條邊就有兩條路，所以「相等就成環」「不同就不成環、接著 UNION」都對；Kruskal 正是用這個測試跳過會成環的邊，兩招一起用時每次幾乎是常數。rank 只反映樹高，和兩點是否連通無關，「rank 相等就成環」錯。
+
+@q uf3-03 | ds-unionfind#3 | 2 | 情境
+Kruskal's algorithm examines the edges in increasing order of weight and adds an edge only if it creates no cycle. Which of the following statements are correct?
+[x] Union-Find is the natural structure for the cycle test.
+[x] Each edge needs two FINDs and possibly one UNION.
+[x] The bottleneck is sorting the edges in $O(E\lg E)$ time.
+[x] The cycle tests for all edges together take $O(E\,\alpha(V))$ time.
+[ ] A sorted array of the vertices alone makes each cycle test take $O(1)$ time.
+---
+「會不會成環」就是「兩端是否已同組」，所以用 Union-Find，「每條邊兩次 FIND、可能一次 UNION」，全部測試合起來 $O(E\,\alpha(V))$，幾乎線性；因此 Kruskal 的瓶頸其實在「排序邊」的 $O(E\lg E)$。四句都對。排好序的點陣列記不住誰跟誰已連通。
+
+@q uf3-04 | ds-unionfind#3 | 2 | 陷阱
+Union-Find 可以有效地「刪掉一條邊、把一組拆成兩組」嗎？
+[ ] 可以，跟 UNION 反過來做就好
+[x] 不行，只能合併；要拆就得重建
+[ ] 可以，用路徑壓縮
+[ ] 可以，但要 $O(\lg n)$
+---
+樹裡沒有記錄「是哪條邊讓它們合併的」，也被路徑壓縮改過形狀了。
+
+@q uf3-05 | ds-unionfind#3 | 2 | 計算
+6 個人，好友關係依序 (1,2)、(2,3)、(4,5)、(1,3)、(5,6)、(3,4)。哪一筆加入時群數沒有減少？最後幾群？
+== 1 3,1
+?? 沒減少的,最後群數
+---
+(1,2)、(2,3) 讓 {1,2,3}；(4,5)；(1,3) 時 1、3 已同群，不變；(5,6) 讓 {4,5,6}；(3,4) 把兩群合成一群。
+
+@q uf3-06 | ds-unionfind#3 | 3 | 情境
+一張黑白圖片，要把「上下左右相連的黑色像素」分成一塊一塊、數有幾塊。用 Union-Find 怎麼做？
+[x] 每個黑像素一組，掃一遍，跟右邊、下面的黑像素 UNION；最後數有幾個不同的根
+[ ] 對每個像素都從頭往四周搜一遍
+[ ] 把像素排序
+[ ] 只看第一列
+---
+從每個沒看過的黑像素往四周搜也能做；Union-Find 的好處是可以一列一列掃，不用一次把整張圖讀進來。
+
+@q uf3-07 | ds-unionfind#3 | 3 | 比較
+「邊一條一條加進來，隨時問兩點是否連通」：每次問都從其中一點沿邊搜一遍，和用 Union-Find 比？
+[x] 每次搜一遍最壞要看過所有點和邊；Union-Find 每次幾乎常數（攤銷 $\alpha(n)$）
+[ ] 兩者一樣
+[ ] 每次搜一遍比較快
+[ ] Union-Find 每次 $O(V)$
+---
+只增不減的連通性問題是 Union-Find 的主場。會刪邊時就不能用。
+
+@q uf3-08 | ds-unionfind#3 | 2 | 計算
+A graph has $n$ vertices and $E$ edges. After Union-Find has handled all the edges, $k$ sets remain. Which of the following statements are correct?
+[x] Exactly $n-k$ edges caused a successful UNION.
+[x] Exactly $E-(n-k)$ edges joined two vertices already in the same set.
+[ ] Exactly $E-n$ edges joined two vertices already in the same set.
+[ ] Exactly $k$ edges joined two vertices already in the same set.
+[ ] The edges that caused a successful UNION may contain a cycle.
+---
+每條成功 UNION 的邊讓組數少 1，從 $n$ 組變成 $k$ 組，共「$n-k$ 條」；其餘「$E-(n-k)$ 條」加入時兩端已同組，各自會形成環。$E-n$ 漏了 $k$；$k$ 是剩下的組數，不是邊數。成功 UNION 的邊每次都連接兩個不同的組，組成一個生成森林，不可能有環。
+
+@q uf3-09 | ds-unionfind#3 | 2 | 情境
+A compiler processes declarations such as "type $T_1$ is the same as $T_2$" and "type $T_2$ is the same as $T_3$", and later must answer "is $T_1$ the same as $T_3$?". Which of the following statements are correct?
+?? 複選
+[x] Union-Find fits: UNION for each declaration, and comparing FINDs answers each question.
+[ ] $T_1$ and $T_3$ are different, because no declaration mentions them together.
+[ ] Union-Find cannot be used, because sameness works in both directions.
+[ ] Sorting the type names alphabetically answers each question.
+[ ] Union-Find works only if the declarations arrive in the order $T_1$, $T_2$, $T_3$.
+---
+「相同」對自己成立、雙向成立、又會一路傳下去，把型別分成互不相交的類，正是 Union-Find 管的東西，「每個宣告 UNION、比 FIND」對。$T_1$、$T_2$ 合併後再和 $T_3$ 合併，三者同一組，所以 $T_1$ 和 $T_3$ 相同。雙向成立正是能用 Union-Find 的原因；合併的順序不影響最後的分組；排序名字看不出誰跟誰相同。
+
+@q uf3-10 | ds-unionfind#3 | 3 | 找錯
+Someone checks a directed graph for a cycle with Union-Find: for each edge $u\to v$, if FIND$(u)$ equals FIND$(v)$, report a cycle; otherwise call UNION$(u,v)$. Consider the edges $1\to2$, $1\to3$, $2\to3$. Which of the following statements are correct?
+[x] When $2\to3$ is examined, 2 and 3 are already in the same set, so the method reports a cycle.
+[x] The method can report a cycle in a directed graph that has none.
+[ ] This directed graph contains the cycle $1\to2\to3\to1$.
+[ ] The method answers correctly here, since it reports a cycle only after all three edges.
+[ ] The method works whenever the edges are examined in increasing order of their tail vertex.
+---
+處理完 $1\to2$、$1\to3$ 後 1、2、3 已同組，看到 $2\to3$ 就報告有環，但沒有任何邊指回 1，這張有向圖沒有環，所以「2、3 已同組而報告有環」「可能誤報」都對，「有環 $1\to2\to3\to1$」錯。這個例子的邊本來就照起點由小到大排，照樣誤報，所以「照起點排序就可以」也錯。Union-Find 不管方向。
+
+@q uf3-11 | ds-unionfind#3 | 1 | 觀念
+Union-Find maintains the connected components of a graph whose edges arrive one at a time. Which of the following statements are correct?
+[x] Initially, each vertex is in its own set, created by MAKE-SET.
+[x] Each arriving edge $(u,v)$ leads to a call UNION$(u,v)$.
+[x] An edge whose endpoints are already in the same set leaves the number of sets unchanged.
+[x] After all edges arrive, the number of sets equals the number of connected components.
+[x] Two vertices are connected exactly when FIND gives them the same root.
+---
+一開始沒有邊，「每個點各自一組」；每來一條邊就 UNION 兩端，兩端已同組時組數不變，所以最後組數就是連通元件數；兩點連通 ⇔ 同一組 ⇔ FIND 得到同一個根。五句都對。
+
+@q uf3-12 | ds-unionfind#3 | 2 | 計算
+5 個點，Kruskal 依權重由小到大看邊：(1,2)、(3,4)、(1,3)、(2,4)、(4,5)、(2,5)，不會形成環才選。哪些邊會被選？
+== 1 2,3 4,1 3,4 5
+---
+(1,2)、(3,4) 選；(1,3) 連起兩組，選；(2,4) 時 2、4 已同組，跳過；(4,5) 選；已經 4 條（$V-1$），停。

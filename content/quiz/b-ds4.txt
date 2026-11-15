@@ -1,0 +1,541 @@
+@q bt1-01 | ds-btree#1 | 1 | 計算
+最小度數 $t=4$ 的 B 樹，非根節點最少、最多幾個鍵？最多幾個孩子？
+== 3,7,8
+?? 最少鍵,最多鍵,最多孩子
+---
+非根節點 $t-1$ 到 $2t-1$ 個鍵：3～7；孩子數比鍵多 1：最多 $2t=8$。
+
+@q bt1-02 | ds-btree#1 | 2 | 追蹤
+$t=2$ 的 B 樹（CLRS：往下走時遇到滿的節點先分裂），依序插入 10、20、30、40、50、60、70、80。最後的根有哪些鍵？總共分裂了幾次？
+== 20 40 60,3
+?? 根,分裂次數
+---
+插 40 時根 [10,20,30] 滿了，分裂出新根 [20]；插 60 時葉子 [30,40,50] 滿，40 上去；插 80 時 [50,60,70] 滿，60 上去。最後 `[20,40,60]([10] [30] [50] [70,80])`（程式模擬確認）。
+
+@q bt1-03 | ds-btree#1 | 2 | 追蹤
+接上題，再插入 90。樹高變多少？新的根是？
+== 2,40
+?? 樹高,根
+---
+從根往下走，根 [20,40,60] 已經滿了（$2t-1=3$），先分裂根：40 變成新根，樹高從 1 變 2。然後 90 放進葉子 [70,80]。B 樹只有在根分裂時才長高。
+
+@q bt1-04 | ds-btree#1 | 3 | 追蹤
+$t=3$ 的 B 樹（每個節點 2～5 個鍵），依序插入 1～15。最後有幾層（根算一層）？根有哪些鍵？
+== 2,3 6 9 12
+?? 層數,根
+---
+程式模擬：`[3,6,9,12]([1,2] [4,5] [7,8] [10,11] [13,14,15])`。每次葉子滿 5 個時把中間（第 3 個）推上去，共分裂 4 次。
+
+@q bt1-05 | ds-btree#1 | 2 | 計算
+$t=50$ 的 B 樹存 $10^6$ 個鍵，高度最多是多少？（$h\le\log_t\frac{n+1}2$）
+== 3
+---
+$\log_{50}500000\approx3.35$，所以 $h\le3$：最多 4 層。根常駐記憶體的話，搜尋最多讀 3 次硬碟。
+
+@q bt1-06 | ds-btree#1 | 3 | 計算
+$t=3$、高度 2 的 B 樹（根在第 0 層），最少有幾個鍵？最多有幾個？
+== 17,215
+?? 最少,最多
+---
+最少：根 1 個鍵、2 個孩子；之後每層每個節點 $t$ 個孩子：第 1 層 2 個節點、第 2 層 6 個，非根節點各 2 個鍵：$1+2(2+6)=17=2t^h-1$。最多：每節點 5 個鍵 6 個孩子：$5(1+6+36)=215=(2t)^{h+1}-1$。
+
+@q bt1-07 | ds-btree#1 | 3 | 觀念
+A B-tree with minimum degree $t = 2$ allows at most 3 keys per node, and it initially consists of a single full root leaf $[1, 2, 3]$. The CLRS insertion procedure never descends into a full node: before inserting 4, it splits the full root around its middle key 2, creating a new root $[2]$ with two leaf children. A student then inserts 4 and draws the resulting tree, where height counts edges on a path from the root to a leaf, and compares this root split with the split of a full leaf deeper in a larger tree, for example one with 20 keys. Which of the following statements are correct? Select all that apply.
+[x] The new height is one.
+[x] The resulting leaves [1] and [3,4] have the same depth.
+[x] Splitting a nonroot node does not by itself add a new level above the existing root.
+[ ] The resulting tree has four leaf nodes.
+[ ] Every leaf split necessarily increases the whole tree's height.
+---
+「高度一」對：新根 [2] 到葉子各一條邊。「葉子同深」對：左右都在第一層。「非根分裂不自行加根層」對：它把同一位置的節點拆開，原有葉子層深不因此分成兩種。「四個葉子」錯：這裡只有 [1]、[3,4] 兩個葉子。「每葉分裂都長高」錯：只有需要建立新根的分裂才增加整體高度。
+
+@q bt1-08 | ds-btree#1 | 3 | 觀念
+A database stores $10^6$ keys in a B-tree with minimum degree $t = 100$, and each node fits in one 4 KiB storage page. The height $h$, counted in edges, satisfies the bound $h\le\log_t((n+1)/2)$ for a tree with $n$ keys. A search reads one page per level, and each page read from disk takes about 5 ms, while comparing keys inside a page takes only microseconds. The designers compare this tree with a binary search tree on the same keys, whose height would be about 20, and they also wonder how many keys a node may hold and whether such a large degree means that nodes never have to be split. A colleague claims that a node of this tree could even hold 200 keys without breaking any rule. Which of the following statements are correct? Select all that apply.
+[x] A node can contain at most 199 keys.
+[x] The stated height bound implies integer height at most two.
+[x] Larger branching can reduce the number of pages on a search path for a large dataset.
+[ ] One node can hold 200 keys without violating the stated key limit.
+[ ] Large node degree eliminates all possible need for node splits.
+---
+「199 鍵」對：2t−1＝199。「高度至多二」對：100²＜500000.5＜100³，對數介於二、三之間，整數高度最多二。「可減頁數」對：一個節點可指向較多孩子，減少層數是這類磁碟索引的主要目的。「200 合法」錯：超過 199。「永不分裂」錯：資料仍可把節點填滿，大度數只增加每節點可容納量，並非取消容量上限。
+
+@q bt1-09 | ds-btree#1 | 2 | 陷阱
+B 樹插入時，新的鍵可能被放進內部節點（不是葉子）。對嗎？
+[ ] 對
+[x] 不對
+---
+新的鍵一律先插在葉子。內部節點的鍵只會因為分裂時「中間鍵被推上來」而增加。
+
+@q bt1-10 | ds-btree#1 | 3 | 比較
+A B-tree with minimum degree $t = 2$ holds 11 keys:
+```
+                  [50]
+           /              \
+    [20, 30, 40]          [70]
+    /   |   |   \         /  \
+ [10] [25] [35] [45]   [60]  [80]
+```
+The key 12 is inserted. The CLRS procedure splits every full node it meets on the way down, before descending into it, so that a promoted key always fits in the parent. Another valid implementation first inserts the key into the proper leaf and splits a node only if it actually overflows, repairing the tree on the way back up. A student traces both strategies on this insertion, counts the splits, and checks the final number of keys in each tree, noting where the leaf for 12 is. A classmate thinks that the leaf $[10]$ is already full, and another fears that splitting the internal node $[20, 30, 40]$ will add a new level above the root. Which of the following statements are correct? Select all that apply.
+[x] CLRS splits the full left internal child before reaching the leaf for 12.
+[x] An implementation splitting only on actual insertion overflow can avoid a split here because leaf [10] has room.
+[x] Both strategies can finish with the same twelve stored keys.
+[ ] Leaf [10] is already full under minimum degree two.
+[ ] Splitting that nonroot internal child necessarily adds a new level above the root.
+---
+「CLRS 先拆左孩子」對：它已滿三鍵，30 上推，根變 [30,50]。「等真的溢出可不拆」對：[10] 插成 [10,12] 仍未達最多三鍵，其他節點可保持。「同樣十二鍵」對：原本十一個鍵，加 12 得十二，合法策略不改資料集合。「[10] 已滿」錯：一鍵只是下限，不是三鍵上限。「拆非根必增全高」錯：這裡原根還放得下上推的 30，根到葉子仍是原來的層數。
+
+@q bt1-11 | ds-btree#1 | 2 | 計算
+$t=2$ 的 B 樹（2-3-4 樹），一個葉子 [4,5,6] 滿了要分裂。哪個鍵往上推？左右各剩什麼？
+== 5,4,6
+?? 往上,左,右
+---
+滿的節點有 $2t-1=3$ 個鍵，中間那個（第 $t$ 個）往上，左右各留 $t-1=1$ 個。
+
+@q bt1-12 | ds-btree#1 | 2 | 追蹤
+$t=2$ 的 B 樹依序插入 8、3、12、1、5、9、15、4、6。最後的根是？
+== 3 8
+---
+插 1 時根 [3,8,12] 滿 → 先分裂出新根 [8]；插 4 時葉子 [1,3,5] 滿 → 3 上去，根 [3,8]。最後 `[3,8]([1] [4,5,6] [9,12,15])`（程式模擬確認）。
+
+@q bt1-13 | ds-btree#1 | 3 | 計算
+$t=500$ 的 B 樹存 $10^9$ 個鍵，高度最多是多少？平衡 BST 呢？
+== 3,29
+?? B樹,平衡BST約
+---
+B 樹：$\log_{500}(5\times10^8)\approx3.2$，$h\le3$。完全平衡的二元樹 $\lfloor\lg10^9\rfloor=29$。每層讀一次硬碟，差了快 10 倍。
+
+@q bt1-14 | ds-btree#1 | 2 | 觀念
+A B-tree with minimum degree $t = 2$ requires every node other than the root to have at least $t - 1$ keys and at most $2t - 1$ keys, and an internal node with $j$ keys has $j + 1$ children. A student lists the allowed shapes of a nonroot internal node, and compares the result with a well-known multiway search tree that is often used to explain red-black trees. During an insertion, the student also sees a node that would briefly hold 4 keys if it were not split first. Which of the following statements are correct? Select all that apply.
+[x] Such a node may have one, two, or three keys.
+[x] Such a node may have two, three, or four children.
+[x] This is the multiway structure commonly called a 2-3-4 tree.
+[ ] Every internal node must have exactly two children because the minimum degree is two.
+[ ] Four keys fit legally in a node before any overflow is repaired.
+---
+「一至三鍵」對：下限 t−1＝1，上限 2t−1＝3。「二至四孩子」對：內部節點孩子數等於鍵數加一。「2-3-4 樹」對：名稱指可能的孩子數。「恰兩孩子」錯：把最小度數誤認為固定分支數。「四鍵合法」錯：四鍵已超過上限，不能當作維護完成的節點。
+
+@q bt1-15 | ds-btree#1 | 2 | 計算
+B 樹的一個節點有 $k$ 個鍵（不是葉子），它有幾個孩子？
+[x] $k+1$
+[ ] $k$
+[ ] $2k$
+[ ] $k-1$
+---
+$k$ 個鍵把數線切成 $k+1$ 段，每段一個孩子。
+
+@q bt1-16 | ds-btree#1 | 3 | 證明
+證明：最小度數 $t$、高度 $h$ 的 B 樹至少有 $2t^h-1$ 個鍵。
+---
+根至少 1 個鍵、2 個孩子；第 1 層至少 2 個節點，之後每個非根節點至少 $t$ 個孩子：第 $i$ 層（$i\ge1$）至少 $2t^{i-1}$ 個節點，每個至少 $t-1$ 個鍵。總鍵數 $\ge1+(t-1)\sum_{i=1}^h2t^{i-1}=1+2(t-1)\frac{t^h-1}{t-1}=2t^h-1$。所以 $h\le\log_t\frac{n+1}2$。
+
+@q bt1-17 | ds-btree#1 | 2 | 情境
+資料庫要在磁碟上存 10 億筆紀錄並快速搜尋。用平衡二元樹（每節點一個鍵）和 B 樹比？
+[x] B 樹：每個節點一頁、放幾百個鍵，3～4 層就到底；二元樹要約 30 層、讀 30 次磁碟
+[ ] 平衡二元樹：比較次數少
+[ ] 兩者讀磁碟的次數一樣
+[ ] 把資料全部排好放在一個大陣列就好，不用樹
+---
+磁碟上真正貴的是讀取次數，不是比較次數。
+
+@q bt1-18 | ds-btree#1 | 2 | 計算
+$t=2$ 的 B 樹，某次插入使根分裂。分裂後的新根有幾個鍵？
+== 1
+---
+根滿的時候有 $2t-1$ 個鍵，中間那個往上變成新根，所以新根只有 1 個鍵——這是根可以少於 $t-1$ 個鍵的原因。
+
+@q bt2-01 | ds-btree#2 | 2 | 追蹤
+$t=2$ 的 B 樹 `[20,40,60]([10] [30] [50] [70,80])`，用 CLRS 的方法刪除 60。用的是哪種情況？結果的根是？
+== 2b,20 40 70
+?? 情況,根
+== 2(b),20 40 70
+---
+60 在內部節點。左孩子 [50] 只有 $t-1=1$ 個鍵，右孩子 [70,80] 有 2 個（$\ge t$）：情況 2(b)，用後繼 70 取代 60，再到右孩子刪 70。結果 `[20,40,70]([10] [30] [50] [80])`。
+
+@q bt2-02 | ds-btree#2 | 3 | 追蹤
+同一棵 `[20,40,60]([10] [30] [50] [70,80])`，刪除 20。結果是？
+== 40 60,10 30,50,70 80
+?? 根,第一個葉子,第二個,第三個
+---
+20 在根，左右孩子 [10]、[30] 都只有 1 個鍵：情況 2(c)，把 [10]、20、[30] 合併成 [10,20,30]，根剩 [40,60]；再到合併的節點刪 20 → [10,30]。
+
+@q bt2-03 | ds-btree#2 | 3 | 追蹤
+同一棵 `[20,40,60]([10] [30] [50] [70,80])`，刪除 30。走到 [30] 之前要做什麼？結果的根是？
+== 合併,20 60
+?? 動作,根
+---
+30 不在根，要往 [30] 走，但它只有 $t-1$ 個鍵；左兄弟 [10]、右兄弟 [50] 也都只有 1 個，沒得借：情況 3(b)，跟右兄弟合併（40 下來夾在中間）→ [30,40,50]，根剩 [20,60]；再刪 30 → [40,50]。
+
+@q bt2-04 | ds-btree#2 | 3 | 追蹤
+A minimum-degree-two B-tree has root [20], left leaf [5,10], and right leaf [30]. Delete 30 using the CLRS rule that prepares a minimum-size child before descent. Which statements are correct? Select all that apply.
+[x] The final root is [10].
+[x] The final height remains one when measured by parent-to-child steps.
+[ ] The final left leaf still contains both 5 and 10.
+[ ] The final right leaf still contains deleted key 30.
+[ ] Both children must merge and replace the root in this example.
+---
+「根 [10]」對：從左兄弟借，10 上到父、20 下到右孩子，再刪 30。「高度仍一」對：這次借鍵即可，沒有清空根。「左仍 5、10」錯：10 已上移，左只剩 5。「右仍有 30」錯：刪除後右為 [20]。「一定合併」錯：左兄弟有兩鍵，達 t，可先借而不必合併。
+
+@q bt2-05 | ds-btree#2 | 3 | 觀念
+For minimum degree $t=4$, a nonroot node needs at least three keys. The CLRS deletion strategy prepares a child before descending when it has only three keys. Which statements are correct? Select all that apply.
+[x] Preparing the child to have at least four keys gives room for a one-key loss without violating the minimum.
+[x] A sibling with four keys can donate one and still retain three keys.
+[x] Combining two three-key children with their one separating parent key produces a legal seven-key node.
+[ ] Every child must contain the maximum seven keys before any descent.
+[ ] A three-key child that loses one key still meets the three-key minimum without repair.
+---
+「至少四可少一」對：4−1＝3，正好仍達下限。「兄弟四鍵可給一」對：自己保留三。「合併七」對：3＋1＋3＝7＝2t−1。「一定先補到七」錯：需要的是至少 t，不是滿到 2t−1。「三減一仍達三」錯：只剩二，需要先借或合併等安排。
+
+@q bt2-06 | ds-btree#2 | 3 | 追蹤
+$t=2$ 的 B 樹：根 [20]，孩子 [10]、[30]。刪除 10 之後，樹高變多少？
+== 0
+---
+往 [10] 走前它只有 1 個鍵，兄弟 [30] 也只有 1 個：合併成 [10,20,30]，根變空、被丟掉，合併的節點成為新根。再刪 10 → [20,30]，樹高從 1 變 0。
+
+@q bt2-07 | ds-btree#2 | 2 | 陷阱
+B 樹刪除時，可能讓某一個葉子變得比其他葉子淺。對嗎？
+[ ] 對
+[x] 不對
+---
+借鍵、合併都在同一層兄弟之間做；樹只有在根被清空時整體變矮一層，所有葉子一起變淺。
+
+@q bt2-08 | ds-btree#2 | 3 | 觀念
+A minimum-degree-three B-tree has internal root [50], left leaf [20,30,40], and right leaf [60,70]. Delete 50 using the predecessor case of CLRS deletion. Which statements are correct? Select all that apply.
+[x] The predecessor selected from the left subtree is 40.
+[x] The final root is [40] with leaves [20,30] and [60,70].
+[ ] The left leaf must finish with only one key.
+[ ] Removing separator 50 without replacing it preserves the two-child root representation.
+[ ] The predecessor procedure removes every key from the left leaf.
+---
+「前驅 40」對：左子樹的最大值。「根 40 與兩個二鍵葉子」對：先替換，再到左邊刪原來的 40。「左葉一鍵」錯：三鍵刪一後是兩鍵，恰為下限。「直接拿掉分隔鍵仍維持原根」錯：原來兩個孩子需要一個鍵區分，空根不能保留此結構。「清空左葉」錯：只刪除前驅那一鍵，20 和 30 都保留。
+
+@q bt2-09 | ds-btree#2 | 3 | 比較
+For minimum degree three, every nonroot node must keep at least two keys and at most five. A child about to be visited has two keys. Consider borrowing through its parent or merging it with an adjacent sibling and the separating parent key. Which statements are correct? Select all that apply.
+[x] A sibling with three keys can donate one while retaining the required minimum.
+[x] If both children have two keys, merging them with the separator produces five keys.
+[x] Borrowing through the parent can change the parent's separating key.
+[ ] A two-key sibling can always donate one while still meeting the two-key minimum.
+[ ] Merging two two-key children with one separating parent key produces only four keys.
+---
+「三鍵可給一」對：3−1＝2。「合成五」對：2＋1＋2＝5，達最大但未超過。「父分隔鍵可變」對：借鍵時父鍵下來、兄弟邊界鍵上去。「兩鍵也可給」錯：給完只剩一鍵，自己違規。「只合四」錯：漏算中間的父鍵。
+
+@q bt2-10 | ds-btree#2 | 3 | 計算
+$t=2$ 的 B 樹 `[20,40,60]([10] [30] [50] [70,80])`，刪除 40。結果的根和中間那個葉子各是？
+== 20 60,30 50
+?? 根,中間葉子
+---
+40 在根，左右孩子 [30]、[50] 都只有 1 個鍵：情況 2(c) 合併成 [30,40,50]，根剩 [20,60]；再刪 40 → [30,50]。
+
+@q bt2-11 | ds-btree#2 | 2 | 觀念
+A minimum-degree-two B-tree has root [20] and leaf children [10] and [30]. Deleting 20 merges the children with the root key, then removes 20. Height counts edges. Which statements are correct? Select all that apply.
+[x] A valid result is the single leaf [10,30].
+[x] The height decreases from one to zero.
+[x] Discarding an empty internal root and promoting its only child can reduce the tree's height.
+[ ] Every deletion of a leaf key necessarily reduces the tree height.
+[ ] The final tree must contain three nonempty nodes after this deletion.
+---
+「[10,30]」對：先合併為 [10,20,30]，再刪 20。「一變零」對：原根到葉子有一條邊，現在根本身就是葉子。「空根提升孩子」對：這是維持不變深度規則時的根收縮。「每刪葉鍵必變矮」錯：通常只減少某節點內鍵數。「最後三節點」錯：此例最後只需一個含兩鍵的節點。
+
+@q bt2-12 | ds-btree#2 | 3 | 找錯
+For a minimum-degree-three B-tree, every nonroot node needs at least two keys. One deletion strategy prepares a child to contain at least three keys before descending into it. Compare this invariant with repairing underflow after a deletion. Which statements are correct? Select all that apply.
+[x] A prepared three-key child can lose one key and still meet the two-key minimum.
+[x] Preparing before descent avoids having to discover that particular one-key underflow only after reaching the child.
+[x] Keeping ancestors cached can avoid some parent-page rereads in an implementation that repairs after descent.
+[ ] Every algorithm that repairs after a deletion necessarily produces an invalid final tree.
+[ ] A two-key nonroot leaf that loses one key still meets the stated two-key minimum without repair.
+---
+「三減一仍合法」對：3−1＝2。「先補好可防該次不足」對：強化下降前的不變量，是一趟處理的重點。「快取祖先可省重讀」對：不能宣稱所有由下往上修復都必須重讀磁碟父頁。「由下往上必錯」錯：也可有正確演算法，只是維護策略不同。「二減一仍達二」錯：只剩一鍵，需要借鍵或合併等修復。
+
+@q bt2-13 | ds-btree#2 | 2 | 計算
+$t=3$ 的 B 樹，某個非根節點有 2 個鍵。刪除前它的兄弟有 3 個鍵。往這個節點走之前要做什麼？之後它有幾個鍵？
+== 借,3
+?? 動作,鍵數
+== 借一個,3
+---
+2 個是 $t-1$，太瘦；兄弟有 $3\ge t$，可以借：爸爸的分隔鍵下來，兄弟的一個鍵上去。這個節點變成 3 個鍵。
+
+@q bt2-14 | ds-btree#2 | 2 | 計算
+$t=3$ 的 B 樹，兩個各有 2 個鍵的兄弟合併（加上爸爸下來的一個分隔鍵），合併後有幾個鍵？
+== 5
+---
+$2+1+2=5=2t-1$，剛好是上限，所以合併一定放得下。
+
+@q bt3-01 | ds-btree#3 | 2 | 計算
+B+ 樹每個內部節點 200 個孩子，每個葉子放 100 筆資料。存 $10^8$ 筆，有幾層（葉子算一層）？
+== 4
+---
+葉子 $10^8/100=10^6$ 個；往上 $10^6/200=5000$；再往上 $5000/200=25$；再一層 1 個根。根、兩層中間、葉子：4 層。
+
+@q bt3-02 | ds-btree#3 | 3 | 比較
+A B-tree can store a full record with key 30 in its root. A B+ tree uses root separator 30 only for routing and stores records in leaves [10,20] and [30,40,50]. Both roots are cached, and no leaf is cached. Which statements are correct? Select all that apply.
+[x] The B+ tree contains five data records, not six.
+[x] Retrieving the B+ record for key 30 still requires reading its leaf.
+[ ] Retrieving the root's complete record for key 30 in the stated ordinary tree requires one additional disk read of its cached root.
+[ ] The B+ separator is automatically a sixth independently stored data record.
+[ ] A match to the B+ root separator necessarily provides the record payload without descending.
+---
+「五筆」對：記錄為兩個葉子的五筆，根的 30 是分隔資訊。「仍要讀葉子」對：資料只在葉子，根內只有指路用的鍵。「一般樹還要重讀快取根」錯：第一種樹的完整記錄已在記憶體，無須額外磁碟讀取。「第六筆」錯：混淆重複的分隔鍵與獨立資料記錄。「根比對就拿到資料」錯：分隔鍵不是記錄內容本身。
+
+@q bt3-03 | ds-btree#3 | 3 | 情境
+Three linked B+ leaves contain distinct person records with ages [20,30,30], [35,40,50], and [50,60,70]. Assume the search can locate the first record whose age is at least 30. Return every record with age between 30 and 50 inclusive. Which statements are correct? Select all that apply.
+[x] Six records satisfy the query.
+[x] Every record in the middle leaf belongs in the result.
+[x] Encountering the first age-50 record does not justify stopping before checking for further age-50 records.
+[ ] Only five records qualify because one of the two age-50 records must be excluded.
+[ ] A repeated age value is guaranteed to stay within one leaf in this stated layout.
+---
+「六筆」對：兩筆 30、一筆 35、一筆 40、兩筆 50。「中葉全中」對：35、40、50 都在閉區間內。「第一筆 50 不一定能停」對：下一葉還有另一筆 50，應繼續到超過 50 或結束。「只五筆」錯：端點是含在內，且不同人的記錄不能因年齡相同就刪一筆。「相同年齡必同葉」錯：題設明確讓兩個 50 分在相鄰葉，不能假設資料值都不重複。
+
+@q bt3-04 | ds-btree#3 | 3 | 計算
+一頁 4096 位元組，B+ 樹內部節點每個「鍵＋指標」共 16 位元組。一個內部節點大約能有幾個孩子？
+== 256
+---
+$4096/16=256$。內部節點不放資料，所以扇出可以這麼大；樹就很矮。
+
+@q bt3-05 | ds-btree#3 | 3 | 觀念
+An internal page has a $4096\ \mathrm{B}$ budget and a $16\ \mathrm{B}$ header. With m children it stores m pointers of $8\ \mathrm{B}$ and m minus one keys of $8\ \mathrm{B}$. A B+ internal page stores no record payload; an ordinary internal-page layout additionally stores $64\ \mathrm{B}$ of payload per key. Ignore all other costs. Which statements are correct? Select all that apply.
+[x] The B+ layout can fit at most 255 children.
+[x] The ordinary layout can fit at most 51 children.
+[x] Omitting payload from routing pages can permit greater fanout under the same page budget.
+[ ] The B+ layout fits 256 children within the stated budget.
+[ ] The ordinary layout fits 52 children within the stated budget.
+---
+「255」對：只放路由資訊時大小為 16＋8m＋8(m−1)＝16m＋8，m≤255.5，整數最多 255。「51」對：多了 64(m−1)，總共 80m−56，m≤51.9，最多 51。「可增扇出」對：相同空間不必在內部重放每筆資料內容。「256 放得下」錯：需 4104 位元組。「52 放得下」錯：也需 4104，兩者都超過 4096。
+
+@q bt3-06 | ds-btree#3 | 3 | 陷阱
+「B+ 樹內部節點出現的每個鍵，一定也出現在某個葉子裡」對嗎？
+[ ] 對
+[x] 不對
+---
+分隔鍵是插入時從葉子複製上去的；之後刪掉葉子裡的那筆資料，內部的分隔鍵可以不改，它仍然能正確指路。
+
+@q bt3-07 | ds-btree#3 | 2 | 計算
+B+ 樹有 3 層（根、中間、葉子），範圍查詢會讀到 5 個葉子。根常駐記憶體，總共讀幾次磁碟？
+== 6
+---
+往下：中間一層 1 次、第一個葉子 1 次；之後沿串列再讀 4 個葉子：$1+1+4=6$。
+
+@q bt3-08 | ds-btree#3 | 1 | 觀念
+B+ 樹的葉子之間為什麼要用串列串起來？
+[x] 範圍查詢和依序走訪時，可以直接往右讀，不用回到上層
+[ ] 為了平衡
+[ ] 為了刪除方便
+[ ] 為了讓樹變矮
+---
+這是 B+ 樹相對 B 樹最實用的差別。
+
+@q bt3-09 | ds-btree#3 | 3 | 情境
+A B+ index stores keys 0 through 99. Its linked leaf pages contain 0–19,20–39,40–59,60–79,80–99. All internal routing pages are cached; no leaf is cached. Read the inclusive key range 25 through 69 by locating the first leaf and following leaf links. Which statements are correct? Select all that apply.
+[x] The range contains 45 records.
+[x] Three leaf pages contain the requested records.
+[x] Leaf links let the scan continue without restarting a root search for every record.
+[ ] The requested records occupy only two of the stated leaf pages.
+[ ] Each requested record requires another disk read of the already-cached root under this model.
+---
+「45 筆」對：69−25＋1＝45。「三頁」對：需讀 20～39、40～59、60～79 三個葉頁。「沿葉鏈不用逐筆回根」對：找到起點後可順序掃描。「兩頁」錯：中間整頁之外，前後頁都各含部分答案。「每筆重讀根」錯：根已快取，且葉鏈已提供下一頁位置；這就是範圍讀取的便利之處。
+
+@q bt3-10 | ds-btree#3 | 2 | 計算
+B+ 樹扇出 100，葉子每個 50 筆。最多 3 層（根、中間、葉子），最多能存幾筆？
+== 500000
+---
+根 100 個孩子、每個中間節點 100 個葉子：$100\times100=10^4$ 個葉子，每個 50 筆：$5\times10^5$。
+
+@q bt3-11 | ds-btree#3 | 3 | 比較
+A B+ index has a root, one internal level, and a leaf level. Every complete record lookup follows this full path. The root is cached and the other two required pages are uncached for a particular query. Which statements are correct? Select all that apply.
+[x] The query visits three logical tree nodes.
+[x] The query performs two disk-page reads under the stated cache conditions.
+[ ] Caching the root reduces the number of logical nodes on this path from three to two.
+[ ] Equal leaf depth guarantees identical elapsed time for every real query regardless of caching or storage behavior.
+[ ] A separator match in the internal level always contains the leaf record's full payload in this layout.
+---
+「三個邏輯節點」對：根、內部、葉子都會拜訪。「兩次磁碟」對：根不需再讀，另外兩頁各一次。「快取讓邏輯路徑少一節」錯：快取改的是 I/O，不是樹內經過的節點數。「真實時間必相同」錯：快取命中與儲存服務時間仍會變動。「中間鍵提供完整資料」錯：此布局明定完整記錄在葉子，不能把路由分隔鍵當成內容。
+
+@q bt3-12 | ds-btree#3 | 3 | 找錯
+有人說：「B+ 樹內部節點放的鍵跟葉子重複，所以比 B 樹浪費空間、層數也比較多。」哪裡錯？
+[x] 重複的只是分隔鍵（很小），內部節點不放資料，扇出反而更大，層數通常更少
+[ ] B+ 樹沒有重複的鍵
+[ ] B+ 樹的層數一定一樣
+[ ] 沒錯
+---
+資料（整筆紀錄）比鍵大得多；把資料集中到葉子，上層每頁能指的孩子更多。
+
+@q bt4-01 | ds-btree#4 | 2 | 計算
+把 car、cat、cart、dog、do 存進 Trie，共有幾個節點（包含根）？
+== 9
+---
+根；c、ca、car、cat、cart；d、do、dog。共用的前綴只存一次。
+
+@q bt4-02 | ds-btree#4 | 2 | 計算
+Trie 存了 {to, tea, ten, in, inn, i}。有幾個節點要做「字串結尾」的記號？
+== 6
+---
+每個字一個：to、tea、ten、in、inn、i。i 和 in 是別的字的前綴，所以不能只看「是不是葉子」，要另外標記。
+
+@q bt4-03 | ds-btree#4 | 1 | 觀念
+A trie has constant-time child lookup for each character. A query follows the path of a length-m string, stopping early if a required child is missing. There are n stored strings. Which statements are correct? Select all that apply.
+[x] A completed path lookup makes at most m character transitions.
+[x] The stated lookup has an $O(m)$ time bound under the child-lookup assumption.
+[ ] A length-three query must traverse twenty character transitions merely because one million strings are stored.
+[ ] The number of stored strings alone always determines the query's path length.
+[ ] Failure cannot be reported before all m characters have been consumed.
+---
+「最多 m 次轉換」對：每消耗一個查詢字元往下一步，缺孩子可更早停。「O(m)」對：每步選孩子已假設常數成本。「三字必走二十步」錯：查詢只有三個字元，不能把對數於字串數的公式硬套進來。「只看 n 決定路徑」錯：還要看模式長度與相符前綴。「不能提早失敗」錯：某個需要的孩子不存在時，就可直接判定沒有這個完整路徑。
+
+@q bt4-04 | ds-btree#4 | 2 | 情境
+輸入法要在使用者打字時，列出所有以目前輸入開頭的詞。用 Trie 和雜湊表比？
+[x] Trie：走到前綴的節點，整棵子樹就是候選；雜湊表只能查完整的詞，前綴要全部掃
+[ ] 雜湊表比較快
+[ ] 兩個一樣
+[ ] 都做不到
+---
+前綴查詢是 Trie 的主場。只要精確查找又在意空間時，雜湊表比較好。
+
+@q bt4-05 | ds-btree#4 | 2 | 陷阱
+Trie 一定比雜湊表省空間，因為共同前綴只存一次。對嗎？
+[ ] 對
+[x] 不對
+---
+每個節點可能要為每個字母留一個指標（例如 26 個），大部分是空的，常常比雜湊表還佔空間。所以才有壓縮版（Patricia）。
+
+@q bt4-06 | ds-btree#4 | 3 | 計算
+Trie 存 {apple, app, apply, ape}。普通 Trie 有幾個節點（含根）？壓縮成 Patricia（只有一個孩子、又不是字尾的節點合併掉）後剩幾個？
+== 8,7
+?? 普通,壓縮後
+---
+普通：根、a、ap、app、appl、apple、apply、ape，共 8。壓縮：a 只有一個孩子又不是字尾，併進邊 "ap"；app 是字尾要留；appl 有兩個孩子要留。剩根、ap、app、appl、apple、apply、ape，共 7。
+
+@q bt4-07 | ds-btree#4 | 3 | 追蹤
+字串 banana 的所有後綴排序後（後綴陣列），起始位置依序是？（從 0 開始編號）
+== 5 3 1 0 4 2
+== 5,3,1,0,4,2
+---
+後綴：a(5)、ana(3)、anana(1)、banana(0)、na(4)、nana(2)。照字典順序排就是答案。查一個樣式就在這個排好的列表上二分搜尋。
+
+@q bt4-08 | ds-btree#4 | 3 | 觀念
+A compressed suffix tree indexes text `abracadabra#`, including its unique terminator. Child transitions take constant time, and compressed path labels refer to substrings of the original text. Query pattern `abra` has length four. Which statements are correct? Select all that apply.
+[x] The pattern occurs at positions 0 and 7, using zero-based positions.
+[x] A membership lookup can follow and compare pattern characters in $O(m)$ time for pattern length m under these transition assumptions.
+[x] Every occurrence makes the pattern a prefix of a suffix beginning at that occurrence.
+[ ] Each membership lookup necessarily rescans every character of the entire indexed text regardless of pattern length.
+[ ] The pattern occurs only once, at position 7.
+---
+「起點 0 與 7」對：開頭四字與位置七起的四字都是 abra。「O(m)」對：沿壓縮路徑比較模式的字元，轉換成本已假設為常數。「某後綴的前綴」對：從出現位置一路取到文本結尾，就得到這個後綴。「必重掃全文」錯：索引建好後不用每次從各起點重做樸素比對。「只一次」錯：漏掉文本開頭的那一處。
+
+@q bt4-09 | ds-btree#4 | 3 | 比較
+For text `banana#`, character `#` is a unique terminator ordered before letters, and positions start at zero. Consider a suffix array and a compressed suffix tree with constant-time character transitions. A naive suffix-array search halves its candidate interval at each step and may compare a length-m pattern from its beginning each time. Which statements are correct? Select all that apply.
+[x] The suffix array is [6,5,3,1,0,4,2].
+[x] Pattern `ana` occurs at starting positions 1 and 3.
+[x] The stated naive search can take $O(m\log n)$ character work for text length n.
+[ ] Pattern `ana` occurs only once in this text.
+[ ] A suffix array is fundamentally unable to support substring-existence queries.
+---
+「陣列次序」對：後綴依序為 #、a#、ana#、anana#、banana#、na#、nana#。「起點 1 與 3」對：兩處各連續三字為 ana。「樸素 O(m log n)」對：對數次比較，每次可能比到 m 個字元；這不是聲稱所有加速方法都只能如此。「只有一次」錯：明確有兩處。「後綴陣列不能查子字串」錯：可找以模式開頭的後綴，這正是它的用途之一。
+
+@q bt4-10 | ds-btree#4 | 3 | 情境
+字典裡存了 $n$ 個字，要找「所有以 pre 開頭的字有幾個」，而且要很快。Trie 怎麼做到 $O(m)$（$m$ 是前綴長度）？
+[x] 每個節點多存「子樹裡有幾個字尾記號」，走到前綴節點直接讀這個數
+[ ] 走到前綴節點後把子樹全部數一遍
+[ ] 用雜湊表
+[ ] 做不到 $O(m)$
+---
+跟「加欄位的樹」同一招：插入時沿路每個節點的計數加 1，不改漸近時間。
+
+@q bt4-11 | ds-btree#4 | 3 | 計算
+A connected trie has exactly 1000 nodes including its root. Each node reserves 26 child-pointer slots, one for each lowercase letter. No child is shared by different parents. Which statements are correct? Select all that apply.
+[x] The representation reserves 26000 child-pointer slots.
+[x] Exactly 999 slots contain pointers to children.
+[x] Exactly 25001 child-pointer slots are empty.
+[ ] Exactly 1000 child-pointer slots are nonempty because the root also needs an incoming child pointer.
+[ ] More than half of the reserved child-pointer slots contain children.
+---
+「26000 格」對：1000×26。「999 格非空」對：除根之外，每個節點恰有一個父節點指向它，共 1000−1。「25001 格空」對：26000−999。「根也需要來自父親的指標」錯：外部持有根的參照不算任何節點的孩子格。「超過一半有孩子」錯：999/26000 約 3.84%，大多數格是空的；這正是固定字母陣列的空間成本。
+
+@q bt4-12 | ds-btree#4 | 2 | 追蹤
+後綴陣列：mississippi 的所有後綴照字典順序排好，排第一的是哪個位置開始的後綴（從 0 編號）？
+== 10
+---
+最小的後綴是 "i"（位置 10），接著是 ippi(7)、issippi(4)、ississippi(1)、mississippi(0)……
+
+@q bt5-01 | ds-btree#5 | 2 | 計算
+跳躍串列 $p=\frac12$，存 1000 個元素。期望總共有幾個節點（每層每個元素各算一個）？
+== 2000
+---
+每個元素期望出現 $1+\frac12+\frac14+\cdots=2$ 層：$2n=2000$。
+
+@q bt5-02 | ds-btree#5 | 2 | 計算
+跳躍串列 $p=\frac12$，某個元素至少出現在第 4 層（第 1 層是最底層）的機率是？
+== 1/8
+== 0.125
+---
+要連續 3 次往上：$\left(\frac12\right)^3=\frac18$。
+
+@q bt5-03 | ds-btree#5 | 3 | 計算
+跳躍串列 $p=\frac14$，存 $n$ 個元素。期望總節點數是多少（用 $n$ 表示）？期望高度大約是？
+[x] $\frac43n$；約 $\log_4n$
+[ ] $2n$；約 $\lg n$
+[ ] $4n$；約 $\log_4n$
+[ ] $\frac43n$；約 $\lg n$
+---
+每個元素期望 $\frac1{1-p}=\frac43$ 層。每往上一層剩 $\frac14$，約 $\log_4n$ 層後只剩一個。$p$ 小省空間，但每層要往右走比較多步。
+
+@q bt5-04 | ds-btree#5 | 3 | 追蹤
+A skip list has level 3 keys [10,40], level 2 keys [10,25,40,55], and bottom keys [5,10,18,25,33,40,47,55,60]. Start at the level-3 head. Move right only when the next key is at most target 47; otherwise move down. Count only links actually followed as horizontal moves. Which statements are correct? Select all that apply.
+[x] The level-3 horizontal path visits 10 and then 40.
+[x] Two downward moves reach the bottom level from level 3.
+[ ] The level-2 search moves from 40 to 55 before descending.
+[ ] The complete search follows only two horizontal links.
+[ ] After descending from 40, the bottom-level search must first move backward to 33 before reaching 47.
+---
+「先 10 再 40」對：兩個都不超過 47。「下移兩次」對：第三層到第二層，再到第一層。「走到 55」錯：55 超過目標，不能跟著該連結走。「橫向只有二」錯：head→10、10→40、底層 40→47 共三次。「先倒回 33」錯：每次下降保留在同鍵 40，不需回頭找更小的鍵。
+
+@q bt5-05 | ds-btree#5 | 2 | 陷阱
+跳躍串列的搜尋最壞是 $O(\lg n)$。對嗎？
+[ ] 對
+[x] 不對
+---
+$O(\lg n)$ 是期望。運氣極差時（例如每個元素都只有一層），就退化成普通串列，$O(n)$。只是機率非常小。
+
+@q bt5-06 | ds-btree#5 | 3 | 比較
+Compare an ordinary skip list with a red-black tree storing 1024 keys. Use the red-black height bound $h\le2\log_2(n+1)$, with height measured by parent-to-child steps. Consider the skip-list outcome in which all keys remain at its bottom level. Which statements are correct? Select all that apply.
+[x] The given red-black bound implies integer height at most twenty.
+[x] The stated skip-list outcome can require visiting all 1024 keys to find the largest one.
+[x] A tree rotation changes a local set of links rather than requiring every node to move physically.
+[ ] The red-black tree must have height 1024 merely because it stores 1024 keys.
+[ ] An expected logarithmic skip-list bound guarantees that every promotion outcome searches at most ten keys here.
+---
+「高度至多二十」對：2 log₂(1025) 約 20.003，整數高度不超過 20。「可走 1024」對：全在底層就沒有快速道路。「旋轉是局部連結調整」對：不能把旋轉誇大成整棵樹搬移。「高度必 1024」錯：違反給定的平衡高度界。「每次最多十鍵」錯：log₂1024＝10 不是所有隨機結果的絕對比較次數保證，題設壞結果就會更多。
+
+@q bt5-07 | ds-btree#5 | 2 | 觀念
+A skip list stores keys 1 through 8 at its bottom level. Its next level contains 2,4,8, and its top level contains only 4. Count one occurrence for each key at each level, rather than physical node objects. Which statements are correct? Select all that apply.
+[x] The bottom level contains all eight stored keys in sorted order.
+[x] The structure contains twelve key-level occurrences.
+[ ] Every bottom-level key must also appear at the top level in this structure.
+[ ] The top level containing only 4 means that the bottom level must also contain only 4.
+[ ] The structure contains eleven key-level occurrences in total.
+---
+「底層八鍵」對：底層保留完整排序資料。「十二個出現」對：8＋3＋1＝12，題設不是在計算程式物件個數。「底層全在頂層」錯：最上層只有 4，其餘底層鍵沒有都被提升。「上層決定底層只剩一鍵」錯：上層是捷徑子集，不取代底層。「十一」錯：少算了一個層級中的鍵出現。
+
+@q bt5-08 | ds-btree#5 | 3 | 計算
+跳躍串列 $p=\frac12$、$n=1024$。期望第 5 層（最底層是第 1 層）有幾個元素？
+== 64
+---
+每往上一層剩一半：第 $k$ 層期望 $n/2^{k-1}$。$1024/16=64$。
+
+@q bt5-09 | ds-btree#5 | 2 | 觀念
+A new skip-list node starts at height one and independently promotes with chance one quarter at each step until the first failed promotion. Its observed outcomes are success,success,failure. Existing nodes keep their original promotion outcomes as the list grows. Which statements are correct? Select all that apply.
+[x] The new node's realized height is three.
+[x] Without a height cap, its expected height under the rule is $4/3$.
+[ ] Its height must equal the current number of stored elements.
+[ ] Doubling the list size requires rerolling every old node's promotion outcomes under this rule.
+[ ] The chance of reaching height at least three is one quarter.
+---
+「高度三」對：底層一，再成功提升兩次。「期望 4/3」對：1＋1/4＋1/16＋…＝1/(1−1/4)。「等於元素數」錯：高度依本次提升結果。「變大就重抽全部」錯：題設與一般獨立提升做法都保留原有節點高度。「至少三層 1/4」錯：需兩次連續成功，機率為 (1/4)²＝1/16。
+
+@q bt5-10 | ds-btree#5 | 3 | 情境
+A leaderboard contains distinct scores 10,13,17,20 and needs predecessor/successor queries with updates. A skip list maintains a sorted bottom list; any concurrent implementation must coordinate its updates correctly. Consider a query around score 15. Which statements are correct? Select all that apply.
+[x] The predecessor score is 13.
+[x] An ordered skip-list search can use its located position to find adjacent stored scores.
+[ ] The successor score is 20.
+[ ] An ordinary hash table's unspecified iteration order automatically supplies sorted predecessor/successor relationships.
+[ ] No balanced-tree implementation can support correct concurrent leaderboard operations.
+---
+「前驅 13」對：小於 15 的最大分數。「有序搜尋找鄰近」對：排序關係保存在底層鏈結與搜尋路徑。「後繼 20」錯：大於 15 的最小分數是 17。「雜湊迭代自然有序」錯：若沒有額外索引或掃描，不能從任意迭代次序直接得到這種關係。「平衡樹不能並行」錯：也可有正確並行實作；此處是比較結構取捨，不是宣稱只有單一結構能解決需求。

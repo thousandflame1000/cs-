@@ -1,0 +1,507 @@
+=== PAGE p-1.pgm
+題 號
+科目
+
+SF wJy
+
+295 國 立 臺灣 大 學 114 學 年 度 碩士 班 招生 考試 試題
+資料 結構 與 演算 法 題 號 :
+1 共 【7 頁 之 第
+
+本 試卷 共 17 題 選擇 題 及 2 題 非 選 擇 題 。 選 擇 題 每 題 有 5 個 選項 , 第 17 題 為 單 選 題 ,
+第 8-17 題 為 複 選 題 。 單 選 題 每 題 答對 5 分 , 不 答 或 答 錯 為 0 分 。 複 選 題 每 題 5 分 , 每
+個 選項 單獨 計 分 。 惰 項 答對 者 得 1 分 , 選 項 答 錯 者 得 0 分 。 另 若 複 選 題 整 題 未 作答 者 ,
+整 題 得 0 分 。 選 擇 題 作答 於 答案 卡 , 非 選擇 題 (第 18 及 19 題 ) 請 作答 於 試卷 本 。
+
+1. (5 points) Consider the following randomized algorithm, which prints out some number of exclamation
+
+marks (!) and some number of asterisks (*). Assume that the size of A is n initially. What are the
+expected numbers of !’s and *’s that the algorithm prints out? Choose the tightest possible answers.
+
+RandomizedPrint (A):
+n = length(A)
+if n <= 1:
+print "!"
+return
+for iin {0,...,n-i}:
+print "*"
+Choose a uniformly random integer p in {1,...,n-1}
+
+RandomizedPrint (A[:p])
+RandomizedPrint (A[p:])
+(A) |: O(logn), *: O(nlogn)
+(B) !: O(logn), *: O(n?)
+(C) !: O(n), *: O(nlogn)
+(D) !: O(n), *: O(n?)
+(E) !: O(nlogn), *: O(n?)
+
+2. (5 points) Which of the following statements about the Akra-Bazzi theorem is correct?
+
+(A) It can only be applied to recurrences where all subproblems have equal size.
+
+(B) It requires that the function g(n) in the recurrence satisfies a polynomial growth condition.
+(C) It always produces a closed-form solution for the recurrence.
+
+(D) It is less general than the Master Theorem for solving recurrences.
+
+(E) The value of p in the theorem must always be an integer.
+
+3. (5 points) Consider the following five DNA sequences:
+
+a) ATCGTA
+b) ATCGTT
+c) GCATAG
+d) GCATAC
+e) TTAGCG
+
+Which of the following statements is correct regarding the application of a c-means clustering algorithm
+to these sequences (c = 3)?
+(A) The algorithm will always halt with exactly three clusters regardless of the chosen distance metric.
+
+(B) Using Hamming distance as the similarity measure, sequences a and b will always be in the same
+cluster.
+
+(C) The algorithm guarantees finding the globally optimal clustering solution for these sequences.
+
+(D) Using k-mer frequency vectors (k = 2) as features, sequences c and d will never be in the same
+cluster.
+
+(E) The time complexity of the k-means algorithm for clustering these sequences is O(n), where n is
+
+the number of sequences.
+見 背 面
+
+|
+
+295
+頁
+=== PAGE p-2.pgm
+題 號
+科目
+
+人
+
+Bick :
+
+295 國 立 臺灣 大 學 114 學 年 度 碩士 班 招生 考試 試題
+資料 結構 與 演算 法 _ 巷 號 : 295
+1 x] 頁 之 第 2E
+
+4. (5 points) Consider two protein sequences A and B of lengths m and n respectively. You are tasked
+with implementing a dynamic programming algorithm to find the optimal global alignment between
+these sequences. Given the following definitions:
+
+e A match score of +2 for identical amino acids.
+‧ A mismatch penalty of —1 for different amino acids.
+« A gap penalty of —2 for each gap introduced.
+
+Which of the following statements is correct regarding the dynamic programming solution for this
+alignment problem?
+
+(A) The time complexity of the algorithm is O(m +n).
+(B) The space complexity of the algorithm is O(mn).
+
+(C) The recurrence relation for the optimal alignment score S(i,j) at position (i,j) in the dynamic
+programming matrix is:
+
+S(i,j) = max{S(i—1, j—1)+match(Af], Blj]), S@-1, 7) —2, S@, j—1)—2}.
+
+(D) The traceback procedure to reconstruct the optimal alignment always starts from the top-left
+corner of the dynamic programming matrix.
+
+(E) The algorithm guarantees finding all possible optimal alignments between the two sequences.
+
+5. (5 points) Many graph theory can be used to find the number of a chemical structure; a possible one
+
+can be used according to the following steps:
+a) Represent the molecule as an undirected graph G = (V, E), where V is the set of vertices and EF is
+the set of edges (bonds).
+b) Initialize each vertex v € V with a value equal to its degree (number of incident edges).
+c) For a fixed number of iterations or until convergence:
+
+a. For each vertex v, compute a new value as the sum of the current values of its neighbors (not
+including itself).
+
+b. Update all vertex values simultaneously.
+d) After the iterations, sort the vertices based on their final values in non-increasing order, tie breaking
+with smaller labels.
+
+Consider the following 2-Carboxyoxybenzoic acid structure represented as a graph (Numbers in paren-
+theses are temporary labels for reference, not the final numbering.):
+
+O12) 03)
+1)
+
+C (10) o@ 0 (1)
+C6 Sew
+
+|
+
+CE) Lea) O@
+@ co @
+C{7)
+
+Apply the above algorithm for two iterations to this graph. What is the correct ordering of the vertices
+after these iterations?
+
+(A) 5, 6, 10, 11, 9, 4, 3, 7, 8, 12, 13, 1, 2
+
+(B) 5, 10, 11, 9, 3, 6, 4, 7, 8, 12, 13, 1,2
+
+(C) 5, 6, 10, 11, 9, 3, 4, 7, 8, 12, 13, 1,2
+
+(D) 5, 10, 11, 9, 6, 3, 4, 7, 8, 12, 13, 1, 2
+
+(E) None of the above choices.
+HAR
+
+=== PAGE p-3.pgm
+題 號 : 295 國 立 臺灣 大 學 114 學 年 度 碩士 班 招生 考試 試題
+科目 : TER RIE FAR: 295
+
+節 次 : 共 7 頁 之 第 2 頁
+
+6. (5 points) Consider a knapsack with capacity 17 and five types of items, each with its size and value
+listed below. All items are available in unlimited quantities and each item can be selected more than
+once. The goal is to maximize the total value of the items placed in the knapsack. If the maximum
+value of the knapsack is 10a+b where a and 0 are integers in {0,1,2,--- ,9}, what is the value of a+b?
+
+itm iA B C D £E
+size |3 4 7 8 9
+value| 4 5 10 11 12
+
+(A) 3
+(B) 4
+(C) 5
+(D) 6
+(BE) 7
+
+7. (5 points) Max-flow algorithms can be applied to determine the elimination of sports teams in a group.
+Consider the following record for a group of five teams. Note that the number of remaining games for
+a team does not necessarily equal the number of remaining games against the group’s rivals, as teams
+may play opponents outside their own group. Only the team with the highest number of wins will
+advance to the next round. Our goal is to determine whether team E has already been eliminated.
+
+The intuition behind constructing the graph is to assume that team E wins all of its remaining 28 (rz)
+games, and then attempt to ensure that the number of wins for each competing team does not exceed
+the total possible wins of team E (wz + rz = 76). The constructed graph consists of 12 nodes: in
+addition to the source (s) and sink (¢) nodes, there are six nodes representing the head-to-head games
+between teams A-D and four nodes representing teams A-D. What is the maximum flow value of the
+constructed graph?
+
+Games against each other
+Team | Wins (w;) Losses (/;) To play (r;) | team A team B team C team D team E
+
+(A) 22
+(B) 23
+(C) 24
+(D) 25
+(E) 26
+
+8. (5 points) Select all pairs of functions in the increasing order of growth. That is, select 91, ga if go grows
+faster than 91.
+
+filn) = (全 六 (2) = 25g 7, fa(n) = (, " ) fa(n) = V2ve, s(n) = 50ogm
+
+(A) filr), fa(r)
+(B) fe(n), fs(n)
+(C) fol), fa(r)
+(D) fa(n), fo(n)
+(E) film), fo(r)
+
+LG
+=== PAGE p-4.pgm
+RAR: 295 國 立 臺 灣 大 學 114 學 年 度 碩士 班 招生 考試 試題
+TH RRM I 題 號 : 295
+
+共 7 頁 之 第 頁
+
+9. (5 points) Select all the correct statement(s) from the following statements regarding recurrence.
+
+(A) The solution to the recurrence T(n) = 2T(n/2) + Q(n) is O(n?).
+(B) The solution to the recurrence T(n) = 7T(n/2) + @(n?) is O(n'87).
+(C) The solution to the recurrence T'(n) = logn + T(./n) is O(logn).
+
+(D) The solution to the recurrence T'(n) = 2"T(n—1) is O((/2)""*"). (Assume T(n) = 1 for n smaller
+than some constant c).
+
+(E) The solution to the recurrence T(n) = T(n/6) + T(7n/9) + O(n) is O(n). (Assume T(n)} = 1 for
+n smaller than some constant c).
+
+10. (5 points) Select all the correct statement(s) from the following statements regarding binary trees and
+binary search trees.
+(A) Every binary tree is a binary search tree.
+(B) Every binary search tree on n nodes has height O(logn).
+(C) In a binary search tree, we can find the next smallest element to a given element in O(1) time.
+
+(D) Let Aj, Ao, and 43 be three sorted arrays of n distinct real numbers. Constructing a balanced
+binary search tree of the set A; U 42 U Ag requires O(n) time.
+
+(E) Let T be a complete binary tree with n nodes. Finding a path from the root of T to a given vertex
+v €T using breadth-first search takes Q(nlgn) time.
+
+11. (5 points) Let S be a collection of n objects, each with a unique integer key a; € {0,1,2,...,n? — 1}.
+Consider hashing all the objects in S into an array A[0..m — 1] of m = [n'5] buckets. Each bucket
+stores a (singly) linked list of all objects hashed into the same bucket. The hashing algorithm works as
+follows. The algorithm first picks a hash function h uniformly at random from a hash family H. Then,
+for each object 7 € S, the algorithm computes h(a;) and inserts the object into the bucket A[h(a,)]-
+The number of collisions 7 is defined to be the total number of (unordered) object pairs hashed into
+the same bucket. We focus on the choice of the hash family # and the worst-case expected number
+of collisions E[r]. Note that the term worst-case refers to the choice of the input set S. Select all
+statement(s) that are correct for every sufficiently large n.
+
+(A) If H is a uniform hash family, then E[7] = O(./n).
+
+(B) If # is a universal hash family, then E[r] = O(/7).
+
+(C) If H = {h(x) = (ax +b) mod m | a,b € Z and 0 < a,b < m— 1}, then E[r] = O(,/n).
+(D) IfH = {A(z) = (2? +240) modm|ce Zand 0<c<m-— 1}, then E[r] = O(n).
+(E) The hash family described in (C) is a universal hash family.
+
+12. (5 points) Let G = (V, E, w) be an undirected, weighted, simple, and connected graph. Let T, and Th
+be two minimum spanning trees of G. Define the set of edges F C F as all edges that are in either T;
+or 22 but not in both. Suppose that F 4 @. Select all correct statement(s) below.
+
+(A) The subgraph H = (V, F) is a disjoint union of cycles and paths.
+(B) All edges in F have the same weight.
+(C) There is no edge in F that has a unique weight.
+
+(D) There exists a graph G such that w(F) > w(T)).
+
+(E) Consider the problem Most-Distant-MSTs, which seeks two minimum spanning trees T; and
+Tp in order to maximize w(F’) on G. Assume P #4 NP. Then Most-Distant-MSTs is NP-hard.
+
+接 次 頁
+
+=== PAGE p-5.pgm
+FAR + 295 國 立 臺 灣 大 學 114 學 年 度 碩士 班 招生 考試 試題
+科目 : 資 料 結 構 與 演算 法 是 號:_295
+1
+
+共 7 頁 之 第 Ok
+
+13. (5 points) Consider the (incomplete) pseudocode snippet SOLVE().
+
+1: function SOLVE(G = (V, Z,w), s, t)
+
+2: P=V > Initializes a set with all vertices.
+3: | Set A[s] = 0 and A[z] = o for alla 4s. > Initializes an array A.
+4:| while P49 do
+
+5: | zr = argmin, ¢p{A|z]} > Chooses a vertex.
+6: P=P—{z} > Removes the vertex.
+字 for each y € P such that (z,y) € E, do
+
+a} | | | (人 3】 |
+
+You have realized that this code snippet can be used to solve different problems by filling the blanks
+in different ways. Here are three problems we consider:
+
+¢ Inthe st-DisTANCE problem, you are given a graph G with non-negative weights, and two vertices
+s,t€V. The goal is to compute the shortest distance between s and t.
+
+‧ In the st-BOTTLENECK problem, you are given a graph G with non-negative weights, and two
+vertices s,¢ € V. The goal is to compute the smallest possible weight wgt such that there exists
+at least one path from s to ¢ using only edges whose weights are less than or equal to wot.
+
++ In the MST problem, you are given an undirected, weighted, and connected graph G. The goal
+is to compute the total weight of a minimum spanning tree.
+
+Select all correct statement(s) below.
+
+(A) To solve st-DIstTaNce, we fill (x) with Aly] = A[z] + w(z,y), and we fill (xx) with Ale].
+
+(B) To solve st-BOTTLENECK, we fill (*) with A[y] = max{ Aly], min{A[z], w(x, y)}}, and we fill (xx)
+with Afé].
+
+(C) To solve MST, we fill (x) with Aly] = min{ Aly], w(z, y)}, and we fill («*) with A[é].
+
+(D) The code snippet can be implemented with Fibonacci heaps, so there exist algorithms with running
+time O(|E| + |V}log|V]) for all three problems stated above.
+
+(E) The value A[é] will always be non-negative in any correct implementation for solving any of the
+problems stated above.
+
+14. (5 points) Let G be an nxn grid graph, with each undirected edge having a certain weight. Specifically,
+the vertices of G can be labeled as (i,j) where 1 <i,j <n. There is an edge between (i, 7) and (k, @) if
+and only if |i -k|+|j—4¢] = 1. Suppose we want to compute the value of a minimum cut that separates
+(1,1) and (n,n). The value of a cut is defined as the sum of weights to all edges crossing the cut.
+
+Four students proposed different ideas for solving this task. Let us examine their approaches and select
+all correct statement(s) below.
+
+(A) Student A: Some minimum cut must cut through at most 2n edges. Since there are 2n(n—1) < 2n?
+
+edges in G, we can design a brute force algorithm that enumerates at most ual (有 ) subsets of
+
+edges and check: if the removal of those edges separates (1,1) and (n,n). Any such subset leads
+to a candidate for the minimum cut.
+
+(B) Student B: For some minimum cut, the crossing edges must form a monotonic path from (n, 1) to
+(1,n). In other words, those edges form a path of exactly 2n— 2 edges from (n, 1) to (1,n). Thus,
+we can solve this problem via dynamic programming.
+
+(C) Student C: Why don’t we simply computes a maximum flow and then turning it to a minimum
+cut? First, construct a flow network by letting (1,1) be the source and (n,n) be the sink. For each
+undirected edge connecting (#,7) and (k, £), create two directed edges in opposite directions, both
+
+見 背 面
+
+=== PAGE p-6.pgm
+題 號
+科目
+Bick
+
+295 國 立 臺灣 大 學 114 學 年 度 碩士 班 招生 考試 試題
+資料 結構 與 演算 法
+
+FARE: 295
+
+1 #2 Tyee bg
+
+with capacities equal to that edge’s weight. By using Dinitz’s (Dinic’s) algorithm, the maximum
+flow from (1,1) to (n,n) can be computed in O(n®). Using the Max-Flow Min-Cut Theorem, the
+
+returned maximum flow value equals the value of the minimum cut.
+
+(D) Student D: To separate (1,1) and (n, n), for some minimum cut, the crossing edges must form a
+shortest path from the south-west border WS := {(i, Ifl<icnsu{ms[i<j< n} to
+
+the north-east border NE := {(i,n) | 1 <i <n}U {(1, 7)
+
+| 1< 4g <n}. Thus, we can run the
+
+Bellman-Ford algorithm that seeks for any shortest path from a vertex in ‘WS to any vertex in
+
+NE. Finally, the length of the shortest path is the value of the minimum cut.
+(已 ) None of the above choices.
+
+15. (5 points) In this problem we use the following notations. For any binary tree T, we define T.% to be
+its root node, T.l (resp. T.r) to be the left (resp. right) child of Fr, and T.L (resp. T.R) to be the
+left (resp. right) subtree of T.x. For any vertex x on a binary tree, we define z.l,2.L,2.r, and x.R
+similarly. These values are defined as 1 (empty) if they do not exist. The set of leaves of T are denoted
+
+as Leaf(T’). For any statement P we define [P] to be 1 if P is true and 0 if P is false.
+
+Let T be a binary tree of n nodes. Each node v on T has a weight w(v) and a color c(v). We want to
+
+make the tree colorful in the sense that every non-root tree node has a color different from its parent.
+To do so, some re-coloring to the tree nodes are necessary, and we would like to minimize the total
+weights of the tree nodes that are re-colored. Notice that there are infinitely many colors to choose
+So once a node is re-colored it gets a unique color. Let 了 (T) be the answer. Suppose that both T.L
+
+and T.R are non-empty. What is the correct recursive formulations for F(T)? Select all choice(s) that
+apply.
+
+(A) Let T’ € T be the (partial) binary tree consisting of all tree node v who has the same color as
+the tree root T.r and all v’s ancestors have the same color c{T.2) too. Then, F(T) = g(f') +
+
+Dacteary(f(a.L) + f(a.R)), here g(T’) is the weight of the maximum weighted independent set
+- on T",
+
+(B) With the same notion 7” defined above, f(T) = h(T’) + Dacteatr(f(a.L) + f(a.R)), here h(T’)
+is the weight of the minimum weighted vertex cover on 也.
+
+(C) With the same notion T’ defined above, f(T) = A(T") + Dacteary(f(a-L) + f(a.R)), here h(T"’)
+is the weight of the minimum weighted dominating set on 7”.
+
+(D) f(T) = min{ f(T.L) + f(7.R) + w(T.x), [e(T.L)==c(T.x)] - (w(TL) + f(T.L)) + [e(T.1) 4 c(T.x)] -
+F(P-L) + [c(P-r)==c(P.2)] - (w(L-r) + f(L-R)) + [c(T-r) # c(T.z)] - f(T.R)}
+(E) None of the above choices apply.
+
+16. (5 points) Consider the following 0-1 integer linear program P:
+
+maximize 2-4, 十 0.22 十 2.23 十 5- 寢 4
+subject to 2x; + to + 323 + 404 <8
+401+ Lo + 2x3 + 324 <8
+@ + 822+ 43+ 724 <8
+21, £2, 23,24 € {0,1}
+
+Let @ be the number of feasible solutions to P. Let 8 be the number of optimal solutions to P. Let y be
+the integrality gap. Let P’ be the relaxed linear program of P. Let V4 be the four-dimensional volume of
+the convex polytope that consists of all feasible solutions to P’. Let vz be the three-dimensional volume
+
+of the convex polyhedron that consists of all optimal solutions to P’. Select all correct statement (s)
+below.
+
+(A)a=8 (B) 641 (C)y=1 (D) 4<1 (E) v3 =0
+
+17. (5 points) Let A,B,C, D,E be decision problems. We denote a polynomial time reduction with the
+symbol “<,”. Suppose that A <, B, B <, C, C <, D, and C <, E. We also assume A € P and
+Be NP. Select all correct statement(s) below.
+
+HAA
+
+=== PAGE p-7.pgm
+題 號
+科目
+Lies
+
+295
+
+國 立 臺灣 大 學 114 學 年 度 碩士 班 招生 考試 試題
+
+FR RIE 題 號 : 295
+
+18.
+
+共 “7 頁 之 第 “7 頁
+
+(A) If A is NP-hard, then B € P.
+
+(B) If B is NP-hard and £ <, B, then C is NP-complete and D is NP-hard.
+
+(C) If C is NP-complete, then both D and FE are NP-complete.
+
+(D) If D € NP, then C € NP.
+
+(E) If # is NP-hard, then C is NP-hard.
+
+(5 points) Consider the task of incrementing a k-bit binary counter from all zeroes to all ones. Let A
+
+be an array of length & that simulates the counter, where A[0] represents the least significant bit and
+A[k — 1] represents the most significant bit. We implement the INCREMENT() operation as follows:
+
+function INCREMENT()
+
+2 三 0
+
+while Afi] == 1 do
+Al] = 0
+t=t+1
+
+Ali} =1
+
+Unfortunately, this counter is implemented on a deficient random access machine (RAM). On this
+machine, each read-access to a single array entry takes 1 unit of time. However, a write to an entry
+may take different amount of time. In particular, for any index i (0 < i < k), if 4 is a multiple of 3
+but not a multiple of 5, the memory stick will fizz and it will take exactly 3‘/* units of time to write
+the data into Afi]. If i is a multiple of 5 but not a multiple of 3, the memory stick will buzz and it will
+take exactly 5‘/° units of time to write the data into A[i]. Writing into all other entries not mentioned
+above takes 1 unit of time as usual. . ;
+
+Please design a potential function ®(A) such that the amortized time (using ®(A)) per INCREMENT()
+operation is still O(1) when incrementing from zero. Make sure your potential function is rigurously
+defined, can be evaluated into an actual number by human beings, and as clean and clear without
+ambiguity. For example, if you left any undetermined variable (such as “for some constant c”) in your
+expression, you must state an actual number for that variable (e.g., “c = 1”). You do not need to
+verify your answer in the answer sheet. This problem has no partial score.
+
+19. (10 points) Consider the following decision problem ODDNUMBERSUM:
+
+ODDNUMBERSUM
+Input: A set of positive odd numbers S. A target odd number k.
+Question: Is there an odd number of elements in S whose sum is exactly k?
+
+(a) (5 points) Prove that ODDNUMBERSuM is NP-complete.
+
+(b) (5 points) For any set of numbers T' we define sum(T) to be the sum of all numbers in T. Let S
+and k be the input from ODDNUMBERSu. Define k* = max{sum(T) | T C S and sum(T) < k}
+be the largest possible subset sum among all subsets whose sum does not exceed k.
+Let ¢ > 0 be any sufficiently small constant. Give an algorithm that computes an (1 — «)-
+approximate solution to k*. Specifically, your algorithm should output a value kag such that
+(1 — e)k* < kata < k*. The running time of your algorithm should be a polynomial of |S] and
+1/e. State the algorithm as concisely and percisely as possible. You should not write anything
+besides the algorithm.
+
+試題 隨 卷 繳 回

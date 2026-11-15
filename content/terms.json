@@ -1,0 +1,1857 @@
+{
+  "_說明": "術語索引（H4／H16）：每個知識點「教」的術語。題目或影片字幕出現某個術語，就表示它需要定義這個術語的知識點。比對時不分大小寫；英文術語要整個字相符。",
+  "f-func": [
+    "成長速度",
+    "多項式",
+    "指數函數"
+  ],
+  "f-log": [
+    "對數",
+    "lg",
+    "log",
+    "\\log",
+    "\\lg"
+  ],
+  "f-sum": [
+    "\\sum",
+    "等比級數",
+    "等差級數",
+    "調和級數",
+    "H_n"
+  ],
+  "f-set": [
+    "集合",
+    "\\cap",
+    "\\cup",
+    "交集",
+    "聯集",
+    "子集",
+    "\\subseteq",
+    "\\forall",
+    "\\exists",
+    "一對一",
+    "對應"
+  ],
+  "f-mod": [
+    "mod",
+    "\\bmod",
+    "餘數",
+    "整除",
+    "gcd",
+    "最大公因數"
+  ],
+  "f-binary": [
+    "二進位",
+    "十六進位",
+    "位元",
+    "bit",
+    "byte",
+    "hex",
+    "hexadecimal",
+    "位元組"
+  ],
+  "f-twos": [
+    "二補數",
+    "補數",
+    "two's complement"
+  ],
+  "f-gate": [
+    "XOR",
+    "AND",
+    "OR",
+    "NOT",
+    "邏輯閘",
+    "布林代數"
+  ],
+  "f-c-array": [
+    "陣列",
+    "array",
+    "a[i]",
+    "位元組"
+  ],
+  "f-c-pointer": [
+    "指標",
+    "pointer",
+    "NULL"
+  ],
+  "f-recursion": [
+    "遞迴呼叫",
+    "base case",
+    "遞迴函式",
+    "葉子",
+    "遞迴樹"
+  ],
+  "f-list": [
+    "鏈結串列",
+    "linked list",
+    "佇列",
+    "queue",
+    "堆疊",
+    "stack",
+    "push",
+    "pop",
+    "enqueue",
+    "dequeue"
+  ],
+  "f-bigo": [
+    "時間複雜度",
+    "O(",
+    "Big-O",
+    "big-O",
+    "大 O"
+  ],
+  "f-bsearch": [
+    "二分搜尋",
+    "binary search"
+  ],
+  "f-vec": [
+    "矩陣",
+    "向量",
+    "matrix",
+    "vector",
+    "轉置",
+    "A^T",
+    "^{T}",
+    "內積",
+    "對稱矩陣",
+    "反對稱矩陣",
+    "skew-symmetric"
+  ],
+  "f-prob": [
+    "機率",
+    "期望值",
+    "E[",
+    "\\mathbb{E}",
+    "隨機變數",
+    "Pr["
+  ],
+  "f-os": [
+    "作業系統",
+    "operating system",
+    "CPU",
+    "磁碟",
+    "硬碟",
+    "disk",
+    "快取",
+    "cache"
+  ],
+  "dm-logic#1": [
+    "命題",
+    "真值表",
+    "\\lnot",
+    "\\neg",
+    "\\land",
+    "\\lor",
+    "恆真",
+    "tautology",
+    "逆否",
+    "contrapositive",
+    "\\leftrightarrow"
+  ],
+  "dm-logic#2": [
+    "述詞",
+    "量詞",
+    "predicate",
+    "quantifier",
+    "自由變數"
+  ],
+  "dm-logic#3": [
+    "數學歸納法",
+    "歸納法",
+    "induction",
+    "反證法",
+    "矛盾證法",
+    "contradiction"
+  ],
+  "dm-logic#4": [
+    "鴿籠",
+    "pigeonhole"
+  ],
+  "dm-logic#5": [
+    "可數",
+    "不可數",
+    "countable",
+    "uncountable",
+    "基數",
+    "cardinality",
+    "\\aleph",
+    "對角線論證",
+    "diagonal argument"
+  ],
+  "al-recurrence#1": [
+    "\\Theta",
+    "\\Omega",
+    "o(",
+    "\\omega",
+    "漸近",
+    "asymptotic"
+  ],
+  "al-recurrence#2": [
+    "Master theorem",
+    "Master 定理",
+    "主定理",
+    "master method",
+    "n^{\\log_b a}",
+    "\\log_b a",
+    "regularity",
+    "合併排序",
+    "merge sort"
+  ],
+  "al-recurrence#3": [
+    "遞迴樹",
+    "recursion tree",
+    "Akra",
+    "Bazzi"
+  ],
+  "al-recurrence#4": [
+    "變數變換",
+    "change of variables",
+    "T(\\sqrt"
+  ],
+  "ds-amortized#1": [
+    "堆疊",
+    "佇列",
+    "stack",
+    "queue",
+    "push",
+    "pop",
+    "enqueue",
+    "dequeue",
+    "環狀佇列",
+    "circular queue",
+    "FIFO",
+    "LIFO"
+  ],
+  "ds-amortized#2": [
+    "前序表示",
+    "postfix",
+    "infix",
+    "運算式",
+    "後序式",
+    "中序式",
+    "前序式",
+    "後序表示",
+    "中序表示"
+  ],
+  "ds-amortized#3": [
+    "堆疊排列",
+    "stack permutation"
+  ],
+  "ds-amortized#4": [
+    "攤銷",
+    "amortized",
+    "位能",
+    "potential",
+    "accounting",
+    "aggregate",
+    "記帳法",
+    "聚合"
+  ],
+  "ds-amortized#5": [
+    "動態表",
+    "dynamic table",
+    "table doubling",
+    "擴表"
+  ],
+  "ds-bst#1": [
+    "二元樹",
+    "binary tree",
+    "完全二元樹",
+    "complete binary tree",
+    "full binary tree",
+    "樹高",
+    "leaf",
+    "中序走訪",
+    "inorder",
+    "preorder",
+    "postorder",
+    "葉節點",
+    "葉子",
+    "前序走訪",
+    "後序走訪",
+    "度數",
+    "degree"
+  ],
+  "ds-bst#2": [
+    "BST",
+    "二元搜尋樹",
+    "binary search tree",
+    "successor",
+    "後繼",
+    "前驅"
+  ],
+  "ds-bst#3": [
+    "AVL",
+    "旋轉",
+    "rotation",
+    "平衡因子",
+    "balance factor",
+    "RR 型",
+    "LL 型",
+    "LR 型",
+    "RL 型"
+  ],
+  "ds-bst#4": [
+    "紅黑樹",
+    "red-black",
+    "黑高",
+    "black-height",
+    "著色",
+    "2-3-4 樹",
+    "2-3-4"
+  ],
+  "ds-bst#5": [
+    "splay",
+    "Splay",
+    "treap"
+  ],
+  "ds-sort#1": [
+    "insertion sort",
+    "merge sort",
+    "合併排序",
+    "插入排序",
+    "selection sort",
+    "heapsort",
+    "stable",
+    "in-place",
+    "原地",
+    "bubble sort",
+    "穩定排序",
+    "stable sort",
+    "逆序對",
+    "快速排序",
+    "quicksort",
+    "Quicksort"
+  ],
+  "ds-sort#2": [
+    "比較下界",
+    "decision tree",
+    "決策樹",
+    "\\Omega(n\\lg n)",
+    "lower bound"
+  ],
+  "ds-sort#3": [
+    "quicksort",
+    "Quicksort",
+    "快速排序",
+    "pivot",
+    "partition",
+    "樞紐",
+    "Randomized"
+  ],
+  "ds-sort#4": [
+    "counting sort",
+    "radix sort",
+    "bucket sort",
+    "計數排序",
+    "基數排序",
+    "桶排序"
+  ],
+  "ds-sort#5": [
+    "選擇問題",
+    "median",
+    "中位數",
+    "第 $i$ 小",
+    "SELECT",
+    "median of medians",
+    "Median of medians",
+    "order statistic",
+    "Randomized-Select"
+  ],
+  "ds-heap#1": [
+    "堆積",
+    "Build-Heap",
+    "BUILD-MAX-HEAP",
+    "heapify",
+    "MAX-HEAPIFY",
+    "max-heap",
+    "min-heap",
+    "優先佇列",
+    "priority queue",
+    "binary heap",
+    "二元堆積"
+  ],
+  "ds-heap#2": [
+    "decrease-key",
+    "DECREASE-KEY",
+    "extract-min",
+    "EXTRACT-MIN"
+  ],
+  "ds-heap#3": [
+    "leftist",
+    "Leftist",
+    "左傾"
+  ],
+  "ds-heap#4": [
+    "binomial heap",
+    "Binomial heap",
+    "二項堆積",
+    "binomial tree"
+  ],
+  "ds-heap#5": [
+    "Fibonacci heap",
+    "費氏堆積",
+    "cascading cut",
+    "consolidate"
+  ],
+  "co-arith#1": [
+    "sign-magnitude",
+    "一補數",
+    "sign extension",
+    "符號擴展",
+    "unsigned",
+    "無號"
+  ],
+  "co-arith#2": [
+    "加法器",
+    "adder",
+    "ripple",
+    "carry lookahead",
+    "CLA",
+    "進位",
+    "ALU"
+  ],
+  "co-arith#3": [
+    "Booth",
+    "乘法器",
+    "除法器",
+    "restoring"
+  ],
+  "co-arith#4": [
+    "IEEE 754",
+    "IEEE754",
+    "浮點",
+    "floating",
+    "exponent",
+    "mantissa",
+    "bias",
+    "denormal",
+    "NaN"
+  ],
+  "la-systems#1": [
+    "線性系統",
+    "高斯消去",
+    "Gaussian elimination",
+    "消去法",
+    "row echelon",
+    "列梯形",
+    "RREF",
+    "pivot",
+    "自由變數",
+    "Ax=b",
+    "Ax = b",
+    "特解",
+    "particular solution",
+    "齊次解"
+  ],
+  "la-systems#2": [
+    "可逆",
+    "invertible",
+    "A^{-1}",
+    "nonsingular",
+    "非奇異",
+    "奇異矩陣"
+  ],
+  "la-systems#3": [
+    "LU",
+    "LU 分解",
+    "PA=LU",
+    "PA = LU"
+  ],
+  "la-systems#4": [
+    "零空間",
+    "null space",
+    "行空間",
+    "column space",
+    "列空間",
+    "row space",
+    "left null space",
+    "四個基本子空間",
+    "N(A)",
+    "C(A)",
+    "秩",
+    "rank"
+  ],
+  "la-systems#5": [
+    "秩",
+    "rank",
+    "nullity"
+  ],
+  "os-process#1": [
+    "行程",
+    "process",
+    "PCB",
+    "ready",
+    "waiting",
+    "context switch",
+    "內容切換",
+    "時間片"
+  ],
+  "os-process#2": [
+    "fork",
+    "exec",
+    "wait(",
+    "zombie",
+    "orphan",
+    "殭屍",
+    "copy-on-write",
+    "寫時複製"
+  ],
+  "os-process#3": [
+    "執行緒",
+    "thread",
+    "pthread",
+    "user thread",
+    "kernel thread",
+    "一對一模型",
+    "多對一",
+    "多對多",
+    "一對一（"
+  ],
+  "os-process#4": [
+    "system call",
+    "系統呼叫",
+    "kernel mode",
+    "user mode",
+    "雙模式",
+    "trap",
+    "interrupt",
+    "中斷"
+  ],
+  "os-process#5": [
+    "IPC",
+    "message passing",
+    "shared memory",
+    "共享記憶體",
+    "pipe",
+    "管道"
+  ],
+  "dm-counting#1": [
+    "組合",
+    "permutation",
+    "combination",
+    "\\binom",
+    "乘法原理"
+  ],
+  "dm-counting#2": [
+    "二項式",
+    "binomial",
+    "巴斯卡",
+    "Pascal",
+    "Vandermonde 恆等式"
+  ],
+  "dm-counting#3": [
+    "排容",
+    "inclusion-exclusion",
+    "錯排",
+    "derangement",
+    "D_n"
+  ],
+  "dm-counting#4": [
+    "球放箱子",
+    "Stirling",
+    "整數分割",
+    "partition of integer",
+    "分割數",
+    "S(n,k)"
+  ],
+  "dm-counting#5": [
+    "Catalan",
+    "卡特蘭"
+  ],
+  "al-dc#1": [
+    "分治",
+    "divide and conquer",
+    "divide-and-conquer"
+  ],
+  "al-dc#2": [
+    "Strassen",
+    "Karatsuba"
+  ],
+  "al-dc#3": [
+    "最近點對",
+    "closest pair"
+  ],
+  "al-dc#4": [
+    "逆序對",
+    "inversion"
+  ],
+  "al-dc#5": [
+    "FFT",
+    "傅立葉",
+    "單位根",
+    "root of unity"
+  ],
+  "ds-hash#1": [
+    "雜湊",
+    "hash",
+    "hashing",
+    "雜湊函數",
+    "universal hashing",
+    "通用雜湊"
+  ],
+  "ds-hash#2": [
+    "鏈結法",
+    "chaining",
+    "load factor",
+    "負載因子"
+  ],
+  "ds-hash#3": [
+    "開放定址",
+    "open addressing",
+    "線性探測",
+    "linear probing",
+    "二次探測",
+    "quadratic probing",
+    "double hashing",
+    "雙重雜湊"
+  ],
+  "ds-hash#4": [
+    "perfect hashing",
+    "完美雜湊",
+    "cuckoo",
+    "Bloom"
+  ],
+  "co-perf#1": [
+    "CPI",
+    "時脈",
+    "clock rate",
+    "clock cycle",
+    "CPU 時間",
+    "CPU time",
+    "MIPS",
+    "throughput",
+    "response time",
+    "ISA",
+    "指令集"
+  ],
+  "co-perf#2": [
+    "幾何平均",
+    "geometric mean",
+    "SPEC",
+    "benchmark",
+    "基準"
+  ],
+  "co-perf#3": [
+    "Amdahl",
+    "加速比",
+    "speedup",
+    "GPU"
+  ],
+  "co-perf#4": [
+    "功耗",
+    "dynamic power",
+    "良率",
+    "yield"
+  ],
+  "la-vs#1": [
+    "向量空間",
+    "vector space",
+    "子空間",
+    "subspace",
+    "span",
+    "線性組合"
+  ],
+  "la-vs#2": [
+    "基底",
+    "basis",
+    "維度",
+    "dimension",
+    "線性獨立",
+    "linearly independent",
+    "線性相依"
+  ],
+  "la-vs#3": [
+    "線性變換",
+    "linear transformation",
+    "值域",
+    "一對一",
+    "onto",
+    "\\ker",
+    "one-to-one"
+  ],
+  "la-vs#4": [
+    "換基底",
+    "change of basis",
+    "[T]",
+    "相似矩陣",
+    "similar matri"
+  ],
+  "os-sched#1": [
+    "turnaround",
+    "周轉時間",
+    "等待時間",
+    "waiting time",
+    "response time",
+    "回應時間",
+    "throughput"
+  ],
+  "os-sched#2": [
+    "FCFS",
+    "SJF",
+    "SRTF",
+    "Round Robin",
+    "RR",
+    "priority scheduling",
+    "時間片",
+    "time quantum",
+    "aging",
+    "老化",
+    "FIFO",
+    "飢餓",
+    "starvation"
+  ],
+  "os-sched#3": [
+    "即時",
+    "real-time",
+    "Rate Monotonic",
+    "EDF",
+    "RMS"
+  ],
+  "os-sched#4": [
+    "多處理器",
+    "multiprocessor",
+    "load balancing",
+    "processor affinity",
+    "multilevel feedback",
+    "MLFQ"
+  ],
+  "dm-graph#1": [
+    "graph",
+    "頂點",
+    "vertex",
+    "edge",
+    "度數",
+    "degree",
+    "握手",
+    "子圖",
+    "同構",
+    "isomorph",
+    "二分圖",
+    "bipartite",
+    "K_5",
+    "K_{3,3}",
+    "完全圖",
+    "K_n"
+  ],
+  "dm-graph#2": [
+    "歐拉",
+    "歐拉路徑",
+    "Euler",
+    "漢米頓",
+    "Hamilton",
+    "Euler path",
+    "Euler circuit"
+  ],
+  "dm-graph#3": [
+    "生成樹",
+    "spanning tree",
+    "Cayley"
+  ],
+  "dm-graph#4": [
+    "平面圖",
+    "planar",
+    "K_5",
+    "K_{3,3}",
+    "Kuratowski"
+  ],
+  "dm-graph#5": [
+    "著色",
+    "coloring",
+    "色數",
+    "chromatic"
+  ],
+  "dm-graph#6": [
+    "匹配",
+    "matching",
+    "Hall",
+    "König",
+    "完美匹配",
+    "perfect matching",
+    "點覆蓋",
+    "vertex cover",
+    "獨立集"
+  ],
+  "ds-graph#1": [
+    "相鄰矩陣",
+    "adjacency matrix",
+    "相鄰串列",
+    "adjacency list"
+  ],
+  "ds-graph#2": [
+    "BFS",
+    "廣度優先",
+    "breadth-first",
+    "最短路徑"
+  ],
+  "ds-graph#3": [
+    "DFS",
+    "深度優先",
+    "depth-first",
+    "back edge",
+    "tree edge",
+    "forward edge",
+    "cross edge",
+    "discovery time"
+  ],
+  "ds-graph#4": [
+    "拓撲排序",
+    "topological sort",
+    "DAG",
+    "有向無環"
+  ],
+  "ds-graph#5": [
+    "強連通",
+    "SCC",
+    "strongly connected",
+    "Kosaraju",
+    "Tarjan"
+  ],
+  "ds-graph#6": [
+    "雙連通",
+    "articulation point",
+    "關節點",
+    "bridge",
+    "橋",
+    "biconnected"
+  ],
+  "ds-graph#7": [
+    "歐拉路徑",
+    "Fleury",
+    "Hierholzer"
+  ],
+  "ds-unionfind#1": [
+    "Union-Find",
+    "union-find",
+    "disjoint set",
+    "不相交集合",
+    "FIND-SET",
+    "UNION",
+    "union by rank",
+    "path compression",
+    "路徑壓縮",
+    "rank",
+    "秩"
+  ],
+  "ds-unionfind#2": [
+    "\\alpha(n)",
+    "Ackermann"
+  ],
+  "ds-unionfind#3": [
+    "Kruskal"
+  ],
+  "co-datapath#1": [
+    "ISA",
+    "指令集",
+    "MIPS",
+    "RISC",
+    "CISC",
+    "R-type",
+    "I-type",
+    "定址模式",
+    "addressing mode",
+    "RISC-V",
+    "funct3",
+    "funct7",
+    "jalr"
+  ],
+  "co-datapath#2": [
+    "資料路徑",
+    "datapath",
+    "single-cycle",
+    "單週期",
+    "control signal",
+    "控制訊號",
+    "ALU",
+    "暫存器檔"
+  ],
+  "co-datapath#3": [
+    "多週期",
+    "multicycle",
+    "multi-cycle",
+    "有限狀態機",
+    "FSM"
+  ],
+  "la-det#1": [
+    "行列式",
+    "determinant",
+    "\\det"
+  ],
+  "la-det#2": [
+    "餘因子",
+    "cofactor",
+    "Laplace 展開"
+  ],
+  "la-det#3": [
+    "伴隨矩陣",
+    "adjugate",
+    "adj",
+    "Cramer"
+  ],
+  "la-det#4": [
+    "有向面積",
+    "有向體積"
+  ],
+  "os-sync#1": [
+    "臨界區",
+    "critical section",
+    "互斥",
+    "mutual exclusion",
+    "progress",
+    "bounded waiting",
+    "race condition",
+    "競爭條件",
+    "mutex"
+  ],
+  "os-sync#2": [
+    "Peterson"
+  ],
+  "os-sync#3": [
+    "test_and_set",
+    "TestAndSet",
+    "compare_and_swap",
+    "CAS",
+    "atomic",
+    "原子",
+    "memory barrier",
+    "記憶體屏障"
+  ],
+  "os-sync#4": [
+    "號誌",
+    "semaphore",
+    "wait(S)",
+    "signal(S)",
+    "mutex",
+    "producer",
+    "consumer",
+    "生產者",
+    "消費者",
+    "readers",
+    "writers",
+    "哲學家",
+    "dining",
+    "wait(",
+    "signal("
+  ],
+  "os-sync#5": [
+    "監視器",
+    "monitor",
+    "condition variable",
+    "條件變數"
+  ],
+  "os-sync#6": [
+    "活鎖",
+    "livelock",
+    "飢餓",
+    "starvation",
+    "priority inversion",
+    "優先權反轉",
+    "死結",
+    "deadlock"
+  ],
+  "dm-relations#1": [
+    "relation",
+    "自反",
+    "reflexive",
+    "遞移",
+    "transitive",
+    "antisymmetric",
+    "對稱關係",
+    "symmetric relation",
+    "反對稱關係"
+  ],
+  "dm-relations#2": [
+    "閉包",
+    "closure",
+    "Warshall"
+  ],
+  "dm-relations#3": [
+    "等價關係",
+    "equivalence relation",
+    "等價類",
+    "equivalence class",
+    "Bell 數"
+  ],
+  "dm-relations#4": [
+    "偏序",
+    "partial order",
+    "poset",
+    "Hasse",
+    "lattice",
+    "全序",
+    "total order",
+    "布林代數",
+    "反鏈",
+    "antichain",
+    "Dilworth",
+    "極大元",
+    "極小元",
+    "最大元",
+    "最小元",
+    "lcm"
+  ],
+  "dm-relations#5": [
+    "單射",
+    "injective",
+    "滿射",
+    "surjective",
+    "雙射",
+    "bijective",
+    "反函數",
+    "inverse function",
+    "一對一",
+    "onto",
+    "one-to-one",
+    "值域",
+    "\\circ"
+  ],
+  "ds-btree#1": [
+    "B 樹",
+    "B-tree",
+    "B tree",
+    "最小度數",
+    "minimum degree",
+    "2-3-4 樹",
+    "2-3 樹"
+  ],
+  "ds-btree#2": [
+    "B 樹刪除"
+  ],
+  "ds-btree#3": [
+    "B+ 樹",
+    "B+ tree",
+    "B+-tree"
+  ],
+  "ds-btree#4": [
+    "Trie",
+    "trie",
+    "字典樹",
+    "suffix tree",
+    "後綴樹",
+    "Patricia",
+    "radix tree",
+    "suffix array",
+    "後綴陣列"
+  ],
+  "ds-btree#5": [
+    "跳躍串列",
+    "skip list"
+  ],
+  "al-dp#1": [
+    "動態規劃",
+    "dynamic programming",
+    "DP",
+    "最佳子結構",
+    "optimal substructure",
+    "重疊子問題",
+    "overlapping subproblems",
+    "memoization",
+    "由下而上",
+    "bottom-up",
+    "top-down"
+  ],
+  "al-dp#2": [
+    "LCS",
+    "最長共同子序列",
+    "矩陣連乘",
+    "matrix-chain",
+    "編輯距離",
+    "edit distance",
+    "0/1 背包",
+    "0-1 knapsack",
+    "rod cutting",
+    "矩陣鏈乘",
+    "切鋼條",
+    "背包"
+  ],
+  "al-dp#3": [
+    "reconstruct",
+    "重建解",
+    "重建最佳解"
+  ],
+  "al-dp#4": [
+    "偽多項式",
+    "pseudo-polynomial"
+  ],
+  "al-dp#5": [
+    "LIS",
+    "最長遞增子序列"
+  ],
+  "co-pipeline#1": [
+    "管線",
+    "pipeline",
+    "pipelining",
+    "危障",
+    "hazard",
+    "五級管線",
+    "5-stage",
+    "結構危障",
+    "structural hazard",
+    "資料危障",
+    "data hazard",
+    "控制危障",
+    "control hazard"
+  ],
+  "co-pipeline#2": [
+    "forwarding",
+    "前饋",
+    "load-use",
+    "stall",
+    "bubble",
+    "RAW",
+    "WAR",
+    "WAW"
+  ],
+  "co-pipeline#3": [
+    "控制危障",
+    "control hazard",
+    "branch prediction",
+    "分支預測",
+    "delayed branch",
+    "flush",
+    "1-bit",
+    "2-bit",
+    "delay slot"
+  ],
+  "co-pipeline#4": [
+    "例外",
+    "exception",
+    "interrupt",
+    "中斷",
+    "precise exception",
+    "EPC"
+  ],
+  "la-eigen#1": [
+    "特徵值",
+    "eigenvalue",
+    "特徵向量",
+    "eigenvector",
+    "特徵多項式",
+    "characteristic polynomial",
+    "\\lambda"
+  ],
+  "la-eigen#2": [
+    "對角化",
+    "diagonaliz",
+    "幾何重數",
+    "代數重數",
+    "geometric multiplicity",
+    "algebraic multiplicity"
+  ],
+  "la-eigen#3": [
+    "A^k",
+    "矩陣冪次",
+    "Markov",
+    "馬可夫"
+  ],
+  "la-eigen#4": [
+    "最小多項式",
+    "minimal polynomial",
+    "Cayley–Hamilton",
+    "Cayley-Hamilton"
+  ],
+  "la-eigen#5": [
+    "Jordan",
+    "Jordan 區塊",
+    "Jordan block"
+  ],
+  "os-deadlock#1": [
+    "死結",
+    "deadlock",
+    "hold and wait",
+    "no preemption",
+    "circular wait",
+    "循環等待"
+  ],
+  "os-deadlock#2": [
+    "資源配置圖",
+    "resource-allocation graph",
+    "deadlock prevention",
+    "deadlock avoidance",
+    "死結預防",
+    "死結避免",
+    "全序",
+    "wait-for graph",
+    "等待圖",
+    "鴕鳥",
+    "RAG"
+  ],
+  "os-deadlock#3": [
+    "Banker",
+    "銀行家",
+    "safe state",
+    "安全狀態",
+    "safe sequence",
+    "Need",
+    "Allocation"
+  ],
+  "os-deadlock#4": [
+    "deadlock recovery",
+    "rollback"
+  ],
+  "dm-recur-gf#1": [
+    "遞迴關係",
+    "recurrence relation",
+    "a_n",
+    "a_{n-1}"
+  ],
+  "dm-recur-gf#2": [
+    "特徵方程式",
+    "characteristic equation",
+    "齊次",
+    "homogeneous",
+    "齊次解"
+  ],
+  "dm-recur-gf#3": [
+    "非齊次",
+    "nonhomogeneous",
+    "特解",
+    "particular solution"
+  ],
+  "dm-recur-gf#4": [
+    "分治遞迴"
+  ],
+  "dm-recur-gf#5": [
+    "生成函數",
+    "generating function",
+    "OGF"
+  ],
+  "dm-recur-gf#6": [
+    "EGF",
+    "指數生成函數",
+    "exponential generating"
+  ],
+  "al-greedy#1": [
+    "貪婪",
+    "greedy",
+    "交換論證",
+    "exchange argument",
+    "greedy choice"
+  ],
+  "al-greedy#2": [
+    "activity selection",
+    "活動選擇",
+    "interval scheduling",
+    "區間分割",
+    "interval partitioning"
+  ],
+  "al-greedy#3": [
+    "Huffman",
+    "前綴碼",
+    "prefix code"
+  ],
+  "al-greedy#4": [
+    "fractional knapsack",
+    "分數背包"
+  ],
+  "al-greedy#5": [
+    "擬陣",
+    "matroid",
+    "independent set",
+    "獨立集",
+    "遺傳性",
+    "交換性",
+    "圖擬陣"
+  ],
+  "al-greedy#6": [
+    "greedy 失敗",
+    "零錢",
+    "coin change",
+    "Belady"
+  ],
+  "co-cache#1": [
+    "cache",
+    "快取",
+    "direct-mapped",
+    "直接映射",
+    "set-associative",
+    "集合關聯",
+    "fully associative",
+    "命中",
+    "區域性",
+    "locality",
+    "時間區域性",
+    "空間區域性",
+    "tag",
+    "offset",
+    "valid bit",
+    "關聯度"
+  ],
+  "co-cache#2": [
+    "write-back",
+    "write-through",
+    "寫穿",
+    "dirty",
+    "write allocate",
+    "write buffer"
+  ],
+  "co-cache#3": [
+    "compulsory",
+    "capacity",
+    "conflict",
+    "3C",
+    "LRU"
+  ],
+  "co-cache#4": [
+    "AMAT",
+    "miss rate",
+    "miss penalty",
+    "hit time",
+    "L2",
+    "兩層 cache"
+  ],
+  "co-cache#5": [
+    "DRAM",
+    "interleav",
+    "交錯記憶體"
+  ],
+  "co-cache#6": [
+    "victim cache",
+    "prefetch",
+    "預取",
+    "multilevel cache",
+    "L2",
+    "loop interchange",
+    "non-blocking",
+    "critical word first",
+    "blocking"
+  ],
+  "la-ortho#1": [
+    "正交",
+    "orthogonal",
+    "\\perp",
+    "範數",
+    "norm",
+    "Cauchy",
+    "正交補",
+    "orthogonal complement",
+    "單位向量"
+  ],
+  "la-ortho#2": [
+    "投影",
+    "projection",
+    "投影矩陣"
+  ],
+  "la-ortho#3": [
+    "最小平方",
+    "least squares",
+    "normal equation",
+    "正規方程"
+  ],
+  "la-ortho#4": [
+    "正交矩陣",
+    "orthogonal matrix",
+    "Q^TQ",
+    "Q^T Q",
+    "反射矩陣",
+    "旋轉矩陣"
+  ],
+  "la-ortho#5": [
+    "Gram",
+    "Schmidt",
+    "QR"
+  ],
+  "os-memory#1": [
+    "位址繫結",
+    "address binding",
+    "邏輯位址",
+    "logical address",
+    "實體位址",
+    "physical address",
+    "MMU",
+    "relocation register",
+    "base 暫存器",
+    "limit 暫存器",
+    "重定位暫存器"
+  ],
+  "os-memory#2": [
+    "連續配置",
+    "first-fit",
+    "best-fit",
+    "worst-fit",
+    "外部碎片",
+    "external fragmentation",
+    "compaction"
+  ],
+  "os-memory#3": [
+    "分頁",
+    "paging",
+    "頁表",
+    "page table",
+    "頁框",
+    "page number",
+    "內部碎片",
+    "internal fragmentation",
+    "page frame",
+    "TLB",
+    "命中",
+    "有效存取時間",
+    "EAT",
+    "offset",
+    "PTE",
+    "頁號",
+    "頁內位移",
+    "共享頁"
+  ],
+  "os-memory#4": [
+    "多層頁表",
+    "兩層頁表",
+    "two-level",
+    "hierarchical paging",
+    "inverted page table",
+    "反轉頁表",
+    "hashed page table"
+  ],
+  "os-memory#5": [
+    "分段",
+    "segmentation",
+    "segment",
+    "段表",
+    "segment table"
+  ],
+  "dm-nt-algebra#1": [
+    "gcd",
+    "最大公因數",
+    "歐幾里得",
+    "Euclid",
+    "貝祖",
+    "Bézout",
+    "Bezout",
+    "Lamé",
+    "lcm",
+    "算術基本定理"
+  ],
+  "dm-nt-algebra#2": [
+    "同餘",
+    "congruence",
+    "中國剩餘",
+    "CRT",
+    "Fermat",
+    "費馬",
+    "Euler 函數",
+    "\\phi(",
+    "\\varphi(",
+    "Euler 定理",
+    "歐拉定理",
+    "Euler's theorem",
+    "乘法反元素",
+    "模反元素",
+    "Wilson",
+    "Carmichael",
+    "\\pmod"
+  ],
+  "dm-nt-algebra#3": [
+    "RSA"
+  ],
+  "dm-nt-algebra#4": [
+    "group",
+    "ring",
+    "field",
+    "半群",
+    "monoid",
+    "子群",
+    "Lagrange",
+    "循環群",
+    "cyclic group",
+    "abelian",
+    "交換群",
+    "Klein",
+    "單位元"
+  ],
+  "dm-nt-algebra#5": [
+    "Burnside",
+    "Pólya",
+    "Polya",
+    "項鍊",
+    "著色",
+    "旋轉"
+  ],
+  "al-sp#1": [
+    "最短路徑",
+    "shortest path",
+    "relax",
+    "鬆弛",
+    "三角不等式",
+    "\\delta(s",
+    "負環",
+    "negative cycle"
+  ],
+  "al-sp#2": [
+    "Dijkstra"
+  ],
+  "al-sp#3": [
+    "Bellman-Ford",
+    "Bellman–Ford",
+    "負環",
+    "negative cycle",
+    "負邊",
+    "差分約束",
+    "difference constraints"
+  ],
+  "al-sp#4": [
+    "Johnson",
+    "reweight"
+  ],
+  "al-sp#5": [
+    "Floyd",
+    "Warshall",
+    "all-pairs",
+    "全點對",
+    "Floyd–Warshall",
+    "Floyd-Warshall"
+  ],
+  "al-sp#6": [
+    "關鍵路徑",
+    "critical path",
+    "PERT",
+    "DAG 最短路徑"
+  ],
+  "co-ilp#1": [
+    "RAW",
+    "WAR",
+    "WAW",
+    "name dependence",
+    "名稱相依",
+    "true dependence",
+    "loop unrolling",
+    "迴圈展開",
+    "反相依",
+    "輸出相依",
+    "真相依",
+    "暫存器換名",
+    "register renaming"
+  ],
+  "co-ilp#2": [
+    "Scoreboard",
+    "scoreboard",
+    "CDC 6600"
+  ],
+  "co-ilp#3": [
+    "Tomasulo",
+    "reservation station",
+    "保留站",
+    "暫存器換名",
+    "register renaming",
+    "CDB"
+  ],
+  "co-ilp#4": [
+    "ROB",
+    "reorder buffer",
+    "重排序緩衝",
+    "speculation",
+    "推測"
+  ],
+  "co-ilp#5": [
+    "superscalar",
+    "超純量",
+    "VLIW",
+    "多發射",
+    "multiple issue",
+    "SMT",
+    "multithreading",
+    "Flynn",
+    "SIMD",
+    "MIMD",
+    "fine-grained",
+    "coarse-grained",
+    "SIMT",
+    "warp",
+    "GPU lane",
+    "active mask",
+    "branch divergence"
+  ],
+  "os-vm#1": [
+    "需求分頁",
+    "demand paging",
+    "page fault",
+    "缺頁",
+    "EAT",
+    "有效存取時間"
+  ],
+  "os-vm#2": [
+    "頁替換",
+    "page replacement",
+    "LRU",
+    "FIFO",
+    "OPT",
+    "Belady",
+    "second chance",
+    "clock 演算法",
+    "second-chance",
+    "dirty",
+    "modify bit",
+    "Belady 異常",
+    "堆疊演算法"
+  ],
+  "os-vm#3": [
+    "thrashing",
+    "工作集",
+    "working set",
+    "PFF"
+  ],
+  "os-vm#4": [
+    "copy-on-write",
+    "寫時複製",
+    "memory-mapped",
+    "prepaging",
+    "TLB reach",
+    "buddy",
+    "slab"
+  ],
+  "la-sym-svd#1": [
+    "譜定理",
+    "spectral theorem",
+    "對稱矩陣",
+    "symmetric matrix",
+    "譜分解",
+    "Hermitian",
+    "正規矩陣"
+  ],
+  "la-sym-svd#2": [
+    "正定",
+    "positive definite",
+    "半正定",
+    "semidefinite",
+    "領先主子式",
+    "主子式",
+    "Sylvester",
+    "Cholesky"
+  ],
+  "la-sym-svd#3": [
+    "二次型",
+    "quadratic form",
+    "主軸定理",
+    "Rayleigh"
+  ],
+  "la-sym-svd#4": [
+    "SVD",
+    "奇異值",
+    "singular value",
+    "偽逆",
+    "pseudoinverse",
+    "Eckart",
+    "條件數",
+    "秩 k 近似"
+  ],
+  "al-mst-flow#1": [
+    "MST",
+    "最小生成樹",
+    "minimum spanning tree",
+    "Prim",
+    "cut property",
+    "割性質",
+    "cycle property",
+    "環性質",
+    "Borůvka",
+    "Boruvka",
+    "Kruskal"
+  ],
+  "al-mst-flow#2": [
+    "最大流",
+    "max flow",
+    "maximum flow",
+    "Ford-Fulkerson",
+    "Edmonds-Karp",
+    "殘餘",
+    "residual",
+    "augmenting path",
+    "增廣路徑",
+    "min cut",
+    "最小割",
+    "流量守恆",
+    "流量網路",
+    "flow network"
+  ],
+  "al-mst-flow#3": [
+    "二分圖",
+    "bipartite",
+    "Menger"
+  ],
+  "co-vm-coherence#1": [
+    "TLB",
+    "VIPT",
+    "PIPT",
+    "VIVT",
+    "同義字",
+    "別名",
+    "synonym"
+  ],
+  "co-vm-coherence#2": [
+    "coherence",
+    "MESI",
+    "MSI",
+    "snooping",
+    "invalidate",
+    "cache 一致性",
+    "快取一致性",
+    "false sharing",
+    "directory",
+    "write-invalidate",
+    "MOESI"
+  ],
+  "co-vm-coherence#3": [
+    "記憶體一致性模型",
+    "memory consistency",
+    "sequential consistency",
+    "循序一致",
+    "TSO",
+    "store buffer",
+    "litmus"
+  ],
+  "co-vm-coherence#4": [
+    "LL/SC",
+    "load-linked",
+    "store-conditional",
+    "spin lock",
+    "自旋鎖",
+    "fence",
+    "memory barrier",
+    "test-and-test-and-set",
+    "NUMA",
+    "UMA",
+    "LOCK prefix"
+  ],
+  "os-storage#1": [
+    "磁碟",
+    "disk",
+    "seek",
+    "尋道",
+    "SSTF",
+    "SCAN",
+    "C-SCAN",
+    "LOOK",
+    "SSD",
+    "rotational latency",
+    "旋轉延遲",
+    "柱面",
+    "RPM",
+    "wear leveling",
+    "TRIM",
+    "寫入放大",
+    "尋軌"
+  ],
+  "os-storage#2": [
+    "RAID",
+    "parity",
+    "同位元",
+    "striping",
+    "mirroring"
+  ],
+  "os-storage#3": [
+    "檔案配置",
+    "contiguous allocation",
+    "linked allocation",
+    "indexed allocation",
+    "inode",
+    "FAT",
+    "extent"
+  ],
+  "os-storage#4": [
+    "空閒空間",
+    "free space",
+    "bitmap",
+    "目錄",
+    "directory",
+    "hard link",
+    "soft link",
+    "symbolic link",
+    "硬連結",
+    "軟連結",
+    "grouping",
+    "counting",
+    "參考計數"
+  ],
+  "os-storage#5": [
+    "日誌",
+    "journaling",
+    "log-structured",
+    "fsck"
+  ],
+  "al-prob#1": [
+    "指示隨機變數",
+    "indicator random variable",
+    "雇用問題",
+    "hiring problem",
+    "生日悖論",
+    "生日問題",
+    "birthday",
+    "指示變數",
+    "優惠券",
+    "固定點"
+  ],
+  "al-prob#2": [
+    "隨機演算法",
+    "randomized",
+    "Las Vegas",
+    "Monte Carlo",
+    "Miller–Rabin",
+    "Miller-Rabin",
+    "Karger",
+    "Fisher–Yates",
+    "Fisher-Yates",
+    "隨機排列"
+  ],
+  "al-prob#3": [
+    "字串比對",
+    "string matching",
+    "KMP",
+    "Rabin-Karp",
+    "Rabin–Karp",
+    "prefix function",
+    "失敗函數",
+    "Boyer–Moore",
+    "Boyer-Moore",
+    "有限自動機",
+    "\\pi[q]"
+  ],
+  "al-np#1": [
+    "NP",
+    "P 類",
+    "NP-complete",
+    "NPC",
+    "NP-hard",
+    "多項式時間驗證",
+    "decision problem",
+    "決策問題",
+    "co-NP",
+    "停機問題",
+    "certificate"
+  ],
+  "al-np#2": [
+    "歸約",
+    "reduction",
+    "\\le_p",
+    "\\leq_p",
+    "SAT",
+    "3-SAT",
+    "CLIQUE",
+    "vertex cover",
+    "點覆蓋",
+    "subset sum",
+    "PARTITION",
+    "補圖",
+    "clique"
+  ],
+  "al-np#3": [
+    "TSP",
+    "Hamiltonian cycle",
+    "independent set",
+    "2-SAT",
+    "3-著色",
+    "整數規劃",
+    "強 NP-complete"
+  ],
+  "al-np#4": [
+    "approximation",
+    "近似比",
+    "approximation ratio",
+    "近似演算法",
+    "Christofides",
+    "set cover",
+    "FPTAS",
+    "2-近似"
+  ],
+  "_mask": [
+    "十進位"
+  ]
+}

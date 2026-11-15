@@ -11,7 +11,9 @@
 Agent 那一端完全不需要這個伺服器：它只要讀寫 bridge/ 裡的檔案（見 AGENTS.md）。
 """
 import http.server
+import base64
 import json
+import re
 import os
 import secrets
 import socket
@@ -24,6 +26,7 @@ from datetime import datetime
 ROOT = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(ROOT, 'web')
 BR = os.path.join(ROOT, 'bridge')
+EXAM_PAPERS = frozenset(('114-295.pdf', '114-294.pdf', '114-8.pdf', '114-296.pdf'))
 LOCK = threading.Lock()
 LAN = {'srv': None, 'ip': None, 'port': None}
 META = {'device': None, 'ts': 0, 'mtime': None}
@@ -154,6 +157,13 @@ def daily_backup(text, keep=30):
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
+    def translate_path(self, path):
+        url_path = path.split('?', 1)[0]
+        if url_path.startswith('/papers/'):
+            filename = url_path[len('/papers/'):]
+            if filename in EXAM_PAPERS:
+                return os.path.join(ROOT, '考古題', filename)
+        return super().translate_path(path)
     extensions_map = dict(http.server.SimpleHTTPRequestHandler.extensions_map, **{
         '.webmanifest': 'application/manifest+json', '.js': 'text/javascript; charset=utf-8',
         '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png'})
@@ -182,7 +192,57 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def end_headers(self):
         self.send_header('Cache-Control', 'no-store')
+        if not (self.path or '').startswith('/api/'):
+            self.send_header('Accept-Ranges', 'bytes')
         super().end_headers()
+
+    # 影片要能從中間開始播（知識點頁會只播一段，例如 61.9～119.1 秒），瀏覽器會用 Range 要「從第幾個位元組開始」。
+    # 內建的 SimpleHTTPRequestHandler 不支援 Range，一律回整個檔案，Chrome 就把影片當成不能跳轉，段落影片會卡在黑框轉圈。
+    def send_head(self):
+        rng = (self.headers.get('Range') or '').strip()
+        path = self.translate_path(self.path)
+        if not rng.startswith('bytes=') or ',' in rng or not os.path.isfile(path):
+            return super().send_head()
+        size = os.path.getsize(path)
+        a, _, b = rng[6:].partition('-')
+        try:
+            if a == '':
+                start, end = max(0, size - int(b)), size - 1
+            else:
+                start, end = int(a), (int(b) if b else size - 1)
+        except ValueError:
+            return super().send_head()
+        end = min(end, size - 1)
+        if start >= size or start > end:
+            self.send_response(416)
+            self.send_header('Content-Range', 'bytes */%d' % size)
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return None
+        f = open(path, 'rb')
+        f.seek(start)
+        self.send_response(206)
+        self.send_header('Content-Type', self.guess_type(path))
+        self.send_header('Content-Range', 'bytes %d-%d/%d' % (start, end, size))
+        self.send_header('Content-Length', str(end - start + 1))
+        self.end_headers()
+        self._left = end - start + 1
+        return f
+
+    def copyfile(self, src, dst):
+        left = getattr(self, '_left', None)
+        self._left = None
+        try:
+            if left is None:
+                return super().copyfile(src, dst)
+            while left > 0:
+                buf = src.read(min(65536, left))
+                if not buf:
+                    break
+                dst.write(buf)
+                left -= len(buf)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass   # 瀏覽器跳轉時會主動斷掉舊的連線，正常
 
     def _send(self, code, body, ctype='application/json; charset=utf-8'):
         data = body.encode('utf-8') if isinstance(body, str) else body
@@ -248,6 +308,22 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 title = (msg.get('ctx') or {}).get('title', '')
                 print('  → inbox：%s %s %s' % (kind, title, msg.get('id', '')))
                 return self._send(200, '{"ok":true}')
+            if p == '/api/work':
+                # 手寫或拍照的作答圖片：存到 bridge/work/<id>.png｜jpg，給 Agent 用 Read 打開批改
+                d = json.loads(body)
+                wid = str(d.get('id', ''))
+                if not re.fullmatch(r'[A-Za-z0-9_-]{4,64}', wid):
+                    raise ValueError('bad id')
+                ext = 'jpg' if d.get('type') == 'image/jpeg' else 'png'
+                raw = base64.b64decode(str(d.get('data', '')).split(',')[-1])
+                if len(raw) > 8 * 1024 * 1024:
+                    raise ValueError('image too large')
+                os.makedirs(bpath('work'), exist_ok=True)
+                name = 'work/%s.%s' % (wid, ext)
+                with open(bpath(name), 'wb') as f:
+                    f.write(raw)
+                print('  → 手寫作答：%s（%d KB）' % (name, len(raw) // 1024))
+                return self._send(200, json.dumps({'ok': True, 'file': name}))
             if p == '/api/progress':
                 data = json.loads(body)
                 with LOCK:

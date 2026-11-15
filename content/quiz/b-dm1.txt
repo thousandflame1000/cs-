@@ -1,0 +1,4862 @@
+@q lg1-01 | dm-logic#1 | 1 | 觀念
+$p\to q$ 什麼時候是假的？
+[x] 只有 $p$ 真、$q$ 假的時候
+[ ] $p$ 假的時候
+[ ] $q$ 真的時候
+[ ] $p$、$q$ 都假的時候
+---
+前提假時整句一律為真（「如果下雨我就帶傘」，沒下雨時不管帶不帶都沒說謊）。
+
+@q lg1-02 | dm-logic#1 | 2 | 計算
+「如果考試及格，我就請客」的逆否命題是？
+[x] 如果我沒請客，那考試沒及格
+[ ] 如果我請客，那考試及格
+[ ] 如果考試沒及格，我就不請客
+[ ] 考試及格而且我沒請客
+---
+$p\to q$ 的逆否是 $\neg q\to\neg p$，兩者等價。B 是逆命題、C 是否命題，都不等價。
+
+@q lg1-03 | dm-logic#1 | 2 | 計算
+For how many of the 8 truth assignments do $(p\to(q\to r))$ and $((p\to q)\to r)$ take different values?
+== 2
+---
+真值表：$p=0,q=0,r=0$ 和 $p=0,q=1,r=0$ 時前者真、後者假。$\to$ 不滿足結合律。
+
+@q lg1-04 | dm-logic#1 | 2 | 計算
+In the 8-row truth table of $(p\land q)\to r$, how many rows are true?
+== 7
+---
+只有 $p=q=1$、$r=0$ 時為假。
+
+@q lg1-05 | dm-logic#1 | 2 | 計算
+用 De Morgan 否定「$x>3$ 而且 $y\le5$」。
+[x] $x\le3$ 或 $y>5$
+[ ] $x\le3$ 而且 $y>5$
+[ ] $x<3$ 或 $y<5$
+[ ] $x>3$ 或 $y\le5$
+---
+$\neg(a\land b)=\neg a\lor\neg b$；$>$ 的否定是 $\le$。
+
+@q lg1-06 | dm-logic#1 | 3 | 陷阱
+Is $p\to q$ equivalent to $\neg p\lor q$? Is $p\to q$ equivalent to $q\to p$? Answer "equivalent" or "not equivalent" for each.
+== equivalent,not equivalent
+== 等價,不等價
+?? first pair,second pair
+---
+$p\to q$ 只在 $p=1,q=0$ 時假，$\neg p\lor q$ 也是。$q\to p$ 在 $q=1,p=0$ 時假，跟原句不同。
+
+@q lg1-07 | dm-logic#1 | 2 | 觀念
+$n$ 個命題變數的真值表有幾列？可以寫出幾種不同的真值函數？
+[x] $2^n$ 列；$2^{2^n}$ 種
+[ ] $n$ 列；$2^n$ 種
+[ ] $2^n$ 列；$n^2$ 種
+[ ] $n^2$ 列；$2^n$ 種
+---
+每一列的輸出都可以是 0 或 1，$2^n$ 列就有 $2^{2^n}$ 種組合。
+
+@q lg2-01 | dm-logic#2 | 2 | 計算
+否定「每個學生都有一門課及格」。
+[x] 有某個學生，每門課都不及格
+[ ] 每個學生每門課都不及格
+[ ] 有某個學生有一門課不及格
+[ ] 每個學生都有一門課不及格
+---
+$\neg\forall s\,\exists c\,P(s,c)\equiv\exists s\,\forall c\,\neg P(s,c)$。量詞逐一翻轉，最後否定述詞。
+
+@q lg2-02 | dm-logic#2 | 2 | 比較
+The domain is the integers. Is $\forall x\,\exists y\,(y>x)$ true or false? What about $\exists y\,\forall x\,(y>x)$?
+== true,false
+== 真,假
+?? first,second
+---
+前者：任何 $x$ 都找得到更大的 $y$（例如 $x+1$）。後者：存在一個比所有整數都大的 $y$，不存在。量詞順序不能隨便換。
+
+@q lg2-03 | dm-logic#2 | 2 | 計算
+「有些鳥不會飛」的否定是？
+[x] 所有鳥都會飛
+[ ] 有些鳥會飛
+[ ] 沒有鳥會飛
+[ ] 有些不是鳥的會飛
+---
+$\neg\exists x\,(B(x)\land\neg F(x))\equiv\forall x\,(B(x)\to F(x))$。
+
+@q lg2-04 | dm-logic#2 | 3 | 陷阱
+When the domain is empty, is $\forall x\,P(x)$ true or false? What about $\exists x\,P(x)$?
+== true,false
+== 真,假
+?? universal,existential
+---
+沒有任何反例，所以全稱句「空泛地真」；沒有任何元素，所以存在句為假。
+
+@q lg2-05 | dm-logic#2 | 2 | 計算
+「函數 $f$ 在每一點都連續」寫成：$\forall x\,\forall\epsilon>0\,\exists\delta>0\,\forall y\,(|x-y|<\delta\to|f(x)-f(y)|<\epsilon)$。它的否定是？
+[x] $\exists x\,\exists\epsilon>0\,\forall\delta>0\,\exists y\,(|x-y|<\delta\land|f(x)-f(y)|\ge\epsilon)$
+[ ] $\forall x\,\forall\epsilon>0\,\exists\delta>0\,\forall y\,(|x-y|\ge\delta\to|f(x)-f(y)|\ge\epsilon)$
+[ ] $\exists x\,\exists\epsilon>0\,\exists\delta>0\,\exists y\,(|x-y|<\delta\to|f(x)-f(y)|\ge\epsilon)$
+[ ] $\exists x\,\exists\epsilon>0\,\forall\delta>0\,\exists y\,(|x-y|\ge\delta\lor|f(x)-f(y)|<\epsilon)$
+---
+每個量詞 ∀↔∃ 互換；$\neg(a\to b)\equiv a\land\neg b$。
+
+@q lg3-01 | dm-logic#3 | 2 | 觀念
+要證明「若 $n^2$ 是偶數，則 $n$ 是偶數」，最順手的方法是？
+[x] 逆否：證「若 $n$ 是奇數，則 $n^2$ 是奇數」
+[ ] 直接證
+[ ] 數學歸納法
+[ ] 舉例
+---
+$n=2k+1$，$n^2=4k^2+4k+1$ 是奇數。直接從 $n^2$ 偶數推 $n$ 反而卡住。
+
+@q lg3-02 | dm-logic#3 | 3 | 證明
+用數學歸納法證明 $1+3+5+\cdots+(2n-1)=n^2$。
+---
+基底 $n=1$：$1=1^2$。歸納：設 $1+3+\cdots+(2k-1)=k^2$，則加上第 $k+1$ 項 $2k+1$：$k^2+2k+1=(k+1)^2$。所以對所有 $n\ge1$ 成立。
+
+@q lg3-03 | dm-logic#3 | 3 | 找錯
+「證明所有馬都同一個顏色」：$n=1$ 時成立；設任意 $n$ 匹同色，對 $n+1$ 匹，拿掉第一匹剩 $n$ 匹同色、拿掉最後一匹也同色，兩組重疊，所以全部同色。錯在哪？
+[x] 從 $n=1$ 到 $n=2$ 時，兩組（各 1 匹）沒有重疊，推論不成立
+[ ] $n=1$ 的情況就錯了
+[ ] 歸納法不能用在馬
+[ ] 沒有錯
+---
+歸納步驟必須對**每個** $n\ge$ 基底都成立；這裡 $n=1\to2$ 那一步就斷了。
+
+@q lg3-04 | dm-logic#3 | 2 | 觀念
+反證法證明「$\sqrt2$ 是無理數」的第一步是？
+[x] 假設 $\sqrt2=\frac pq$，$p$、$q$ 互質
+[ ] 假設 $\sqrt2$ 是無理數
+[ ] 算出 $\sqrt2$ 的小數
+[ ] 用歸納法
+---
+接著推出 $p$、$q$ 都是偶數，跟互質矛盾。
+
+@q lg3-05 | dm-logic#3 | 2 | 比較
+一般歸納法和強歸納法的差別？
+[x] 強歸納法在證 $k+1$ 時可以假設 $1$ 到 $k$ **全部**都成立，不只 $k$
+[ ] 強歸納法不需要先驗證最小的情況
+[ ] 一般歸納法比較強
+[ ] 兩者證明的東西不同
+---
+例如證明「每個 ≥ 2 的整數都能分解成質數的乘積」，要用到比 $k+1$ 小的任意數。
+
+@q lg4-01 | dm-logic#4 | 1 | 計算
+A drawer holds many red, blue and black socks, all mixed together. What is the smallest number of socks you must take out to be sure of getting two of the same color?
+== 4
+---
+3 種顏色是籠子，摸 4 隻一定有兩隻同色。
+
+@q lg4-02 | dm-logic#4 | 2 | 計算
+A class has 50 students. At least how many of them must have been born in the same month?
+== 5
+---
+$\lceil50/12\rceil=5$。
+
+@q lg4-03 | dm-logic#4 | 3 | 計算
+Integers are chosen from 1 to 20. What is the smallest number you must choose to be sure that two of them sum to 21?
+== 11
+---
+配成 10 對：(1,20)、(2,19)、…、(10,11)。挑 10 個可以每對只拿一個，挑 11 個一定有一對全拿。
+
+@q lg4-04 | dm-logic#4 | 3 | 計算
+What is the smallest number of integers you must choose to be sure that two of them differ by a multiple of 7?
+== 8
+---
+除以 7 的餘數只有 7 種；8 個數一定有兩個同餘，差就是 7 的倍數。
+
+@q lg4-05 | dm-logic#4 | 3 | 證明
+證明：任意 $n+1$ 個 1 到 $2n$ 的整數中，一定有一個整除另一個。
+---
+每個數寫成 $2^k\cdot m$，$m$ 是奇數，$m\in\{1,3,\dots,2n-1\}$ 只有 $n$ 種。$n+1$ 個數一定有兩個的 $m$ 相同，它們是 $2^a m$ 和 $2^b m$，指數小的整除大的。
+
+@q lg4-06 | dm-logic#4 | 2 | 情境
+A website has 10 million users, and every password is 4 digits (0000 to 9999). At least how many users are guaranteed to share the same password?
+== 1000
+---
+$\lceil10^7/10^4\rceil=1000$。
+
+@q lg5-01 | dm-logic#5 | 1 | 計算
+If $|A|=5$, how many elements does the power set $P(A)$ have?
+== 32
+---
+每個元素選或不選：$2^5$。
+
+@q lg5-02 | dm-logic#5 | 2 | 計算
+Let $|A|=3$ and $|B|=4$. What is $|A\times B|$, and how many relations from $A$ to $B$ (subsets of $A\times B$) are there?
+== 12,4096
+?? |A×B|,relations
+---
+$3\times4=12$；子集合 $2^{12}=4096$。
+
+@q lg5-03 | dm-logic#5 | 2 | 觀念
+下列哪一個集合是**不可數**的？
+[x] 0 到 1 之間的所有實數
+[ ] 所有整數
+[ ] 所有有理數
+[ ] 所有由 0 和 1 組成的有限長字串
+---
+Cantor 對角線論證：假設能列出所有實數，改每一個的第 $i$ 位造出一個不在表上的數。
+
+@q lg5-04 | dm-logic#5 | 3 | 陷阱
+「有理數比整數多得多，所以有理數不可數」對嗎？
+[ ] 對
+[x] 不對
+---
+有理數可以排成一列（把 $\frac pq$ 照 $|p|+q$ 由小到大列），所以可數，跟整數一樣多。
+
+@q lg5-05 | dm-logic#5 | 3 | 觀念
+Is the set of all functions from the natural numbers to $\{0,1\}$ countable or uncountable? What about the set of all C programs?
+== uncountable,countable
+== 不可數,可數
+?? functions,programs
+---
+函數就是無限長的 0/1 序列，對角線論證可證不可數。程式是有限長字串，可數。所以一定有函數不能被任何程式計算。
+
+@q cn1-01 | dm-counting#1 | 1 | 計算
+From 10 people, how many ways are there to choose a committee of 3 (all members have the same role)? How many ways are there to fill the three distinct positions of chair, vice-chair, and secretary?
+== 120,720
+?? committee,positions
+---
+無序：$\binom{10}3=120$；有序：$10\times9\times8=720$。
+
+@q cn1-02 | dm-counting#1 | 2 | 計算
+How many integer solutions does $x_1+x_2+x_3=10$ have with every $x_i\ge0$? With every $x_i\ge1$?
+== 66,36
+?? x≥0,x≥1
+---
+星與槓：10 顆星、2 根槓，$\binom{12}2=66$。每個至少 1：先各發 1，剩 7，$\binom92=36$。
+
+@q cn1-03 | dm-counting#1 | 3 | 計算
+How many integer solutions does $x_1+x_2+x_3+x_4=12$ have with $x_1\ge2$, $0\le x_2\le3$, and $x_3,x_4\ge0$?
+== 202
+---
+令 $y_1=x_1-2$：和變 10，不管 $x_2$ 上限有 $\binom{13}3=286$；扣掉 $x_2\ge4$ 的（和變 6）$\binom93=84$：202（程式窮舉確認）。
+
+@q cn1-04 | dm-counting#1 | 2 | 計算
+An ice-cream cup holds 3 scoops chosen from 5 flavors; flavors may repeat and the order of the scoops does not matter. How many different cups are possible?
+== 35
+---
+可重複組合 $\binom{5+3-1}3=\binom73=35$。
+
+@q cn1-05 | dm-counting#1 | 2 | 計算
+How many distinct arrangements of the letters of MISSISSIPPI are there?
+== 34650
+---
+11 個字母，M1、I4、S4、P2：$\frac{11!}{1!4!4!2!}=34650$。
+
+@q cn1-06 | dm-counting#1 | 2 | 比較
+We choose $r=3$ items from $n=5$ kinds. Which of the following counts are correct? Select all that apply.
+[x] Ordered, with repetition allowed: $125$.
+[x] Ordered, without repetition: $60$.
+[ ] Unordered, without repetition: $20$.
+[x] Unordered, with repetition allowed: $35$.
+[ ] Unordered, with repetition allowed: $5^3/3!$, since each unordered choice corresponds to $3!$ ordered ones.
+---
+「有序可重複 125」對：$n^r=5^3$。
+
+「有序不可重複 60」對：$\frac{n!}{(n-r)!}=5\cdot4\cdot3$。
+
+「無序不可重複 20」錯：$\binom53=10$；20 是 $\binom63$。
+
+「無序可重複 35」對：星與槓，3 顆星、4 根槓，$\binom{n+r-1}{r}=\binom73=35$。
+
+「$5^3/3!$」錯：連整數都不是（$125/6$）。有重複時，例如 $(1,1,2)$ 只對應 3 種排列、$(1,1,1)$ 只對應 1 種，不是每個都對應 $3!$ 種。
+
+@q cn1-07 | dm-counting#1 | 3 | 計算
+Six people sit around a round table; two seatings are the same if every person has the same left and right neighbors (so rotations do not count as new). How many seatings are there? How many if Alice and Bob must sit next to each other?
+== 120,48
+?? any,adjacent
+---
+圓排列 $(6-1)!=120$。Alice、Bob 綁成一塊：5 個單位圓排 $4!=24$，兩人內部 2 種：48。
+
+@q cn2-01 | dm-counting#2 | 2 | 計算
+What is the coefficient of $x^3y^5$ in the expansion of $(x+y)^8$?
+== 56
+---
+從 8 個 $(x+y)$ 裡挑 3 個出 $x$、其餘出 $y$：$\binom83=56$。
+
+@q cn2-02 | dm-counting#2 | 2 | 計算
+What is the coefficient of $x^3$ in the expansion of $(2x-1)^5$?
+== 80
+---
+$\binom53(2x)^3(-1)^2=10\times8=80$。
+
+@q cn2-03 | dm-counting#2 | 2 | 計算
+Evaluate $\sum_{k=0}^{10}\binom{10}k$ and $\sum_{k=0}^{10}(-1)^k\binom{10}k$.
+== 1024,0
+?? sum,alternating sum
+---
+代二項式定理：$(1+1)^{10}=2^{10}=1024$，$(1-1)^{10}=0$。第二個也可以這樣看：取奇數個和取偶數個的子集一樣多。
+
+@q cn2-04 | dm-counting#2 | 3 | 證明
+用「數兩次」證明 $\binom nk=\binom{n-1}{k-1}+\binom{n-1}k$。
+---
+從 $n$ 人選 $k$ 人。固定某人 A：選到 A 的選法，剩下從 $n-1$ 人選 $k-1$：$\binom{n-1}{k-1}$；沒選到 A：從 $n-1$ 人選 $k$：$\binom{n-1}k$。兩類加起來就是全部。
+
+@q cn2-05 | dm-counting#2 | 3 | 計算
+The sum $\sum_{k=0}^{n}k\binom nk$ has a closed form in $n$. What is its value for $n=6$?
+== 192
+---
+$\sum k\binom nk=n2^{n-1}$（從 $n$ 人選一個委員會再選一個主席：先選主席 $n$ 種，其餘每人進或不進 $2^{n-1}$）。$6\times32=192$。
+
+@q cn2-06 | dm-counting#2 | 2 | 計算
+Evaluate $\sum_{k=0}^{4}\binom4k^2$.
+== 70
+---
+Vandermonde：$\sum\binom nk^2=\binom{2n}n=\binom84=70$。
+
+@q cn3-01 | dm-counting#3 | 2 | 計算
+How many integers from 1 to 1000 are divisible by at least one of 3, 5, and 7?
+== 543
+---
+$333+200+142-66-47-28+9=543$。
+
+@q cn3-02 | dm-counting#3 | 2 | 計算
+How many integers from 1 to 100 are relatively prime to 30?
+== 26
+---
+30＝2·3·5。不被 2、3、5 整除：$100-(50+33+20)+(16+10+6)-3=26$（程式確認）。
+
+@q cn3-03 | dm-counting#3 | 2 | 計算
+Five letters are put into five addressed envelopes at random, one per envelope. In how many arrangements is every letter in a wrong envelope?
+== 44
+---
+錯排 $D_5=5!\left(1-1+\frac12-\frac16+\frac1{24}-\frac1{120}\right)=44$。
+
+@q cn3-04 | dm-counting#3 | 2 | 計算
+The derangement numbers satisfy $D_n=(n-1)(D_{n-1}+D_{n-2})$ with $D_1=0$ and $D_2=1$. Find $D_6$.
+== 265
+---
+$D_3=2$、$D_4=9$、$D_5=44$、$D_6=5(44+9)=265$。
+
+@q cn3-05 | dm-counting#3 | 3 | 計算
+How many functions from a 5-element set to a 3-element set use every element of the 3-element set as a value?
+== 150
+---
+排容：$3^5-\binom31 2^5+\binom32 1^5=243-96+3=150$。
+
+@q cn3-06 | dm-counting#3 | 3 | 觀念
+Let $D_n$ be the number of derangements of $n$ elements, that is, permutations in which no element stays in its original position. Which of the following statements are correct? Select all that apply.
+[x] $D_4 = 9$.
+[x] As $n$ grows, the probability $D_n / n!$ that a uniformly random permutation is a derangement approaches $1/e \approx 0.368$.
+[ ] As $n$ grows, the probability $D_n / n!$ approaches 0, because with more elements it becomes harder for every element to move.
+[x] $D_n = (n - 1)(D_{n-1} + D_{n-2})$ for $n \ge 3$.
+[ ] $D_5 = 45$.
+---
+「$D_4=9$」對：排容：$4!-\binom41 3!+\binom42 2!-\binom43 1!+\binom44 0!=24-24+12-4+1=9$。
+
+「趨近 $1/e$」對：$\frac{D_n}{n!}=\sum_{k=0}^{n}\frac{(-1)^k}{k!}\to e^{-1}$，而且收斂很快，$n=5$ 時已經是 $\frac{44}{120}\approx0.367$。
+
+「趨近 0」錯：每個元素留在原位的機率是 $1/n$，元素變多時這個機率也變小，兩者剛好抵消到一個常數。
+
+「$D_n=(n-1)(D_{n-1}+D_{n-2})$」對：看元素 1 被放到哪個位置 $i$（$n-1$ 種），再看元素 $i$ 是不是剛好放到位置 1，分成兩種情況。
+
+「$D_5=45$」錯：用上面的遞迴 $D_5=4(9+2)=44$。
+
+@q cn4-01 | dm-counting#4 | 2 | 計算
+Five distinct balls are placed into 3 distinct boxes. How many placements are there if boxes may be empty? If every box must get at least one ball?
+== 243,150
+?? empty allowed,no empty box
+---
+每顆球 3 種選擇：$3^5$。不可空就是映成函數 150。
+
+@q cn4-02 | dm-counting#4 | 2 | 計算
+Five distinct balls are placed into 3 **identical** boxes so that no box is empty. How many ways are there?
+== 25
+---
+第二類 Stirling 數 $S(5,3)=25$。也等於「每箱至少一個、箱子有編號」的 150 除以 $3!$。
+
+@q cn4-03 | dm-counting#4 | 2 | 計算
+Eight identical balls are placed into 3 distinct boxes so that no box is empty. How many ways are there?
+== 21
+---
+星與槓：先每箱放 1 個，剩 5 個隨便分，$\binom{5+2}{2}=\binom72=21$。
+
+@q cn4-04 | dm-counting#4 | 3 | 計算
+Six identical balls are placed into 3 identical boxes; boxes may be empty. How many ways are there?
+== 7
+---
+6 寫成最多 3 個正整數的和（不計順序）：6、5+1、4+2、3+3、4+1+1、3+2+1、2+2+2，共 7 種。
+
+@q cn4-05 | dm-counting#4 | 2 | 計算
+The Stirling numbers of the second kind satisfy $S(n,k)=kS(n-1,k)+S(n-1,k-1)$. Given $S(5,3)=25$ and $S(5,2)=15$, find $S(6,3)$.
+== 90
+---
+$3\times25+15=90$。意思：第 6 個元素要嘛加入前 5 個已分好的 3 組之一（3 種），要嘛自己一組、前 5 個分成 2 組。
+
+@q cn4-06 | dm-counting#4 | 2 | 計算
+In how many ways can a 5-element set be split into nonempty groups, where the groups are unlabeled and any number of groups is allowed?
+== 52
+---
+$B_5=\sum_kS(5,k)=1+15+25+10+1=52$。
+
+@q cn5-01 | dm-counting#5 | 1 | 計算
+What is the Catalan number $C_4$?
+== 14
+---
+$C_n=\frac1{n+1}\binom{2n}n$：$\frac15\binom84=14$。
+
+@q cn5-02 | dm-counting#5 | 2 | 計算
+How many strings of 4 pairs of parentheses are properly matched (for example, `(())()()`)?
+== 14
+---
+把 ( 當往右、) 當往上，合法就是「不越過對角線」，正是 Catalan 數 $C_4=14$。
+
+@q cn5-03 | dm-counting#5 | 2 | 計算
+How many differently shaped binary trees have exactly 5 nodes?
+== 42
+---
+根佔一個點，左子樹 $k$ 個、右子樹 $4-k$ 個：$C_5=\sum C_kC_{4-k}=42$。
+
+@q cn5-04 | dm-counting#5 | 2 | 計算
+A path on the integer grid goes from $(0,0)$ to $(5,5)$ using unit steps right or up, and it never goes above the diagonal $y=x$ (touching it is allowed). How many such paths are there?
+== 42
+---
+$C_5=42$。全部路 $\binom{10}5=252$，鏡射法扣掉越線的 $\binom{10}6=210$：42。
+
+@q cn5-05 | dm-counting#5 | 2 | 計算
+In how many ways can a convex hexagon be cut into triangles by diagonals that do not cross each other?
+== 14
+---
+凸 $(n+2)$ 邊形的三角剖分數是 $C_n$；六邊形 $n=4$：14。
+
+@q cn5-06 | dm-counting#5 | 3 | 證明
+用鏡射法說明「$n$ 對括號的合法字串數＝$\binom{2n}n-\binom{2n}{n+1}$」。
+---
+把 ( 當 +1、) 當 −1，合法＝前綴和永遠 ≥ 0。不合法的序列第一次碰到 −1 的位置，把之前的每一步反轉，得到一條從 −2 出發的序列，終點仍是 0，相當於 $n+1$ 個 ) 和 $n-1$ 個 (，共 $\binom{2n}{n+1}$ 種，而且這個對應是一對一。所以合法數＝全部 $\binom{2n}n$ 減去 $\binom{2n}{n+1}$，化簡就是 $\frac1{n+1}\binom{2n}n$。
+
+@q cn5-07 | dm-counting#5 | 3 | 計算
+The numbers 1, 2, 3, 4 are pushed into a stack in this order, and pops may happen at any time; every popped number is written down. How many different output orders are possible?
+== 14
+---
+每次 push、pop 對應一對括號，合法操作序列就是 Catalan 數 $C_4=14$（程式窮舉確認）。例如 4 3 1 2 不可能：4 出來時 1、2 還在堆疊裡，2 在 1 上面，一定先出 2。
+
+@q dg1-01 | dm-graph#1 | 1 | 計算
+How many edges does $K_8$ have? How many does $K_{3,5}$ have?
+== 28,15
+?? $K_8$,$K_{3,5}$
+---
+$\binom82=28$；完全二分圖每個左點連每個右點：$3\times5=15$。
+
+@q dg1-02 | dm-graph#1 | 2 | 計算
+A graph has 10 vertices, each of degree 3. How many edges does it have?
+== 15
+---
+握手定理：$\sum\deg=2E$，$30=2E$。
+
+@q dg1-03 | dm-graph#1 | 2 | 反例
+有沒有一張圖有 7 個點、每個點度數都是 3？
+[x] 沒有：度數和 21 是奇數，但度數和一定是 $2E$（偶數）
+[ ] 有
+[ ] 只有在有自環時才有
+[ ] 不能判斷
+---
+推論：奇度點的個數一定是偶數。
+
+@q dg1-04 | dm-graph#1 | 2 | 觀念
+判斷題：一張圖是二分圖的充要條件是什麼？
+[x] 沒有奇數長度的環
+[ ] 沒有環
+[ ] 每個點度數都是偶數
+[ ] 點數是偶數
+---
+有偶數環沒關係（例如正方形就是二分圖）。
+
+@q dg1-05 | dm-graph#1 | 3 | 反例
+兩張圖點數、邊數、度數序列都一樣，一定同構嗎？
+[x] 不一定：例如一個六邊形和兩個分開的三角形，都是 6 點 6 邊、每點度數 2
+[ ] 一定同構
+[ ] 只要點數一樣就同構
+[ ] 不能判斷
+---
+這些只是必要條件。一個連通、一個不連通，就不可能同構。
+
+@q dg1-06 | dm-graph#1 | 2 | 計算
+How many different simple graphs can be drawn on 4 labeled vertices (each pair either joined by an edge or not)?
+== 64
+---
+$\binom42=6$ 對，每對有或沒有：$2^6=64$。
+
+@q dg2-01 | dm-graph#2 | 2 | 觀念
+Dirac 定理：$n\ge3$ 個點的簡單圖，每個點度數 $\ge n/2$，則？
+[x] 一定有漢米頓迴路
+[ ] 一定有歐拉迴路
+[ ] 一定是二分圖
+[ ] 一定沒有環
+---
+這是充分條件；不滿足也可能有（例如大的環，每點度數 2）。
+
+@q dg2-02 | dm-graph#2 | 3 | 反例
+$K_{2,3}$ 有漢米頓迴路嗎？為什麼？
+[x] 沒有：拿掉左邊 2 個點，剩下 3 個孤立點；有漢米頓迴路的圖拿掉 $k$ 個點最多剩 $k$ 塊
+[ ] 有
+[ ] 有，因為每點度數 ≥ 2
+[ ] 沒有，因為邊數是奇數
+---
+二分圖兩邊點數不一樣多時，迴路要左右交替，一定湊不起來。
+
+@q dg2-03 | dm-graph#2 | 2 | 計算
+$K_n$ 什麼時候有歐拉迴路？
+[x] $n$ 是奇數（每點度數 $n-1$ 是偶數）
+[ ] $n$ 是偶數
+[ ] 永遠有
+[ ] 永遠沒有
+---
+$K_n$ 只要 $n\ge3$ 永遠有漢米頓迴路，但歐拉迴路要看度數。
+
+@q dg2-04 | dm-graph#2 | 2 | 觀念
+Ore 定理：任兩個**不相鄰**的點 $u$、$v$ 都有 $\deg u+\deg v\ge n$，則？
+[x] 有漢米頓迴路
+[ ] 有歐拉迴路
+[ ] 是完全圖
+[ ] 沒有漢米頓迴路
+---
+Dirac 是 Ore 的特例（每點都 $\ge n/2$，任兩點和就 $\ge n$）。
+
+@q dg3-01 | dm-graph#3 | 1 | 計算
+A tree has 15 vertices. How many edges does it have?
+== 14
+---
+樹：連通、沒有環，邊數＝點數 − 1。
+
+@q dg3-02 | dm-graph#3 | 2 | 計算
+A full 3-ary tree (every internal vertex has exactly 3 children) has 10 internal vertices. How many vertices does it have in total, and how many have no children?
+== 31,21
+?? vertices,leaves
+---
+$n=mi+1=3\times10+1=31$；葉子 $n-i=21$。
+
+@q dg3-03 | dm-graph#3 | 2 | 計算
+How many different trees can be formed on 5 labeled vertices?
+== 125
+---
+Cayley 公式 $n^{n-2}=5^3=125$。
+
+@q dg3-04 | dm-graph#3 | 3 | 計算
+A forest has 20 vertices and 15 edges. How many trees does it consist of?
+== 5
+---
+每棵樹邊數＝點數 − 1，加總：$E=V-k$，$k=20-15=5$。
+
+@q dg3-05 | dm-graph#3 | 2 | 觀念
+下列哪一個**不是**「$G$ 是樹」的等價條件（$G$ 有 $n$ 個點）？
+[x] $G$ 有 $n-1$ 條邊
+[ ] $G$ 連通而且有 $n-1$ 條邊
+[ ] $G$ 沒有環而且有 $n-1$ 條邊
+[ ] 任兩點之間恰有一條路徑
+---
+只有 $n-1$ 條邊不夠：一個三角形加一個孤立點，4 點 3 邊，不是樹。
+
+@q dg4-01 | dm-graph#4 | 2 | 計算
+A connected planar graph has 10 vertices and 15 edges. How many faces does it have, including the outer face?
+== 7
+---
+$v-e+f=2$：$f=2-10+15=7$。
+
+@q dg4-02 | dm-graph#4 | 2 | 計算
+A simple planar graph has 8 vertices. At most how many edges can it have?
+== 18
+---
+每個面至少被 3 條邊圍住、每條邊最多碰兩個面：$3f\le2e$，代入 $v-e+f=2$ 得 $e\le3v-6=18$。
+
+@q dg4-03 | dm-graph#4 | 3 | 證明
+用 $e\le3v-6$ 證明 $K_5$ 不是平面圖；為什麼同樣的方法證不了 $K_{3,3}$？
+---
+$K_5$：$v=5$、$e=10$，$3v-6=9<10$，矛盾。$K_{3,3}$：$e=9\le3\cdot6-6=12$，不矛盾；要用二分圖沒有三角形、每個面至少 4 條邊的 $e\le2v-4=8<9$。
+
+@q dg4-04 | dm-graph#4 | 2 | 觀念
+Kuratowski 定理說什麼？
+[x] 圖是平面圖 ⇔ 不含 $K_5$ 或 $K_{3,3}$ 的細分（subdivision）
+[ ] 平面圖的面數一定是偶數
+[ ] 平面圖的邊數 $\le3v-6$
+[ ] 平面圖沒有環
+---
+$e\le3v-6$ 只是必要條件，Kuratowski 是充要條件。
+
+@q dg4-05 | dm-graph#4 | 3 | 陷阱
+一張簡單圖 $v=6$、$e=12$，滿足 $e\le3v-6=12$。所以它一定是平面圖。對嗎？
+[ ] 對
+[x] 不對
+---
+$e\le3v-6$ 是平面圖的必要條件，不是充分條件。例如 $K_{3,3}$ 加 3 條邊（9+3=12 邊）仍含 $K_{3,3}$，不是平面圖。
+
+@q dg5-01 | dm-graph#5 | 2 | 計算
+The chromatic polynomial of the cycle $C_n$ is $P(C_n,k)=(k-1)^n+(-1)^n(k-1)$. How many colorings of $C_5$ use at most 3 colors?
+== 30
+---
+$2^5-2=30$。$C_5$ 是奇環，2 種顏色時 $1-1=0$，著不了。
+
+@q dg5-02 | dm-graph#5 | 2 | 計算
+A tree with 5 vertices is colored with 3 available colors so that adjacent vertices differ. How many colorings are there?
+== 48
+---
+樹的色多項式 $k(k-1)^{n-1}=3\times2^4=48$。
+
+@q dg5-03 | dm-graph#5 | 2 | 計算
+What is the chromatic number of $K_4$? How many proper colorings of $K_4$ use 3 available colors?
+== 4,0
+?? chromatic number,3-colorings
+---
+$P(K_n,k)=k(k-1)\cdots(k-n+1)$；$3\times2\times1\times0=0$。
+
+@q dg5-04 | dm-graph#5 | 2 | 觀念
+色數 $\chi(G)$ 的一個下界和一個上界？
+[x] 下界：最大團的大小；上界：最大度數 + 1
+[ ] 下界：點數；上界：邊數
+[ ] 下界 1；上界 4
+[ ] 下界：最大度數；上界：點數
+---
+貪婪著色用不到超過 $\Delta+1$ 種顏色。平面圖 4 種就夠（四色定理）。
+
+@q dg5-05 | dm-graph#5 | 3 | 情境
+期末考排程：某些科目有同一個學生修，不能排同一個時段。最少需要幾個時段？
+[x] 衝突圖（科目是點、有共同學生就連邊）的色數
+[ ] 科目數
+[ ] 最大度數
+[ ] 學生數
+---
+每個時段一種顏色，相鄰的（衝突的）不能同色。
+
+@q dg6-01 | dm-graph#6 | 2 | 觀念
+Hall 定理：二分圖 $(X,Y)$ 有蓋住 $X$ 所有點的匹配 ⇔ ？
+[x] 對 $X$ 的任何子集合 $S$，$|N(S)|\ge|S|$
+[ ] $|X|=|Y|$
+[ ] 每個點度數 ≥ 1
+[ ] 沒有奇環
+---
+$N(S)$ 是 $S$ 的所有鄰居。
+
+@q dg6-02 | dm-graph#6 | 2 | 計算
+A graph has 12 vertices and its largest set of pairwise non-adjacent vertices has size 5. What is the size of a smallest vertex cover?
+== 7
+---
+獨立集的補集是點覆蓋：$12-5=7$。
+
+@q dg6-03 | dm-graph#6 | 3 | 計算
+A bipartite graph has a maximum matching of size 4. What is the size of a minimum vertex cover?
+== 4
+---
+König 定理（只對二分圖）：最大匹配＝最小點覆蓋。
+
+@q dg6-04 | dm-graph#6 | 3 | 反例
+For the triangle $K_3$, what are the sizes of a maximum matching and of a minimum vertex cover? What does this show?
+== 1,2
+?? maximum matching,minimum vertex cover
+---
+三條邊兩兩相鄰，最多選 1 條；要碰到所有邊至少要 2 個點。不相等，因為 $K_3$ 不是二分圖，König 定理不適用。
+
+@q rl1-01 | dm-relations#1 | 2 | 計算
+On $A=\{1,2,3\}$, let $R=\{(1,1),(2,2),(3,3),(1,2),(2,1),(2,3)\}$. Is $R$ reflexive, symmetric, antisymmetric, transitive? Answer yes or no for each.
+== yes,no,no,no
+== 是,否,否,否
+?? reflexive,symmetric,antisymmetric,transitive
+---
+自反：三個 $(a,a)$ 都在。對稱：有 $(2,3)$ 沒有 $(3,2)$。反對稱：$(1,2)$、$(2,1)$ 都在而 $1\ne2$。遞移：$(1,2)$、$(2,3)$ 在，$(1,3)$ 不在。
+
+@q rl1-02 | dm-relations#1 | 2 | 陷阱
+「反對稱」就是「不對稱」。對嗎？
+[ ] 對
+[x] 不對
+---
+反對稱的意思是「$(a,b)$、$(b,a)$ 都在就一定 $a=b$」。一個關係可以同時對稱又反對稱（例如只有 $(a,a)$ 的關係），也可以兩者都不是。
+
+@q rl1-03 | dm-relations#1 | 2 | 計算
+On a set with 3 elements, how many reflexive relations are there, and how many symmetric relations?
+== 64,64
+?? reflexive,symmetric
+---
+自反：對角線 3 對必選，其他 6 對自由：$2^6$。對稱：對角線 3 對自由、6 個非對角位置成 3 組：$2^{3+3}$。
+
+@q rl1-04 | dm-relations#1 | 3 | 計算
+On a set with 3 elements, how many antisymmetric relations are there?
+== 216
+---
+對角線 3 對自由：$2^3$；每一組 $\{(a,b),(b,a)\}$ 有 3 種選法（都不選、只選一個、只選另一個）：$3^3$。$8\times27=216$。
+
+@q rl1-05 | dm-relations#1 | 2 | 觀念
+正整數上的關係「$a\le b$」和「$a<b$」，各有哪些性質？
+[x] $\le$：自反、反對稱、遞移；$<$：不自反、反對稱、遞移
+[ ] 兩個都自反
+[ ] $<$ 是對稱的
+[ ] $\le$ 是對稱的
+---
+$<$ 沒有 $(a,a)$，所以不自反；因為從不同時有 $(a,b)$、$(b,a)$，反對稱「空泛地」成立。
+
+@q rl2-01 | dm-relations#2 | 2 | 計算
+How many ordered pairs does the transitive closure of $R=\{(1,2),(2,3),(3,4)\}$ contain?
+== 6
+---
+加入 $(1,3)$、$(2,4)$、$(1,4)$：共 6 對（所有 $i<j$）。
+
+@q rl2-02 | dm-relations#2 | 2 | 計算
+$R=\{(1,2),(2,1),(2,3)\}$ 的遞移閉包是？
+[x] $\{(1,1),(1,2),(1,3),(2,1),(2,2),(2,3)\}$
+[ ] $\{(1,2),(2,1),(2,3),(1,3)\}$
+[ ] $R$ 本身
+[ ] 所有 9 對
+---
+1→2→1 得 $(1,1)$；2→1→2 得 $(2,2)$；1→2→3 得 $(1,3)$。注意遞移閉包可能產生 $(a,a)$。
+
+@q rl2-03 | dm-relations#2 | 2 | 觀念
+為什麼沒有「反對稱閉包」？
+[x] 閉包是「加入」最少的對；但不反對稱是因為多了某些對，加東西永遠修不好
+[ ] 因為反對稱不重要
+[ ] 因為加對稱閉包就好
+[ ] 其實有
+---
+自反、對稱、遞移都可以靠「補」達成。
+
+@q rl2-04 | dm-relations#2 | 2 | 計算
+Warshall 演算法求 $n$ 個元素的遞移閉包，時間？
+[x] $O(n^3)$
+[ ] $O(n^2)$
+[ ] $O(n\lg n)$
+[ ] $O(2^n)$
+---
+三層迴圈：$t_{ij}=t_{ij}\lor(t_{ik}\land t_{kj})$，$k$ 在最外層。
+
+@q rl3-01 | dm-relations#3 | 2 | 計算
+On the integers, how many equivalence classes does the relation "$a-b$ is a multiple of 4" have?
+== 4
+---
+跟 0、1、2、3 同類的各一類，例如 $\{\dots,-3,1,5,9,\dots\}$ 是一類。這個關係自反（$0$ 是 4 的倍數）、對稱、遞移。
+
+@q rl3-02 | dm-relations#3 | 2 | 觀念
+等價關係的等價類，和集合的「分割」有什麼關係？
+[x] 等價關係的等價類剛好把集合分割成互不重疊、聯集是全部的幾塊；反過來每個分割也定義一個等價關係
+[ ] 等價類可能重疊
+[ ] 等價類的聯集不一定是全部
+[ ] 兩者無關
+---
+所以「$n$ 個元素有幾個等價關係」＝「有幾種分割」＝Bell 數。
+
+@q rl3-03 | dm-relations#3 | 2 | 計算
+How many equivalence relations are there on a set with 4 elements?
+== 15
+---
+Bell 數 $B_4=1+7+6+1=15$。
+
+@q rl3-04 | dm-relations#3 | 3 | 反例
+「兩個人在同一張社群網站上是朋友」是等價關係嗎？
+[x] 不是：不一定遞移（A、B 是朋友，B、C 是朋友，A、C 不一定是）；也不自反（通常不算自己是自己的朋友）
+[ ] 是
+[ ] 只缺對稱
+[ ] 只缺自反
+---
+它的遞移、自反閉包（「透過朋友連得到」）才是等價關係，等價類就是連通元件。
+
+@q rl4-01 | dm-relations#4 | 2 | 計算
+For divisibility on $\{1,2,3,4,6,12\}$, how many line segments does the Hasse diagram have?
+== 7
+---
+覆蓋關係：1–2、1–3、2–4、2–6、3–6、4–12、6–12。不畫遞移推得出來的邊（例如 1–4）。
+
+@q rl4-02 | dm-relations#4 | 2 | 計算
+For divisibility on $\{2,3,4,6,8,12\}$, what are the maximal elements, and is there a greatest element?
+== 8 12,none
+== 8 12,no
+== 8 12,沒有
+?? maximal elements,greatest element
+---
+8、12 都不整除別人；沒有一個數被全部整除，所以沒有最大元。極大元可以有好幾個，最大元最多一個。
+
+@q rl4-03 | dm-relations#4 | 2 | 觀念
+全序（total order）和偏序（partial order）的差別？
+[x] 全序中任兩個元素都可以比較；偏序允許有不能比較的元素
+[ ] 全序不自反
+[ ] 偏序要對稱
+[ ] 兩者一樣
+---
+整數的 $\le$ 是全序；整除是偏序（2 和 3 不能比）。
+
+@q rl4-04 | dm-relations#4 | 3 | 計算
+In the divisibility order on $\{1,2,3,6\}$, what are the lub (least upper bound) and the glb (the greatest element lying below both) of 2 and 3?
+== 6,1
+?? lub,glb
+---
+上界：同時被 2、3 整除的 → 6；最小的就是 6（就是 lcm）。下界：同時整除 2、3 的 → 1（gcd）。每對都有 lub、glb，所以是格。
+
+@q rl5-01 | dm-relations#5 | 2 | 計算
+Let $|A|=3$ and $|B|=4$. How many functions from $A$ to $B$ are there, and how many one-to-one functions?
+== 64,24
+?? functions,one-to-one
+---
+每個 $a$ 選一個像：$4^3$。一對一：$4\times3\times2$。
+
+@q rl5-02 | dm-relations#5 | 2 | 計算
+Let $|A|=4$ and $|B|=3$. How many onto functions from $A$ to $B$ are there?
+== 36
+---
+$3^4-\binom31 2^4+\binom32 1^4=81-48+3=36$。
+
+@q rl5-03 | dm-relations#5 | 3 | 觀念
+$g\circ f$ 是一對一，可以推出什麼？
+[x] $f$ 是一對一，$g$ 不一定
+[ ] $g$ 是一對一
+[ ] 兩個都是一對一
+[ ] 兩個都是映成
+---
+若 $f(a)=f(b)$，則 $g(f(a))=g(f(b))$，$g\circ f$ 一對一推出 $a=b$。另一個推論：$g\circ f$ 映成則 $g$ 映成。
+
+@q rl5-04 | dm-relations#5 | 2 | 反例
+Let $f:\mathbb Z\to\mathbb Z$ with $f(x)=2x$. Is $f$ one-to-one? Is it onto? Answer yes or no for each.
+== yes,no
+== 是,否
+?? one-to-one,onto
+---
+$2a=2b\Rightarrow a=b$。奇數沒有原像，不映成。在有限集合上一對一和映成等價，無限集合不一定。
+
+@q rg1-01 | dm-recur-gf#1 | 2 | 計算
+Let $a_n$ be the number of binary strings of length $n$ with no two adjacent 0s, so $a_1=2$ and $a_2=3$. Find $a_6$.
+== 21
+---
+最後一位是 1：前面任意合法 $a_{n-1}$；最後是 0：倒數第二位必須是 1，前面 $a_{n-2}$。$a_n=a_{n-1}+a_{n-2}$：2、3、5、8、13、21。
+
+@q rg1-02 | dm-recur-gf#1 | 2 | 計算
+Let $f_n$ be the number of ways to tile a $2\times n$ rectangle with $1\times2$ dominoes, so $f_1=1$ and $f_2=2$. Find $f_8$.
+== 34
+---
+最左邊放一塊直的（剩 $2\times(n-1)$）或兩塊橫的疊著（剩 $2\times(n-2)$）：$f_n=f_{n-1}+f_{n-2}$。1、2、3、5、8、13、21、34。
+
+@q rg1-03 | dm-recur-gf#1 | 2 | 計算
+Five lines are drawn in the plane so that every two of them cross and no three pass through a common point. Into how many regions do they divide the plane?
+== 16
+---
+第 $n$ 條線和前面 $n-1$ 條各交一點，被切成 $n$ 段，每段多切出一塊：$L(n)=L(n-1)+n$，$L(0)=1$。$L(n)=1+\frac{n(n+1)}2$，$L(5)=16$。
+
+@q rg1-04 | dm-recur-gf#1 | 3 | 計算
+A staircase is climbed 1 or 2 steps at a time. In how many ways can one reach step 10 from the ground?
+== 89
+---
+最後一步是 1 階或 2 階：$s_n=s_{n-1}+s_{n-2}$，$s_1=1$、$s_2=2$。跟骨牌鋪磚同一個數列：$s_{10}=89$。
+
+@q rg1-05 | dm-recur-gf#1 | 2 | 計算
+The Tower of Hanoi satisfies $H_n=2H_{n-1}+1$ with $H_1=1$. How many moves are needed for 6 disks?
+== 63
+---
+$H_n=2^n-1=63$。
+
+@q rg2-01 | dm-recur-gf#2 | 2 | 計算
+$a_n=5a_{n-1}-6a_{n-2}$，$a_0=1$、$a_1=4$。一般式是？
+[x] $a_n=2\cdot3^n-2^n$
+[ ] $a_n=3^n+2^n$
+[ ] $a_n=2^n$
+[ ] $a_n=(1+n)2^n$
+---
+特徵方程 $r^2-5r+6=0$，根 2、3。$A+B=1$、$2A+3B=4$：$B=2$、$A=-1$。驗算 $a_2=18-4=14=5\cdot4-6\cdot1$。
+
+@q rg2-02 | dm-recur-gf#2 | 3 | 計算
+Let $a_n=4a_{n-1}-4a_{n-2}$ for $n\ge2$, with $a_0=1$ and $a_1=6$. Find $a_5$.
+== 352
+---
+重根 2：$a_n=(\alpha+\beta n)2^n$。$\alpha=1$、$2(1+\beta)=6$，$\beta=2$：$a_n=(1+2n)2^n$，$a_5=11\times32=352$。
+
+@q rg2-03 | dm-recur-gf#2 | 2 | 觀念
+特徵方程有重根 $r$（重數 2）時，一般式長什麼樣？
+[x] $(A+Bn)r^n$
+[ ] $Ar^n+Br^n$
+[ ] $Ar^n$
+[ ] $A+Bn$
+---
+只寫 $Ar^n+Br^n$ 等於只有一個未知數，定不出兩個初始條件。
+
+@q rg2-04 | dm-recur-gf#2 | 2 | 計算
+費氏數列的特徵方程 $r^2=r+1$，兩個根是？
+[x] $\frac{1\pm\sqrt5}2$
+[ ] $1$ 和 $-1$
+[ ] $\frac{-1\pm\sqrt5}2$
+[ ] $2$ 和 $-1$
+---
+所以 $F_n=\frac1{\sqrt5}\left(\phi^n-\hat\phi^n\right)$，$\phi\approx1.618$，費氏數成長約 $1.618^n$。
+
+@q rg3-01 | dm-recur-gf#3 | 3 | 計算
+Let $a_n=2a_{n-1}+3^n$ for $n\ge1$, with $a_0=1$. Find $a_4$.
+== 211
+---
+特解猜 $C3^n$：$C3^n=2C3^{n-1}+3^n$，$C=3$；齊次解 $\alpha2^n$。$a_0=1$：$\alpha+3=1$，$\alpha=-2$。$a_n=3^{n+1}-2^{n+1}$，$a_4=243-32=211$。
+
+@q rg3-02 | dm-recur-gf#3 | 3 | 陷阱
+Let $a_n=2a_{n-1}+2^n$ for $n\ge1$, with $a_0=1$. (A particular solution of the form $C2^n$ does not exist here.) Find $a_5$.
+== 192
+---
+$2^n$ 剛好是齊次解（特徵根 2），代進去會變成 $C2^n=C2^n+2^n$，無解。要猜 $Cn2^n$：$C=1$。一般式 $a_n=(n+1)2^n$，$a_5=192$。
+
+@q rg3-03 | dm-recur-gf#3 | 2 | 觀念
+For each nonhomogeneous recurrence below, which suggested form for a particular solution is correct? Select all that apply.
+[x] $a_n=3a_{n-1}+n$: try $Cn+D$.
+[x] $a_n=3a_{n-1}+3^n$: try $Cn3^n$.
+[x] $a_n=3a_{n-1}+2^n$: try $C2^n$.
+[x] $a_n=a_{n-1}+n$: try $n(Cn+D)$.
+[ ] $a_n=2a_{n-1}+5$: the constant 5 is a particular solution.
+---
+「$3a_{n-1}+n$ 猜 $Cn+D$」對：右邊是一次多項式（看成 $n\cdot1^n$），1 不是特徵根（根是 3），不用乘 $n$。代入得 $-\frac n2-\frac34$。
+
+「$3a_{n-1}+3^n$ 猜 $Cn3^n$」對：3 是特徵根，只猜 $C3^n$ 代進去左右的 $3^n$ 項會互相抵消，要多乘一個 $n$。
+
+「$3a_{n-1}+2^n$ 猜 $C2^n$」對：2 不是特徵根。代入得 $C=-2$。
+
+「$a_{n-1}+n$ 猜 $n(Cn+D)$」對：特徵根是 1，和右邊的 $1^n$ 撞到，要乘 $n$。結果是 $\frac{n(n+1)}2$ 那一類。
+
+「$2a_{n-1}+5$ 的特解是 5」錯：常數 $K$ 要滿足 $K=2K+5$，$K=-5$；代 5 得 $2\cdot5+5=15\ne5$。
+
+@q rg4-01 | dm-recur-gf#4 | 2 | 計算
+Let $T(n)=2T(n/2)+n$ with $T(1)=1$, for $n$ a power of 2. Find $T(32)$.
+== 192
+---
+令 $a_k=T(2^k)$：$a_k=2a_{k-1}+2^k$，解得 $a_k=(k+1)2^k$。$T(n)=n\lg n+n$，$T(32)=160+32=192$。
+
+@q rg4-02 | dm-recur-gf#4 | 3 | 計算
+$T(n)=4T(n/2)+n$、$T(1)=1$，$n=2^k$。精確解？
+[x] $T(n)=2n^2-n$
+[ ] $T(n)=n^2$
+[ ] $T(n)=n^2\lg n$
+[ ] $T(n)=n\lg n$
+---
+$a_k=4a_{k-1}+2^k$。齊次 $A4^k$；特解 $C2^k$：$C2^k=4C2^{k-1}+2^k$，$C=-1$。$a_0=1$：$A=2$。$a_k=2\cdot4^k-2^k=2n^2-n$。主定理說 $\Theta(n^2)$，一致。
+
+@q rg4-03 | dm-recur-gf#4 | 2 | 觀念
+用 $n=b^k$ 換變數解分治遞迴，跟主定理比的好處？
+[x] 能得到精確解（包括常數和低次項），不只是 $\Theta$
+[ ] 比較快
+[ ] 不需要 $n$ 是 $b$ 的次方
+[ ] 適用範圍比較廣
+---
+代價是只對 $n=b^k$ 成立，其他 $n$ 要另外處理。
+
+@q rg5-01 | dm-recur-gf#5 | 2 | 計算
+What is the coefficient of $x^6$ in the expansion of $(1+x+x^2)^4$?
+== 10
+---
+4 個盒子各放 0～2 顆，總共 6 顆：窮舉 (2,2,2,0) 的排法 4 種＋(2,2,1,1) 的排法 6 種＝10。
+
+@q rg5-02 | dm-recur-gf#5 | 3 | 計算
+How many integer solutions does $x_1+x_2+x_3=10$ have with $0\le x_1\le3$, $x_2\ge0$ even, and $x_3\ge1$?
+== 18
+---
+生成函數 $(1+x+x^2+x^3)(1+x^2+x^4+\cdots)(x+x^2+\cdots)$ 取 $x^{10}$ 係數；或直接數：對每個 $x_1$、偶數 $x_2$，$x_3$ 唯一確定且要 ≥ 1。程式窮舉得 18。
+
+@q rg5-03 | dm-recur-gf#5 | 2 | 計算
+Which of the following statements about power-series expansions are correct? Select all that apply.
+[x] $\frac1{1-x}=1+x+x^2+x^3+\cdots$
+[x] The coefficient of $x^n$ in $\frac1{(1-x)^2}$ is $n+1$.
+[ ] The coefficient of $x^2$ in $\frac1{(1-x)^3}$ is 9.
+[x] The coefficient of $x^n$ in $\frac1{(1-x)^k}$ is $\binom{n+k-1}{k-1}$.
+[ ] The coefficient of $x^5$ in $\frac1{1-2x}$ is 10.
+---
+「$\frac1{1-x}$ 的展開」對：等比級數。
+
+「$\frac1{(1-x)^2}$ 是 $n+1$」對：$\left(\sum x^i\right)^2$ 中 $x^n$ 的係數是「$i+j=n$ 的非負整數解數」，$n+1$ 個。
+
+「$\frac1{(1-x)^3}$ 的 $x^2$ 係數是 9」錯：是 $\binom{4}2=6$；9 是把係數誤當成 $(n+1)^2$。
+
+「$\binom{n+k-1}{k-1}$」對：星與槓，$n$ 顆星分給 $k$ 個變數。
+
+「$\frac1{1-2x}$ 的 $x^5$ 係數是 10」錯：$\frac1{1-2x}=\sum(2x)^n$，係數是 $2^5=32$。
+
+@q rg5-04 | dm-recur-gf#5 | 2 | 比較
+We count the integer solutions of $x_1+x_2+x_3=6$ with $1\le x_1\le3$, $0\le x_2\le2$, and $x_3\ge0$ even, using the product of one generating-function factor per variable. Which of the following statements are correct? Select all that apply.
+[x] The factor for $x_1$ is $x+x^2+x^3$.
+[x] The factor for $x_3$ is $\frac1{1-x^2}$.
+[ ] Allowing $x_2$ to be any nonnegative integer would not change the number of solutions.
+[x] The number of solutions is 4.
+[x] The answer is the coefficient of $x^6$ in $(x+x^2+x^3)(1+x+x^2)\frac1{1-x^2}$.
+---
+每個變數允許的值 $v$ 都寫成 $x^v$ 加起來，所有因子相乘，取 $x^6$ 的係數。
+
+「$x_1$：$x+x^2+x^3$」對。
+
+「$x_3$：$\frac1{1-x^2}$」對：$1+x^2+x^4+\cdots$，只有偶數次方。
+
+「$x_2$ 不設上限也一樣」錯：$x_2$ 的因子會變成 $\frac1{1-x}$，答案變成 8，多出 $x_2=3,4,5$ 的解，例如 $(1,5,0)$。
+
+「4 個解」對：$x_1=1$：$(1,1,4)$；$x_1=2$：$(2,0,4),(2,2,2)$；$x_1=3$：$(3,1,2)$。
+
+「取 $x^6$ 的係數」對：三個因子相乘，$x^6$ 的係數就是三個次方加起來是 6 的選法數。
+
+@q rg6-01 | dm-recur-gf#6 | 2 | 計算
+How many strings of length 5 over the alphabet $\{a,b,c\}$ contain the letter $a$ an even number of times?
+== 122
+---
+指數生成函數：$a$ 的因子 $\frac{e^x+e^{-x}}2$，$b$、$c$ 各 $e^x$。乘起來 $\frac{e^{3x}+e^x}2$，$x^5/5!$ 的係數 $\frac{3^5+1}2=122$。
+
+@q rg6-02 | dm-recur-gf#6 | 2 | 計算
+How many strings of length 4 over the alphabet $\{a,b,c\}$ use every letter at least once?
+== 36
+---
+每個字母的因子 $e^x-1$：$(e^x-1)^3=e^{3x}-3e^{2x}+3e^x-1$，$x^4/4!$ 係數 $81-48+3=36$。也就是映成函數的個數。
+
+@q rg6-03 | dm-recur-gf#6 | 2 | 觀念
+什麼時候用指數生成函數，而不是一般生成函數？
+[x] 要數「有順序的排列」（例如字串），同類的東西位置不同算不同時
+[ ] 數無順序的選法時
+[ ] 數整數解時
+[ ] 任何時候都一樣
+---
+指數生成函數的 $\frac{x^n}{n!}$ 會自動處理「把各類東西排在一起」的多項式係數。
+
+@q nt1-01 | dm-nt-algebra#1 | 2 | 追蹤
+Use the Euclidean algorithm to compute $\gcd(252,198)$. How many divisions are needed, and what is the gcd?
+== 4,18
+?? divisions,gcd
+---
+$252=1\cdot198+54$；$198=3\cdot54+36$；$54=1\cdot36+18$；$36=2\cdot18+0$。4 次，gcd＝18。
+
+@q nt1-02 | dm-nt-algebra#1 | 3 | 計算
+Find the integers $s$ and $t$ with $252s+198t=\gcd(252,198)$ obtained by working the Euclidean algorithm backward.
+== 4,-5
+?? s,t
+---
+$18=54-36=54-(198-3\cdot54)=4\cdot54-198=4(252-198)-198=4\cdot252-5\cdot198$。
+
+@q nt1-03 | dm-nt-algebra#1 | 2 | 觀念
+為什麼 $\gcd(a,b)=\gcd(b,a\bmod b)$？
+[x] $a=qb+r$：任何同時整除 $a$、$b$ 的數也整除 $r=a-qb$；反過來整除 $b$、$r$ 的也整除 $a$，公因數集合一樣
+[ ] 因為 $a\bmod b$ 比較小
+[ ] 因為 $a$、$b$ 互質
+[ ] 只在 $a>b$ 時成立
+---
+每兩步數字至少減半，步數 $O(\lg n)$。
+
+@q nt1-04 | dm-nt-algebra#1 | 2 | 計算
+What is $\gcd(161,28)$?
+== 7
+---
+$161=5\cdot28+21$、$28=21+7$、$21=3\cdot7$。
+
+@q nt2-01 | dm-nt-algebra#2 | 2 | 計算
+What is the inverse of 7 modulo 26?
+== 15
+---
+$7\times15=105=4\times26+1$。用延伸歐幾里得求 $7s+26t=1$。
+
+@q nt2-02 | dm-nt-algebra#2 | 2 | 觀念
+$a$ 在模 $n$ 下有反元素 ⇔ ？
+[x] $\gcd(a,n)=1$
+[ ] $a<n$
+[ ] $n$ 是質數
+[ ] $a$ 是奇數
+---
+$n$ 是質數時，除了 0 每個都有反元素。
+
+@q nt2-03 | dm-nt-algebra#2 | 2 | 計算
+How many solutions does $6x\equiv4\pmod{10}$ have with $0\le x<10$?
+== 2
+---
+$\gcd(6,10)=2$ 整除 4，有 2 個解：$x=4$、$9$。若 gcd 不整除右邊就無解。
+
+@q nt2-04 | dm-nt-algebra#2 | 3 | 計算
+Find the smallest positive integer $x$ that leaves remainder 1 when divided by 4, remainder 2 when divided by 5, and remainder 3 when divided by 7.
+== 17
+---
+中國剩餘定理：模 $4\cdot5\cdot7=140$ 有唯一解。從 7 的倍數加 3 找：3、10、17，17 除以 4 餘 1、除以 5 餘 2 ✓。
+
+@q nt2-05 | dm-nt-algebra#2 | 2 | 計算
+What is $3^{100}\bmod7$?
+== 4
+---
+費馬：$3^6\equiv1\pmod7$。$100=16\cdot6+4$，$3^4=81\equiv4$。
+
+@q nt2-06 | dm-nt-algebra#2 | 2 | 計算
+What are $\varphi(36)$ and $\varphi(35)$?
+== 12,24
+?? φ(36),φ(35)
+---
+$36=2^2\cdot3^2$：$36(1-\frac12)(1-\frac13)=12$。$35=5\cdot7$：$4\times6=24$。
+
+@q nt2-07 | dm-nt-algebra#2 | 3 | 計算
+What is $2^{1000}\bmod13$?
+== 3
+---
+$2^{12}\equiv1\pmod{13}$；$1000=83\cdot12+4$，$2^4=16\equiv3$。
+
+@q nt3-01 | dm-nt-algebra#3 | 2 | 計算
+RSA with $p=5$, $q=11$ and $e=3$. What are $n$, $\varphi(n)$ and the private key $d$?
+== 55,40,27
+?? n,φ(n),d
+---
+$n=55$、$\varphi=4\times10=40$；$3d\equiv1\pmod{40}$：$d=27$（$81=2\cdot40+1$）。
+
+@q nt3-02 | dm-nt-algebra#3 | 3 | 計算
+RSA with $n=55$ and $e=3$. What is the ciphertext for the plaintext $m=8$?
+== 17
+---
+$8^3=512=9\times55+17$。解密 $17^{27}\bmod55=8$（程式驗算）。
+
+@q nt3-03 | dm-nt-algebra#3 | 2 | 觀念
+RSA 的安全性主要靠什麼？
+[x] 大數 $n=pq$ 很難分解：知道 $p$、$q$ 就能算出 $\varphi(n)$ 和私鑰 $d$
+[ ] $e$ 很大
+[ ] 加密很慢
+[ ] 明文很長
+---
+目前沒有已知的多項式時間古典演算法能分解大整數。
+
+@q nt3-04 | dm-nt-algebra#3 | 3 | 證明
+說明 RSA 解密為什麼得回原文（設 $\gcd(m,n)=1$）。
+---
+$ed\equiv1\pmod{\varphi(n)}$，所以 $ed=1+k\varphi(n)$。$c^d=m^{ed}=m\cdot(m^{\varphi(n)})^k\equiv m\cdot1^k=m\pmod n$，用的是 Euler 定理 $m^{\varphi(n)}\equiv1$。
+
+@q nt3-05 | dm-nt-algebra#3 | 2 | 計算
+RSA with $p=7$, $q=13$ and $e=5$. What is the private key $d$?
+== 29
+---
+$\varphi=6\times12=72$；$5d\equiv1\pmod{72}$：$5\times29=145=2\cdot72+1$。
+
+@q nt4-01 | dm-nt-algebra#4 | 2 | 計算
+In the additive group $\mathbb Z_{12}$, what is the order of the element 8?
+== 3
+---
+$8,16\equiv4,24\equiv0$：3 次回到 0。一般是 $12/\gcd(8,12)=3$。
+
+@q nt4-02 | dm-nt-algebra#4 | 2 | 觀念
+Lagrange 定理說什麼？
+[x] 有限群的子群大小一定整除群的大小
+[ ] 每個群都是循環群
+[ ] 群的元素個數是質數
+[ ] 子群一定是正規的
+---
+推論：每個元素的階整除群的階。所以 $\mathbb Z_{12}$ 不可能有階 5 的元素。
+
+@q nt4-03 | dm-nt-algebra#4 | 2 | 計算
+In $\mathbb Z_7^*$ (the numbers 1 to 6 under multiplication mod 7), how many different elements do the powers $3^1,\dots,3^6$ cover?
+== 6
+---
+$3,2,6,4,5,1$，全部 6 個：3 是生成元，$\mathbb Z_7^*$ 是循環群。
+
+@q nt4-04 | dm-nt-algebra#4 | 2 | 觀念
+$\mathbb Z_n$（加法和乘法模 $n$）是體（field）⇔ ？
+[x] $n$ 是質數
+[ ] $n$ 是偶數
+[ ] $n$ 是完全平方數
+[ ] 永遠是
+---
+$n$ 不是質數時，因數沒有乘法反元素（例如 $\mathbb Z_6$ 的 2）。
+
+@q nt4-05 | dm-nt-algebra#4 | 3 | 反例
+（整數, 減法）滿足群的定義嗎？
+[x] 不是：減法不滿足結合律，$(5-3)-1\ne5-(3-1)$
+[ ] 是
+[ ] 是，單位元素是 0
+[ ] 不是，因為沒有反元素
+---
+群要滿足封閉、結合律、有單位元素、每個元素有反元素。減法封閉，但結合律不成立；整數在**加法**下才是群。
+
+@q nt5-01 | dm-nt-algebra#5 | 2 | 計算
+Four beads are arranged in a circle, and each is painted one of 3 colors. Colorings that can be turned into each other by turning the circle count as the same. How many colorings are there?
+== 24
+---
+Burnside：轉 0°固定 $3^4=81$；轉 90°、270° 各固定 $3$；轉 180° 固定 $3^2=9$。$\frac{81+3+9+3}4=24$。
+
+@q nt5-02 | dm-nt-algebra#5 | 3 | 計算
+Four beads are arranged in a circle, each painted one of 3 colors. Now colorings that can be turned into each other by turning the circle or flipping it over count as the same (a bracelet). How many colorings are there?
+== 21
+---
+多 4 個翻轉：穿過兩顆珠子的軸 2 條，各固定 $3^3=27$；穿過兩條邊中點的 2 條，各固定 $3^2=9$。$\frac{96+54+18}8=21$（程式窮舉確認）。
+
+@q nt5-03 | dm-nt-algebra#5 | 2 | 計算
+A necklace has 6 beads in 2 colors, and necklaces that can be turned into each other by turning the circle count as the same. How many necklaces are there?
+== 14
+---
+$\frac16\sum_{i=0}^52^{\gcd(i,6)}=\frac{64+2+4+8+4+2}6=14$。
+
+@q nt5-04 | dm-nt-algebra#5 | 2 | 觀念
+Burnside 引理：不同著色數＝？
+[x] 每個對稱操作「固定」的著色數，取平均
+[ ] 總著色數除以操作數
+[ ] 總著色數減掉操作數
+[ ] 最大的固定數
+---
+直接除（$81/4$）不是整數，因為有些著色被某些旋轉固定、等價類大小不同。
+
+@q lg1-08 | dm-logic#1 | 2 | 計算
+下列哪一個是恆真式（tautology）？
+[x] $((p\to q)\land p)\to q$
+[ ] $((p\to q)\land q)\to p$
+[ ] $(p\to q)\to(q\to p)$
+[ ] $(p\lor q)\to p$
+---
+第一個是「肯定前件」（modus ponens）。第二個是「肯定後件」謬誤：$p$ 假、$q$ 真時整句假。第三個也在同一組值下假。
+
+@q lg1-09 | dm-logic#1 | 2 | 陷阱
+$\neg(p\to q)$ 等價於？
+[x] $p\land\neg q$
+[ ] $\neg p\to\neg q$
+[ ] $\neg p\lor q$
+[ ] $\neg p\land q$
+---
+$p\to q\equiv\neg p\lor q$，De Morgan 得 $p\land\neg q$：「蘊含是假」只有「前真後假」一種情況。第二個是「否命題」，不是否定。
+
+@q lg1-10 | dm-logic#1 | 2 | 情境
+規則「只要下雨，比賽就延期」是真的。今天比賽延期了，能推出今天下雨嗎？
+[x] 不能：延期也可能是其他原因；這是肯定後件的謬誤
+[ ] 能
+[ ] 能，因為逆命題也成立
+[ ] 不能，因為規則是假的
+---
+$p\to q$ 和 $q$ 為真時 $p$ 可真可假。能推出的是：沒延期 ⇒ 沒下雨（逆否）。
+
+@q lg1-11 | dm-logic#1 | 3 | 情境
+島上的騎士只說真話、騙子只說假話。A 說「B 是騙子」；B 說「A 和我是同一種人」。A、B 各是？
+[x] A 騎士、B 騙子
+[ ] A 騙子、B 騎士
+[ ] 兩個都是騎士
+[ ] 兩個都是騙子
+---
+窮舉四種情況：只有 A 騎士、B 騙子時兩句話的真假都跟身份一致。例如兩個都是騎士：A 說的「B 是騙子」就是假的，矛盾。
+
+@q lg1-12 | dm-logic#1 | 2 | 計算
+In the 8-row truth table of $(p\lor q)\land(\neg p\lor r)$, how many rows are true?
+== 4
+---
+$p$ 真時要 $r$ 真（$q$ 隨意）：2 列；$p$ 假時要 $q$ 真（$r$ 隨意）：2 列。
+
+@q lg1-13 | dm-logic#1 | 2 | 找錯
+學生把「若 $p$ 則 $q$」的否定寫成「若非 $p$ 則非 $q$」。錯在哪？
+[x] 那是否命題，跟原命題不等價也不互為否定；否定是「$p$ 而且非 $q$」
+[ ] 沒錯
+[ ] 應該是「若 $q$ 則 $p$」
+[ ] 應該是「若非 $q$ 則非 $p$」
+---
+$p$ 假、$q$ 真時：原命題真、否命題假；$p$ 真、$q$ 真時：兩者都真。一個句子和它的否定永遠一真一假，所以否命題不是否定。
+
+@q lg1-14 | dm-logic#1 | 2 | 計算
+$p\oplus q$（剛好一個為真時才為真）等價於？
+[x] $(p\lor q)\land\neg(p\land q)$
+[ ] $p\lor q$
+[ ] $\neg(p\leftrightarrow\neg q)$
+[ ] $(p\land q)\lor(\neg p\land\neg q)$
+---
+剛好一個為真。第四個是 $p\leftrightarrow q$，正好相反；第三個化簡是 $p\leftrightarrow q$。
+
+@q lg1-15 | dm-logic#1 | 3 | 陷阱
+「$p$ only if $q$」（$p$ 只有在 $q$ 時才成立）寫成符號？
+[x] $p\to q$
+[ ] $q\to p$
+[ ] $p\leftrightarrow q$
+[ ] $p\land q$
+---
+「只有在 $q$ 時 $p$」＝沒有 $q$ 就沒有 $p$＝$\neg q\to\neg p$＝$p\to q$。「$p$ if $q$」才是 $q\to p$。
+
+@q lg1-16 | dm-logic#1 | 2 | 計算
+「$n$ 是 4 的倍數」是「$n$ 是偶數」的什麼條件？
+[x] 充分但不必要
+[ ] 必要但不充分
+[ ] 充要
+[ ] 都不是
+---
+4 的倍數 ⇒ 偶數（充分）；6 是偶數但不是 4 的倍數（不必要）。
+
+@q lg1-17 | dm-logic#1 | 3 | 觀念
+只用 $\land$、$\lor$ 兩種運算（不准用 $\neg$），能寫出所有真值函數嗎？
+[x] 不能：所有變數都真時，這種式子一定是真，寫不出 $\neg p$
+[ ] 能
+[ ] 能，只要變數夠多
+[ ] 只有兩個變數時能
+---
+$\{\neg,\land\}$、$\{\neg,\lor\}$、$\{\text{NAND}\}$ 都夠（functionally complete）。「全真輸入 ⇒ 全真輸出」這個性質在 $\land,\lor$ 下保持，所以 $\neg$ 做不出來。
+
+@q lg1-18 | dm-logic#1 | 3 | 計算
+Using only NAND ($p\uparrow q=\neg(p\land q)$), what is the smallest number of NAND operations needed to express $p\lor q$?
+== 3
+---
+$p\lor q=\neg p\uparrow\neg q=(p\uparrow p)\uparrow(q\uparrow q)$：兩個做否定、一個合起來。
+
+@q lg1-19 | dm-logic#1 | 2 | 計算
+Consider the three-variable function "exactly one of $p,q,r$ is true". Written in full disjunctive normal form, with one minterm per true row, how many terms does it have?
+== 3
+---
+真值表中只有 $(1,0,0)$、$(0,1,0)$、$(0,0,1)$ 三列為真，各對應一個最小項，例如 $p\land\neg q\land\neg r$。
+
+@q lg1-20 | dm-logic#1 | 2 | 情境
+資料庫篩選條件「非（年齡 > 30 且 城市＝台北）」等價於？
+[x] 年齡 ≤ 30 或 城市 ≠ 台北
+[ ] 年齡 ≤ 30 且 城市 ≠ 台北
+[ ] 年齡 > 30 或 城市＝台北
+[ ] 年齡 < 30 或 城市 ≠ 台北
+---
+De Morgan：$\neg(a\land b)=\neg a\lor\neg b$。$>$ 的否定是 $\le$（第四個漏了 30）。
+
+@q lg1-21 | dm-logic#1 | 3 | 證明
+用真值表或等價推導說明 $((p\to q)\land(q\to r))\to(p\to r)$ 是恆真式。
+---
+反證：設整句假，則 $p\to r$ 假（$p$ 真、$r$ 假）且 $p\to q$、$q\to r$ 都真。$p$ 真 ⇒ $q$ 真 ⇒ $r$ 真，跟 $r$ 假矛盾。所以沒有任何一組值讓它假。
+
+@q lg2-06 | dm-logic#2 | 2 | 計算
+The domain is $\{1,2,3\}$. Is each of $\forall x\,\exists y\,(x+y=4)$ and $\exists y\,\forall x\,(x+y=4)$ true or false?
+== true,false
+== 真,假
+?? $\forall x\,\exists y\,(x+y=4)$,$\exists y\,\forall x\,(x+y=4)$
+---
+前者：$x=1,2,3$ 各取 $y=3,2,1$。後者要一個 $y$ 對所有 $x$ 都行，不可能（$y$ 只能是 $4-x$，跟著 $x$ 變）。
+
+@q lg2-07 | dm-logic#2 | 2 | 陷阱
+$\forall x\,(P(x)\lor Q(x))$ 和 $\forall x\,P(x)\lor\forall x\,Q(x)$ 等價嗎？
+[x] 不等價：整數上 $P$＝偶數、$Q$＝奇數，前者真、後者假
+[ ] 等價
+[ ] 等價，因為 $\forall$ 對 $\lor$ 可以分配
+[ ] 只有定義域有限時等價
+---
+$\forall$ 對 $\land$ 可以分配，對 $\lor$ 不行。只有「後者 ⇒ 前者」成立。
+
+@q lg2-08 | dm-logic#2 | 2 | 比較
+$\exists x\,(P(x)\land Q(x))$ 和 $\exists x\,P(x)\land\exists x\,Q(x)$ 的關係？
+[x] 前者 ⇒ 後者，反過來不一定
+[ ] 等價
+[ ] 後者 ⇒ 前者，反過來不一定
+[ ] 互相沒有推論關係
+---
+反例：有偶數、也有奇數，但沒有「又偶又奇」的數。$\exists$ 對 $\lor$ 可以分配，對 $\land$ 不行。
+
+@q lg2-09 | dm-logic#2 | 2 | 情境
+$L(x,y)$：$x$ 愛 $y$。「有一個人被所有人愛」寫成？
+[x] $\exists y\,\forall x\,L(x,y)$
+[ ] $\forall x\,\exists y\,L(x,y)$
+[ ] $\forall y\,\exists x\,L(x,y)$
+[ ] $\exists x\,\forall y\,L(x,y)$
+---
+第二個是「每個人都愛某個人」；第三個是「每個人都被某人愛」；第四個是「有人愛所有人」。
+
+@q lg2-10 | dm-logic#2 | 3 | 計算
+否定 $\forall\varepsilon>0\,\exists\delta>0\,\forall x\,(|x|<\delta\to|f(x)|<\varepsilon)$。
+[x] $\exists\varepsilon>0\,\forall\delta>0\,\exists x\,(|x|<\delta\land|f(x)|\ge\varepsilon)$
+[ ] $\exists\varepsilon>0\,\forall\delta>0\,\exists x\,(|x|\ge\delta\land|f(x)|<\varepsilon)$
+[ ] $\forall\varepsilon>0\,\exists\delta>0\,\forall x\,(|x|<\delta\to|f(x)|\ge\varepsilon)$
+[ ] $\exists\varepsilon\le0\,\forall\delta\le0\,\exists x\,(|x|<\delta\land|f(x)|\ge\varepsilon)$
+---
+量詞一個一個翻（$\forall\leftrightarrow\exists$），範圍限制 $\varepsilon>0$ 不變；最裡面的蘊含否定成「前真後假」。第四個把範圍也否定了，是常見錯誤。
+
+@q lg2-11 | dm-logic#2 | 2 | 計算
+The domain is the real numbers. Is each of $\forall x\,\exists y\,(y^2=x)$ and $\exists x\,\forall y\,(xy=0)$ true or false?
+== false,true
+== 假,真
+?? $\forall x\,\exists y\,(y^2=x)$,$\exists x\,\forall y\,(xy=0)$
+---
+$x=-1$ 時找不到實數 $y$。$x=0$ 對所有 $y$ 都有 $0\cdot y=0$。
+
+@q lg2-12 | dm-logic#2 | 3 | 找錯
+學生否定 $\exists x\,(P(x)\to Q(x))$ 得 $\exists x\,(P(x)\land\neg Q(x))$。正確的？
+[x] $\forall x\,(P(x)\land\neg Q(x))$：$\exists$ 要變 $\forall$
+[ ] 學生是對的
+[ ] $\forall x\,(\neg P(x)\to\neg Q(x))$
+[ ] $\exists x\,(\neg P(x)\land Q(x))$
+---
+學生只否定了裡面、忘了翻量詞。
+
+@q lg2-13 | dm-logic#2 | 2 | 情境
+「沒有一個學生每一科都及格」，$S(s,c)$：學生 $s$ 科目 $c$ 及格。等價於？
+[x] $\forall s\,\exists c\,\neg S(s,c)$：每個學生都有某科不及格
+[ ] $\exists s\,\forall c\,\neg S(s,c)$
+[ ] $\forall s\,\forall c\,\neg S(s,c)$
+[ ] $\exists s\,\exists c\,\neg S(s,c)$
+---
+$\neg\exists s\,\forall c\,S=\forall s\,\neg\forall c\,S=\forall s\,\exists c\,\neg S$。第三個太強（所有人每科都不及格）。
+
+@q lg2-14 | dm-logic#2 | 1 | 觀念
+哪一對量詞的順序**可以**任意交換？
+[x] $\forall x\,\forall y$ 和 $\forall y\,\forall x$
+[ ] $\forall x\,\exists y$ 和 $\exists y\,\forall x$
+[ ] $\exists x\,\forall y$ 和 $\forall y\,\exists x$
+[ ] 任何順序都可以換
+---
+同種量詞可以換；$\forall$ 和 $\exists$ 混在一起時順序代表「誰先選」。
+
+@q lg2-15 | dm-logic#2 | 2 | 計算
+The domain is $\{a,b,c\}$, and $P$ is any unary predicate (each element true or false, 8 choices in all). For how many choices of $P$ is $\exists x\,P(x)$ true?
+== 7
+---
+只有「三個都假」那一種讓它假。$\exists$ 在有限定義域上就是一個大 $\lor$。
+
+@q lg2-16 | dm-logic#2 | 3 | 計算
+The domain is $\{1,2\}$, and $R$ is any binary predicate (each of the 4 pairs true or false, 16 choices in all). For how many choices of $R$ is $\forall x\,\exists y\,R(x,y)$ true?
+== 9
+---
+$x=1$ 那列至少一個真（3 種），$x=2$ 那列也是（3 種），$3\times3=9$。程式窮舉 16 種驗算。
+
+@q lg2-17 | dm-logic#2 | 2 | 陷阱
+「所有發亮的都不是金子」和「不是所有發亮的都是金子」意思一樣嗎？
+[x] 不一樣：前者是 $\forall x\,(S\to\neg G)$；後者是 $\exists x\,(S\land\neg G)$，弱很多
+[ ] 一樣
+[ ] 前者比較弱
+[ ] 兩個都等於「發亮的都是金子」的否定
+---
+後者才是「所有發亮的都是金子」的否定。中文口語常把兩者混用。
+
+@q lg2-18 | dm-logic#2 | 3 | 證明
+證明 $\exists y\,\forall x\,P(x,y)\Rightarrow\forall x\,\exists y\,P(x,y)$，並舉例說明反方向不成立。
+---
+設 $y_0$ 滿足 $\forall x\,P(x,y_0)$。對任意 $x$，取 $y=y_0$ 即可。反方向：整數上 $P(x,y)$：$y>x$；每個 $x$ 都有更大的 $y$，但沒有一個 $y$ 比所有 $x$ 大。
+
+@q lg2-19 | dm-logic#2 | 2 | 情境
+資料庫要「找出修了**所有**必修課的學生」，邏輯式是？（$T(s,c)$：$s$ 修了 $c$；$R(c)$：$c$ 是必修）
+[x] $\{s:\forall c\,(R(c)\to T(s,c))\}$
+[ ] $\{s:\forall c\,(R(c)\land T(s,c))\}$
+[ ] $\{s:\exists c\,(R(c)\land T(s,c))\}$
+[ ] $\{s:\exists c\,(R(c)\to T(s,c))\}$
+---
+$\forall$ 搭 $\to$、$\exists$ 搭 $\land$。第二個要求每門課都是必修；第三個是「修過某門必修」。SQL 裡這叫除法，常用雙重 NOT EXISTS 寫。
+
+@q lg3-06 | dm-logic#3 | 2 | 計算
+$2^n>n^2$ holds for all $n\ge N$. What is the smallest such $N$?
+== 5
+---
+$n=1$ 成立但 $n=2$（$4=4$）、$3$（$8<9$）、$4$（$16=16$）不成立。$n=5$：$32>25$。歸納：$2^{k+1}=2\cdot2^k>2k^2\ge(k+1)^2$（$k\ge3$ 時）。
+
+@q lg3-07 | dm-logic#3 | 2 | 找錯
+「證明」對所有 $n$：$n=n+1$。「設 $k=k+1$，兩邊加 1 得 $k+1=k+2$，歸納完成。」錯在哪？
+[x] 沒有起始情況：$0=1$ 不成立，歸納步驟再對也沒用
+[ ] 兩邊加 1 不合法
+[ ] 應該用強歸納法
+[ ] 沒錯
+---
+歸納法需要基底＋歸納步驟兩個都成立。只有步驟就像骨牌排好了卻沒推第一張。
+
+@q lg3-08 | dm-logic#3 | 2 | 觀念
+證明「每個 $n\ge2$ 都能寫成質數的乘積」，用哪種歸納法最自然？
+[x] 強歸納法：$n$ 不是質數時 $n=ab$，$a,b$ 都比 $n$ 小但不一定是 $n-1$
+[ ] 一般歸納法：從 $n-1$ 推到 $n$
+[ ] 反證法就夠，不需要歸納
+[ ] 不能用歸納法
+---
+強歸納假設所有比 $n$ 小的都成立，才能用到 $a$、$b$。
+
+@q lg3-09 | dm-logic#3 | 2 | 計算
+It is known that $\sum_{i=1}^ni(i+1)=\frac{n(n+1)(n+2)}3$. What is the value of the sum for $n=10$?
+== 440
+---
+$\frac{10\cdot11\cdot12}3=440$。程式直接加總驗算。歸納步驟：加上 $(n+1)(n+2)$ 後提出 $\frac{(n+1)(n+2)}3(n+3)$。
+
+@q lg3-10 | dm-logic#3 | 3 | 證明
+用反證法證明：質數有無限多個（不存在最大的質數）。
+---
+反證：設只有 $p_1,\dots,p_k$。令 $N=p_1p_2\cdots p_k+1$。$N>1$ 有質因數 $p$；$p$ 是某個 $p_i$，則 $p\mid N-p_1\cdots p_k=1$，矛盾。（注意：$N$ 本身不一定是質數，例如 $2\cdot3\cdot5\cdot7\cdot11\cdot13+1=30031=59\times509$。）
+
+@q lg3-11 | dm-logic#3 | 2 | 觀念
+要證明「若 $a+b\ge10$，則 $a\ge5$ 或 $b\ge5$」，最順手的方法？
+[x] 逆否：若 $a<5$ 且 $b<5$，則 $a+b<10$
+[ ] 直接證明
+[ ] 數學歸納法
+[ ] 舉例
+---
+結論是「或」時，逆否把它變成「且」，兩個條件都能用。
+
+@q lg3-12 | dm-logic#3 | 2 | 反例
+Someone claims that $n^2+n+41$ is prime for every positive integer $n$. What is the smallest counterexample $n$?
+== 40
+---
+$40^2+40+41=1681=41^2$。$n=1..39$ 都是質數，所以「試了很多個都對」不是證明。（$n=41$ 也是反例：$41\cdot43$。）
+
+@q lg3-13 | dm-logic#3 | 3 | 情境
+With only 4-dollar and 5-dollar stamps, we want to prove that every amount of 12 dollars or more can be made. Using strong induction with step $n\to n+4$, how many base cases must be checked first?
+== 4
+---
+12、13、14、15 各自驗（$4\cdot3$、$4\cdot2+5$、$4+5\cdot2$、$5\cdot3$），之後每個 $n\ge16$ 都是 $(n-4)$ 再加一張 4 元。步長 4 就要 4 個連續起始情況。
+
+@q lg3-14 | dm-logic#3 | 2 | 情境
+A $2^n\times2^n$ board with any one square removed can be tiled by L-shaped three-square pieces (a classic induction proof). How many pieces are used when $n=3$?
+== 21
+---
+$(64-1)/3=21$。歸納：切成四個 $2^{n-1}$ 的小盤，在中心放一塊 L 讓另外三個小盤也各缺一格。
+
+@q lg3-15 | dm-logic#3 | 2 | 找錯
+學生的歸納步驟寫：「要證 $P(k+1)$。由 $P(k+1)$ 可推出 $P(k)$，而 $P(k)$ 已知成立，所以 $P(k+1)$ 成立。」錯在哪？
+[x] 方向反了：從結論推出已知的東西不能證明結論
+[ ] 沒錯
+[ ] 應該用強歸納
+[ ] 少了起始情況
+---
+$P(k+1)\Rightarrow P(k)$ 和 $P(k)$ 為真，推不出 $P(k+1)$（肯定後件）。要從 $P(k)$ 出發推到 $P(k+1)$。
+
+@q lg3-16 | dm-logic#3 | 3 | 觀念
+「存在無理數 $a,b$ 使 $a^b$ 是有理數」的經典證明：看 $\sqrt2^{\sqrt2}$，若有理就完成；若無理，則 $(\sqrt2^{\sqrt2})^{\sqrt2}=2$。這個證明的特點？
+[x] 非構造性：證明了存在，但沒說是哪一組
+[ ] 用了歸納法
+[ ] 是反證法
+[ ] 證明錯了
+---
+兩種情況必有一種成立，所以結論對；但我們不知道是哪一種（其實 $\sqrt2^{\sqrt2}$ 是無理數，但證明要用到更深的定理）。
+
+@q lg3-17 | dm-logic#3 | 2 | 計算
+$\sum_{i=1}^{99}\frac1{i(i+1)}$？
+== 0.99
+== 99/100
+---
+$\frac1{i(i+1)}=\frac1i-\frac1{i+1}$，相消剩 $1-\frac1{100}$。也可以歸納證 $\sum_{i=1}^n=\frac n{n+1}$。
+
+@q lg3-18 | dm-logic#3 | 3 | 陷阱
+$P(n)$：「$n^2+n$ 是奇數」。歸納步驟 $P(k)\Rightarrow P(k+1)$ 成立嗎？$P(n)$ 對哪些 $n$ 成立？
+[x] 步驟成立（$(k+1)^2+(k+1)=k^2+k+2(k+1)$，奇數加偶數還是奇數），但沒有任何 $n$ 讓 $P(n)$ 成立
+[ ] 步驟不成立
+[ ] 對所有 $n$ 成立
+[ ] 對奇數 $n$ 成立
+---
+$n^2+n=n(n+1)$ 永遠是偶數。這說明為什麼基底不能省。
+
+@q lg4-07 | dm-logic#4 | 2 | 找錯
+A student says: "To guarantee that 3 people share a birth month, we need $3\times12=36$ people." What is the correct minimum number of people?
+== 25
+---
+最壞情況每個月剛好 2 人（24 人）還沒有 3 人同月，再加 1 人就有。一般：保證某籠至少 $r$ 個要 $k(r-1)+1$。
+
+@q lg4-08 | dm-logic#4 | 2 | 情境
+Five points are placed inside a square of side 2. Two of them must be at distance at most what?
+== √2
+== 1.414
+---
+切成 4 個邊長 1 的小正方形，5 個點必有兩點在同一個小正方形，距離不超過對角線 $\sqrt2$。
+
+@q lg4-09 | dm-logic#4 | 2 | 計算
+Integers are chosen from 1 to 100. What is the smallest number you must choose to be sure that two of them sum to 101?
+== 51
+---
+配成 50 對 $(1,100),(2,99),\dots,(50,51)$。挑 50 個可以每對只拿一個，第 51 個一定湊成一對。
+
+@q lg4-10 | dm-logic#4 | 3 | 計算
+Any 10 distinct real numbers are written in a row. They are guaranteed to contain an increasing or a decreasing subsequence of length at least what?
+== 4
+---
+Erdős–Szekeres：$n^2+1$ 個數一定有長度 $n+1$ 的單調子序列，$10=3^2+1$ ⇒ 4。證明：給每個數標 (以它結尾的最長遞增長度, 最長遞減長度)，標籤互不相同，若都 $\le3$ 只有 9 種，鴿籠。
+
+@q lg4-11 | dm-logic#4 | 2 | 情境
+1000 records are placed into 365 boxes by some rule. At least one box must contain at least how many records?
+== 3
+---
+$\lceil1000/365\rceil=3$。不論雜湊函數多好，碰撞都無法避免。
+
+@q lg4-12 | dm-logic#4 | 3 | 計算
+Among any $n$ people there are always 3 who all know one another or 3 who are all strangers to one another. What is the smallest such $n$?
+== 6
+---
+6 人時挑一人 A，其他 5 人中至少 3 人跟 A 同一種關係（鴿籠 $\lceil5/2\rceil$），這 3 人之間只要有一對也是那種關係就成三角形，否則他們三個就是另一種三角形。5 人反例：五邊形邊＝認識、對角線＝不認識。
+
+@q lg4-13 | dm-logic#4 | 3 | 觀念
+任意 $n$ 個整數 $x_1,\dots,x_n$，一定有一段**連續**的 $x_i+\cdots+x_j$ 是 $n$ 的倍數。證明的關鍵？
+[x] 看前綴和 $S_0=0,S_1,\dots,S_n$ 除以 $n$ 的餘數：$n+1$ 個前綴和、$n$ 種餘數，必有兩個相同，相減就是那一段
+[ ] 用歸納法
+[ ] 把 $a_i$ 排序
+[ ] 只有 $a_i$ 都正時才成立
+---
+$S_j-S_{i-1}=a_i+\cdots+a_j$。前綴和是把「區間」變成「兩點相減」的標準技巧。
+
+@q lg4-14 | dm-logic#4 | 3 | 陷阱
+10 pairs of gloves (each pair has a left and a right glove) are mixed together and taken out blindly. What is the smallest number of gloves that guarantees a complete pair (the left and right glove of the same pair)?
+== 11
+---
+最壞情況全拿到左手（10 隻）。跟「襪子」不一樣：襪子任兩隻同色就配對，手套還要分左右。
+
+@q lg4-15 | dm-logic#4 | 3 | 情境
+「存在一個無失真壓縮程式，能讓**每一個**檔案都變短」可能嗎？（檔案看成 0/1 字串）
+[x] 不可能：長度 $n$ 的檔案有 $2^n$ 個，長度 $<n$ 的只有 $2^n-1$ 個，必有兩個檔案被壓成同一個，解不回來
+[ ] 可能，只要演算法夠好
+[ ] 可能，只對文字檔
+[ ] 不可能，因為壓縮一定失真
+---
+壓縮只對「有規律」的檔案有效，代價是某些檔案會變長。
+
+@q lg4-16 | dm-logic#4 | 3 | 計算
+An integer point is a point in the plane whose $x$ and $y$ coordinates are both integers. What is the smallest number of integer points that guarantees two of them have a midpoint that is also an integer point?
+== 5
+---
+兩點的中點是 $\big(\frac{x_1+x_2}2,\frac{y_1+y_2}2\big)$，要是整數，$x_1,x_2$ 要同奇偶、$y_1,y_2$ 也要同奇偶。照座標的奇偶分成 4 個箱子：（偶,偶）（偶,奇）（奇,偶）（奇,奇）。5 個點放進 4 個箱子，一定有兩點同箱，它們的中點就是整數點。4 個點不夠：$(0,0),(0,1),(1,0),(1,1)$ 剛好各佔一箱，任兩點的中點都有 $.5$。鴿籠題的難處在「箱子是什麼」，這裡箱子是奇偶的組合，不是點本身（程式把 4×4 格子裡所有 5 點組合都檢查過）。
+
+@q lg4-17 | dm-logic#4 | 3 | 計算
+Socks of three colors are mixed together. What is the smallest number of socks you must take to guarantee **two** pairs (the two pairs may have the same color)?
+== 6
+---
+$k$ 隻襪子的雙數是 $\sum\lfloor c_i/2\rfloor=\frac{k-\text{奇數色數}}2$。奇數色最多 3 個，但 $k$ 偶數時最多 2 個：$k=6$ 時至少 $\frac{6-2}2=2$ 雙；$k=5$ 的 $(3,1,1)$ 只有 1 雙。程式窮舉驗算。
+
+@q lg4-18 | dm-logic#4 | 2 | 證明
+證明：從 1 到 $2n$ 任意挑 $n+1$ 個整數，一定有兩個互質。
+---
+把 1 到 $2n$ 分成 $n$ 組相鄰數 $\{1,2\},\{3,4\},\dots,\{2n-1,2n\}$。挑 $n+1$ 個必有兩個在同一組，相鄰兩數互質（公因數整除差 1）。
+
+@q lg5-06 | dm-logic#5 | 1 | 計算
+$|P(P(\varnothing))|$？
+== 2
+---
+$P(\varnothing)=\{\varnothing\}$ 有 1 個元素，它的冪集合有 $2^1=2$ 個：$\varnothing$ 和 $\{\varnothing\}$。
+
+@q lg5-07 | dm-logic#5 | 1 | 計算
+Let $|A|=10$, $|B|=15$ and $|A\cap B|=4$. What are $|A\cup B|$ and the size of the symmetric difference $|A\triangle B|$?
+== 21,17
+?? $|A\cup B|$,$|A\triangle B|$
+---
+$10+15-4=21$；對稱差去掉交集：$21-4=17$。
+
+@q lg5-08 | dm-logic#5 | 2 | 計算
+$\{1,\dots,10\}$ 的子集中，包含 1 但不包含 2 的有幾個？
+== 256
+---
+1、2 已決定，其他 8 個元素各自選或不選：$2^8$。
+
+@q lg5-09 | dm-logic#5 | 3 | 陷阱
+下列哪一個是**假**的？
+[x] $\{\varnothing\}\subseteq\varnothing$
+[ ] $\varnothing\in\{\varnothing\}$
+[ ] $\varnothing\subseteq\varnothing$
+[ ] $\varnothing\subseteq\{\varnothing\}$
+---
+$\{\varnothing\}$ 有一個元素，空集合沒有元素，不可能包含它。$\in$ 看元素、$\subseteq$ 看「每個元素都在」。
+
+@q lg5-10 | dm-logic#5 | 2 | 計算
+$|A|=3$。$|A\times A\times A|$ 和 $|P(A\times A)|$？
+== 27,512
+?? $|A\times A\times A|$,$|P(A\times A)|$
+---
+$3^3$；$A\times A$ 有 9 個元素，冪集合 $2^9$（就是 $A$ 上所有二元關係的個數）。
+
+@q lg5-11 | dm-logic#5 | 3 | 計算
+把 $\mathbb N\times\mathbb N$ 依「$x+y$ 由小到大、同一條斜線上 $y$ 由小到大」排成一列，$(0,0)$ 是第 0 個。$(2,3)$ 是第幾個？
+== 18
+---
+編號 $\frac{s(s+1)}2+y$，$s=x+y=5$：$15+3=18$。這個雙射證明 $\mathbb N\times\mathbb N$ 可數。
+
+@q lg5-12 | dm-logic#5 | 3 | 陷阱
+$[0,1]$ 區間和整個實數 $\mathbb R$，哪個比較「多」？
+[x] 一樣多（存在一對一而且映成的對應，例如先 $(0,1)\to\mathbb R$ 用 $\tan(\pi(x-\frac12))$）
+[ ] $\mathbb R$ 比較多
+[ ] $[0,1]$ 比較多
+[ ] 無法比較
+---
+無限集合「長度」不同不代表元素個數不同。端點可以用可數多個點的平移處理掉。
+
+@q lg5-13 | dm-logic#5 | 2 | 比較
+代數數（整係數多項式的根）和超越數，哪個可數？
+[x] 代數數可數；超越數不可數
+[ ] 都可數
+[ ] 都不可數
+[ ] 代數數不可數；超越數可數
+---
+整係數多項式可數個、每個根有限多，所以代數數可數。實數不可數，扣掉可數的部分還是不可數。
+
+@q lg5-14 | dm-logic#5 | 3 | 情境
+從可數性的角度，為什麼一定有「沒有程式能計算」的函數 $\mathbb N\to\{0,1\}$？
+[x] 程式是有限長的字串，只有可數多個；$\mathbb N\to\{0,1\}$ 的函數不可數
+[ ] 因為電腦記憶體有限
+[ ] 因為有些函數太慢
+[ ] 這不是真的
+---
+這是計算理論中「不可計算」的最簡單論證，不用構造出具體的例子。
+
+@q lg5-15 | dm-logic#5 | 2 | 找錯
+學生說「$P(A)\cup P(B)=P(A\cup B)$」。反例？
+[x] $A=\{1\}$、$B=\{2\}$：$\{1,2\}\in P(A\cup B)$ 但不在左邊
+[ ] $A=B$
+[ ] $A=\varnothing$
+[ ] $A\subseteq B$
+---
+一般只有 $P(A)\cup P(B)\subseteq P(A\cup B)$。交集倒是成立：$P(A)\cap P(B)=P(A\cap B)$。
+
+@q lg5-16 | dm-logic#5 | 2 | 證明
+證明 $|A|=n$ 時 $|P(A)|=2^n$。
+---
+把 $A$ 的元素排成 $a_1..a_n$。子集 $S$ 對應長度 $n$ 的 0/1 字串（第 $i$ 位＝$a_i\in S$）。這是雙射（字串決定唯一子集、反之亦然），字串有 $2^n$ 個。
+
+@q lg5-17 | dm-logic#5 | 2 | 計算
+$\{1,\dots,6\}$ 有幾個元素個數為偶數的子集？
+== 32
+---
+$\binom60+\binom62+\binom64+\binom66=1+15+15+1=32=2^5$。一般 $n\ge1$ 時剛好一半。
+
+@q cn1-08 | dm-counting#1 | 1 | 計算
+A PIN has 4 digits, from 0000 to 9999. How many PINs have four different digits?
+== 5040
+---
+有序、不可重複：$10\cdot9\cdot8\cdot7$。程式窮舉驗算。
+
+@q cn1-09 | dm-counting#1 | 2 | 情境
+Eight runners race and gold, silver, and bronze medals are awarded, with no ties. How many possible medal outcomes are there?
+== 336
+---
+有序、不重複：$P(8,3)=8\cdot7\cdot6$。若只問「哪 3 人上台」才是 $\binom83=56$。
+
+@q cn1-10 | dm-counting#1 | 3 | 陷阱
+Ten people are split into two teams of 5, and the teams have no names. How many splits are there?
+== 126
+---
+$\binom{10}5=252$ 把「第一隊是這 5 人」和「第二隊是這 5 人」算成兩種；隊伍沒有名字時要除以 2。
+
+@q cn1-11 | dm-counting#1 | 2 | 計算
+How many distinct arrangements of the letters of BANANA are there?
+== 60
+---
+$\frac{6!}{3!\,2!\,1!}$：三個 A、兩個 N 互換不產生新字串。
+
+@q cn1-12 | dm-counting#1 | 3 | 計算
+Six people sit around a round table, and only relative positions matter. In how many seatings are Alice and Bob **not** next to each other?
+== 72
+---
+全部 $(6-1)!=120$；兩人相鄰：綁成一塊共 5 塊圍圓 $4!$，塊內 2 種，48。$120-48=72$。程式窮舉驗算。
+
+@q cn1-13 | dm-counting#1 | 2 | 計算
+How many paths go from $(0,0)$ to $(4,3)$ using unit steps right or up?
+== 35
+---
+共 7 步，選哪 3 步往上：$\binom73$。
+
+@q cn1-14 | dm-counting#1 | 2 | 計算
+How many integer solutions does $x_1+x_2+x_3=10$ have with $x_1\ge2$, $x_2\ge1$, and $x_3\ge0$?
+== 36
+---
+令 $y_1=x_1-2$、$y_2=x_2-1$：$y_1+y_2+y_3=7$，$\binom{9}{2}=36$。下限先扣掉再用星與槓。
+
+@q cn1-15 | dm-counting#1 | 3 | 計算
+How many **nondecreasing** sequences of length 4 with entries from $\{1,\dots,6\}$ are there (repeats allowed, e.g., 1, 1, 3, 6)?
+== 126
+---
+不遞減數列由「每個數用幾次」決定＝從 6 種挑 4 個可重複的多重集合：$\binom{6+4-1}{4}=\binom94$。
+
+@q cn1-16 | dm-counting#1 | 2 | 找錯
+A president, a vice-president, and a secretary are chosen from 10 people, one person per position. A student answers $\binom{10}3=120$. What is the correct number of ways?
+== 720
+---
+職位不同＝有序：$10\cdot9\cdot8$。$\binom{10}3$ 只數了「哪 3 人」，每組 3 人還有 $3!$ 種分配。
+
+@q cn1-17 | dm-counting#1 | 1 | 計算
+Five identical books are given to 3 students so that each student gets at least one book. How many ways are there?
+== 6
+---
+$x_1+x_2+x_3=5$、$x_i\ge1$：$\binom{4}{2}$。
+
+@q cn1-18 | dm-counting#1 | 2 | 情境
+Passwords have exactly 8 characters, each chosen from 62 symbols (26 lowercase letters, 26 uppercase letters, and 10 digits), and must contain at least one digit. Which of the following statements are correct? Select all that apply.
+[x] The number of valid passwords is $62^8 - 52^8$.
+[x] The number of passwords with exactly one digit is $8 \cdot 10 \cdot 52^7$.
+[ ] The number of valid passwords is $8 \cdot 10 \cdot 62^7$: choose the position and the value of one digit, and fill the other 7 positions freely.
+[x] The count $8 \cdot 10 \cdot 62^7$ counts every password with exactly two digits twice.
+[x] About a quarter of all 8-character strings over these 62 symbols contain no digit, since $(52/62)^8\approx0.24$.
+---
+「$62^8-52^8$」對：「至少一個」用補集，扣掉完全沒有數字（每格 52 種）的。
+
+「剛好一個數字 $8\cdot10\cdot52^7$」對：選位置、選數字，其他 7 格只能放字母。
+
+「$8\cdot10\cdot62^7$」錯、「它把兩個數字的算兩次」對：例如 `1a2bcdef` 會在「第 1 格是指定的數字 1」和「第 3 格是指定的數字 2」各被算一次。有三個數字的算三次，以此類推。
+
+「約四分之一沒有數字」對：$(52/62)^8\approx0.245$，所以補集要扣掉的不小；「全是數字」的 $10^8$ 才是很小的一部分，別扣錯。
+
+@q cn1-19 | dm-counting#1 | 2 | 計算
+How many positive divisors does 360 have (including 1 and 360)?
+== 24
+---
+$360=2^3\cdot3^2\cdot5$，因數的每個質因數次方各自選：$(3+1)(2+1)(1+1)$。
+
+@q cn1-20 | dm-counting#1 | 3 | 比較
+Compare "choose 3 fruits from 5 kinds, with repetition allowed and order ignored" with "put 3 identical balls into 5 distinct boxes, empty boxes allowed". Which of the following statements are correct? Select all that apply.
+[x] Both counts equal $\binom{7}{3} = 35$.
+[x] Both are the number of solutions of $x_1 + x_2 + x_3 + x_4 + x_5 = 3$ with every $x_i \ge 0$.
+[ ] The first count is $5^3 = 125$.
+[x] $\binom{7}{3} = \binom{7}{4}$, so the stars-and-bars count can be written either way.
+[ ] The first count is $\binom{5}{3} = 10$.
+---
+「都是 35」對、「都是方程式的解數」對：水果種類＝箱子，選了幾個＝放了幾顆。3 顆星、4 根槓：$\binom{7}{3}$。
+
+「$5^3$」錯：那是有順序的。
+
+「$\binom73=\binom74$」對：選星的位置或選槓的位置。
+
+「$\binom53$」錯：那是不能重複。
+
+@q cn2-07 | dm-counting#2 | 2 | 計算
+What is the coefficient of $x^2y^3z$ in the expansion of $(x+y+z)^6$?
+== 60
+---
+多項式係數 $\frac{6!}{2!\,3!\,1!}$：6 個括號中挑 2 個出 $x$、3 個出 $y$、1 個出 $z$。
+
+@q cn2-08 | dm-counting#2 | 2 | 計算
+What is the coefficient of $x^4$ in the expansion of $(1+2x)^6$?
+== 240
+---
+$\binom64\cdot2^4=15\cdot16$。忘了乘 $2^4$ 是最常見的錯。
+
+@q cn2-09 | dm-counting#2 | 2 | 計算
+What is the constant term in the expansion of $\left(x+\frac1x\right)^6$?
+== 20
+---
+$x^k\cdot x^{-(6-k)}=x^{2k-6}$，$k=3$：$\binom63$。
+
+@q cn2-10 | dm-counting#2 | 2 | 計算
+Evaluate $\sum_{k=0}^4\binom4k2^k$.
+== 81
+---
+二項式定理 $(1+2)^4=3^4$。組合意義：4 個人各選 3 種之一（$\binom4k$ 個人選「另外兩種」之一，每人 2 種）。
+
+@q cn2-11 | dm-counting#2 | 3 | 計算
+Evaluate $\sum_{k}\binom5k\binom4{3-k}$.
+== 84
+---
+Vandermonde 恆等式：從 5 男 4 女選 3 人，依男生人數分類加總 $=\binom93$。
+
+@q cn2-12 | dm-counting#2 | 3 | 計算
+Evaluate $\binom22+\binom32+\binom42+\binom52+\binom62$.
+== 35
+---
+曲棍球棒恆等式 $\sum_{i=r}^n\binom ir=\binom{n+1}{r+1}=\binom73$。組合意義：從 $\{1..7\}$ 選 3 個，依最大的數分類。
+
+@q cn2-13 | dm-counting#2 | 2 | 陷阱
+What is the coefficient of $x^3$ in the expansion of $(x-2)^5$?
+== 40
+---
+$\binom53x^3(-2)^2=10\cdot4$。負號只在奇數次方留下；常見錯誤是算成 $-40$ 或 $10$。
+
+@q cn2-14 | dm-counting#2 | 1 | 計算
+What is the largest coefficient in the expansion of $(1+x)^9$?
+== 126
+---
+$\binom94=\binom95=126$。$n$ 奇數時中間兩個並列最大。
+
+@q cn2-15 | dm-counting#2 | 3 | 證明
+用「數兩次」證明 $\sum_{k=0}^n\binom nk^2=\binom{2n}n$。
+---
+從 $n$ 男 $n$ 女選 $n$ 人：右邊直接選。左邊依「選了 $k$ 個男生」分類，男生 $\binom nk$ 種、女生選 $n-k$ 個 $\binom n{n-k}=\binom nk$ 種，相乘再加總。
+
+@q cn2-16 | dm-counting#2 | 2 | 情境
+A coin is tossed 10 times and the sequence of results is recorded. How many sequences have exactly 4 heads?
+== 210
+---
+從 10 次中挑哪 4 次正面 $\binom{10}4$。全部結果 $2^{10}=1024$ 種。
+
+@q cn2-17 | dm-counting#2 | 3 | 計算
+Evaluate $\sum_{k=0}^5k^2\binom5k$.
+== 240
+---
+公式 $n(n+1)2^{n-2}=5\cdot6\cdot8$。推法：$k^2=k(k-1)+k$，$\sum k(k-1)\binom nk=n(n-1)2^{n-2}$、$\sum k\binom nk=n2^{n-1}$。程式直接加總驗算。
+
+@q cn2-18 | dm-counting#2 | 2 | 計算
+Estimate $1.01^{10}$ using the first three terms of the binomial expansion of $(1+0.01)^{10}$.
+== 1.1045
+== 1.105
+---
+$1+10(0.01)+45(0.0001)=1.1045$；真值 $1.10462$。後面的項很小。
+
+@q cn2-19 | dm-counting#2 | 2 | 找錯
+A student writes $(a + b)^3 = a^3 + b^3$. Which of the following statements are correct? Select all that apply.
+[x] Taking $a = b = 1$ gives $8$ on the left but $2$ on the right.
+[x] The correct expansion is $a^3 + 3a^2 b + 3ab^2 + b^3$.
+[ ] The student's identity holds for all real numbers $a$ and $b$.
+[x] Modulo 3, $(a + b)^3 \equiv a^3 + b^3$ for all integers $a$ and $b$, because the middle coefficients are multiples of 3.
+[ ] The student's identity holds whenever $a$ and $b$ are both positive.
+---
+「$a=b=1$ 得 8 對 2」對：最快的反例。
+
+「正確展開」對：係數是 1、3、3、1。
+
+「對所有實數成立」錯。
+
+「模 3 時成立」對：$3a^2b$、$3ab^2$ 都是 3 的倍數。一般地，$p$ 是質數時 $(a+b)^p\equiv a^p+b^p\pmod p$。
+
+「都正時成立」錯：$a=b=1$ 就是正的。
+
+@q cn2-20 | dm-counting#2 | 1 | 計算
+If $\binom n2=45$, what is $n$?
+== 10
+---
+$\frac{n(n-1)}2=45$，$n(n-1)=90$。也就是 10 個人兩兩握手 45 次。
+
+@q cn3-07 | dm-counting#3 | 2 | 計算
+How many integers from 1 to 100 are divisible by none of 2, 3, and 5?
+== 26
+---
+排容：$100-(50+33+20)+(16+10+6)-3=26$。程式窮舉驗算。
+
+@q cn3-08 | dm-counting#3 | 3 | 計算
+How many integer solutions does $x_1+x_2+x_3=10$ have with $0\le x_i\le4$ for every $i$?
+== 6
+---
+全部 $\binom{12}2=66$；某個 $x_i\ge5$：$3\binom{7}2=63$；兩個 $\ge5$：$3\binom22=3$；三個不可能。$66-63+3=6$。
+
+@q cn3-09 | dm-counting#3 | 1 | 計算
+Four people check their hats and get them back in a random order. In how many of the orders does nobody get their own hat?
+== 9
+---
+$D_4=4!(1-1+\frac12-\frac16+\frac1{24})=24-24+12-4+1=9$。
+
+@q cn3-10 | dm-counting#3 | 3 | 計算
+Five letters are put into five addressed envelopes, one per envelope. In how many arrangements are **exactly** 2 letters in their own envelopes?
+== 20
+---
+選哪 2 封放對 $\binom52$，其他 3 封全部放錯 $D_3=2$。
+
+@q cn3-11 | dm-counting#3 | 2 | 計算
+How many strings of length 4 over the alphabet $\{a,b,c,d\}$ contain both $a$ and $b$ at least once?
+== 110
+---
+排容：$4^4-2\cdot3^4+2^4=256-162+16$。程式窮舉驗算。
+
+@q cn3-12 | dm-counting#3 | 2 | 找錯
+A student writes $|A \cup B \cup C| = |A| + |B| + |C| - |A \cap B| - |A \cap C| - |B \cap C|$. Which of the following statements are correct? Select all that apply.
+[x] The missing term is $+|A\cap B\cap C|$.
+[x] For $A=B=C=\{1\}$, the shown formula gives zero although the union size is one.
+[x] An element in all three sets is counted zero times by the shown formula.
+[x] Exactly 22 integers from one through 30 are divisible by two, three, or five.
+[ ] The correction should subtract $|A\cap B\cap C|$.
+---
+「補三重交集」對：三者共有元素先加三次再扣三次，還需加回一次。「同為單元素反例」對：三減三為零而聯集有一。「共有元素算零次」對：這正是漏項的機制。「一到三十有二十二個」對：15＋10＋6−5−3−2＋1＝22。「補負號」錯：再減會算負一次，容斥符號應為加、減、加。
+
+@q cn3-13 | dm-counting#3 | 3 | 計算
+How many permutations of 1, 2, 3, 4 have 1 not in position 1 **and** 2 not in position 2?
+== 14
+---
+$24-6-6+2=14$：扣掉「1 在第 1 位」和「2 在第 2 位」各 $3!$，加回兩者都成立的 $2!$。
+
+@q cn3-14 | dm-counting#3 | 1 | 情境
+In a survey of 100 people, 60 like product $P$, 50 like product $Q$, and 30 like both. How many like neither?
+== 20
+---
+$100-(60+50-30)$。
+
+@q cn3-15 | dm-counting#3 | 2 | 計算
+How many integers from 1 to 1000 are perfect squares **or** perfect cubes?
+== 38
+---
+平方 31 個（$31^2=961$）、立方 10 個、兩者都是＝六次方 3 個（1、64、729）。$31+10-3$。
+
+@q cn3-16 | dm-counting#3 | 3 | 情境
+Four married couples (8 people) stand in a row. In how many orders is no couple standing next to each other?
+== 13824
+---
+$\sum_{k=0}^4(-1)^k\binom4k2^k(8-k)!=40320-40320+17280-3840+384$。$k$ 對相鄰時把每對綁成一塊（塊內 2 種）。程式窮舉驗算。
+
+@q cn3-17 | dm-counting#3 | 3 | 證明
+用排容原理推導 $D_n=n!\sum_{k=0}^n\frac{(-1)^k}{k!}$。
+---
+$A_i$：第 $i$ 個在自己位置。$|A_{i_1}\cap\cdots\cap A_{i_k}|=(n-k)!$，這樣的組合有 $\binom nk$ 個。$D_n=\sum_k(-1)^k\binom nk(n-k)!=\sum_k(-1)^k\frac{n!}{k!}$。
+
+@q cn3-18 | dm-counting#3 | 2 | 比較
+Inclusion–exclusion is used to count the functions from a 4-element set to a 3-element set $\{y_1, y_2, y_3\}$ whose image is the whole 3-element set. Which of the following statements are correct? Select all that apply.
+[x] The properties to exclude are "$y_i$ is not in the image of the function", for $i = 1, 2, 3$.
+[x] The count is $3^4 - \binom{3}{1} 2^4 + \binom{3}{2} 1^4 = 36$.
+[ ] The properties to exclude are "$x_i$ is mapped to $y_i$".
+[x] The count also equals $3! \cdot S(4, 3) = 6 \cdot 6 = 36$.
+[x] For functions from a 3-element set to a 3-element set, the same method gives $3^3-3\cdot2^3+3\cdot1^3=6$.
+---
+「性質是某個 $y_i$ 沒被打到」對：映成就是三個性質都不成立。
+
+「$81-48+3=36$」對：至少漏一個的、扣掉；漏兩個的被扣兩次、加回。少了加回那一項會得到錯的 33。
+
+「$x_i$ 對到 $y_i$」錯：那是錯排的性質。
+
+「$3!\cdot S(4,3)=36$」對：先把 4 個元素分成 3 群（6 種），再把 3 群一一對到 3 個值（$3!$）。
+
+「3 對 3 得 6」對：$27-24+3=6$，正好是 $3!$ 個一一對應，可以拿來檢查公式。
+
+@q cn4-07 | dm-counting#4 | 1 | 計算
+Seven identical balls are placed into 4 distinct boxes; boxes may be empty. How many ways are there?
+== 120
+---
+星與槓 $\binom{7+3}{3}$。
+
+@q cn4-08 | dm-counting#4 | 2 | 計算
+Four distinct balls are placed into 4 identical boxes; boxes may be empty. How many ways are there?
+== 15
+---
+等於把 4 個元素分成任意個非空的組：Bell 數 $B_4=S(4,1)+S(4,2)+S(4,3)+S(4,4)=1+7+6+1$。
+
+@q cn4-09 | dm-counting#4 | 3 | 計算
+Seven identical balls are placed into 3 identical boxes so that no box is empty. How many ways are there?
+== 4
+---
+7 分成恰好 3 個正整數部分（不計順序）：$5+1+1$、$4+2+1$、$3+3+1$、$3+2+2$。球和箱子都相同時是整數分割，沒有簡單公式。
+
+@q cn4-10 | dm-counting#4 | 2 | 情境
+Six distinct jobs are assigned to 2 **identical** servers so that each server gets at least one job. How many assignments are there?
+== 31
+---
+$S(6,2)=2^{5}-1$：每個工作選「跟工作 1 同一台」或「另一台」，扣掉全部同一台。
+
+@q cn4-11 | dm-counting#4 | 3 | 比較
+Six distinct jobs are assigned to 3 **distinct** servers so that each server gets at least one job. How many assignments are there? How many times the number for 3 identical servers is this?
+== 540,6
+?? distinct servers,ratio
+---
+一樣的伺服器 $S(6,3)=90$；伺服器有名字時再乘 $3!$ 排上名字 $=540$，也就是映成函數個數 $3^6-3\cdot2^6+3$。
+
+@q cn4-12 | dm-counting#4 | 2 | 計算
+Five distinct balls are placed into 7 distinct boxes so that each box gets **at most** one ball. How many ways are there?
+== 2520
+---
+等於 5 個球各挑不同的箱子，有序不重複：$7\cdot6\cdot5\cdot4\cdot3$。
+
+@q cn4-13 | dm-counting#4 | 3 | 計算
+Six identical balls are placed into identical boxes, using any number of boxes but leaving no box empty. How many ways are there?
+== 11
+---
+整數 6 的分割數 $p(6)=11$：6、5+1、4+2、4+1+1、3+3、3+2+1、3+1+1+1、2+2+2、2+2+1+1、2+1+1+1+1、1×6。
+
+@q cn4-14 | dm-counting#4 | 2 | 計算
+Find $S(6,5)$, the number of ways to split 6 distinct elements into 5 nonempty unlabeled groups.
+== 15
+---
+分成 5 組一定是一組 2 個、其他 1 個，只要選哪兩個在一起：$\binom62$。
+
+@q cn4-15 | dm-counting#4 | 2 | 找錯
+For "5 distinct balls into 3 distinct boxes, boxes may be empty", a student uses stars and bars and answers $\binom{5+2}2=21$. What is the correct number?
+== 243
+---
+球不同時每個球獨立選箱子：$3^5$。星與槓只適用於「相同的球」。
+
+@q cn4-16 | dm-counting#4 | 3 | 計算
+The identity $x^3=S(3,1)\,x+S(3,2)\,x(x-1)+S(3,3)\,x(x-1)(x-2)$ holds for all $x$. Find $S(3,2)$.
+== 3
+---
+直接展開比對 $x^2$ 係數：$S(3,2)-3S(3,3)=0$。組合意義：$x^3$ 是 3 個不同的球放進 $x$ 個不同箱子，依用到幾個箱子分類。
+
+@q cn4-17 | dm-counting#4 | 3 | 證明
+用組合意義證明 $S(n,k)=kS(n-1,k)+S(n-1,k-1)$。
+---
+看第 $n$ 個元素：(1) 自己一組，其他 $n-1$ 個分成 $k-1$ 組：$S(n-1,k-1)$；(2) 不是自己一組，先把其他 $n-1$ 個分成 $k$ 組，再把它放進 $k$ 組之一：$kS(n-1,k)$。
+
+@q cn4-18 | dm-counting#4 | 2 | 觀念
+Seven identical balls are put into 3 distinct boxes. Which of the following statements are correct? Select all that apply.
+[x] If every box must get at least one ball, there are $\binom{6}{2} = 15$ ways.
+[x] With every box nonempty, this equals the number of solutions of $x_1 + x_2 + x_3 = 7$ with every $x_i \ge 1$, which becomes $y_1 + y_2 + y_3 = 4$ with $y_i = x_i - 1 \ge 0$.
+[ ] If the balls were distinct and every box had to get at least one ball, there would still be only 15 ways.
+[x] If boxes may be empty, there are $\binom{9}{2} = 36$ ways.
+[ ] If every box must get at least one ball, the number of ways is $S(7, 3)$, a Stirling number of the second kind.
+---
+「每箱至少一顆，15 種」對：7 顆排一列有 6 個空隙，選 2 個切開。
+
+「換成 $y_i=x_i-1$」對：先每箱放一顆，剩 4 顆隨便放：$\binom{4+2}{2}=15$，同樣的答案。
+
+「球不同時也只有 15 種」錯：球可分辨時要用排容，$3^7-3\cdot2^7+3=1806$ 種。
+
+「可以空是 36」對：7 顆星、2 根槓，$\binom92$。
+
+「$S(7,3)$」錯：Stirling 數是「球不同、箱子相同」的情況。
+
+@q cn5-08 | dm-counting#5 | 1 | 計算
+What is the Catalan number $C_5$?
+== 42
+---
+$\frac1{6}\binom{10}5=\frac{252}6$。
+
+@q cn5-09 | dm-counting#5 | 2 | 計算
+In how many ways can a convex octagon be cut into triangles by diagonals that do not cross each other?
+== 132
+---
+凸 $(n+2)$ 邊形的三角剖分數是 $C_n$，$n=6$：$\frac17\binom{12}6=132$。
+
+@q cn5-10 | dm-counting#5 | 3 | 陷阱
+Paths go from $(0,0)$ to $(4,4)$ using unit steps right or up. How many of them touch the line $y=x+1$?
+== 56
+---
+鏡射：碰到 $y=x+1$ 之後的部分對它翻，終點變 $(3,5)$，壞路徑 ↔ 到 $(3,5)$ 的所有路徑 $\binom83=56$。好路徑 $70-56=14=C_4$。
+
+@q cn5-11 | dm-counting#5 | 2 | 情境
+6 個數相乘 $a_1a_2\cdots a_6$（乘法不能交換順序、只能加括號），有幾種加括號的方式？
+== 42
+---
+$n+1$ 個因子的加括號數是 $C_n$，$C_5=42$。矩陣鏈 DP 就是在這 42 種裡找最便宜的。
+
+@q cn5-12 | dm-counting#5 | 2 | 計算
+用 $C_{n+1}=\sum_{i=0}^nC_iC_{n-i}$ 和 $C_0..C_4=1,1,2,5,14$ 算 $C_5$。
+== 42
+---
+$1\cdot14+1\cdot5+2\cdot2+5\cdot1+14\cdot1$。遞迴意義：第一個括號（或根）把東西分成左右兩部分。
+
+@q cn5-13 | dm-counting#5 | 3 | 情境
+電影票 50 元，10 人排隊：5 人拿 50 元、5 人拿 100 元，售票員一開始手上沒有錢。有幾種排隊順序（只看誰拿哪種鈔票）讓每次都找得開？
+== 42
+---
+50 元＝左括號、100 元＝右括號，任何時刻 100 元的人數不能超過 50 元的：$C_5$。
+
+@q cn5-14 | dm-counting#5 | 2 | 情境
+8 個人圍圓桌，兩兩牽手、手臂不能交叉，大家都要握到（配成 4 對），有幾種？
+== 14
+---
+$2n$ 人不交叉配對＝$C_n$，$C_4=14$。固定 1 號，他跟 2、4、6、8 號配對時兩側各自遞迴（奇數號不可能，兩側會剩奇數人）。
+
+@q cn5-15 | dm-counting#5 | 3 | 計算
+選舉 A 得 5 票、B 得 3 票，開票過程中 A **一直嚴格領先**的開票順序有幾種？
+== 14
+---
+投票定理：$\frac{a-b}{a+b}\binom{a+b}{a}=\frac28\cdot56$。程式窮舉 56 種順序驗算。
+
+@q cn5-16 | dm-counting#5 | 2 | 計算
+5 片葉子的滿二元樹（每個內部點剛好 2 個孩子）有幾種形狀？
+== 14
+---
+滿二元樹有 $n$ 個內部點、$n+1$ 片葉子，形狀數 $C_n$；5 片葉子 $n=4$。
+
+@q cn5-17 | dm-counting#5 | 2 | 觀念
+Let $C_n = \frac{1}{n+1}\binom{2n}{n}$ be the $n$-th Catalan number. Which of the following statements are correct? Select all that apply.
+[x] The number of sequences of 3 up-steps and 3 down-steps that never go below the starting level is $C_3 = 5$.
+[x] The number of ways to cut a convex hexagon into triangles by non-crossing diagonals is $C_4 = 14$.
+[ ] $C_n$ grows like a polynomial in $n$.
+[x] The ratio $C_{n+1} / C_n$ approaches 4 as $n$ grows.
+[ ] $C_n$ grows like $2^n$.
+---
+「3 上 3 下、不低於起點有 5 種」對：把「上」看成左括號、「下」看成右括號，就是 3 對括號的合法字串。
+
+「六邊形三角剖分 14 種」對：凸 $(n+2)$ 邊形的三角剖分數是 $C_n$，六邊形 $n=4$。
+
+「多項式成長」錯：$C_n\approx\frac{4^n}{n^{1.5}\sqrt\pi}$，是指數成長。
+
+「比值趨近 4」對：$\frac{C_{n+1}}{C_n}=\frac{2(2n+1)}{n+2}$。
+
+「像 $2^n$」錯：比 $2^n$ 快得多。
+
+@q cn5-18 | dm-counting#5 | 3 | 證明
+證明 $\binom{2n}n-\binom{2n}{n+1}=\frac1{n+1}\binom{2n}n$。
+---
+$\binom{2n}{n+1}=\binom{2n}n\cdot\frac{n}{n+1}$（分母多一個 $n+1$、少一個 $n$）。所以左邊 $=\binom{2n}n(1-\frac n{n+1})=\frac1{n+1}\binom{2n}n$。
+
+@q cn5-19 | dm-counting#5 | 2 | 找錯
+Paths on the integer grid go from $(0, 0)$ to $(3, 3)$ using unit steps right or up. A student says: "The paths that never go above the diagonal $y = x$ are exactly half of all paths." Which of the following statements are correct? Select all that apply.
+[x] There are $\binom{6}{3} = 20$ paths in total.
+[x] Exactly $C_3 = 5$ paths never go above the diagonal.
+[ ] The student is correct, because of symmetry.
+[x] Symmetry only shows that the paths that stay entirely on or below the diagonal are as many as those that stay entirely on or above it; many paths cross it.
+[ ] Exactly 15 paths never go above the diagonal.
+---
+「總共 20 條」對：6 步裡選 3 步往右。
+
+「不越過的有 5 條」對：把「右」看成左括號、「上」看成右括號，就是 3 對括號的合法字串。
+
+「對稱所以是一半」錯、「對稱只說明兩邊一樣多」對：一直待在下方的 5 條、一直待在上方的 5 條，剩下 10 條兩邊都跑過。只有四分之一不越過。
+
+「15 條」錯。
+
+@q dg1-07 | dm-graph#1 | 3 | 陷阱
+4 個點的度數序列 $(3,3,3,1)$，度數和 10 是偶數。能畫出這樣的簡單圖（沒有重邊、沒有自環）嗎？
+[x] 不能：三個度數 3 的點各要連到其他全部 3 個點，第四個點就被連了 3 次，度數不可能是 1
+[ ] 能：度數和是偶數，握手定理成立就畫得出來
+[ ] 能：邊數是 $10/2=5$，4 個點最多可以有 6 條邊，放得下
+[ ] 不能：度數和要是 4 的倍數才行
+---
+握手定理只是**必要條件**：和是奇數一定不行，和是偶數不保證可以。這裡 4 個點的簡單圖每點最多度數 3，度數 3 代表跟其他人全連，三個這樣的點逼得第四點度數至少 3。「邊數 5 ≤ 6」只說明邊放得下，沒檢查每個點的度數。
+
+@q dg1-08 | dm-graph#1 | 3 | 情境
+5 個人的聚會，任兩人要嘛認識、要嘛不認識（認識是互相的）。主人說：「在場每個人認識的人數都不一樣。」這可能嗎？
+[x] 不可能：人數只能是 0～4，但「認識 0 人」和「認識 4 人（全部人）」不能同時出現，5 個人只剩 4 種數字可用
+[ ] 可能：0、1、2、3、4 加起來 10 是偶數，握手定理成立
+[ ] 不可能：0+1+2+3+4 是奇數
+[ ] 只有在有人誰都不認識時才可能
+---
+把人當點、認識當邊。度數全不同就得是 0,1,2,3,4 各一個，但度數 4 的人認識所有人，包括那個度數 0 的人，矛盾。所以 5 個人只有 4 種可能的度數，一定有兩個人一樣（任何 $n\ge2$ 個點的簡單圖都是這樣）。這裡度數和 10 是偶數，所以光看握手定理看不出來。
+
+@q dg1-09 | dm-graph#1 | 1 | 計算
+A complete graph $K_n$ has 45 edges. What is $n$?
+== 10
+---
+$K_n$ 的邊數是 $\frac{n(n-1)}{2}$。解 $n(n-1)=90$，得 $n=10$（$10\times9=90$）。
+
+@q dg1-10 | dm-graph#1 | 2 | 計算
+Ten vertices are split into two nonempty groups to form a complete bipartite graph $K_{m,n}$ with $m+n=10$. What are the largest and smallest possible numbers of edges?
+== 25,9
+?? max,min
+---
+邊數是 $m\times n=m(10-m)$。兩組越平均乘積越大：$5\times5=25$；越不平均越小：$1\times9=9$。
+
+@q dg1-11 | dm-graph#1 | 2 | 情境
+Four students $s_1,s_2,s_3,s_4$ must be split between two exam rooms The following pairs must not share a room: $s_1s_2$, $s_2s_3$, $s_3s_4$, $s_4s_1$, and $s_1s_3$. Which of the following statements are correct? Select all that apply.
+[ ] A valid split is $\{s_1,s_3\}$ and $\{s_2,s_4\}$.
+[x] No valid split exists, because no two of $s_1$, $s_2$, $s_3$ may share a room.
+[x] With students as vertices and an edge for each such pair, a valid split exists exactly when the graph has no cycle of odd length.
+[x] If $s_1$ and $s_3$ are allowed to share a room, a valid split exists.
+[ ] Any four students can be split validly as long as each of them appears in at most 3 such pairs.
+---
+「$\{s_1,s_3\}$、$\{s_2,s_4\}$」錯：$s_1$ 和 $s_3$ 也衝突。
+
+「$s_1,s_2,s_3$ 兩兩衝突，分不出來」對：三角形裡三個人，兩間教室必有兩人同間。
+
+「分得出來 ⇔ 沒有奇環」對：問的就是「是不是二分圖」，二分圖 ⇔ 沒有奇數長度的環。
+
+「拿掉 $s_1s_3$ 就分得出來」對：剩下長 4 的環，$\{s_1,s_3\}$、$\{s_2,s_4\}$ 就行。
+
+「每人衝突不超過 3 就行」錯：4 個人每人最多 3 個衝突本來就一定成立，但這題就分不出來。
+
+@q dg1-12 | dm-graph#1 | 2 | 情境
+A road map has 20 intersections and 35 roads, each road joining two intersections. Every intersection meets either 3 or 4 roads. How many intersections meet 4 roads?
+== 10
+---
+握手定理：度數和＝$2\times35=70$。設連 3 條的有 $a$ 個、連 4 條的有 $b$ 個：$a+b=20$，$3a+4b=70$。相減得 $b=70-60=10$。
+
+@q dg1-13 | dm-graph#1 | 2 | 計算
+How many more edges does $K_7$ have than $K_{3,4}$? Which edges are the extra ones?
+== 9
+---
+$K_7$ 有 $\frac{7\times6}2=21$ 條，$K_{3,4}$ 有 $3\times4=12$ 條，差 9 條。多出來的就是**同一組裡面**的邊：3 個點那組有 3 條、4 個點那組有 6 條，$3+6=9$。
+
+@q dg1-14 | dm-graph#1 | 3 | 追蹤
+A graph has 6 vertices and edges 1–2, 1–3, 2–4, 3–4, 4–5, 5–6, 6–3. Starting from vertex 1, color it with two colors so that adjacent vertices differ. Is it bipartite? If so, list the vertices with the same color as vertex 1, in increasing order.
+== 1,4,6
+---
+1 塗甲 → 2、3 塗乙 → 4（鄰 2、3）塗甲 → 5（鄰 4）塗乙 → 6（鄰 5）塗甲。最後檢查還沒看的邊 6–3：甲、乙不同色，沒有衝突，所以是二分圖。甲組 $\{1,4,6\}$、乙組 $\{2,3,5\}$。圖裡的環 1–2–4–3、3–4–5–6 都是偶數長。
+
+@q dg1-15 | dm-graph#1 | 3 | 比較
+$K_{3,3}$ 和三角柱（兩個三角形，上下對應的點再各連一條邊）都是 6 個點、9 條邊、每點度數 3。它們同構嗎？
+[x] 不同構：三角柱有三角形，$K_{3,3}$ 是二分圖、沒有任何奇環
+[ ] 同構：點數、邊數、度數序列都一樣
+[ ] 不同構：三角柱的邊數比較多
+[ ] 同構：兩個都是連通的，而且每點度數一樣
+---
+「有沒有三角形」是同構不變量：同構只是重新命名點，三角形還是三角形。$K_{3,3}$ 的邊都跨兩組，不可能有長 3 的環。點數、邊數、度數序列、連通都只是必要條件，一樣也不保證同構。
+
+@q dg1-16 | dm-graph#1 | 2 | 計算
+A simple graph $G$ has 8 vertices, each of degree 3. Build a new graph $H$: every pair of vertices not joined in $G$ is joined in $H$, and no edge of $G$ is kept. What is the degree of each vertex of $H$, and how many edges does $H$ have?
+== 4,16
+?? degree,edges
+---
+每個點最多跟另外 7 個點相連；在 $G$ 連了 3 個，$H$ 就連剩下的 $7-3=4$ 個。$H$ 的邊數 $=8\times4/2=16$，也等於 $K_8$ 的 28 條減掉 $G$ 的 $8\times3/2=12$ 條。
+
+@q dg1-17 | dm-graph#1 | 1 | 找錯
+小華算「6 個點、度數 4,4,3,3,2,2 的圖」有 18 條邊。他哪裡錯了？
+[x] 度數和 18 要除以 2：每條邊被兩個端點各算一次，所以是 9 條
+[ ] 沒錯：度數和就是邊數
+[ ] 要減掉點數：$18-6=12$ 條
+[ ] 這個度數序列根本畫不出來
+---
+握手定理：度數和 $=2|E|$，所以 $|E|=18/2=9$。這個序列畫得出來（例如 6 點環再加 3 條邊），所以「畫不出來」也不對。
+
+@q dg1-18 | dm-graph#1 | 2 | 陷阱
+A graph is bipartite if its vertices can be split into two groups so that every edge joins vertices from different groups. Which of the following statements are correct? Select all that apply.
+[x] The complete graph $K_2$ is bipartite.
+[ ] The complete graph $K_4$ is bipartite, because its 4 vertices can be split evenly into two groups of 2.
+[x] For every $n \ge 3$, the complete graph $K_n$ is not bipartite, because it contains a triangle.
+[x] A cycle with 6 vertices is bipartite, but a cycle with 5 vertices is not.
+[ ] Every graph in which each vertex has degree exactly 2 is bipartite.
+---
+「$K_2$ 是二分圖」對：一條邊，兩端各放一組。
+
+「$K_4$ 平分成兩組就是」錯：「能分成兩組」不夠，要組內沒有邊；$K_4$ 同一組的兩點之間也有邊。
+
+「$n\ge3$ 時有三角形所以不是」對：三角形是奇環，三個點不管怎麼分兩組，總有兩個同組又相鄰。
+
+「6 點環是、5 點環不是」對：環上的點交替分組，偶數長度剛好繞回來不衝突；奇數長度最後一條邊兩端同組。二分圖若且唯若沒有奇環。
+
+「每點度數 2 的圖都是二分圖」錯：5 個點的環每點度數都是 2，但它是奇環。
+
+@q dg1-19 | dm-graph#1 | 2 | 計算
+At most how many edges can a simple bipartite graph on 9 vertices have?
+== 20
+---
+兩組 $a$、$9-a$ 個點，邊最多 $a(9-a)$ 條（全部跨組都連，就是 $K_{a,9-a}$）。$a=4$ 或 5 時最大：$4\times5=20$。一般是 $\lfloor n^2/4\rfloor$。
+
+@q dg1-20 | dm-graph#1 | 3 | 陷阱
+兩張簡單圖都是 5 個點、每點度數都是 2。它們一定同構嗎？
+[x] 一定同構：5 個點、每點度數 2 只能是一個 5 點的環（拆成 3 點環＋2 點不行，2 個點畫不出環）
+[ ] 不一定：度數序列一樣不保證同構
+[ ] 不一定：可能一張是 5 點環、一張是三角形加上兩個點連成的環
+[ ] 一定同構：度數序列一樣的圖一定同構
+---
+每點度數 2 的圖是幾個環拼起來，每個環至少 3 個點。5 只能拆成 5（3＋2 的 2 不行），所以只有 5 點環一種。6 個點就不一樣了：6 點環和兩個三角形不同構。「度數序列一樣就同構」一般是錯的，這題是特例。
+
+@q dg1-21 | dm-graph#1 | 2 | 計算
+How many different 4-vertex cycles does $K_4$ contain (as subgraphs; two cycles are the same if they use the same edges)?
+== 3
+---
+4 個點排成環，固定從點 1 出發，剩下 3 個點的排法 $3!=6$，但正著走和反著走是同一個環，除以 2 得 3。直接列：1–2–3–4、1–2–4–3、1–3–2–4。
+
+@q dg1-22 | dm-graph#1 | 2 | 計算
+A bipartite graph has 6 vertices on the left, each of degree 4, and every vertex on the right has degree 3. Every edge goes between the two sides. How many vertices are on the right, and how many edges are there?
+== 8,24
+?? right vertices,edges
+---
+每條邊剛好一端在左、一端在右。從左邊數：邊數 $=6\times4=24$；從右邊數：邊數 $=3\times(\text{右邊點數})$，所以右邊 $24/3=8$ 個點。這是握手定理用在二分圖：兩邊各自的度數和都等於邊數。
+
+@q dg2-05 | dm-graph#2 | 2 | 計算
+Consider the complete bipartite graphs $K_{2,4}$, $K_{3,4}$, $K_{2,3}$, and $K_{4,4}$. Which of the following statements are correct? Select all that apply.
+[x] $K_{2,4}$ has an Euler circuit.
+[ ] $K_{3,4}$ has an Euler circuit, because one side has an even number of vertices.
+[x] $K_{4,4}$ has an Euler circuit.
+[ ] $K_{2,3}$ has an Euler circuit, because every complete bipartite graph is connected.
+[x] $K_{2,3}$ has an Euler path that is not a circuit.
+---
+$K_{m,n}$ 左邊每個點的度數是 $n$、右邊每個點的度數是 $m$。連通圖有歐拉迴路若且唯若每點度數都是偶數；恰有兩個奇點時有歐拉路徑（從一個奇點走到另一個）。
+
+「$K_{2,4}$ 有」對：度數 4 和 2，全偶。
+
+「$K_{3,4}$ 有」錯：右邊 4 個點度數是 3，奇數。要 $m$、$n$ **都**是偶數。
+
+「$K_{4,4}$ 有」對：度數都是 4。
+
+「$K_{2,3}$ 有，因為連通」錯：連通是必要的，但不夠；左邊 2 個點度數 3。
+
+「$K_{2,3}$ 有歐拉路徑」對：奇點剛好是左邊那 2 個，從其中一個出發、在另一個結束。
+
+@q dg2-06 | dm-graph#2 | 2 | 情境
+一筆畫「聖誕老人的房子」：正方形 ABCD（A、B 是下面兩角，C、D 是上面兩角）、兩條對角線 AC 和 BD，再加屋頂點 E 連到 C 和 D。要從哪裡下筆才畫得完？
+[x] A 或 B
+[ ] E：從屋頂開始往下畫
+[ ] C 或 D：它們連的線最多
+[ ] 哪裡下筆都可以
+---
+度數：A、B 各 3（奇數），C、D 各 4，E 是 2。剛好 2 個奇度點，所以有歐拉路徑、沒有歐拉迴路，而且一定是從一個奇度點出發、在另一個結束。從 C、D 或 E 開始，最後會剩下沒畫的邊。
+
+@q dg2-07 | dm-graph#2 | 2 | 陷阱
+「一張圖每個點的度數都是偶數，所以它有歐拉迴路。」對嗎？
+[x] 不一定：圖還要連通（不算孤立點），例如兩個分開的三角形每點度數都是 2，卻沒辦法一筆走完
+[ ] 對：偶數度數就是歐拉迴路的充要條件
+[ ] 不一定：還要點數是偶數
+[ ] 不對：還要邊數是偶數
+---
+歐拉迴路的條件是「**連通**且每點度數偶數」。兩個分開的三角形，每個三角形各自有迴路，但從一個走不到另一個。點數、邊數是奇是偶都沒關係（三角形 3 點 3 邊就有歐拉迴路）。
+
+@q dg2-08 | dm-graph#2 | 3 | 計算
+The skeleton of a cube has 8 corners and 12 edges, with 3 edges at each corner. If each edge must be drawn exactly once, what is the smallest number of pen strokes needed?
+== 4
+---
+8 個角都是奇度點。每一筆畫只有起點和終點可以是奇數度，所以一筆最多「處理掉」2 個奇度點：8 個至少要 $8/2=4$ 筆，而且連通圖一定做得到。一般規則：連通圖有 $2k$ 個奇度點時最少要 $k$ 筆（$k\ge1$）。
+
+@q dg2-09 | dm-graph#2 | 1 | 情境
+柯尼斯堡問題（歐拉最早研究的圖）：一座島有 5 條通道連到其他陸地，另外三塊陸地各有 3 條通道。能不能每條通道剛好走一次（不一定回到起點）？
+[x] 不能：4 塊陸地連的通道數全是奇數，歐拉路徑最多只能有 2 個奇度點
+[ ] 能：只要不用回到起點
+[ ] 不能：通道總數 7 是奇數
+[ ] 能：島連了 5 條通道，從島出發就好
+---
+陸地是點、通道（原題是七座橋）是邊，有兩對陸地之間各有兩條，所以有重邊。度數 5、3、3、3 全是奇數，共 4 個奇度點。只有 0 或 2 個奇度點才有歐拉路徑。邊數是奇是偶跟這件事無關。
+
+@q dg2-10 | dm-graph#2 | 2 | 追蹤
+圖有 6 個點，邊是 1–2、2–3、3–4、4–1、1–5、5–3、3–6、6–1。下面哪一條是歐拉迴路？
+[x] 1–2–3–6–1–5–3–4–1
+[ ] 1–2–3–4–1–5–3–4–1
+[ ] 1–2–3–6–1–5–3–4
+[ ] 1–5–6–3–4–1–2–3–1
+---
+逐條對：正解用了 12、23、36、61、15、53、34、41，8 條邊各一次，起點終點都是 1。第二個重複走 3–4、4–1，沒走 3–6、6–1；第三個少走 4–1，也沒回到起點；第四個用到不存在的邊 5–6 和 3–1。
+
+@q dg2-11 | dm-graph#2 | 3 | 比較
+The "butterfly" graph consists of two triangles that share exactly one vertex (5 vertices, 6 edges). Which of the following statements are correct? Select all that apply.
+[x] It has an Euler circuit.
+[ ] It has a cycle that visits every vertex exactly once.
+[x] Removing the shared vertex leaves two separate pieces, which already rules out a cycle that visits every vertex exactly once.
+[x] It has a path that visits every vertex exactly once.
+[ ] It has an Euler path but no Euler circuit.
+---
+「有歐拉迴路」對：中間點度數 4，其他 4 點度數 2，全偶數又連通。繞完一個三角形再繞另一個。
+
+「有漢米頓迴路」錯：要從一邊到另一邊都得經過中間點，一圈下來中間點會用兩次。
+
+「拿掉中間點剩兩塊就排除漢米頓迴路」對：迴路拿掉 1 個點還是連成一條，所以有漢米頓迴路的圖拿掉任 1 點最多剩 1 塊。
+
+「有漢米頓路徑」對：一邊三角形的兩個外點 → 中間點 → 另一邊的兩個外點，正好每點一次；路徑不用回到起點。
+
+「有歐拉路徑但沒有歐拉迴路」錯：度數全偶，有迴路；只有恰好兩個奇點時才是「有路徑沒迴路」。
+
+@q dg2-12 | dm-graph#2 | 2 | 反例
+哪一個圖**有**漢米頓迴路、但**沒有**歐拉迴路？
+[x] $K_4$
+[ ] 5 個點的環 $C_5$
+[ ] 蝴蝶圖（兩個三角形共用一個點）
+[ ] $K_{2,3}$
+---
+$K_4$：1–2–3–4–1 走遍每個點；但每點度數 3，沒有歐拉迴路。$C_5$ 兩個都有；蝴蝶圖剛好相反（有歐拉、沒有漢米頓）；$K_{2,3}$ 兩個都沒有（度數有 3，拿掉左邊 2 點剩 3 塊）。兩種迴路的條件互不相干。
+
+@q dg2-13 | dm-graph#2 | 2 | 陷阱
+9 個點的圖，每個點度數都是 4。小明說：「$4<9/2$，Dirac 條件不成立，所以沒有漢米頓迴路。」對嗎？
+[x] 不對：Dirac 只是充分條件，不成立時不能下結論（例如 9 點的環每點度數只有 2，也有漢米頓迴路）
+[ ] 對：度數不到 $n/2$ 就沒有
+[ ] 不對：$4\ge9/2$，Dirac 其實成立，所以一定有
+[ ] 對：度數都是偶數的圖沒有漢米頓迴路
+---
+「條件成立 → 有」不等於「條件不成立 → 沒有」。要證明「沒有」得用必要條件（例如拿掉 $k$ 點剩超過 $k$ 塊）。$9/2=4.5$，4 確實不到，所以 Dirac 用不上，但這不代表沒有。
+
+@q dg2-14 | dm-graph#2 | 3 | 計算
+圖有 6 個點：點 1～5 兩兩相連（$K_5$），點 6 只連到點 1、2。Dirac 和 Ore 條件各成不成立？
+[x] Dirac 不成立、Ore 成立，所以一定有漢米頓迴路
+[ ] 兩個都不成立，所以沒有漢米頓迴路
+[ ] Dirac 成立：大部分的點度數都 $\ge3$
+[ ] Ore 不成立：點 6 和點 3 不相鄰，度數和只有 $2+4=6$
+---
+度數：點 1、2 是 5，點 3、4、5 是 4，點 6 是 2。Dirac 要**每個**點 $\ge6/2=3$，點 6 只有 2，不成立。Ore 只看不相鄰的點對：只有 (6,3)、(6,4)、(6,5)，度數和都是 $2+4=6\ge6$，成立（等於也算）。實際的迴路：1–6–2–3–4–5–1。
+
+@q dg2-15 | dm-graph#2 | 3 | 陷阱
+Petersen 圖（外面一個五邊形、裡面一個五角星，外面每個點連到裡面對應的點；10 點、每點度數 3）。不管拿掉哪 $k$ 個點，剩下都最多 $k$ 塊。所以它一定有漢米頓迴路嗎？
+[x] 不一定，而且 Petersen 圖剛好就沒有：「拿掉 $k$ 點最多剩 $k$ 塊」只是必要條件
+[ ] 一定有：必要條件全部滿足
+[ ] 一定有：每點度數 3，而且 $3\ge10/2$
+[ ] 沒有：因為每點度數是奇數
+---
+必要條件只能拿來證明「沒有」，滿足了不代表有。Petersen 圖就是有名的反例：它滿足這個條件，卻沒有漢米頓迴路（用程式窮舉驗證過）。$3<10/2=5$，所以 Dirac 也用不上。度數奇數影響的是歐拉迴路，不是漢米頓迴路（$K_4$ 度數 3 也有）。
+
+@q dg2-16 | dm-graph#2 | 3 | 計算
+$K_{3,4}$ 有沒有漢米頓**路徑**（每點剛好一次、不用回起點）？$K_{3,5}$ 呢？
+[x] $K_{3,4}$ 有、$K_{3,5}$ 沒有
+[ ] 兩個都沒有：兩邊點數不一樣
+[ ] 兩個都有：完全二分圖點都互相連
+[ ] $K_{3,4}$ 沒有、$K_{3,5}$ 有
+---
+路徑必須左右交替走，所以兩邊點數最多差 1。$K_{3,4}$：右左右左右左右（4 右、3 左），可以。$K_{3,5}$：5 個右邊的點之間至少要 4 個左邊的點隔開，只有 3 個，不行。迴路要兩邊一樣多（$K_{3,3}$ 有迴路），路徑可以差 1。
+
+@q dg2-17 | dm-graph#2 | 1 | 情境
+下面哪一個是「漢米頓迴路」的問題？
+[x] 業務員要拜訪 8 個城市各一次，最後回到公司
+[ ] 掃雪車要把每條路都掃一次，最後回到車庫
+[ ] 郵差要走過每條街送信，再回到郵局
+[ ] 不提筆畫完一個圖形的每一條線
+---
+「每個**點**一次」是漢米頓；「每條**邊**一次」是歐拉。路、街、線都是邊，所以另外三個是歐拉迴路／路徑的問題。城市是點。
+
+@q dg2-18 | dm-graph#2 | 2 | 證明
+證明：如果一張圖有歐拉迴路，那每個點的度數都是偶數。
+---
+沿著迴路走：每次**經過**一個點，都是從一條邊進來、從另一條邊出去，用掉這個點的 2 條邊。起點也一樣：一開始出去一條、最後回來一條，配成一對。每條邊剛好用一次，所以每個點的度數＝經過次數 × 2，是偶數。（反過來：連通且全偶數 → 有歐拉迴路，也成立。）
+
+@q dg2-19 | dm-graph#2 | 2 | 找錯
+小美說：「這個連通圖剛好有 2 個奇度點，所以有歐拉迴路，要從其中一個奇度點出發。」錯在哪？
+[x] 2 個奇度點只有歐拉**路徑**（從一個奇度點走到另一個），沒有迴路；迴路要 0 個奇度點
+[ ] 沒錯
+[ ] 要從偶數度的點出發才對
+[ ] 奇度點要剛好 1 個才有歐拉迴路
+---
+迴路會回到起點，起點也是「進一次、出一次」，所以每個點都要偶數度。2 個奇度點時，這兩點只能當路徑的頭和尾，回不到起點。奇度點的個數一定是偶數，不可能剛好 1 個。
+
+@q dg2-20 | dm-graph#2 | 3 | 反例
+3×3 的格子點（9 個點，上下左右相鄰的連邊，共 12 條邊）有沒有漢米頓迴路？
+[x] 沒有：塗成黑白棋盤後是 5 黑 4 白，迴路要黑白交替，兩色點數必須一樣多
+[ ] 有：每個點的度數都至少 2
+[ ] 沒有：四個角的點度數只有 2
+[ ] 有：中間的點度數 4，可以從那裡繞一圈
+---
+格子圖是二分圖（相鄰的點顏色不同）。漢米頓迴路黑白交替、回到起點，黑點數＝白點數。這裡 5≠4，所以沒有（程式窮舉也確認）；但有漢米頓**路徑**（黑白黑…黑，5 黑 4 白剛好）。度數 2 不會擋住迴路（環每點都是 2）。
+
+@q dg3-06 | dm-graph#3 | 3 | 陷阱
+「一張圖有 $n$ 個點、$n$ 條邊，所以它剛好有一個環。」對嗎？
+[x] 不一定：要連通才對。例如 $K_4$（4 點 6 條邊）再加 2 個孤立點，6 點 6 邊，卻有 7 個環
+[ ] 對：比樹多一條邊，就多一個環
+[ ] 不一定：也可能完全沒有環
+[ ] 對：$n$ 條邊的圖一定連通
+---
+**連通**又有 $n$ 條邊，才是「一棵樹加一條邊」，剛好一個環。不連通時，邊可能全擠在某一塊：$K_4$ 有 4 個三角形和 3 個 4 點環。「完全沒有環」不可能：沒有環的圖（森林）邊數是 $n-c\le n-1$，到不了 $n$ 條。
+
+@q dg3-07 | dm-graph#3 | 2 | 計算
+A tree has 10 vertices. What are the smallest and largest possible numbers of vertices of degree 1?
+== 2,9
+?? min,max
+---
+最少：一條路，只有兩端度數 1。最多：一個中心連其他 9 個點（星形），9 個度數 1。不可能 10 個：10 個點全是度數 1 的話度數和 10，但樹有 9 條邊、度數和要 18。
+
+@q dg3-08 | dm-graph#3 | 3 | 計算
+A tree has a vertex of degree 6. At least how many vertices of degree 1 must it have?
+== 6
+---
+從度數 6 的點出發的 6 條邊，各自往外走到底，一定停在度數 1 的點，而且（沒有環）這 6 條路不會走到同一個終點，所以至少 6 個。公式也可以：度數 1 的點數 $=2+\sum_{d\ge3}(d-2)\cdot(\text{度數 }d\text{ 的點數})\ge2+4=6$。星形剛好 6 個。
+
+@q dg3-09 | dm-graph#3 | 2 | 情境
+The molecule graph of a saturated alkane is a tree: each carbon (C) has 4 bonds and each hydrogen (H) has 1 bond. How many hydrogens does an alkane with 5 carbons have?
+== 12
+---
+設 $h$ 個氫。點數 $5+h$，樹的邊數 $=4+h$。握手定理：$4\cdot5+1\cdot h=2(4+h)$，$20+h=8+2h$，$h=12$（戊烷 C₅H₁₂）。一般是 $h=2n+2$。
+
+@q dg3-10 | dm-graph#3 | 1 | 計算
+Five vertices form the cycle $C_5$. How many spanning trees does it have?
+== 5
+---
+生成樹要用 5 個點、4 條邊、沒有環。環有 5 條邊，拿掉任何一條都剩一條路（是樹），拿掉兩條就不連通了。所以 5 棵。
+
+@q dg3-11 | dm-graph#3 | 3 | 計算
+$K_4$ has $4^2=16$ spanning trees. After one edge of $K_4$ is removed, how many spanning trees remain?
+== 8
+---
+每棵生成樹有 3 條邊，16 棵一共用了 $16\times3=48$ 次邊；$K_4$ 有 6 條邊，對稱，所以每條邊出現在 $48/6=8$ 棵裡。拿掉一條邊，剩下的是不含它的那些：$16-8=8$ 棵（程式列舉也是 8）。
+
+@q dg3-12 | dm-graph#3 | 2 | 計算
+There are 16 trees on 4 labeled vertices. How many of them are paths (every vertex has degree at most 2)?
+== 12
+---
+4 個點的樹只有兩種形狀：一條路，或一個中心連 3 個點（星形）。星形看中心是誰，有 4 棵；路就是 $16-4=12$ 棵。直接算路：4 個點排成一列有 $4!=24$ 種，正反是同一條路，$24/2=12$ ✓。
+
+@q dg3-13 | dm-graph#3 | 3 | 情境
+A company connects 12 buildings with cables so that any two buildings can communicate (possibly through others). What is the minimum number of cables? If, in addition, everyone must still be connected after any single cable breaks, what is the minimum?
+== 11,12
+?? connected,survives one cut
+---
+只要互通：連通圖至少 $n-1=11$ 條邊，剛好 11 條時就是樹。但樹的**每一條**邊拿掉都會不連通，所以第二個要求至少 12 條；12 條排成一個大環就做得到（斷任何一條還是一條路）。
+
+@q dg3-14 | dm-graph#3 | 2 | 情境
+A tournament has 27 players. Each game is played by three players and only the winner advances, until one player remains. How many games are played in total?
+== 13
+---
+這是一棵完整的 3 元樹：選手是沒有孩子的點（27 個），每場比賽是一個內部點（3 個孩子）。$l=(m-1)i+1$：$27=2i+1$，$i=13$。也可以想：每場淘汰 2 人，要淘汰 26 人，所以 13 場。
+
+@q dg3-15 | dm-graph#3 | 2 | 觀念
+在一棵樹上加一條新的邊（兩端都是原本的點，不跟原有的邊重複），一定剛好多出一個環。
+[x] 對
+[ ] 不對
+---
+樹上任兩點 $u$、$v$ 之間剛好一條路。加上邊 $u$–$v$ 後，這條路加上新邊就是一個環；如果有兩個環，代表 $u$、$v$ 之間原本有兩條不同的路，矛盾。這就是「沒有環，但加任何一條邊就有環」那個等價條件。
+
+@q dg3-16 | dm-graph#3 | 2 | 找錯
+小明說：「這個圖有 10 個點、9 條邊，而且沒有孤立點（每點度數 $\ge1$），所以它是樹。」錯在哪？
+[x] 沒有確認連通或沒有環：例如一個三角形加上一條 7 個點的路，10 點 9 邊、沒有孤立點，卻有環又不連通
+[ ] 沒錯：$n$ 個點 $n-1$ 條邊就是樹
+[ ] 邊數不對：樹要有 10 條邊
+[ ] 要每點度數 $\ge2$ 才是樹
+---
+等價條件是「$n-1$ 條邊**而且**連通」或「$n-1$ 條邊**而且**沒有環」，只有邊數不夠。三角形用 3 點 3 邊，7 點的路用 6 條邊，加起來 10 點 9 邊。樹一定有度數 1 的點，所以「每點度數 $\ge2$」反而不可能是樹。
+
+@q dg3-17 | dm-graph#3 | 2 | 證明
+證明：至少 2 個點的樹，一定至少有 2 個度數 1 的點。
+---
+方法一（最長路）：取樹裡最長的一條路 $v_0v_1\dots v_k$（$k\ge1$）。如果 $v_0$ 除了 $v_1$ 還有別的鄰居 $w$：$w$ 在路上會形成環，不在路上路就能再延長，都矛盾。所以 $\deg v_0=1$，同理 $\deg v_k=1$。方法二（數度數）：度數和 $=2(n-1)=2n-2$；如果最多 1 個點度數 1，其他都 $\ge2$，度數和 $\ge1+2(n-1)=2n-1$，矛盾。
+
+@q dg3-18 | dm-graph#3 | 3 | 計算
+How many differently shaped (pairwise non-isomorphic) trees can be formed on 5 **unlabeled** vertices? (With labels there are $5^3=125$.)
+== 3
+---
+看最大度數：4 → 星形；3 → 一個點連 3 個、其中一個再接一個點；2 → 一條路。共 3 種（程式把 125 棵按同構分類也是 3 類）。Cayley 公式算的是**有編號**的樹，同一個形狀換編號算不同棵，所以差很多。
+
+@q dg3-19 | dm-graph#3 | 3 | 計算
+How many spanning trees does $K_{2,3}$ (2 vertices on the left, 3 on the right, 6 edges) have?
+== 12
+---
+生成樹有 5 個點、4 條邊，所以從 6 條邊拿掉 2 條，共 15 種拿法。拿完會壞掉的只有一種情況：把右邊某個點的 2 條邊都拿掉，它變成孤立點（3 種）。其他拿法剩下的 4 條邊都連通，就是樹。$15-3=12$（程式列舉也是 12）。
+
+@q dg3-20 | dm-graph#3 | 1 | 計算
+A connected graph has 9 vertices and 14 edges. At least how many edges must be removed to turn it into a tree?
+== 6
+---
+樹（還是 9 個點、要連通）有 $9-1=8$ 條邊，所以要拿掉 $14-8=6$ 條。每次拿掉一條在環上的邊，圖還是連通，所以剛好 6 條就夠。
+
+@q dg4-06 | dm-graph#4 | 2 | 計算
+At most how many edges can a simple planar graph on 8 vertices have if it is also bipartite?
+== 12
+---
+二分圖沒有三角形，每個面至少 4 條邊：$4f\le2e$，代進歐拉公式得 $e\le2v-4=12$。立方體的骨架剛好是 8 點、12 邊、平面又是二分圖，所以 12 做得到。用 $3v-6=18$ 是一般簡單圖的上界，這裡太鬆。
+
+@q dg4-07 | dm-graph#4 | 3 | 計算
+A connected simple planar graph has 12 vertices, and when drawn without crossings **every** face (including the outer one) is a triangle. How many edges and how many faces does it have?
+== 30,20
+?? edges,faces
+---
+每個面 3 條邊、每條邊碰 2 個面：$3f=2e$。代進 $v-e+f=2$：$12-e+\frac{2e}3=2$，$e=30$、$f=20$。這就是 $e=3v-6$ 剛好等號成立的情況（例如正二十面體）。
+
+@q dg4-08 | dm-graph#4 | 3 | 陷阱
+A planar graph has 3 connected components, 10 vertices and 9 edges. When drawn without crossings, how many faces does it have, including the outer face?
+== 3
+---
+歐拉公式 $v-e+f=2$ 只對**連通**圖。$c$ 塊時是 $v-e+f=1+c$：$f=1+3-10+9=3$。直接套 2 會得到 $f=1$，錯。驗算：例如三角形＋4 點環＋3 點的路，兩個環各圍出 1 個面，加外面共 3 個。
+
+@q dg4-09 | dm-graph#4 | 1 | 情境
+電路板上有 5 個元件，每兩個都要用一條導線直接相連，導線都畫在板子同一面、不能交叉。做得到嗎？
+[x] 做不到：這是 $K_5$，10 條邊超過平面圖上限 $3\cdot5-6=9$
+[ ] 做得到：導線繞遠一點就能避開
+[ ] 做得到：只有 5 個點，太少不會交叉
+[ ] 做不到：5 是奇數
+---
+元件是點、導線是邊，問 $K_5$ 能不能畫平。$K_5$ 有 10 條邊，簡單平面圖最多 $3v-6=9$ 條，所以怎麼繞都不行。4 個元件（$K_4$）就做得到。
+
+@q dg4-10 | dm-graph#4 | 3 | 情境
+The surface of a soccer ball can be viewed as a planar graph with 12 pentagonal faces and 20 hexagonal faces, and 3 edges meeting at every corner. How many edges and how many vertices does it have?
+== 90,60
+?? edges,vertices
+---
+每條邊碰 2 個面，所以「面的邊數加起來 $=2e$」：$12\cdot5+20\cdot6=180=2e$，$e=90$。面數 $f=32$，歐拉公式 $v=2-f+e=2-32+90=60$。驗算握手定理：$60\times3=180=2\times90$ ✓。
+
+@q dg4-11 | dm-graph#4 | 3 | 陷阱
+Petersen 圖有 10 個點、15 條邊，最短的環長度是 5（沒有三角形，也沒有 4 點環）。能用「數邊」證明它不是平面圖嗎？
+[x] 能：每個面至少 5 條邊，$5f\le2e$ 代進歐拉公式得 $e\le\frac53(v-2)\approx13.3<15$
+[ ] 不能：$15\le3\cdot10-6=24$
+[ ] 不能：$15\le2\cdot10-4=16$，連沒有三角形的上界都擋不住
+[ ] 能：$15>3\cdot10-6$
+---
+$3v-6$ 和 $2v-4$ 都擋不住，但推導的想法可以照用：最短環長 5 → 每個面至少 5 條邊。$5f\le2e$、$f=2-v+e$：$5(2-10+15)=35\le30$ 矛盾。所以 Petersen 圖不是平面圖（它含 $K_{3,3}$ 的細分，程式檢查也是非平面）。
+
+@q dg4-12 | dm-graph#4 | 2 | 計算
+A simple planar graph has 10 edges. At least how many vertices must it have?
+== 6
+---
+$e\le3v-6$：$10\le3v-6$，$v\ge\frac{16}3\approx5.3$，所以 $v\ge6$。5 個點最多 $3\cdot5-6=9$ 條邊，放不下 10 條（$K_5$ 剛好 10 條，而它不是平面圖）。
+
+@q dg4-13 | dm-graph#4 | 3 | 比較
+下面四個圖中，哪一個是平面圖（能畫在平面上、邊都不交叉）？
+[x] $K_5$ 拿掉一條邊
+[ ] $K_6$ 拿掉一條邊
+[ ] $K_{3,4}$
+[ ] $K_{3,3}$ 再加一條邊
+---
+$K_6-e$：6 點 14 邊 $>3\cdot6-6=12$，不是。$K_{3,4}$：二分圖 7 點 12 邊 $>2\cdot7-4=10$，不是。$K_{3,3}+e$ 還含有 $K_{3,3}$，不是（Kuratowski）。$K_5-e$：9 條邊剛好 $=3\cdot5-6$，而且真的畫得平（三角形外面放一點、裡面放一點）。注意「$9\le9$」只是沒被擋掉，是畫出來才確定。
+
+@q dg4-14 | dm-graph#4 | 3 | 計算
+If **every** vertex of a simple planar graph has degree at least 5, at least how many vertices must it have?
+== 12
+---
+握手定理 $2e\ge5v$，平面圖 $e\le3v-6$：$\frac{5v}2\le3v-6$，$v\ge12$。12 做得到：正二十面體 12 個點、每點度數 5。（這也說明「一定有度數 $\le5$ 的點」不能再改成 $\le4$。）
+
+@q dg4-15 | dm-graph#4 | 2 | 證明
+證明：沒有三角形的連通簡單平面圖（$v\ge3$）滿足 $e\le2v-4$。
+---
+沒有三角形，每個面至少被 4 條邊圍住；每條邊最多碰 2 個面。把每個面的邊數加起來：$4f\le2e$，$f\le\frac e2$。代進歐拉公式 $2=v-e+f\le v-e+\frac e2$，整理得 $e\le2v-4$。（$v\ge3$ 是為了排除只有一條邊、圍不出面的情況。）
+
+@q dg4-16 | dm-graph#4 | 3 | 陷阱
+把 $K_5$ 的一條邊中間插一個新點（變成 6 個點、11 條邊）。它是平面圖嗎？
+[x] 不是：它是 $K_5$ 的細分，交叉沒辦法靠多一個點避開
+[ ] 是：$11\le3\cdot6-6=12$
+[ ] 是：插了點之後那條邊可以彎過去
+[ ] 不是：11 是奇數
+---
+在邊上插點不會改變「能不能畫平」：畫得平的話，把那個點拿掉、兩段接回去，$K_5$ 也畫得平了，矛盾。這就是 Kuratowski 定理說「細分」的原因。邊數上界這時擋不住（11 ≤ 12），只能用 Kuratowski 判斷。
+
+@q dg4-17 | dm-graph#4 | 1 | 計算
+A tree with $n$ vertices is drawn in the plane. How many faces does it have, including the outer face?
+== 1
+---
+樹連通、$e=n-1$。歐拉公式 $f=2-v+e=2-n+(n-1)=1$。沒有環就圍不出任何區域，只有外面那一塊。
+
+@q dg4-18 | dm-graph#4 | 2 | 觀念
+推導 $e\le3v-6$ 時用了「每個面至少 3 條邊」。為什麼一定要是**簡單圖**？
+[x] 有重邊時，兩條平行邊可以圍出只有 2 條邊的面（自環甚至 1 條），「至少 3 條」就不成立
+[ ] 簡單圖才會連通
+[ ] 簡單圖才滿足歐拉公式
+[ ] 簡單圖的每個點度數才至少 3
+---
+歐拉公式對有重邊的連通平面圖也成立，問題出在「每面 $\ge3$ 邊」。兩點之間連 100 條平行邊，可以畫平、有 99 個內部面，邊數遠超過 $3\cdot2-6=0$。簡單圖不一定連通，度數也可以很小。
+
+@q dg4-19 | dm-graph#4 | 2 | 觀念
+$K_{m,n}$（$1\le m\le n$）什麼時候是平面圖？
+[x] 只有 $m\le2$ 時
+[ ] $m+n\le6$ 時
+[ ] $m=n$ 時
+[ ] 永遠不是：完全二分圖都含 $K_{3,3}$
+---
+$m\ge3$ 就含 $K_{3,3}$（挑左 3 點、右 3 點），不是平面圖。$m\le2$：$K_{1,n}$ 是星形；$K_{2,n}$ 把兩個左邊的點放上下、$n$ 個右邊的點排成一列，邊都不交叉。$K_{3,3}$ 只有 6 個點也不是，所以「$m+n\le6$」不對。
+
+@q dg4-20 | dm-graph#4 | 2 | 計算
+A simple planar graph on 10 vertices already has 20 edges. At most how many more edges can be added so that it stays simple and planar?
+== 4
+---
+上限 $3v-6=24$，所以最多再加 4 條。做得到：任何簡單平面圖（$v\ge3$）都能一直加邊，直到每個面都是三角形，這時剛好 $3v-6$ 條。
+
+@q dg5-06 | dm-graph#5 | 3 | 計算
+A wheel graph is a cycle plus a center vertex joined to every vertex of the cycle. What is its chromatic number when the cycle has 5 vertices, and when it has 6?
+== 4,3
+?? 5-cycle,6-cycle
+---
+中心點跟環上每個點都相鄰，所以它要一個環上沒用過的顏色：色數 ＝ 環的色數 ＋ 1。5 點環是奇環要 3 色 → 共 4 色；6 點環是偶環 2 色 → 共 3 色。注意 5 點環的輪子沒有 $K_4$，卻要 4 色。
+
+@q dg5-07 | dm-graph#5 | 3 | 追蹤
+用刪除–收縮算 $K_4$ 拿掉一條邊 $e$ 之後的圖：$P(K_4-e,k)=P(K_4,k)+P(K_4/e,k)$。$K_4/e$ 是什麼圖？$k=3$ 時 $P(K_4-e,3)$ 是多少？
+[x] $K_4/e$ 是 $K_3$；$P(K_4-e,3)=0+6=6$
+[ ] $K_4/e$ 是 $K_3$；$P(K_4-e,3)=0-6$，不能著色
+[ ] $K_4/e$ 是 3 點的路；$P(K_4-e,3)=0+12=12$
+[ ] $K_4/e$ 是 $K_4$；$P(K_4-e,3)=0$
+---
+$P(G,k)=P(G-e,k)-P(G/e,k)$ 移項：$P(G-e,k)=P(G,k)+P(G/e,k)$。把 $e$ 兩端合成一點，剩下 3 個點仍然兩兩相連（重邊只留一條），是 $K_3$。$P(K_4,3)=3\cdot2\cdot1\cdot0=0$，$P(K_3,3)=6$，所以是 6（程式窮舉也是 6）。
+
+@q dg5-08 | dm-graph#5 | 3 | 計算
+What is the chromatic number of the Petersen graph (10 vertices, every vertex of degree 3, containing cycles of length 5, not a complete graph)?
+== 3
+---
+下界：有奇環（長 5），2 色不夠，至少 3。上界：Brooks 定理——連通、不是完全圖、也不是奇環，所以 $\chi\le\Delta=3$。合起來剛好 3。只用 $\chi\le\Delta+1=4$ 會停在 3 或 4 之間。
+
+@q dg5-09 | dm-graph#5 | 3 | 陷阱
+「最大度數 $\Delta=3$ 的連通圖，一定要 4 種顏色，因為 $\chi\le\Delta+1=4$。」哪裡不對？什麼時候真的要 4 色？
+[x] $\Delta+1$ 只是上界；由 Brooks 定理，只有圖是 $K_4$ 時才要 4 色
+[ ] 沒錯：$\Delta=3$ 一定要 4 色
+[ ] 有奇環的時候就要 4 色
+[ ] 點數是奇數的時候要 4 色
+---
+上界不是答案：$K_{3,3}$ 的 $\Delta=3$，只要 2 色。Brooks：連通圖不是完全圖、不是奇環 → $\chi\le\Delta$。$\Delta=3$ 的奇環不存在（奇環 $\Delta=2$），所以只剩 $K_4$ 要 4 色。有奇環只代表至少 3 色。
+
+@q dg5-10 | dm-graph#5 | 2 | 計算
+A graph has chromatic polynomial $P(G,k)=k(k-1)(k-2)^2$. How many vertices does it have, and what is its chromatic number?
+== 4,3
+?? vertices,chromatic number
+---
+色多項式的次數＝點數（每個點選一個顏色），展開最高次是 $k^4$，所以 4 個點。色數是讓 $P(G,k)>0$ 的最小 $k$：$P(G,1)=0$、$P(G,2)=0$、$P(G,3)=3\cdot2\cdot1=6>0$，所以是 3。（它就是 $K_4$ 拿掉一條邊。）
+
+@q dg5-11 | dm-graph#5 | 3 | 追蹤
+The graph has vertices $a_1,a_2,a_3$ and $b_1,b_2,b_3$, with $a_i$ joined to $b_j$ whenever $i\ne j$ (a 6-cycle). Color the vertices in the order $a_1,b_1,a_2,b_2,a_3,b_3$, giving each the smallest number not used by its neighbors. How many colors are used, and what is the chromatic number of the graph?
+== 3,2
+?? colors used,chromatic number
+---
+$a_1$=1；$b_1$ 不鄰 $a_1$ → 1；$a_2$ 鄰 $b_1$(1) → 2；$b_2$ 鄰 $a_1$(1) → 2；$a_3$ 鄰 $b_1$(1)、$b_2$(2) → 3；$b_3$ 鄰 $a_1$(1)、$a_2$(2) → 3。用了 3 色，但它是二分圖（$a$ 一組、$b$ 一組），色數 2。照順序一個一個塗保證不超過 $\Delta+1$，但不一定最少，順序很重要。
+
+@q dg5-12 | dm-graph#5 | 2 | 情境
+有沒有可能畫一張地圖，上面 5 個國家**兩兩**都有共同邊界（國家是一整塊、相鄰要共用一段邊界，不能只碰一點）？
+[x] 不可能：國家當點、相鄰當邊會得到平面圖，5 國兩兩相鄰就是 $K_5$，它不是平面圖（也會違反四色定理）
+[ ] 可能：只要國家的形狀夠彎、夠長
+[ ] 可能：5 個國家圍成一圈就好
+[ ] 不可能：5 是奇數
+---
+每個國家放一個點、相鄰的國家連一條穿過共同邊界的線，畫出來不會交叉，是平面圖。$K_5$ 不是平面圖（10 條邊 $>3\cdot5-6$），所以做不到。圍成一圈只會讓相鄰的兩國有邊界，對面的不會相鄰。
+
+@q dg5-13 | dm-graph#5 | 2 | 計算
+How many ways are there to color the 6-vertex cycle $C_6$ with 2 colors? And the 5-vertex cycle $C_5$?
+== 2,0
+?? C6,C5
+---
+代 $P(C_n,k)=(k-1)^n+(-1)^n(k-1)$，$k=2$：$C_6$ 是 $1+1=2$，$C_5$ 是 $1-1=0$。直接想也一樣：偶環顏色只能交替，第一個點選定後全部決定，2 種；奇環交替到最後會撞色。
+
+@q dg5-14 | dm-graph#5 | 2 | 證明
+證明：任何圖都可以用 $\Delta+1$ 種顏色著色（$\Delta$ 是最大度數）。
+---
+把點隨便排一個順序，一個一個塗。輪到點 $v$ 時，它最多有 $\Delta$ 個鄰居，所以已經被鄰居用掉的顏色最多 $\Delta$ 種；$\Delta+1$ 種顏色裡一定還剩至少一種，塗上去就不會跟鄰居撞。每個點都塗得下去，所以 $\chi\le\Delta+1$。
+
+@q dg5-15 | dm-graph#5 | 3 | 情境
+Six radio stations A to F must not share a frequency if they are too close: A–B, B–C, C–D, D–E, E–F, F–A, A–D. What is the smallest number of frequencies needed?
+== 2
+---
+前 6 組是一個 6 點環（偶環），可以交替：A、C、E 用頻率 1，B、D、F 用頻率 2。多出來的 A–D 一個是 1、一個是 2，沒有衝突。所以 2 個就夠；至少有一組衝突，不能只用 1 個。這張圖的環 A–B–C–D–A、A–D–E–F–A 長度都是 4，沒有奇環。
+
+@q dg5-16 | dm-graph#5 | 2 | 找錯
+小明說：「5 點環 $C_5$ 裡最大的『兩兩相連』只有 2 個點（一條邊），所以色數是 2。」錯在哪？
+[x] 最大完全子圖只給**下界**；$C_5$ 是奇環，2 色會撞，色數是 3
+[ ] 沒錯：色數就是最大完全子圖的大小
+[ ] 最大完全子圖其實是 3 個點
+[ ] 色數應該是 5，每個點都不同色
+---
+$K_k$ 在圖裡 → 至少 $k$ 色，但反過來不成立。$C_5$ 沒有三角形，可是交替塗兩色繞一圈會在最後一個點撞色，所以要 3 色（例如 1,2,1,2,3）。5 色太多了。
+
+@q dg5-17 | dm-graph#5 | 1 | 計算
+A star graph has one center joined to 5 other vertices. What upper bound does $\chi\le\Delta+1$ give, and what is the actual chromatic number?
+== 6,2
+?? upper bound,chromatic number
+---
+中心點度數 5，$\Delta+1=6$。實際上外圍 5 個點互不相鄰，可以同色：中心一色、外圍一色，共 2 色。$\Delta+1$ 在這種圖上非常鬆。
+
+@q dg5-18 | dm-graph#5 | 2 | 觀念
+「$K_{3,3}$ 不是平面圖，所以四色定理管不到它，它需要 5 種以上的顏色。」
+[ ] 對
+[x] 不對
+---
+四色定理只說「平面圖 → 4 色夠」，沒說非平面圖要更多。$K_{3,3}$ 是二分圖，2 色就夠。反過來「4 色夠 → 平面圖」也不成立，$K_{3,3}$ 就是反例。
+
+@q dg5-19 | dm-graph#5 | 3 | 計算
+The 4-vertex path a–b–c–d is colored with 3 colors so that adjacent vertices differ and **all 3 colors are used**. How many colorings are there?
+== 18
+---
+全部方法：$3\cdot2^3=24$。扣掉只用到 2 種顏色的：先挑哪 2 色（3 種），路只能兩色交替，選 a 的顏色後全部決定（2 種），共 $3\times2=6$。只用 1 色不可能。$24-6=18$（程式窮舉也是 18）。
+
+@q dg5-20 | dm-graph#5 | 2 | 計算
+One edge is removed from $K_6$. What is the chromatic number of the result?
+== 5
+---
+被拿掉的那條邊的兩端不相鄰了，可以同色；其他 4 個點跟它們、也跟彼此都相鄰，各要一色：$1+4=5$。下界：剩下的圖還有 $K_5$（拿掉其中一端），至少 5 色。
+
+@q dg6-05 | dm-graph#6 | 2 | 計算
+How many perfect matchings does $K_{3,3}$ have?
+== 6
+---
+左邊的點依序挑右邊的夥伴：第一個 3 種、第二個 2 種、第三個 1 種，$3\times2\times1=6$。一般 $K_{n,n}$ 有 $n!$ 個完美匹配，等於把左邊 $n$ 個點對到右邊的排列數。
+
+@q dg6-06 | dm-graph#6 | 3 | 計算
+How many perfect matchings does $K_6$ (6 vertices, every pair joined) have?
+== 15
+---
+點 1 有 5 個夥伴可選；剩 4 個點裡編號最小的有 3 個可選；最後 2 個點只有 1 種。$5\times3\times1=15$（程式列舉也是 15）。注意不能用 $K_{3,3}$ 的 $3!$：$K_6$ 沒有分左右，誰跟誰都可以配。
+
+@q dg6-07 | dm-graph#6 | 3 | 追蹤
+A $2\times3$ grid of points (two rows of 3, joined to left/right and up/down neighbors, 7 edges in all) has how many perfect matchings?
+== 3
+---
+看最左邊那一欄的兩個點：(1) 它們互相配（直的那條）→ 剩下 $2\times2$ 的正方形，有 2 種（兩條直的或兩條橫的）；(2) 不互相配 → 上面左邊只能配上面中間、下面左邊配下面中間，剩最右邊一欄只能直的配，1 種。共 $2+1=3$。
+
+@q dg6-08 | dm-graph#6 | 3 | 情境
+5 個人、5 份工作。A 會 1、2；B 會 2、3；C 會 1、3；D 會 1、2、3；E 會 3、4、5。能讓每個人都分到一份不同的工作嗎？
+[x] 不能：A、B、C、D 四個人會的工作合起來只有 1、2、3 三份
+[ ] 能：每個人都至少會 2 份工作
+[ ] 不能：A、B 兩個人會的工作太少
+[ ] 能：人和工作一樣多
+---
+Hall 條件要對**每一群**人都檢查。單看任兩人或三人都沒問題（例如 A、B 會 1、2、3），但 $S=\{A,B,C,D\}$ 時 $|N(S)|=3<4$。最大匹配只有 4（E 去做 4 或 5，另外三人做 1、2、3，總有一人沒工作）。
+
+@q dg6-09 | dm-graph#6 | 3 | 追蹤
+A bipartite graph has $X=\{a,b,c,d\}$, $Y=\{1,2,3,4\}$ and edges a1, a2, b1, c1, c3, c4, d1. How many edges are in a maximum matching?
+== 3
+---
+b 和 d 都只連到 1，兩個人搶同一個點，最多只有一個配得到，所以不可能 4。3 做得到：a2、b1、c3。用 König 確認：點覆蓋 $\{1,a,c\}$ 蓋住所有邊（a1、a2 有 a；b1、d1 有 1；c1、c3、c4 有 c），大小 3，所以匹配不可能超過 3。
+
+@q dg6-10 | dm-graph#6 | 3 | 計算
+A bipartite graph on 10 vertices has a maximum matching with 4 edges. How many vertices are in a largest set of pairwise non-adjacent vertices?
+== 6
+---
+兩步：König（二分圖）→ 最小點覆蓋 = 4；任何圖都有「最大獨立集 ＋ 最小點覆蓋 ＝ $n$」→ 最大獨立集 $=10-4=6$。這個推法只能用在二分圖；非二分圖的第一步就不成立。
+
+@q dg6-11 | dm-graph#6 | 3 | 比較
+二分圖左邊是人、右邊是工作，人數＝工作數。下面哪一個條件**保證**每個人都能分到不同的工作？
+[x] 每個人剛好會 2 份工作，而且每份工作也剛好有 2 個人會
+[ ] 每個人都至少會 2 份工作
+[ ] 每份工作都至少有 1 個人會
+[ ] 每個人都至少會 1 份工作，而且有人會全部的工作
+---
+第一個是 2-正則二分圖，一定有完美匹配：任選 $k$ 個人，他們有 $2k$ 條邊，這些邊落在的工作每份最多吃 2 條，所以至少 $k$ 份工作，Hall 成立。其他三個都有反例。A、B 都只會工作 1、C 會 1、2、3：每份工作都有人會、也有人會全部，但 A、B 搶同一份。A、B、C 都只會 1、2：每人會 2 份，但三人只有兩份工作可分。光看每個人或每份工作的條件不夠，要看整群（Hall）。
+
+@q dg6-12 | dm-graph#6 | 2 | 證明
+證明：任何圖（不一定是二分圖）的最大匹配 $\le$ 最小點覆蓋。
+---
+取一個最大匹配 $M$ 和任一個點覆蓋 $C$。$M$ 的每條邊都要被 $C$ 蓋住，至少一端在 $C$ 裡。$M$ 的邊兩兩沒有共同端點，所以它們用到的 $C$ 裡的點都不一樣，$|C|\ge|M|$。對最小點覆蓋也成立。König 說二分圖時等號成立；三角形就是不等的例子（1 < 2）。
+
+@q dg6-13 | dm-graph#6 | 1 | 計算
+For the 7-vertex path 1–2–3–4–5–6–7, how many edges are in a maximum matching, and how many vertices are in a minimum vertex cover?
+== 3,3
+?? maximum matching,minimum vertex cover
+---
+7 個點最多配 $\lfloor7/2\rfloor=3$ 對：1–2、3–4、5–6。點覆蓋 $\{2,4,6\}$ 蓋住 6 條邊。路是二分圖，兩者相等（König）。
+
+@q dg6-14 | dm-graph#6 | 1 | 計算
+A star graph has one center joined to 5 vertices. What are the size of a maximum matching, the size of a minimum vertex cover, and the size of a largest set of pairwise non-adjacent vertices?
+== 1,1,5
+?? maximum matching,minimum vertex cover,largest non-adjacent set
+---
+每條邊都經過中心，任兩條邊共用中心，所以最大匹配 1。中心一個點就蓋住全部邊。外圍 5 個點互不相鄰，是最大獨立集；$1+5=6=n$ ✓。
+
+@q dg6-15 | dm-graph#6 | 3 | 情境
+A museum\'s rooms and corridors form a cycle: rooms are vertices and corridors are edges, and every corridor needs a guard in at least one of its two end rooms. What is the minimum number of guards with 6 rooms in a cycle? With 7 rooms?
+== 3,4
+?? 6 rooms,7 rooms
+---
+這是最小點覆蓋。環的每個點蓋 2 條邊，$n$ 條邊至少要 $\lceil n/2\rceil$ 個點：6 間隔一間放一個，3 個；7 間至少 4 個（3 個最多蓋 6 條）。7 點環的最大匹配只有 3，跟最小點覆蓋 4 不相等，因為奇環不是二分圖，König 不適用。
+
+@q dg6-16 | dm-graph#6 | 2 | 找錯
+在 4 點的路 1–2–3–4 上，小明選了邊 2–3，發現沒有任何邊能再加進來，就說「最大匹配是 1」。錯在哪？
+[x] 「加不進去」只代表這個匹配不能再擴大，不代表最大：選 1–2、3–4 就有 2 條
+[ ] 沒錯：已經加不進任何邊了
+[ ] 最大匹配是 3：路上有 3 條邊
+[ ] 最大匹配是 4：路上有 4 個點
+---
+選了 2–3 之後，1–2、3–4 都碰到已用的點，確實加不進去，但從頭重選可以更多。要確認是最大，可以找一個一樣大的點覆蓋：$\{2,3\}$ 大小 2，所以最大匹配是 2。3 條邊兩兩相鄰的部分不能同時選，4 個點最多配 2 對。
+
+@q dg6-17 | dm-graph#6 | 2 | 追蹤
+Five teachers are assigned to 5 courses, one teacher per course and one course per teacher. T1 can teach A or B; T2 only A; T3 can teach B, C or D; T4 only C; T5 can teach D or E. Which course does T3 end up teaching?
+== D
+---
+T2 只會 A → T2 教 A；T1 就只剩 B；T4 只會 C → T4 教 C；T3 會的 B、C 都被拿走，只剩 D；T5 剩 E。一路被迫，所以分法唯一，T3 教 D。
+
+@q dg6-18 | dm-graph#6 | 3 | 計算
+Three people and three jobs are both numbered 1, 2, 3, and each person can do exactly the two jobs whose numbers differ from his own. In how many ways can each person get a different job?
+== 2
+---
+人 1 做 2 或 3。人 1 做 2：人 3 不能做 3，又不能做 2（被拿了），只能做 1，人 2 做 3。人 1 做 3：人 2 只能做 1，人 3 做 2。共 2 種。這張圖是 6 點環（每人連 2 份、每份工作有 2 人），偶環剛好 2 個完美匹配。$K_{3,3}$ 有 6 個，少掉的 4 個都用到了「自己的編號」。
+
+@q dg6-19 | dm-graph#6 | 2 | 陷阱
+「點數是偶數的連通圖一定有完美匹配。」
+[ ] 對
+[x] 不對
+---
+反例：星形（中心連 3 個點，共 4 個點）。每條邊都經過中心，最多配 1 對，剩下 2 個點配不到。點數偶數只是必要條件；二分圖要用 Hall 條件判斷。
+
+@q dg6-20 | dm-graph#6 | 2 | 計算
+How many edges are in a maximum matching of $K_{4,6}$, and how many vertices are in a minimum vertex cover?
+== 4,4
+?? maximum matching,minimum vertex cover
+---
+左邊只有 4 個點，每條匹配邊用掉一個左邊的點，最多 4 條，而且做得到（左邊每點配不同的右邊點）。左邊 4 個點本身就蓋住所有邊（每條邊都有一端在左邊），所以點覆蓋 4。符合 König。
+
+@q rl1-06 | dm-relations#1 | 2 | 計算
+On a set with 3 elements, how many relations are **both** reflexive and symmetric?
+== 8
+---
+把 9 個有序對想成 3×3 的格子。自反：對角線 3 格一定要有。對稱：$(a,b)$ 和 $(b,a)$ 要一起有或一起沒有，非對角線的 6 格配成 3 對，每對 2 種選法。$2^3=8$（程式列舉也是 8）。
+
+@q rl1-07 | dm-relations#1 | 3 | 計算
+On a set with 3 elements, how many relations are **both** irreflexive (no $a$ has $aRa$) and antisymmetric?
+== 27
+---
+對角線 3 格都不能有。非對角線的 3 對 $\{(a,b),(b,a)\}$，反對稱只允許三種：只有 $(a,b)$、只有 $(b,a)$、兩個都沒有。$3^3=27$。注意不能兩個都有。
+
+@q rl1-08 | dm-relations#1 | 3 | 找錯
+小明「證明」對稱又遞移的關係一定是自反的：「任取 $a$，若 $aRb$，對稱得 $bRa$，遞移得 $aRa$。」錯在哪？
+[x] 他假設每個 $a$ 都有某個 $b$ 使 $aRb$；如果 $a$ 跟誰都沒有關係就推不出 $aRa$，例如 $\{1,2\}$ 上的 $R=\{(1,1)\}$
+[ ] 沒錯，對稱又遞移一定自反
+[ ] 錯在對稱：$aRb$ 推不出 $bRa$
+[ ] 錯在遞移：遞移要三個不同的元素
+---
+推論本身每一步都對，問題是「若 $aRb$」不一定發生。$\{(1,1)\}$ 在 $\{1,2\}$ 上對稱、遞移，但沒有 $(2,2)$，所以不自反。遞移的定義沒有要求 $a,b,c$ 不同，$a=c$ 也要檢查。
+
+@q rl1-09 | dm-relations#1 | 2 | 計算
+$A=\{1,2,3,4\}$，$aRb$ ⇔ $a+b$ 是偶數。自反、對稱、反對稱、遞移，哪些成立？
+[x] 自反、對稱、遞移成立；反對稱不成立
+[ ] 四個都成立
+[ ] 只有對稱成立
+[ ] 自反、反對稱、遞移成立；對稱不成立
+---
+$a+a=2a$ 偶數 → 自反。$a+b=b+a$ → 對稱。$a+b$ 偶數表示 $a,b$ 同奇偶；$a,b$ 同、$b,c$ 同 → $a,c$ 同 → 遞移。反對稱失敗：$1R3$ 而且 $3R1$，但 $1\ne3$。
+
+@q rl1-10 | dm-relations#1 | 2 | 計算
+整數上 $aRb$ ⇔ $|a-b|\le1$。四個性質哪些成立？
+[x] 自反、對稱；不遞移、不反對稱
+[ ] 自反、對稱、遞移
+[ ] 自反、反對稱、遞移
+[ ] 只有對稱
+---
+$|a-a|=0$ → 自反；$|a-b|=|b-a|$ → 對稱。遞移失敗：$1R2$、$2R3$，但 $|1-3|=2$。反對稱失敗：$1R2$ 也 $2R1$。「差一點點」的關係常常不遞移，誤差會累積。
+
+@q rl1-11 | dm-relations#1 | 3 | 計算
+On $\{1,2,3\}$, how many relations are **both** symmetric and antisymmetric?
+== 8
+---
+對稱又反對稱：只要有 $(a,b)$ 就有 $(b,a)$，兩個都在又逼得 $a=b$。所以不能有任何 $a\ne b$ 的對，只能是對角線 $\{(1,1),(2,2),(3,3)\}$ 的子集：$2^3=8$。空關係也是其中之一，所以「對稱」和「反對稱」不是互斥的。
+
+@q rl1-12 | dm-relations#1 | 3 | 計算
+There are 16 relations on $\{1,2\}$. How many of them are **neither** reflexive **nor** irreflexive?
+== 8
+---
+只看對角線 $(1,1)$、$(2,2)$：自反要兩個都有，非自反要兩個都沒有。「兩個都不是」就是剛好有一個：2 種。非對角線 $(1,2)$、$(2,1)$ 隨便：4 種。$2\times4=8$。非自反不是「不自反」的意思。
+
+@q rl1-13 | dm-relations#1 | 2 | 情境
+所有人的集合上，「$a$ 是 $b$ 的祖先」這個關係有哪些性質？
+[x] 遞移、反對稱，不自反
+[ ] 對稱、遞移
+[ ] 自反、遞移
+[ ] 遞移，但不反對稱
+---
+祖先的祖先還是祖先 → 遞移。$a$ 是 $b$ 的祖先、$b$ 又是 $a$ 的祖先不可能發生，所以反對稱「沒有反例」，成立。自己不是自己的祖先 → 不自反（其實是非自反）。不對稱：父親是你的祖先，你不是父親的祖先。
+
+@q rl1-14 | dm-relations#1 | 3 | 情境
+所有人的集合上，「$a$ 和 $b$ 是兄弟姊妹（同父母，自己不算自己的兄弟姊妹）」。它遞移嗎？
+[x] 不遞移：$a$ 和 $b$ 是兄弟姊妹、$b$ 和 $a$ 也是，遞移會推出「$a$ 和 $a$ 是兄弟姊妹」，但不成立
+[ ] 遞移：兄弟姊妹的兄弟姊妹還是兄弟姊妹
+[ ] 遞移：它對稱，對稱的關係都遞移
+[ ] 不遞移：因為它不對稱
+---
+直覺說「兄弟姊妹的兄弟姊妹是兄弟姊妹」，但遞移的定義允許 $c=a$：$aRb$、$bRa$ 要推出 $aRa$，而定義排除了自己。若改成「同父母（含自己）」，就自反、對稱、遞移都成立。它是對稱的。
+
+@q rl1-15 | dm-relations#1 | 1 | 計算
+How many different relations are there on a set with 3 elements?
+== 512
+---
+關係是 $A\times A$ 的子集。$A\times A$ 有 $3\times3=9$ 個有序對，每個要或不要：$2^9=512$。一般是 $2^{n^2}$。
+
+@q rl1-16 | dm-relations#1 | 3 | 追蹤
+$A=\{1,2,3\}$，$R=\{(1,2),(2,3),(1,3),(3,1)\}$。下面哪一個是 $R$「不遞移」的證據？
+[x] $(2,3)$ 和 $(3,1)$ 都在，但 $(2,1)$ 不在
+[ ] $(1,2)$ 和 $(2,3)$ 都在，但 $(1,3)$ 不在
+[ ] $(1,3)$ 和 $(3,1)$ 都在，因此這就保證 $R$ 遞移
+[ ] $(1,2)$ 在，但 $(2,1)$ 不在
+---
+「$(2,3)$ 和 $(3,1)$」提供可合成的兩步，但所需的 $(2,1)$ 不在，故是完整的不遞移證據。「$(1,3)$ 不在」錯：題設已有此對。「往返就保證遞移」錯：往返還要求合成的自環，本關係缺 $(1,1)$、$(3,3)$，不能由往返保證遞移。「只有 $(1,2)$ 而無逆向」描述不對稱，不能單憑這一個方向缺逆向就當作不遞移證據。
+
+@q rl1-17 | dm-relations#1 | 2 | 證明
+證明：如果 $R$ 和 $S$ 都是 $A$ 上的遞移關係，那 $R\cap S$ 也是遞移的。
+---
+設 $(a,b)\in R\cap S$、$(b,c)\in R\cap S$。在 $R$ 裡：$(a,b),(b,c)\in R$，$R$ 遞移 → $(a,c)\in R$。同理 $(a,c)\in S$。所以 $(a,c)\in R\cap S$。（聯集就不一定：$R=\{(1,2)\}$、$S=\{(2,3)\}$ 都遞移，聯集缺 $(1,3)$。）
+
+@q rl1-18 | dm-relations#1 | 2 | 反例
+$R$、$S$ 都是遞移關係，$R\cup S$ 一定遞移嗎？
+[x] 不一定：$R=\{(1,2)\}$、$S=\{(2,3)\}$ 各自遞移，聯集有 $(1,2)$、$(2,3)$ 卻沒有 $(1,3)$
+[ ] 一定：兩個都遞移，合起來也遞移
+[ ] 一定：聯集只會讓對變多，遞移只會更容易成立
+[ ] 不一定：但只有在 $R$、$S$ 有共同的對時才會壞
+---
+對變多不會讓遞移「更容易」：多出來的對會產生新的「$aRb$、$bRc$」鏈，要求更多的 $aRc$。$R$、$S$ 這裡沒有共同的對，照樣壞掉。
+
+@q rl1-19 | dm-relations#1 | 3 | 計算
+Of the 16 relations on $\{1,2\}$, how many are transitive?
+== 13
+---
+不遞移的只有 3 個。缺什麼會壞：有 $(1,2)$、$(2,1)$ 就要 $(1,1)$、$(2,2)$ 都在。兩個都在時：$(1,1)$、$(2,2)$ 的 4 種組合只有「兩個都有」可以 → 壞 3 個。只有其中一個或都沒有時，不會產生新要求，都遞移。$16-3=13$（程式列舉也是 13；3 個元素時是 171）。
+
+@q rl1-20 | dm-relations#1 | 2 | 觀念
+空關係（一個對都沒有）是遞移的。
+[x] 對
+[ ] 不對
+---
+遞移說「如果 $aRb$ 且 $bRc$，則 $aRc$」。空關係裡找不到任何 $aRb$，條件從來不成立，所以沒有反例，遞移成立（空真）。同理它也對稱、反對稱；只有在 $A$ 非空時不自反。
+
+@q rl2-05 | dm-relations#2 | 1 | 計算
+Let $A=\{1,2,3,4\}$ and $R=\{(1,1),(1,2),(3,4)\}$. How many ordered pairs does the reflexive closure of $R$ contain?
+== 6
+---
+自反閉包＝$R$ 加上所有還沒有的 $(a,a)$。$(1,1)$ 已經在，要補 $(2,2)$、$(3,3)$、$(4,4)$：$3+3=6$。$(1,2)$、$(3,4)$ 不用動，也不用補反方向。
+
+@q rl2-06 | dm-relations#2 | 2 | 計算
+Let $R=\{(1,2),(2,1),(2,3),(3,3)\}$. How many ordered pairs does the symmetric closure of $R$ contain?
+== 5
+---
+每個 $(a,b)$ 都要有 $(b,a)$：$(1,2)$、$(2,1)$ 已經互相有了；$(3,3)$ 反過來是自己；只缺 $(3,2)$。$4+1=5$。不要把已經在的反向對再算一次。
+
+@q rl2-07 | dm-relations#2 | 3 | 陷阱
+想要包含 $R$、而且**同時**對稱又遞移的最小關係。下面哪個做法一定對？
+[x] 先取對稱閉包，再取遞移閉包
+[ ] 先取遞移閉包，再取對稱閉包
+[ ] 兩種順序結果都一樣
+[ ] 兩種順序都不一定對
+---
+反例：$\{1,2,3\}$ 上 $R=\{(1,2),(3,2)\}$。先遞移（沒有鏈，不變）再對稱，得 $\{(1,2),(2,1),(3,2),(2,3)\}$，有 $1\to2\to3$ 卻沒 $(1,3)$，不遞移。先對稱再遞移：對稱關係的遞移閉包仍然對稱（路可以反著走），所以兩個性質都有（程式對 3 個元素的 512 個關係全部驗過）。
+
+@q rl2-08 | dm-relations#2 | 3 | 追蹤
+用 Warshall 求 $\{1,2,3,4\}$ 上 $R=\{(2,1),(1,3),(3,4),(4,2)\}$ 的遞移閉包。$k=1$ 那一輪加了 $(2,3)$。$k=2$ 那一輪會新加哪些對？
+[x] $(4,1)$、$(4,3)$
+[ ] 只有 $(4,1)$
+[ ] $(2,4)$、$(1,4)$
+[ ] $(4,1)$、$(4,3)$、$(4,4)$
+---
+$k=2$ 時看所有「$i\to2$」和「$2\to j$」：走到 2 的只有 4；從 2 出去的有 1（原本）和 3（$k=1$ 剛加的）。所以加 $(4,1)$、$(4,3)$。$(4,4)$ 要經過 3 才到（4→2→1→3→4），是 $k=3$ 那一輪才加。$(2,4)$、$(1,4)$ 也是 $k=3$ 加的。
+
+@q rl2-09 | dm-relations#2 | 2 | 陷阱
+Let $A=\{1,2,3,4,5\}$ and $R=\{(1,2),(2,3),(3,1),(4,5)\}$. How many ordered pairs does the transitive closure of $R$ contain?
+== 10
+---
+1、2、3 繞成一圈，每個點都走得到 1、2、3（包括自己：1→2→3→1），共 $3\times3=9$ 對。4 走得到 5，5 走不出去：只多 $(4,5)$。$(4,4)$、$(5,5)$ 不在，因為走不回自己。合計 10。
+
+@q rl2-10 | dm-relations#2 | 2 | 計算
+$R=\{(1,2),(2,3),(3,3)\}$。「走剛好兩步」的關係 $R^2$（$aR^2c$ ⇔ 有某個 $b$ 使 $aRb$、$bRc$）有哪些對？
+[x] $(1,3)$、$(2,3)$、$(3,3)$
+[ ] 只有 $(1,3)$
+[ ] $(1,3)$、$(3,3)$
+[ ] $(1,2)$、$(2,3)$、$(1,3)$
+---
+$(a,c)\in R^2$ ⇔ 有 $b$ 使 $aRb$、$bRc$。$1\to2\to3$：$(1,3)$。$2\to3\to3$：$(2,3)$。$3\to3\to3$：$(3,3)$。最常漏的是自己指自己 $(3,3)$ 也能當一步。「$(1,2)$、$(2,3)$、$(1,3)$」是 $R\cup R^2$ 的一部分，不是剛好兩步。
+
+@q rl2-11 | dm-relations#2 | 3 | 觀念
+$A$ 有 5 個元素。用 $R^*=R\cup R^2\cup\cdots\cup R^k$ 算遞移閉包，$k$ 最少要取多少才**保證**夠？
+[x] 5
+[ ] 4：不同的兩點之間最多走 4 步
+[ ] 25
+[ ] 不一定，可能要一直算下去
+---
+不同的兩點之間，最短的路不會重複經過點，最多 4 步。但 $(a,a)$ 要繞一圈回來，最長的圈是 5 個點都走過：$1\to2\to3\to4\to5\to1$ 要 5 步，$R^5$ 才出現 $(1,1)$。所以要到 $R^n$。
+
+@q rl2-12 | dm-relations#2 | 2 | 比較
+算 $n$ 個元素的遞移閉包：方法甲是直接算 $R,R^2,\dots,R^n$ 再聯集，每次「合成」用三層迴圈 $O(n^3)$；方法乙是 Warshall。時間各是多少？
+[x] 甲 $O(n^4)$、乙 $O(n^3)$
+[ ] 兩個都是 $O(n^3)$
+[ ] 甲 $O(n^3)$、乙 $O(n^2)$
+[ ] 甲 $O(n^4)$、乙 $O(n^2\log n)$
+---
+甲要做 $n-1$ 次合成，每次 $O(n^3)$，共 $O(n^4)$。Warshall 只有三層迴圈（$k,i,j$），每格 $O(1)$ 更新，$O(n^3)$。它省下來的原因：第 $k$ 輪直接把「可以經過 $1..k$」的答案做完，不用一次一步地走。
+
+@q rl2-13 | dm-relations#2 | 3 | 找錯
+小華把 Warshall 寫成 `for i: for j: for k: w[i][j] = w[i][j] || (w[i][k] && w[k][j])`（$k$ 在最內層）。對 $\{1,2,3\}$ 上 $R=\{(1,2),(2,3),(3,1)\}$，會出什麼錯？
+[x] 會漏掉 $(1,1)$：算 $w[1][1]$ 時 $(1,3)$ 還沒被加進來
+[ ] 不會錯，迴圈順序不影響結果
+[ ] 會多加一些不該有的對
+[ ] 會漏掉 $(1,3)$
+---
+$i=1,j=1$ 時檢查 $k=1,2,3$：$w[1][2]=1$ 但 $w[2][1]=0$；$w[1][3]$ 這時還是 0（要到 $j=3$ 才加），所以 $(1,1)$ 沒加上，之後也不會回頭（程式跑過確認只漏這一個）。$k$ 放最外層才能保證：做到第 $k$ 輪時，「只經過 $1..k-1$」的資訊已經全部算好。
+
+@q rl2-14 | dm-relations#2 | 2 | 情境
+直飛航線：台北→東京、東京→洛杉磯、洛杉磯→紐約、紐約→東京。從洛杉磯出發（可以轉機），能到哪些城市？
+[x] 紐約、東京、洛杉磯
+[ ] 只有紐約
+[ ] 紐約、東京
+[ ] 紐約、東京、洛杉磯、台北
+---
+這就是遞移閉包裡「洛杉磯開頭」的那些對。洛杉磯→紐約→東京→洛杉磯，繞一圈回到自己，所以洛杉磯也算。台北只有出去的航線，沒有任何航線飛進台北，到不了。
+
+@q rl2-15 | dm-relations#2 | 3 | 證明
+證明：如果 $T$ 是遞移關係而且 $R\subseteq T$，那 $R$ 的遞移閉包 $R^*\subseteq T$（所以 $R^*$ 是包含 $R$ 的最小遞移關係）。
+---
+$(a,b)\in R^*$ 代表有一條 $a=x_0\to x_1\to\cdots\to x_k=b$，每一步都在 $R$ 裡。對 $k$ 做歸納：$k=1$ 時 $(a,b)\in R\subseteq T$。假設 $k-1$ 步的都在 $T$：$(x_0,x_{k-1})\in T$，而 $(x_{k-1},x_k)\in R\subseteq T$，$T$ 遞移 → $(x_0,x_k)\in T$。所以 $R^*$ 的每一對都在 $T$ 裡。
+
+@q rl2-16 | dm-relations#2 | 3 | 反例
+$R$ 是反對稱的。它的遞移閉包一定也反對稱嗎？
+[x] 不一定：$R=\{(1,2),(2,3),(3,1)\}$ 反對稱，但閉包同時有 $(1,2)$ 和 $(2,1)$
+[ ] 一定：只加對，不會產生雙向
+[ ] 一定：遞移不會破壞任何性質
+[ ] 不一定，但只有在 $R$ 本來就有 $(a,a)$ 時才會壞
+---
+$R$ 裡沒有任何雙向的對，所以反對稱。但 1→2→3→1 是一個圈，閉包裡 2→3→1 給出 $(2,1)$，和 $(1,2)$ 形成雙向。有圈就會壞，跟有沒有 $(a,a)$ 無關。
+
+@q rl2-17 | dm-relations#2 | 1 | 計算
+Warshall computes the transitive closure on 1000 elements. How many times does the inner line `w[i][j] = w[i][j] || (w[i][k] && w[k][j])` execute?
+== 1000000000
+== 10^9
+---
+三層迴圈 $k,i,j$ 各跑 $n=1000$ 次，$1000^3=10^9$ 次，也就是 $O(n^3)$。
+
+@q rl2-18 | dm-relations#2 | 1 | 觀念
+自反閉包、對稱閉包、遞移閉包，哪一個**不能**只看原本的每一對各補一次就完成、而要一直補到補不動為止？
+[x] 遞移閉包
+[ ] 自反閉包
+[ ] 對稱閉包
+[ ] 三個都要一直補
+---
+自反只補對角線，對稱只把每對反過來，各掃一次就完成。遞移補了新的對以後，又會跟其他對接成新的鏈（例如補了 $(1,3)$ 之後，$(1,3)$ 和 $(3,4)$ 又要求 $(1,4)$），所以要重複直到沒有新的。
+
+@q rl2-19 | dm-relations#2 | 3 | 計算
+On $\{1,2,3\}$, how many relations have symmetric closure **exactly equal** to $\{(1,2),(2,1)\}$?
+== 3
+---
+對稱閉包只會多、不會少，所以原本的關係只能是 $\{(1,2),(2,1)\}$ 的子集；又要補完剛好是它，不能是空集。$\{(1,2)\}$、$\{(2,1)\}$、$\{(1,2),(2,1)\}$ 共 3 個（程式列舉也是 3）。
+
+@q rl2-20 | dm-relations#2 | 2 | 比較
+「先取自反閉包、再取遞移閉包」和「先遞移、再自反」，結果一樣嗎？
+[x] 一樣
+[ ] 不一樣：先自反的話，遞移閉包會多出很多對
+[ ] 不一樣：先遞移的話，自反閉包會破壞遞移
+[ ] 只有 $R$ 本來就遞移時才一樣
+---
+兩種都得到「走 0 步或更多步走得到」。補對角線 $(a,a)$ 不會產生新的、不同點之間的鏈（$aRa$、$aRb$ 只推出 $aRb$）；遞移閉包加上對角線也還是遞移。程式對 3 個元素的 512 個關係全部驗過，兩種順序都一樣。對照：對稱和遞移的順序就有差。
+
+@q rl3-05 | dm-relations#3 | 3 | 計算
+7 個元素的集合上有一個等價關係，它一共有 17 個有序對。它的等價類大小是多少？
+[x] 3、2、2
+[ ] 3、3、1
+[ ] 2、2、2、1
+[ ] 4、2、1
+---
+大小 $k$ 的等價類裡兩兩都要有（含自己），貢獻 $k^2$ 個對。要大小加起來 7、平方加起來 17：$9+4+4=17$ ✓。其他：$9+9+1=19$、$4+4+4+1=13$、$16+4+1=21$。7 個元素拆法全部試過，只有 3、2、2。
+
+@q rl3-06 | dm-relations#3 | 3 | 計算
+How many equivalence relations on $\{1,2,3,4\}$ have exactly **2** equivalence classes?
+== 7
+---
+等於把 4 個元素分成兩個非空的塊。每個元素選「甲塊或乙塊」有 $2^4=16$ 種，扣掉全部在同一塊的 2 種，剩 14；兩塊沒有名字，甲乙對調算同一種，除以 2 得 7。（大小 1+3 有 4 種、2+2 有 3 種。）
+
+@q rl3-07 | dm-relations#3 | 2 | 陷阱
+$R$、$S$ 都是 $A$ 上的等價關係。$R\cap S$ 和 $R\cup S$ 呢？
+[x] $R\cap S$ 一定是等價關係；$R\cup S$ 不一定
+[ ] 兩個都一定是
+[ ] $R\cup S$ 一定是；$R\cap S$ 不一定
+[ ] 兩個都不一定
+---
+交集：自反、對稱、遞移各自在交集裡都保留（遞移的證明跟兩個遞移關係的交集一樣）。聯集壞在遞移：$\{1,2,3\}$ 上 $R$ 的類是 $\{1,2\},\{3\}$、$S$ 的類是 $\{1\},\{2,3\}$，聯集有 $(1,2)$、$(2,3)$ 卻沒有 $(1,3)$。
+
+@q rl3-08 | dm-relations#3 | 1 | 情境
+On the set of all people, "$a$ and $b$ were born on the same day of the year (same month and day)" is an equivalence relation. At most how many equivalence classes can it have?
+== 366
+---
+每一個可能的生日（含 2 月 29 日）是一類，同一天生日的人在同一類。366 個日子，最多 366 類（有些日子可能沒人，類就少一點）。
+
+@q rl3-09 | dm-relations#3 | 2 | 觀念
+實數上 $a\sim b$ ⇔ $a-b$ 是整數。這是等價關係。每一個等價類在哪一個區間裡**剛好有一個**元素？
+[x] $[0,1)$
+[ ] $[0,1]$
+[ ] $(0,1)$
+[ ] $[0,2)$
+---
+$[a]=\{a+k:k\text{ 是整數}\}$，把 $a$ 加減整數，剛好有一個落在 $[0,1)$（就是 $a$ 的小數部分）。$[0,1]$ 會讓 0 和 1 同一類卻有兩個代表；$(0,1)$ 會讓整數那一類沒有代表；$[0,2)$ 每類有兩個。
+
+@q rl3-10 | dm-relations#3 | 2 | 計算
+On $\{1,2,\dots,10\}$, let $a\sim b$ if and only if $a^2$ and $b^2$ have the same last digit. How many equivalence classes are there?
+== 6
+---
+平方的個位數：1→1、2→4、3→9、4→6、5→5、6→6、7→9、8→4、9→1、10→0。出現的個位數 $\{0,1,4,5,6,9\}$，每種一類，共 6 類。例如 $\{2,8\}$、$\{4,6\}$ 同類。
+
+@q rl3-11 | dm-relations#3 | 3 | 計算
+Let $A=\{1,2,3,4,5,6\}$ and $R=\{(1,2),(3,4),(2,5)\}$. The smallest equivalence relation containing $R$ has how many equivalence classes, and how many ordered pairs?
+== 3,14
+?? classes,ordered pairs
+---
+有關係的就要同類，再一直串起來：1~2、2~5 → $\{1,2,5\}$；$\{3,4\}$；6 跟誰都沒關係，自己一類。3 類。對數 $3^2+2^2+1^2=14$。做法就是先取對稱閉包、再取遞移閉包、再補自反。
+
+@q rl3-12 | dm-relations#3 | 2 | 找錯
+小明說 $\{1,2,3\}$ 上 $R=\{(1,1),(2,2),(3,3),(1,2),(2,1),(2,3),(3,2)\}$ 是等價關係，等價類是 $\{1,2\}$ 和 $\{2,3\}$。哪裡錯？
+[x] $R$ 不遞移（有 $(1,2)$、$(2,3)$ 卻沒 $(1,3)$），所以不是等價關係；等價類也不可能重疊
+[ ] 沒錯
+[ ] $R$ 不對稱
+[ ] $R$ 不自反
+---
+自反、對稱都對，壞在遞移。而且等價類兩兩不是完全一樣就是完全不相交，$\{1,2\}$ 和 $\{2,3\}$ 共用 2 卻不相等，本身就是警訊。要變成等價關係得補 $(1,3)$、$(3,1)$，結果只有一類 $\{1,2,3\}$。
+
+@q rl3-13 | dm-relations#3 | 3 | 計算
+How many equivalence relations on $\{1,2,3,4\}$ put 1 and 2 in the same class?
+== 5
+---
+1、2 綁在一起，當成一個元素，問題變成把 3 個「元素」（$\{1,2\}$、3、4）分割，有 $B_3=5$ 種。全部 15 個等價關係裡，其他 10 個把 1、2 分開（程式列舉確認 5 個）。
+
+@q rl3-14 | dm-relations#3 | 2 | 觀念
+一個關係**既是**等價關係、**又是**反對稱的，它只能是哪一個？
+[x] 只有 $\{(a,a):a\in A\}$（每個元素只跟自己有關係）
+[ ] 空關係
+[ ] $A\times A$（全部的對）
+[ ] 不存在這種關係
+---
+對稱又反對稱 → 只能有 $(a,a)$ 這種對；等價關係又要自反 → 每個 $(a,a)$ 都要在。所以剛好是對角線，每個等價類只有一個元素。空關係不自反（$A$ 非空時）；$A\times A$ 不反對稱。
+
+@q rl3-15 | dm-relations#3 | 2 | 證明
+在非零實數上定義 $a\sim b$ ⇔ $ab>0$。證明它是等價關係，並寫出等價類。
+---
+自反：$a\cdot a=a^2>0$（$a\ne0$）。對稱：$ab=ba$。遞移：$ab>0$、$bc>0$ → 相乘 $ab^2c>0$，而 $b^2>0$，所以 $ac>0$。等價類有兩個：正數一類、負數一類（同號就等價）。
+
+@q rl3-16 | dm-relations#3 | 2 | 情境
+There are 8 strings of length 3 over the letters a and b. Let $x\sim y$ if and only if the two strings contain the same number of a\'s. How many equivalence classes are there, and how many strings are in the largest class?
+== 4,3
+?? classes,size of largest class
+---
+a 的個數可以是 0、1、2、3，各一類，共 4 類。大小：0 個 a 只有 bbb（1 個）、1 個 a 有 abb、bab、bba（3 個）、2 個 a 也 3 個、3 個 a 只有 aaa。最大的是 3。
+
+@q rl3-17 | dm-relations#3 | 3 | 計算
+How many equivalence relations on $\{1,2,3,4,5,6\}$ have **every** equivalence class of size exactly 2?
+== 15
+---
+1 的夥伴有 5 種選法；剩下 4 個裡編號最小的，夥伴有 3 種；最後 2 個只能一起。$5\times3\times1=15$（程式列舉也是 15）。不能用 $6!$ 去算，因為同一組裡的順序、組和組的順序都不算不同。
+
+@q rl3-18 | dm-relations#3 | 1 | 觀念
+同一個等價關係的每個等價類，大小一定都一樣。
+[ ] 對
+[x] 不對
+---
+大小可以不一樣。例如 $\{1,\dots,6\}$ 上等價類 $\{1,2,5\}$、$\{3,4\}$、$\{6\}$，大小 3、2、1。「$a-b$ 是 $m$ 的倍數」在整數上剛好每類一樣大，但那是特例。一定成立的是：類和類不重疊、合起來是全部。
+
+@q rl3-19 | dm-relations#3 | 3 | 計算
+An equivalence relation on $\{1,2,3,4,5\}$ has exactly 3 equivalence classes. What are the smallest and largest possible numbers of ordered pairs it can contain?
+== 9,11
+?? min,max
+---
+5 個元素分 3 塊，大小只有兩種：$2+2+1$（$4+4+1=9$ 對）或 $3+1+1$（$9+1+1=11$ 對）。越平均，平方和越小。
+
+@q rl3-20 | dm-relations#3 | 1 | 情境
+教室裡，「坐在同一排」是等價關係，「坐在隔壁」不是。「坐在隔壁」少了哪些性質？
+[x] 不自反（自己不坐自己隔壁），也不遞移（A 隔壁是 B、B 隔壁是 C，A 和 C 不相鄰）
+[ ] 不對稱
+[ ] 只是不遞移，其他都有
+[ ] 只是不自反，其他都有
+---
+「隔壁」是對稱的：A 在 B 隔壁，B 也在 A 隔壁。但自己不在自己隔壁 → 不自反；隔壁的隔壁不是隔壁 → 不遞移。「同一排」三個都有，等價類就是每一排。
+
+@q rl4-05 | dm-relations#4 | 3 | 計算
+How many line segments does the Hasse diagram of all subsets of $\{1,2,3,4\}$ under $\subseteq$ have?
+== 32
+---
+Hasse 圖只連「緊鄰」：$S$ 和 $S$ 多加一個元素。從每個子集往上數：大小 $k$ 的子集有 $4-k$ 種加法。總和 $=\sum_k(\text{大小 }k\text{ 的個數})\cdot(4-k)$，或換個角度：每個元素 $x$，「不含 $x$ 的子集」有 $2^3=8$ 個，每個都往上連到加了 $x$ 的那個，$4\times8=32$。
+
+@q rl4-06 | dm-relations#4 | 3 | 陷阱
+一個**有限**偏序集只有一個極大元。它一定是最大元嗎？
+[x] 一定是：有限集合裡從任何元素往上走，一定停在某個極大元；只有一個，所以全部都在它下面
+[ ] 不一定：極大元和最大元本來就是不同的概念
+[ ] 不一定：可能有元素跟它不能比較
+[ ] 一定是，而且無限集合也一樣
+---
+任取 $x$：如果 $x$ 不是極大元，就有更大的，一直往上，因為有限一定停下來，停的地方是極大元，也就是唯一那個 $m$，所以 $x\preceq m$。無限時不成立：整數（$\le$）再加一個跟誰都不能比的 $a$，$a$ 是唯一的極大元，但整數一直往上走不到頭，$a$ 不是最大元。
+
+@q rl4-07 | dm-relations#4 | 3 | 計算
+The positive divisors $1,2,3,4,6,12$ of 12 are to be listed in a row so that $a$ comes before $b$ whenever $a$ divides $b$. How many such lists are there?
+== 5
+---
+1 一定第一、12 一定最後。中間 $2,3,4,6$ 要滿足 2 在 4、6 前面，3 在 6 前面。3 先：3、2，之後 4、6 隨便，2 種。2 先：剩下 3、4、6 只要 3 在 6 前面，3 種。共 5 種（程式列舉也是 5）。
+
+@q rl4-08 | dm-relations#4 | 2 | 情境
+課程先修：A、B 是 C 的先修；C、D 是 E 的先修；D 是 F 的先修（先修可以一路串下去）。把「$x$ 要在 $y$ 之前修完（或 $x=y$）」看成偏序，極小元和極大元各是哪些？
+[x] 極小元 A、B、D；極大元 E、F
+[ ] 極小元 A；極大元 E
+[ ] 極小元 A、B；極大元 E、F
+[ ] 極小元 A、B、D；沒有極大元
+---
+極小元：沒有任何課在它之前 → 不需要先修的 A、B、D。極大元：沒有課在它之後 → 不是任何課先修的 E、F。D 是 E、F 的先修，但沒有先修，所以也是極小元。有兩個極大元，所以沒有最大元。
+
+@q rl4-09 | dm-relations#4 | 3 | 比較
+下面哪一個集合在整除之下**不是**格？
+[x] $\{1,2,3,4,6\}$
+[ ] $\{1,2,3,6\}$
+[ ] $\{1,2,4,8\}$
+[ ] $\{1,2,3,12\}$
+---
+格要求任兩個都有最小上界和最大下界。$\{1,2,3,4,6\}$ 裡 4 和 6（還有 3 和 4）找不到共同的上界（12 不在集合裡），所以不是。$\{1,2,4,8\}$ 是一條鏈，任兩個都可比；$\{1,2,3,12\}$ 裡 2、3 的最小上界是 12；$\{1,2,3,6\}$ 是 lcm／gcd 都在裡面。
+
+@q rl4-10 | dm-relations#4 | 3 | 計算
+How many different partial orders are there on the 3 **labeled** elements $\{a,b,c\}$?
+== 19
+---
+按形狀數：全都不能比 1 個；只有一對可比（另一個獨立）：挑哪一對、誰大 $3\times2=6$；一個在兩個下面（V 形）：挑底 3；一個在兩個上面：挑頂 3；三個排成一條（全序）：$3!=6$。$1+6+3+3+6=19$（程式窮舉所有自反、反對稱、遞移的關係也是 19）。
+
+@q rl4-11 | dm-relations#4 | 2 | 觀念
+判斷：每一個全序（任兩個元素都能比較的偏序）都是格。
+[x] 對
+[ ] 不對
+---
+全序裡任兩個 $a,b$ 都能比，假設 $a\preceq b$：比兩個都大的最小者就是 $b$，比兩個都小的最大者就是 $a$。所以最小上界＝$\max(a,b)$、最大下界＝$\min(a,b)$ 一定存在。
+
+@q rl4-12 | dm-relations#4 | 3 | 計算
+Consider the positive divisors of 72 under divisibility. How many elements does a longest chain (a set of pairwise comparable elements) have, and how many does a largest antichain (a set of pairwise incomparable elements) have?
+== 6,3
+?? longest chain,largest antichain
+---
+$72=2^3\cdot3^2$，因數是 $2^i3^j$（$0\le i\le3$、$0\le j\le2$），像一個 4×3 的格子。鏈每一步至少多乘一個質數，從 1 到 72 共 $3+2=5$ 步，6 個元素（如 1,2,4,8,24,72）。反鏈：$i+j$ 相同的那一層互相不能比，最大一層是 $i+j=2$ 或 3，各 3 個（例如 4、6、9）。程式檢查也是 6 和 3。
+
+@q rl4-13 | dm-relations#4 | 2 | 證明
+證明：偏序集的最大元如果存在，一定唯一。
+---
+設 $m_1$、$m_2$ 都是最大元。$m_1$ 是最大元，所以 $m_2\preceq m_1$；$m_2$ 是最大元，所以 $m_1\preceq m_2$。反對稱 → $m_1=m_2$。（極大元沒有這種保證，因為極大元不要求跟所有元素都能比。）
+
+@q rl4-14 | dm-relations#4 | 1 | 找錯
+小明畫 $\{1,2,4,8\}$ 在整除下的 Hasse 圖，畫了 1–2、2–4、4–8、1–4、2–8、1–8 共六條線。哪裡錯？
+[x] 能用遞移推出來的線要省略，只留 1–2、2–4、4–8 三條
+[ ] 少畫了每個點自己到自己的線
+[ ] 沒錯
+[ ] 1–8 要留，其他兩條斜的要拿掉
+---
+Hasse 圖只畫「緊鄰」：$a\mid b$ 而且中間沒有別的 $c$。1 和 4 之間有 2，所以 1–4 不畫；同理 2–8、1–8。自己到自己的也省略。這是一條鏈，Hasse 圖就是一條直線。
+
+@q rl4-15 | dm-relations#4 | 3 | 計算
+在 30 的正因數（整除）裡，6 的補元是誰？在 12 的正因數裡，2 有補元嗎？（$x$ 的補元 $y$：lcm 是最大的那個數、gcd 是 1）
+[x] 6 的補元是 5；12 的因數裡 2 沒有補元
+[ ] 6 的補元是 5；2 的補元是 6
+[ ] 6 的補元是 1；2 的補元是 3
+[ ] 6 沒有補元；2 的補元是 3
+---
+30 的因數：$\operatorname{lcm}(6,5)=30$、$\gcd(6,5)=1$ ✓，而且只有 5 可以。12 的因數：要 $\operatorname{lcm}(2,y)=12$，$y$ 一定含 4，那 $\gcd(2,y)\ge2$，不可能是 1。2 和 3 的 lcm 是 6 不是 12；2 和 6 的 gcd 是 2。所以 30 的因數格是布林代數（像立方體），12 的不是。
+
+@q rl4-16 | dm-relations#4 | 2 | 計算
+On $\{1,2,3,4,5,6\}$ under divisibility, how many pairs $(a,b)$ with $a\ne b$ satisfy $a\mid b$, and how many line segments does the Hasse diagram have?
+== 8,6
+?? pairs,Hasse segments
+---
+1 整除其他 5 個；2 整除 4、6；3 整除 6：共 $5+2+1=8$ 對。Hasse 圖拿掉能推出來的 1–4（經過 2）、1–6（經過 2 或 3），剩 1–2、1–3、1–5、2–4、2–6、3–6 共 6 條。
+
+@q rl4-17 | dm-relations#4 | 2 | 陷阱
+在一張 Hasse 圖上，$x$ 畫得比 $y$ 高。一定代表 $y\preceq x$ 嗎？
+[x] 不一定：要能從 $y$ 沿著線一直往上走到 $x$ 才算；例如 $\{2,3,4\}$ 整除，4 畫在 3 上面，但 3 不整除 4
+[ ] 一定：Hasse 圖大的畫上面
+[ ] 一定：除非兩個一樣高
+[ ] 不一定：要兩點之間直接有一條線才算
+---
+「大的畫在上面」只保證可比的時候上下方向對，不代表高的就比較大。判斷 $y\preceq x$ 要看有沒有一條往上的路（可以經過好幾條線），不一定要直接相連：1 和 4 在 $\{1,2,4\}$ 裡沒有直接的線，但 $1\mid4$。
+
+@q rl4-18 | dm-relations#4 | 3 | 反例
+實數在 $\le$ 之下是全序。它能畫成 Hasse 圖嗎？
+[x] 不能：任兩個不同的實數之間還有別的實數，沒有任何「緊鄰」的一對，一條線都畫不出來
+[ ] 能：畫成一條直線就好
+[ ] 能：全序的 Hasse 圖就是一條鏈
+[ ] 不能：因為 $\le$ 不是偏序
+---
+Hasse 圖的線代表「$a<b$ 而且中間沒有別的」。實數 $a<b$ 時 $\frac{a+b}2$ 永遠夾在中間，所以沒有任何線，圖上只剩一堆點，看不出順序。有限的全序才是一條鏈；整數也可以（緊鄰是 $n$ 和 $n+1$）。
+
+@q rl4-19 | dm-relations#4 | 1 | 情境
+Dictionary order on English words is a total order. Put b, ab, ba, a, aa in dictionary order. Which word comes third?
+== ab
+---
+先比第一個字母，一樣再比下一個；短的是長的開頭時，短的在前。a、aa、ab 都以 a 開頭，a 最短在最前，aa 和 ab 比第二個字母；再來是 b、ba。順序：a、aa、ab、b、ba。
+
+@q rl4-20 | dm-relations#4 | 2 | 比較
+正整數上「$a\mid b$」和「$a\le b$」都是偏序。下面哪一個對？
+[x] $a\mid b$ 一定推得出 $a\le b$，反過來不行
+[ ] $a\le b$ 一定推得出 $a\mid b$，反過來不行
+[ ] 兩個互相推得出來
+[ ] 兩個互相都推不出來
+---
+$a\mid b$、$b$ 是正整數 → $b=ka$、$k\ge1$ → $a\le b$。反過來 $2\le3$ 但 $2\nmid3$。所以整除的「可比的對」是 $\le$ 的一部分；$\le$ 是全序，整除不是。
+
+@q rl5-05 | dm-relations#5 | 3 | 計算
+There are $4^4=256$ functions from $\{1,2,3,4\}$ to itself. How many of them are **neither** one-to-one **nor** onto?
+== 232
+---
+定義域和對應域一樣大而且有限時，一對一 ⇔ 映成 ⇔ 雙射：4 個輸入對到 4 個不同的值，就剛好用完全部 4 個值；反過來用完 4 個值，4 個輸入也只能各對一個。所以「兩個都不是」＝「不是雙射」＝$256-4!=256-24=232$。
+
+@q rl5-06 | dm-relations#5 | 3 | 陷阱
+$A$、$B$ 一樣大，$f:A\to B$ 是一對一。$f$ 一定是映成嗎？
+[x] $A$、$B$ 有限時一定是；無限時不一定，例如整數到整數的 $f(x)=2x$
+[ ] 一定是，不管有限無限
+[ ] 不一定，有限時也可能不是
+[ ] 一定不是
+---
+有限：$|A|$ 個輸入對到 $|A|$ 個不同的值，而 $|B|=|A|$，剛好佔滿。無限：$\mathbb Z$ 和 $\mathbb Z$ 一樣大，$2x$ 一對一，但奇數沒人對到。「一樣大就一對一 ⇔ 映成」只能用在有限集合。
+
+@q rl5-07 | dm-relations#5 | 1 | 計算
+How many one-to-one functions are there from a 5-element set to a 4-element set?
+== 0
+---
+5 個輸入要對到 5 個不同的值，但只有 4 個值可用，一定有兩個撞在一起（鴿籠原理）。所以 0 個。一對一函數存在要 $|A|\le|B|$。
+
+@q rl5-08 | dm-relations#5 | 1 | 追蹤
+Let $f:\mathbb R\to\mathbb R$ with $f(x)=3x-7$. What is $f^{-1}(5)$?
+== 4
+---
+$f^{-1}(5)$ 是「$f$ 送到 5 的那個 $x$」：$3x-7=5$，$x=4$。驗算 $f(4)=12-7=5$ ✓。一般式 $f^{-1}(y)=\frac{y+7}3$。$f$ 是雙射，所以反函數存在。
+
+@q rl5-09 | dm-relations#5 | 2 | 計算
+On the integers, let $f(x)=x+1$ and $g(x)=2x$. What are $(g\circ f)(3)$ and $(f\circ g)(3)$?
+== 8,7
+?? g∘f,f∘g
+---
+$g\circ f$ 是先 $f$ 再 $g$：$f(3)=4$、$g(4)=8$。$f\circ g$ 是先 $g$ 再 $f$：$g(3)=6$、$f(6)=7$。兩個不一樣，合成沒有交換律；寫在右邊的先做。
+
+@q rl5-10 | dm-relations#5 | 3 | 反例
+已知 $g\circ f$ 是一對一。能推出 $g$ 也是一對一嗎？
+[x] 不能：$f:\{1\}\to\{a,b\}$、$f(1)=a$，$g$ 把 $a,b$ 都送到 $x$；$g\circ f$ 一對一，$g$ 卻不是
+[ ] 能：一對一會從合成傳給兩個函數
+[ ] 能：因為 $f$ 一定是一對一
+[ ] 不能，但只有在 $f$ 不是一對一時才有反例
+---
+能推出的是 $f$ 一對一。$g$ 只要在「$f$ 有對到的那些值」上分得開就好，其他地方隨便撞。例子裡 $f$ 只用到 $a$，$g$ 在 $b$ 撞也不影響。$f$ 在這個例子裡是一對一的，所以「不能，但只有在 $f$ 不是一對一時才有反例」也不對。
+
+@q rl5-11 | dm-relations#5 | 2 | 證明
+證明：如果 $g\circ f$ 是映成（$f:A\to B$、$g:B\to C$），那 $g$ 是映成。
+---
+任取 $c\in C$。$g\circ f$ 映成，所以有 $a\in A$ 使 $g(f(a))=c$。令 $b=f(a)\in B$，則 $g(b)=c$。每個 $c$ 都有 $B$ 裡的元素對到，所以 $g$ 映成。（$f$ 不一定映成：$g$ 可以只用到 $B$ 的一部分。）
+
+@q rl5-12 | dm-relations#5 | 3 | 計算
+How many functions from $\{1,2,3\}$ to itself satisfy $f(f(x))=x$ for every $x$?
+== 4
+---
+$f(f(x))=x$ 代表 $f$ 是自己的反函數，一定是雙射；而且每個元素不是固定（$f(x)=x$）就是跟另一個互換。3 個元素：全部固定 1 個；挑一對互換、第三個固定 3 個。共 4 個。$1\to2\to3\to1$ 這種轉三圈的不行，$f(f(1))=3$。
+
+@q rl5-13 | dm-relations#5 | 3 | 計算
+How many functions from $\{1,2,3\}$ to $\{1,2,3,4,5\}$ are **strictly increasing** ($f(1)<f(2)<f(3)$)?
+== 10
+---
+只要選出 3 個不同的值，由小到大排，就決定唯一一個嚴格遞增函數；反過來每個嚴格遞增函數也用了 3 個不同的值。所以等於「從 5 個挑 3 個」：$\binom53=10$。一對一函數有 $5\cdot4\cdot3=60$ 個，每組值的 $3!=6$ 種排法只有一種是遞增，$60/6=10$ ✓。
+
+@q rl5-14 | dm-relations#5 | 2 | 情境
+一個班有 400 個學生。「學生 → 他的生日（月/日）」這個函數，下面哪一個一定成立？
+[x] 一定不是一對一
+[ ] 一定是一對一
+[ ] 一定是映成（每天都有人生日）
+[ ] 一定是雙射
+---
+生日最多 366 種，400 個學生對到 366 個值，一定有兩人同一天，不是一對一（鴿籠）。映成不一定：可能剛好沒人在 2 月 29 日或某一天出生，人數多不保證每個值都被用到。
+
+@q rl5-15 | dm-relations#5 | 2 | 找錯
+小華說：「$\{a,b,c\}$ 到 $\{1,2\}$ 的映成函數有 3 個：挑哪兩個元素對到同一個值。」錯在哪？
+[x] 挑完哪兩個在一起，還要決定它們對到 1 還是 2（另一個就對到另一個值），所以是 $3\times2=6$
+[ ] 沒錯，是 3 個
+[ ] 應該是 $2^3=8$：每個元素有 2 種選法
+[ ] 應該是 $3^2=9$
+---
+3 個元素對到 2 個值又要用完兩個值，一定是「兩個一組＋一個自己」：分組 3 種，再決定哪組對 1、哪組對 2，2 種，共 6。$2^3=8$ 是全部函數，含 2 個「全部對到同一個值」的不是映成：$8-2=6$ ✓。
+
+@q rl5-16 | dm-relations#5 | 1 | 計算
+$f:\{1,2,3\}\to\{a,b,c,d\}$，$f(1)=a$、$f(2)=a$、$f(3)=c$。$f$ 的值域是什麼？
+[x] $\{a,c\}$
+[ ] $\{a,b,c,d\}$
+[ ] $\{a,a,c\}$
+[ ] $\{1,2,3\}$
+---
+值域是「真的被對到的值」所成的集合：$a$ 和 $c$。$\{a,b,c,d\}$ 是對應域（允許的值）；集合裡不重複寫 $a$；$\{1,2,3\}$ 是定義域。值域＝對應域時就是映成，這裡不是。
+
+@q rl5-17 | dm-relations#5 | 2 | 計算
+How many functions from $\{1,2,3\}$ to $\{1,2,3,4\}$ satisfy $f(1)\ne f(2)$?
+== 48
+---
+$f(1)$ 有 4 種、$f(2)$ 不能跟 $f(1)$ 一樣有 3 種、$f(3)$ 沒有限制 4 種：$4\times3\times4=48$。也可以用全部 $4^3=64$ 減掉 $f(1)=f(2)$ 的 $4\times4=16$。
+
+@q rl5-18 | dm-relations#5 | 2 | 情境
+A function assigns each of 1000 student IDs to one of 100 lockers (lockers may be shared). Some locker must be used by at least how many IDs?
+== 10
+---
+如果每個櫃子最多 9 個學號，100 個櫃子最多裝 900 個，不夠 1000。所以至少有一個櫃子 $\ge10$ 個，$\lceil1000/100\rceil=10$。平均分配時剛好每櫃 10 個，所以 10 是能保證的最大數字。
+
+@q rl5-19 | dm-relations#5 | 2 | 陷阱
+$f:A\to B$ 是一對一，所以它有反函數 $f^{-1}:B\to A$。對嗎？
+[x] 不一定：還要映成；$B$ 裡沒被對到的元素，$f^{-1}$ 不知道要送去哪
+[ ] 對：一對一就能反過來
+[ ] 不對：要 $A=B$ 才有反函數
+[ ] 對：只要 $A$ 是有限集合
+---
+反函數要對 $B$ 的**每個**元素都給一個值。一對一只保證「有值的話唯一」，映成才保證「每個都有值」，兩個都有（雙射）才行。例：$f:\{1,2\}\to\{a,b,c\}$ 一對一，但 $f^{-1}(c)$ 沒有定義。只看值域的話，可以有 $f^{-1}:f(A)\to A$。
+
+@q rl5-20 | dm-relations#5 | 2 | 比較
+整數到整數的函數，哪一個是**雙射**？
+[x] $f(x)=x+1$
+[ ] $f(x)=2x$
+[ ] $f(x)=\lfloor x/2\rfloor$
+[ ] $f(x)=x^2$
+---
+$x+1$：反函數 $y-1$，雙射。$2x$：一對一但奇數沒人對到。$\lfloor x/2\rfloor$：映成（$y$ 由 $2y$ 對到）但 $0$、$1$ 都對到 0，不一對一。$x^2$：$\pm1$ 都對到 1，負數沒人對到，兩個都不是。
+
+@q rg1-06 | dm-recur-gf#1 | 3 | 找錯
+長度 $n$、只用 a、b、c、而且沒有兩個 a 相鄰的字串有 $a_n$ 個。小明寫 $a_n=2a_{n-1}+a_{n-2}$。哪裡錯？
+[x] 最後一個字是 a 時，倒數第二個可以是 b 或 c 兩種，所以是 $2a_{n-2}$：$a_n=2a_{n-1}+2a_{n-2}$
+[ ] 沒錯
+[ ] 最後一個字不是 a 時只有 1 種：應該是 $a_{n-1}+2a_{n-2}$
+[ ] 應該是 $3a_{n-1}$：每一位都有 3 種
+---
+看最後一個字：是 b 或 c（2 種），前面是任意合法字串 → $2a_{n-1}$；是 a，倒數第二個一定不是 a，有 b、c 兩種，再前面合法 → $2a_{n-2}$。驗算：$a_1=3$、$a_2=8$（9 個扣掉 aa），$a_3=2\cdot8+2\cdot3=22$，程式列舉也是 22。
+
+@q rg1-07 | dm-recur-gf#1 | 3 | 計算
+Let $a_n$ be the number of binary strings of length $n$ with no three consecutive 1s, so $a_1=2$, $a_2=4$, and $a_3=7$. Find $a_5$.
+== 24
+---
+看開頭：一定是「0」「10」「110」其中一種（不能是 111），後面接長度 $n-1$、$n-2$、$n-3$ 的合法字串：$a_n=a_{n-1}+a_{n-2}+a_{n-3}$（$n\ge4$）。$a_4=7+4+2=13$、$a_5=13+7+4=24$（程式列舉也是 24）。
+
+@q rg1-08 | dm-recur-gf#1 | 2 | 情境
+A staircase is climbed 1 or 3 steps at a time. In how many ways can one reach step 8 from the ground?
+== 13
+---
+最後一步是 1 階 → 前面 $c_{n-1}$ 種；是 3 階 → $c_{n-3}$ 種。$c_n=c_{n-1}+c_{n-3}$，$c_0=1$（站著不動算一種）、$c_1=1$、$c_2=1$。往下算：$c_3=2$、$c_4=3$、$c_5=4$、$c_6=6$、$c_7=9$、$c_8=13$。
+
+@q rg1-09 | dm-recur-gf#1 | 3 | 計算
+In a variant of the Tower of Hanoi, every move must be between **adjacent** pegs: peg 1 ↔ peg 2 or peg 2 ↔ peg 3, never peg 1 ↔ peg 3 directly. Let $a_n$ be the minimum number of moves to transfer $n$ disks from peg 1 to peg 3. Find $a_3$.
+== 26
+---
+最大的盤子要從 1 經 2 到 3，搬 2 次。第一次（1→2）時其他 $n-1$ 個要都在 3；第二次（2→3）時要都在 1。所以：$n-1$ 個 1→3、大的 1→2、$n-1$ 個 3→1、大的 2→3、$n-1$ 個 1→3：$a_n=3a_{n-1}+2$，$a_1=2$。$a_2=8$、$a_3=26$（$=3^3-1$，程式用最短路搜尋也是 26）。
+
+@q rg1-10 | dm-recur-gf#1 | 1 | 追蹤
+Let $a_n=3a_{n-1}-a_{n-2}$ for $n\ge2$, with $a_0=1$ and $a_1=2$. Find $a_4$.
+== 34
+---
+一項一項代：$a_2=3\cdot2-1=5$、$a_3=3\cdot5-2=13$、$a_4=3\cdot13-5=34$。（剛好是費氏數列每隔一項：1、2、5、13、34。）
+
+@q rg1-11 | dm-recur-gf#1 | 3 | 情境
+A $1\times n$ strip is tiled using red $1\times1$ squares, blue $1\times1$ squares, and (single-colored) $1\times2$ tiles. In how many ways can a $1\times4$ strip be tiled?
+== 29
+---
+看最左邊放什麼：紅方塊或藍方塊（2 種），剩 $1\times(n-1)$；$1\times2$ 長塊，剩 $1\times(n-2)$。$t_n=2t_{n-1}+t_{n-2}$，$t_0=1$、$t_1=2$。$t_2=5$、$t_3=12$、$t_4=29$（程式列舉也是 29）。
+
+@q rg1-12 | dm-recur-gf#1 | 2 | 計算
+Four circles are drawn in the plane so that every two of them meet in exactly 2 points and no three meet at a common point. Into how many regions do they divide the plane? (One circle gives 2 regions.)
+== 14
+---
+第 $n$ 個圓和前面 $n-1$ 個圓各交 2 點，共 $2(n-1)$ 個點，把它切成 $2(n-1)$ 段弧，每段弧把一塊分成兩塊：$R_n=R_{n-1}+2(n-1)$。$R_2=4$、$R_3=8$、$R_4=14$。一般式 $n^2-n+2$。（跟直線不同：直線多一段是因為它兩端延伸到無限遠。）
+
+@q rg1-13 | dm-recur-gf#1 | 1 | 觀念
+只要知道 $a_1$，就能決定 $a_n=a_{n-1}+a_{n-2}$（$n\ge3$）的整個數列。
+[ ] 對
+[x] 不對
+---
+每一項要用前**兩**項，所以要給兩個初始值（例如 $a_1$、$a_2$）。只給 $a_1=1$，$a_2$ 可以是 1（費氏數列）也可以是 3（1、3、4、7、11…），後面全部不一樣。一般 $k$ 階的遞迴要 $k$ 個初始值。
+
+@q rg1-14 | dm-recur-gf#1 | 2 | 比較
+Sequences $s$ and $t$ both satisfy $x_n=x_{n-1}+x_{n-2}$. For $s$, $s_1=s_2=1$; for $t$, $t_1=2$ and $t_2=3$. For which $k$ does $t_6=s_k$?
+== 8
+---
+$s$：1、1、2、3、5、8、13、21。$t$：2、3、5、8、13、21。$t$ 的開頭 2、3 就是 $s$ 的第 3、4 項，遞迴一樣，所以 $t$ 一直是 $s$ 往後移 2 項：$t_6=s_8=21$。沒有兩個 0 相鄰的字串數就是這樣變成費氏數列的。
+
+@q rg1-15 | dm-recur-gf#1 | 1 | 情境
+At the start of each month, a savings account first earns 1% interest and then receives a deposit of 1000. The balance at the end of month $n$ satisfies $b_n=1.01b_{n-1}+1000$ with $b_0=0$. Find $b_2$.
+== 2010
+---
+$b_1=1.01\cdot0+1000=1000$；$b_2=1.01\cdot1000+1000=1010+1000=2010$。把「上個月的」和「這個月新加的」分開寫，就是遞迴式。
+
+@q rg1-16 | dm-recur-gf#1 | 2 | 計算
+How many binary strings of length 5 **do** contain two adjacent 0s?
+== 19
+---
+直接數「有」很麻煩，數反面：沒有兩個 0 相鄰的 $a_n=a_{n-1}+a_{n-2}$，$a_1=2$、$a_2=3$ → $a_3=5$、$a_4=8$、$a_5=13$。全部 $2^5=32$ 個，$32-13=19$。
+
+@q rg1-17 | dm-recur-gf#1 | 3 | 證明
+證明：河內塔搬 $n$ 個盤子**至少**要 $2H_{n-1}+1$ 步（所以 $H_n=2H_{n-1}+1$ 不只是一種做法，而是最少）。
+---
+最大的盤子至少要搬一次。它第一次搬的時候，上面不能有東西、目標柱也要是空的，所以其他 $n-1$ 個都在第三根柱子上：把它們從起點搬過去至少 $H_{n-1}$ 步。最大的最後一次搬完之後，其他 $n-1$ 個還要搬到它上面，又至少 $H_{n-1}$ 步。加上最大的那一步：至少 $2H_{n-1}+1$。而遞迴的做法剛好用這麼多步，所以是最少。
+
+@q rg1-18 | dm-recur-gf#1 | 2 | 陷阱
+How many binary strings of length 6 do not contain 01 as a substring?
+== 7
+---
+不含 01 代表一旦出現 0，後面就不能再有 1：字串一定長成「一串 1 再接一串 0」，例如 111000。1 的個數可以是 0～$n$，共 $n+1$ 個，$n=6$ 時 7 個。遞迴是 $a_n=a_{n-1}+1$，不是費氏數列；禁止的子字串換一個，答案可以差很多。
+
+@q rg1-19 | dm-recur-gf#1 | 3 | 情境
+A $2\times n$ strip is tiled with $1\times2$ dominoes and $2\times2$ squares; let $t_n$ be the number of tilings, so $t_1=1$ and $t_2=3$. Find $t_5$.
+== 21
+---
+看最左邊：一張直的骨牌 → 剩 $2\times(n-1)$；兩張橫的疊在一起 → 剩 $2\times(n-2)$；一個 $2\times2$ 方塊 → 也剩 $2\times(n-2)$。$t_n=t_{n-1}+2t_{n-2}$（$t_0=1$）。$t_3=3+2=5$、$t_4=5+6=11$、$t_5=11+10=21$。
+
+@q rg1-20 | dm-recur-gf#1 | 1 | 陷阱
+Let $a_n=2a_{n-1}$ for $n\ge1$, with $a_0=3$. Find $a_5$.
+== 96
+---
+每次乘 2，從 $a_0=3$ 開始：$a_n=3\cdot2^n$，$a_5=3\cdot32=96$。只看遞迴式寫成 $2^n=32$ 就忘了初始值。
+
+@q rg2-05 | dm-recur-gf#2 | 2 | 計算
+Let $a_n=a_{n-1}+6a_{n-2}$ for $n\ge2$, with $a_0=1$ and $a_1=8$. Which of the following statements are correct? Select all that apply.
+[x] The roots of the characteristic equation are $3$ and $-2$.
+[x] $a_n=2\cdot3^n-(-2)^n$.
+[ ] $a_n=2\cdot3^n+(-2)^n$.
+[x] $a_3=62$.
+[ ] $a_n/3^n\to1$ as $n\to\infty$.
+---
+「根是 3、$-2$」對：$r^2-r-6=(r-3)(r+2)=0$。
+
+「$2\cdot3^n-(-2)^n$」對：$a_n=\alpha3^n+\beta(-2)^n$，$\alpha+\beta=1$、$3\alpha-2\beta=8$，得 $\alpha=2$、$\beta=-1$。
+
+「$2\cdot3^n+(-2)^n$」錯：$n=0$ 時是 3，不是 1。
+
+「$a_3=62$」對：$a_2=8+6=14$，$a_3=14+48=62$；公式 $54-(-8)=62$ ✓。
+
+「$a_n/3^n\to1$」錯：$(-2/3)^n\to0$，比值趨近 $\alpha=2$。
+
+@q rg2-06 | dm-recur-gf#2 | 3 | 計算
+$a_n=6a_{n-1}-11a_{n-2}+6a_{n-3}$，$a_0=3$、$a_1=6$、$a_2=14$。一般式是？
+[x] $a_n=1+2^n+3^n$
+[ ] $a_n=3\cdot2^n$
+[ ] $a_n=2^n+3^n+n$
+[ ] $a_n=1+2\cdot2^n+3^n$
+---
+特徵方程式 $r^3-6r^2+11r-6=0$，試 $r=1$ 是根，除下去 $(r-1)(r-2)(r-3)$。$a_n=\alpha+\beta2^n+\gamma3^n$：$\alpha+\beta+\gamma=3$、$\alpha+2\beta+3\gamma=6$、$\alpha+4\beta+9\gamma=14$ → 都是 1。驗算 $a_3=1+8+27=36$，遞迴 $6\cdot14-11\cdot6+6\cdot3=36$ ✓。$3\cdot2^n$ 只湊得到前兩項。
+
+@q rg2-07 | dm-recur-gf#2 | 3 | 陷阱
+Let $a_n=4a_{n-1}-4a_{n-2}$ for $n\ge2$, with $a_0=1$ and $a_1=4$. Which of the following statements are correct? Select all that apply.
+[x] The characteristic equation has the double root $2$.
+[ ] Some constants $\alpha,\beta$ make $a_n=\alpha2^n+\beta2^n$ satisfy both initial conditions.
+[x] $a_n=(n+1)2^n$.
+[x] $a_3=32$.
+[ ] $a_n=4^n$.
+---
+「重根 2」對：$r^2-4r+4=(r-2)^2$。
+
+「$\alpha2^n+\beta2^n$ 可以」錯：它就是 $(\alpha+\beta)2^n$，只有一個自由係數；$a_0=1$ 逼出係數 1，$a_1$ 卻變成 2 不是 4。重根時第二個獨立解是 $n2^n$。
+
+「$(n+1)2^n$」對：設 $(\alpha+\beta n)2^n$，$a_0=\alpha=1$，$a_1=2(\alpha+\beta)=4$ 得 $\beta=1$。
+
+「$a_3=32$」對：$a_2=16-4=12$，$a_3=48-16=32$；公式 $4\cdot8=32$ ✓。
+
+「$4^n$」錯：$a_2=12\ne16$。
+
+@q rg2-08 | dm-recur-gf#2 | 2 | 計算
+Let $a_n=-a_{n-2}$ for $n\ge2$, with $a_0=1$ and $a_1=0$. Find $a_{100}$.
+== 1
+---
+特徵方程式 $r^2+1=0$ 的根不是實數，直接列：$1,0,-1,0,1,0,-1,0,\dots$，每 4 項重複一次。$100=4\times25$，跟 $a_0$ 一樣是 1。根是 $\pm i$，$i^4=1$，所以週期 4。
+
+@q rg2-09 | dm-recur-gf#2 | 3 | 計算
+Let $a_n=3^n-5\cdot2^n$. What is the smallest $n\ge0$ with $a_n>0$?
+== 4
+---
+要 $3^n>5\cdot2^n$，也就是 $(3/2)^n>5$。$1.5^3=3.375$、$1.5^4=5.0625$，所以 $n=4$：$81-80=1>0$；$n=3$：$27-40<0$。之後 3 的那項長得比較快，永遠是正的。一開始的係數大不代表會贏，**大的根**最後一定主導。
+
+@q rg2-10 | dm-recur-gf#2 | 2 | 找錯
+Consider the recurrence $a_n = 2a_{n-1} + 3a_{n-2}$ for $n \ge 2$. A student writes its characteristic equation as $r^2 + 2r + 3 = 0$. Which of the following statements are correct? Select all that apply.
+[x] The correct characteristic equation is $r^2 - 2r - 3 = 0$.
+[x] The characteristic roots are $3$ and $-1$.
+[x] Every solution has the form $a_n = c_1 3^n + c_2 (-1)^n$ for some constants $c_1, c_2$.
+[ ] The student's equation is correct, and its roots are not real.
+[ ] If $a_0 = 0$ and $a_1 = 4$, then $a_n = 3^n + (-1)^n$.
+---
+代 $a_n=r^n$：$r^n=2r^{n-1}+3r^{n-2}$，除以 $r^{n-2}$ 得 $r^2=2r+3$，移項時**兩項都變號**：$r^2-2r-3=0=(r-3)(r+1)$。所以「正確的特徵方程式」和「根是 3 與 $-1$」都對；學生的方程式是符號移錯，「學生是對的」那個選項錯。
+
+兩個相異實根，通解就是 $c_1 3^n+c_2(-1)^n$，對。
+
+初始條件那個選項：$a_0=c_1+c_2=0$、$a_1=3c_1-c_2=4$，解得 $c_1=1$、$c_2=-1$，正確的是 $a_n=3^n-(-1)^n$；選項寫的 $3^n+(-1)^n$ 代 $n=0$ 得 2，不符，錯。
+
+@q rg2-11 | dm-recur-gf#2 | 3 | 追蹤
+Let $a_n = (2 - n) 3^n$ for $n \ge 0$. Which of the following statements are correct? Select all that apply.
+[x] $a_0 = 2$, $a_1 = 3$, and $a_2 = 0$.
+[x] The sequence satisfies $a_n = 6a_{n-1} - 9a_{n-2}$ for all $n \ge 2$.
+[x] $a_3 = -27$.
+[ ] The characteristic equation of $a_n = 6a_{n-1} - 9a_{n-2}$ has two distinct roots, 3 and $-3$.
+[x] Every sequence of the form $(\alpha + \beta n) 3^n$ satisfies $a_n = 6a_{n-1} - 9a_{n-2}$.
+---
+「$a_0=2$、$a_1=3$、$a_2=0$」對：$(2-0)\cdot1$、$(2-1)\cdot3$、$(2-2)\cdot9$。
+
+「滿足 $a_n=6a_{n-1}-9a_{n-2}$」對、「所有 $(\alpha+\beta n)3^n$ 都滿足」對：「（常數＋$n$）×$3^n$」是 3 為二重根才有的形式，特徵方程 $(r-3)^2=r^2-6r+9$，對應遞迴 $a_n=6a_{n-1}-9a_{n-2}$。驗算 $6\cdot3-9\cdot2=0=a_2$ ✓。
+
+「$a_3=-27$」對：$(2-3)\cdot27$；用遞迴驗算 $6\cdot0-9\cdot3=-27$ ✓。
+
+「兩個相異根 3 和 $-3$」錯：$r^2-6r+9=(r-3)^2$，3 是二重根；$\pm3$ 是 $r^2-9=0$ 的根。
+
+@q rg2-12 | dm-recur-gf#2 | 2 | 情境
+A cell population satisfies $a_n=a_{n-1}+2a_{n-2}$ with $a_0=a_1=1$. After many generations, each generation is about how many times the previous one?
+== 2
+---
+特徵方程式 $r^2-r-2=(r-2)(r+1)=0$，$a_n=\alpha2^n+\beta(-1)^n$。$(-1)^n$ 只在 $\pm1$ 晃，$2^n$ 一直變大，所以比值 $a_n/a_{n-1}\to2$（程式算到第 30 代是 2.0000000028）。最大的根就是長期成長率。
+
+@q rg2-13 | dm-recur-gf#2 | 3 | 計算
+Let $a_n=a_{n-1}+a_{n-2}$ with $a_0=2$ and $a_1=1$. Writing $a_n=\alpha\varphi^n+\beta\psi^n$ with $\varphi=\frac{1+\sqrt5}2$ and $\psi=\frac{1-\sqrt5}2$, find $\alpha$ and $\beta$.
+== 1,1
+?? α,β
+---
+$a_0$：$\alpha+\beta=2$；$a_1$：$\alpha\varphi+\beta\psi=1$。注意 $\varphi+\psi=1$，所以 $\alpha=\beta=1$ 剛好滿足兩式：$a_n=\varphi^n+\psi^n$（Lucas 數 2、1、3、4、7、11…）。費氏數列 $a_0=0$、$a_1=1$ 時係數是 $\pm\frac1{\sqrt5}$，初始值不同，係數就不同。
+
+@q rg2-14 | dm-recur-gf#2 | 2 | 證明
+證明：如果 $r$ 是 $r^2=c_1r+c_2$ 的根，那 $a_n=r^n$ 滿足 $a_n=c_1a_{n-1}+c_2a_{n-2}$。
+---
+要檢查 $r^n=c_1r^{n-1}+c_2r^{n-2}$。右邊 $=r^{n-2}(c_1r+c_2)$，因為 $r$ 是根，$c_1r+c_2=r^2$，所以右邊 $=r^{n-2}\cdot r^2=r^n$ ✓。再加上「兩個解的線性組合還是解」（遞迴是線性的），就得到 $\alpha r_1^n+\beta r_2^n$。
+
+@q rg2-15 | dm-recur-gf#2 | 3 | 證明
+$r$ 是 $r^2=c_1r+c_2$ 的**重根**。證明 $a_n=nr^n$ 也滿足 $a_n=c_1a_{n-1}+c_2a_{n-2}$。
+---
+重根代表特徵多項式 $x^2-c_1x-c_2=(x-r)^2=x^2-2rx+r^2$，比較係數得 $c_1=2r$、$c_2=-r^2$。代入右邊：$c_1(n-1)r^{n-1}+c_2(n-2)r^{n-2}=2r(n-1)r^{n-1}-r^2(n-2)r^{n-2}=r^n[2(n-1)-(n-2)]=nr^n$ ✓。不是重根時 $c_1\ne2r$，這個式子就不會剛好相等，所以只有重根才要多乘 $n$。
+
+@q rg2-16 | dm-recur-gf#2 | 1 | 觀念
+線性齊次遞迴的特徵方程式，根一定是整數。
+[ ] 對
+[x] 不對
+---
+費氏數列 $r^2-r-1=0$ 的根是 $\frac{1\pm\sqrt5}2$，不是整數，但 $F_n$ 每一項都是整數（無理數的部分互相抵消）。根也可能不是實數，例如 $a_n=-a_{n-2}$ 的 $\pm i$。
+
+@q rg2-17 | dm-recur-gf#2 | 3 | 計算
+Consider $a_n = 5a_{n-1} - 8a_{n-2} + 4a_{n-3}$ for $n \ge 3$, whose characteristic equation is $r^3 - 5r^2 + 8r - 4 = (r - 1)(r - 2)^2 = 0$. Which of the following statements are correct? Select all that apply.
+[x] The general solution is $a_n = \alpha + (\beta + \gamma n) 2^n$.
+[ ] Only two initial values are needed to determine a solution of this recurrence.
+[x] If $a_0 = 0$, $a_1 = 1$, and $a_2 = 4$, then $a_n = n \cdot 2^{n-1}$ for all $n \ge 0$.
+[x] The constant sequence $a_n = 7$ satisfies the recurrence.
+[x] Since 2 is a double root, the sequence $n \cdot 2^n$ satisfies the recurrence.
+---
+「$\alpha+(\beta+\gamma n)2^n$」對：根 1（一重）貢獻 $\alpha\cdot1^n$；根 2（二重）貢獻 $(\beta+\gamma n)2^n$。
+
+「只要兩個初始值」錯：三階遞迴、通解有 $\alpha,\beta,\gamma$ 三個未知數，要三個初始值。
+
+「初始 0、1、4 時 $a_n=n2^{n-1}$」對：$\alpha=0$、$\beta=0$、$\gamma=\frac12$。驗算 $a_3=5\cdot4-8\cdot1+4\cdot0=12=3\cdot4$ ✓。
+
+「常數 7 滿足」對：1 是特徵根；直接代：$5\cdot7-8\cdot7+4\cdot7=7$ ✓。
+
+「$n2^n$ 滿足」對：二重根 2 給出 $2^n$ 和 $n2^n$ 兩個解；程式代入 $n=3$ 到 9 都成立。
+
+@q rg2-18 | dm-recur-gf#2 | 3 | 情境
+The number of tilings of a $2\times n$ strip by $1\times2$ dominoes and $2\times2$ squares satisfies $t_n=t_{n-1}+2t_{n-2}$ with $t_0=t_1=1$. Find $t_{10}$.
+== 683
+---
+特徵方程式 $r^2-r-2=0$，根 2、$-1$：$t_n=\alpha2^n+\beta(-1)^n$。$t_0$：$\alpha+\beta=1$；$t_1$：$2\alpha-\beta=1$ → $\alpha=\frac23$、$\beta=\frac13$。$t_n=\frac{2^{n+1}+(-1)^n}3$，$t_{10}=\frac{2048+1}3=683$（程式一項一項算也是 683）。
+
+@q rg2-19 | dm-recur-gf#2 | 2 | 計算
+Let $a_n=2a_{n-1}-a_{n-2}$ for $n\ge2$, with $a_0=3$ and $a_1=7$. Find $a_{50}$.
+== 203
+---
+特徵方程式 $r^2-2r+1=(r-1)^2$，重根 1：$a_n=(\alpha+\beta n)\cdot1^n=\alpha+\beta n$。$\alpha=3$、$\beta=4$，$a_n=3+4n$，$a_{50}=203$。重根 1 就是等差數列：遞迴說「每次增加的量都一樣」。
+
+@q rg2-20 | dm-recur-gf#2 | 2 | 比較
+Consider $a_n = 4a_{n-1} - 4a_{n-2}$ and $b_n = 4b_{n-1} - 3b_{n-2}$, with positive initial values and nonzero leading coefficients in their general solutions. Which of the following statements are correct? Select all that apply.
+[x] The general solution for $a_n$ is $(\alpha + \beta n) 2^n$.
+[x] The general solution for $b_n$ is $\alpha + \beta 3^n$.
+[ ] For large $n$, $a_n$ grows faster than $b_n$, because the repeated root contributes an extra factor $n$.
+[x] $\frac{n \cdot 2^n}{3^n}$ approaches 0 as $n$ grows.
+[ ] Both sequences grow at the same rate, because both recurrences start with the coefficient 4.
+---
+「$a_n$ 的通解」對：$r^2-4r+4=(r-2)^2$，二重根。
+
+「$b_n$ 的通解」對：$r^2-4r+3=(r-1)(r-3)$。
+
+「$a_n$ 因為多乘 $n$ 而比較快」錯：成長速度看最大的根，$n$ 只是多項式的倍數，追不上底數從 2 變 3。
+
+「$n2^n/3^n\to0$」對：$n(2/3)^n$，指數衰減壓過 $n$。
+
+「第一個係數都是 4 所以一樣快」錯：要看特徵根，不是係數。
+
+@q rg3-04 | dm-recur-gf#3 | 2 | 計算
+Solve $a_n=3a_{n-1}+4$ with $a_0=0$. Find $a_3$.
+== 52
+---
+齊次解 $\alpha3^n$；特解猜常數 $c$：$c=3c+4$ → $c=-2$。$a_n=\alpha3^n-2$，$a_0=\alpha-2=0$ → $\alpha=2$：$a_n=2\cdot3^n-2$，$a_3=54-2=52$。直接代：$0\to4\to16\to52$ ✓。
+
+@q rg3-05 | dm-recur-gf#3 | 2 | 計算
+Let $a_n=a_{n-1}+2n$ for $n\ge1$, with $a_0=1$. Find $a_{10}$.
+== 111
+---
+齊次部分的根是 1，右邊 $2n$ 是一次多項式 × $1^n$，1 是特徵根，特解要猜 $n(cn+d)=cn^2+dn$：代入得 $c=1$、$d=1$。$a_n=n^2+n+\alpha$，$a_0=1$ → $\alpha=1$。$a_{10}=100+10+1=111$。也可以直接加：$1+2(1+2+\cdots+10)=1+110$。
+
+@q rg3-06 | dm-recur-gf#3 | 3 | 陷阱
+Consider $a_n = 2a_{n-1} + n$ for $n \ge 1$. Which of the following statements are correct? Select all that apply.
+[x] A particular solution is $a_n = -n - 2$.
+[x] The general solution is $a_n = \alpha 2^n - n - 2$.
+[x] If $a_0 = 0$, then $a_1 = 1$.
+[x] If $a_0 = 0$, then $a_n = 2^{n+1} - n - 2$.
+[ ] A particular solution must have the form $A n 2^n$.
+---
+右邊是一次式 $n$，而 1 不是特徵根（根是 2），所以猜一次式 $cn+d$。
+
+「特解 $-n-2$」對：代入 $cn+d=2(c(n-1)+d)+n$，比較 $n$ 的係數 $c=2c+1$，$c=-1$；常數項 $d=-2c+2d$，$d=2c=-2$。驗算：$-n-2=2(-(n-1)-2)+n=-n-2$ ✓。
+
+「通解 $\alpha2^n-n-2$」對：齊次解加特解。
+
+「$a_0=0$ 時 $a_1=1$」對：$2\cdot0+1$。
+
+「$a_0=0$ 時 $2^{n+1}-n-2$」對：$\alpha-2=0$，$\alpha=2$。驗算 $a_1=1$、$a_2=4$、$a_3=11$。
+
+「一定要 $An2^n$」錯：那是右邊含 $2^n$ 時（撞到特徵根）才需要。
+
+@q rg3-07 | dm-recur-gf#3 | 3 | 計算
+Consider $a_n = 4a_{n-1} - 4a_{n-2} + 2^n$. Its characteristic equation is $(r - 2)^2 = 0$. Which of the following statements are correct? Select all that apply.
+[x] Since 2 is a double root, the particular solution should be guessed in the form $A n^2 2^n$.
+[x] Substituting gives $A = \frac{1}{2}$, so a particular solution is $n^2 2^{n-1}$.
+[ ] A particular solution can be found in the form $A \cdot 2^n$.
+[ ] A particular solution can be found in the form $A n 2^n$.
+[x] The general solution is $\left(\alpha + \beta n + \frac{n^2}{2}\right) 2^n$.
+---
+「猜 $An^22^n$」對：右邊的 $2^n$ 撞到二重根，要乘 $n^2$。
+
+「$A=\frac12$」對：代入並除以 $2^{n-2}$：$4An^2=8A(n-1)^2-4A(n-2)^2+4$，化簡得 $0=-8A+4$。
+
+「猜 $A2^n$」錯、「猜 $An2^n$」錯：這兩種都已經是齊次解，代進去左右相消，只剩 $0=2^n$。
+
+「通解」對：齊次解 $(\alpha+\beta n)2^n$ 加上特解。
+
+@q rg3-08 | dm-recur-gf#3 | 2 | 計算
+Find the constant particular solution of $a_n=5a_{n-1}-6a_{n-2}+7$.
+== 7/2
+== 3.5
+---
+1 不是特徵根（根是 2、3），猜常數 $c$：$c=5c-6c+7$ → $c=-c+7$ → $c=\frac72$。驗算：$5\cdot3.5-6\cdot3.5+7=17.5-21+7=3.5$ ✓。
+
+@q rg3-09 | dm-recur-gf#3 | 3 | 情境
+A loan of 100000 grows by 1% interest at the start of each month, after which 2000 is repaid: $b_n=1.01b_{n-1}-2000$, $b_0=100000$. In which month $n$ is the loan first paid off, i.e., $b_n\le0$ for the first time?
+== 70
+---
+特解（不動點）$c=1.01c-2000$ → $c=200000$。$b_n=(100000-200000)\cdot1.01^n+200000=200000-100000\cdot1.01^n$。$b_n\le0$ ⇔ $1.01^n\ge2$ ⇔ $n\ge\frac{\ln2}{\ln1.01}\approx69.7$，所以第 70 個月（程式逐月模擬也是 70）。
+
+@q rg3-10 | dm-recur-gf#3 | 2 | 找錯
+To solve $a_n = 2a_{n-1} + 1$ with $a_0 = 1$, a student first fits $\alpha 2^n$ to $a_0 = 1$, getting $\alpha = 1$, and then adds the particular solution $-1$, obtaining $a_n = 2^n - 1$. Which of the following statements are correct? Select all that apply.
+[x] The correct solution is $a_n = 2^{n+1} - 1$.
+[x] The initial condition must be applied to the full general solution $\alpha 2^n - 1$, not to the homogeneous part alone.
+[ ] The student's answer $2^n - 1$ is correct.
+[x] $a_3 = 15$.
+[ ] A particular solution of this recurrence is $a_n = 1$.
+---
+「$2^{n+1}-1$」對：$\alpha-1=1$，$\alpha=2$。驗算 $1,3,7,15$。
+
+「初值要代進完整的通解」對：學生先決定 $\alpha$ 再加特解，特解會改變 $a_0$。
+
+「學生對」錯：$2^0-1=0\ne1$。
+
+「$a_3=15$」對。
+
+「特解是 1」錯：$1\ne2\cdot1+1$；特解是 $-1$（$-1=2(-1)+1$）。
+
+@q rg3-11 | dm-recur-gf#3 | 3 | 計算
+For $a_n=a_{n-1}+n^2$, a particular solution should be guessed as a polynomial in $n$; what is the highest power of $n$ needed? If $a_0=0$, find $a_{10}$.
+== 3,385
+?? highest power,a_10
+---
+右邊是二次多項式 × $1^n$，1 是特徵根（一重），要多乘 $n$：三次多項式。解出來 $a_n=\frac{n(n+1)(2n+1)}6$，就是平方和。$a_{10}=\frac{10\cdot11\cdot21}6=385$。
+
+@q rg3-12 | dm-recur-gf#3 | 1 | 情境
+A program shrinks its problem by 1 each step and spends as many steps as the current size: $T(n)=T(n-1)+n$ with $T(1)=1$. Find $T(100)$.
+== 5050
+---
+展開：$T(n)=1+2+\cdots+n=\frac{n(n+1)}2$，$T(100)=5050$。用特解的方法：右邊 $n$，1 是特徵根，猜 $cn^2+dn$，得 $c=d=\frac12$，結果一樣。
+
+@q rg3-13 | dm-recur-gf#3 | 2 | 證明
+設 $p_n$ 滿足 $a_n=c_1a_{n-1}+c_2a_{n-2}+F(n)$。證明：另一個解 $q_n$ 減掉 $p_n$，會滿足齊次遞迴 $a_n=c_1a_{n-1}+c_2a_{n-2}$。
+---
+兩式相減：$q_n-p_n=c_1(q_{n-1}-p_{n-1})+c_2(q_{n-2}-p_{n-2})+F(n)-F(n)$，$F(n)$ 消掉。所以 $h_n=q_n-p_n$ 是齊次解。反過來，任何齊次解加上 $p_n$ 都還是解。所以「一般解＝一個特解＋所有齊次解」，而且找到哪一個特解都可以。
+
+@q rg3-14 | dm-recur-gf#3 | 3 | 計算
+Consider $a_n = 2a_{n-1} + 1 + 3^n$. Its characteristic root is 2. Which of the following statements are correct? Select all that apply.
+[x] A particular solution can be guessed in the form $A + B \cdot 3^n$, because neither 1 nor 3 is a characteristic root.
+[x] A particular solution is $a_n = -1 + 3^{n+1}$.
+[ ] The guess must include a term $n \cdot 3^n$.
+[x] The general solution is $a_n = \alpha 2^n - 1 + 3^{n+1}$.
+[x] With $a_0 = 2$, the solution is $a_n = 3^{n+1} - 1$.
+---
+「猜 $A+B3^n$」對：右邊是常數加 $3^n$，兩個底數 1、3 都不是特徵根，各猜一項就好。
+
+「特解 $-1+3^{n+1}$」對：常數部分 $A=2A+1$，$A=-1$；$3^n$ 部分 $B3^n=2B3^{n-1}+3^n$，除以 $3^{n-1}$：$3B=2B+3$，$B=3$。
+
+「要 $n3^n$」錯：只有 3 是特徵根時才要乘 $n$。
+
+「通解」對：加上齊次解 $\alpha2^n$。
+
+「$a_0=2$ 時 $a_n=3^{n+1}-1$」對：$\alpha-1+3=2$，$\alpha=0$，齊次部分消失。
+
+@q rg3-15 | dm-recur-gf#3 | 2 | 觀念
+一個非齊次遞迴（不看初始值）的特解只有一個。
+[ ] 對
+[x] 不對
+---
+任何特解加上任何齊次解都還是特解。例如 $a_n=2a_{n-1}+1$：$-1$ 是特解，$-1+5\cdot2^n$ 也是。我們只是挑最簡單的那個；初始值決定的是整個解，不是特解。
+
+@q rg3-16 | dm-recur-gf#3 | 2 | 計算
+Let $a_n=\frac12a_{n-1}+3$ with $a_0=0$. What does $a_n$ approach as $n\to\infty$?
+== 6
+---
+特解 $c=\frac12c+3$ → $c=6$；$a_n=6+\alpha(\frac12)^n$，$a_0=0$ → $\alpha=-6$。$(\frac12)^n\to0$，所以 $a_n\to6$。特徵根的絕對值小於 1 時，齊次部分會消失，只剩特解（不動點）。
+
+@q rg3-17 | dm-recur-gf#3 | 3 | 計算
+Let $a_n=3a_{n-1}-2a_{n-2}+1$ for $n\ge2$, with $a_0=a_1=0$. Find $a_5$.
+== 26
+---
+特徵根 1、2。右邊常數 $=1\cdot1^n$，1 是特徵根，特解猜 $cn$：$cn=3c(n-1)-2c(n-2)+1$ → $0=c+1$，$c=-1$。$a_n=\alpha+\beta2^n-n$：$\alpha+\beta=0$、$\alpha+2\beta-1=0$ → $\beta=1$、$\alpha=-1$。$a_n=2^n-n-1$，$a_5=32-5-1=26$（直接代：0,0,1,4,11,26 ✓）。
+
+@q rg3-18 | dm-recur-gf#3 | 1 | 情境
+A brick tower has 3 bricks in level 1, and each higher level has 2 more bricks than the one below. The total for the first $n$ levels satisfies $S_n=S_{n-1}+(2n+1)$, $S_0=0$. Find $S_{10}$.
+== 120
+---
+特解：右邊一次式、1 是特徵根，猜 $cn^2+dn$：得 $c=1$、$d=2$，$S_n=n^2+2n$。$S_{10}=100+20=120$。也可以用等差數列：$3+5+\cdots+21=\frac{(3+21)\cdot10}2=120$。
+
+@q rg3-19 | dm-recur-gf#3 | 2 | 計算
+Let $a_n=-a_{n-1}+2$ for $n\ge1$, with $a_0=0$. Find $a_{99}$.
+== 2
+---
+特解 $c=-c+2$ → $c=1$；齊次根 $-1$：$a_n=1+\alpha(-1)^n$，$a_0=0$ → $\alpha=-1$。$a_n=1-(-1)^n$：偶數項 0、奇數項 2。99 是奇數，$a_{99}=2$。
+
+@q rg3-20 | dm-recur-gf#3 | 3 | 計算
+The recurrence $a_n = 2a_{n-1} + n \cdot 3^n$ has a particular solution of the form $a_n = (cn + d) \cdot 3^n$. Find the constants $c$ and $d$.
+== 3,-6
+?? c,d
+---
+右邊是（一次式）×$3^n$，而 3 不是特徵根（齊次部分的根是 2），所以猜 $(cn+d)3^n$，不用再乘 $n$。
+
+代入、兩邊除以 $3^{n-1}$：$3(cn+d)=2\bigl(c(n-1)+d\bigr)+3n$。
+
+$n$ 的係數：$3c=2c+3$，$c=3$；常數項：$3d=-2c+2d$，$d=-2c=-6$。所以特解是 $(3n-6)3^n$。
+
+驗算 $n=1$：$(3-6)\cdot3=-9$；右邊 $2\cdot(-6)\cdot1+1\cdot3=-12+3=-9$ ✓。常見錯誤：只猜 $cn\cdot3^n$（漏了常數項），或把 3 誤當成特徵根而多乘一個 $n$。
+
+@q rg4-04 | dm-recur-gf#4 | 2 | 計算
+Let $T(n)=T(n/2)+n$ with $T(1)=1$, for $n$ a power of 2. Find $T(64)$.
+== 127
+---
+令 $n=2^k$、$t_k=T(2^k)$：$t_k=t_{k-1}+2^k$，$t_0=1$。一直加：$t_k=1+2+4+\cdots+2^k=2^{k+1}-1$，所以 $T(n)=2n-1$，$T(64)=127$。雖然有遞迴，總量是 $\Theta(n)$：每層的工作量是等比級數，第一層最大。
+
+@q rg4-05 | dm-recur-gf#4 | 3 | 計算
+Let $T(n)=3T(n/3)+n$ with $T(1)=1$, for $n$ a power of 3. Find $T(27)$.
+== 108
+---
+$n=3^k$：$t_k=3t_{k-1}+3^k$。底數 3 剛好是特徵根，最快的做法是兩邊除以 $3^k$：$\frac{t_k}{3^k}=\frac{t_{k-1}}{3^{k-1}}+1$，每次加 1，所以 $\frac{t_k}{3^k}=k+1$，$t_k=(k+1)3^k$。$T(n)=n(\log_3n+1)$，$T(27)=27\times4=108$。
+
+@q rg4-06 | dm-recur-gf#4 | 3 | 計算
+Let $T(n)=2T(n/2)+n^2$ with $T(1)=1$, for $n$ a power of 2. Which of the following statements are correct? Select all that apply.
+[x] $T(n)=2n^2-n$.
+[x] $T(4)=28$.
+[ ] $T(n)=n^2\lg n+n^2$.
+[x] $T(n)=\Theta(n^2)$.
+[ ] $T(n)=\Theta(n^2\lg n)$, because the recurrence splits into two halves.
+---
+令 $n=2^k$、$t_k=T(2^k)$：$t_k=2t_{k-1}+4^k$。
+
+「$2n^2-n$」對：4 不是特徵根（根是 2），特解猜 $c4^k$：$c=\frac c2+1$，$c=2$。$t_k=\alpha2^k+2\cdot4^k$，$t_0=1$ 得 $\alpha=-1$，$t_k=2\cdot4^k-2^k=2n^2-n$。
+
+「$T(4)=28$」對：$T(2)=2+4=6$，$T(4)=12+16=28=32-4$ ✓。
+
+「$n^2\lg n+n^2$」錯：$n=2$ 時是 8，但 $T(2)=6$。
+
+「$\Theta(n^2)$」對：主項 $2n^2$；也可由主定理，$a=2<b^d=4$，由最上層的 $n^2$ 主導。
+
+「$\Theta(n^2\lg n)$」錯：要 $a=b^d$（每層工作量一樣多）才會多出 $\lg n$；這裡每往下一層工作量減半，總和是等比級數。
+
+@q rg4-07 | dm-recur-gf#4 | 3 | 陷阱
+Consider $T(n) = 2T(n/2) + \frac{n}{\lg n}$ for $n = 2^k$, with $T(1) = 1$. Which of the following statements are correct? Select all that apply.
+[x] $T(n) = \Theta(n \lg \lg n)$.
+[ ] $T(n) = \Theta(n \lg n)$, by the second case of the master theorem.
+[ ] $T(n) = \Theta(n)$, because $\frac{n}{\lg n}$ is smaller than $n$.
+[x] With $t_k = T(2^k)$, we have $\frac{t_k}{2^k} = \frac{t_{k-1}}{2^{k-1}} + \frac{1}{k}$.
+[x] $\frac{n}{\lg n}$ is smaller than $n$ but not polynomially smaller, so the basic master theorem does not apply.
+---
+「$\Theta(n\lg\lg n)$」對、「$t_k/2^k$ 的遞迴」對：$t_k=2t_{k-1}+\frac{2^k}{k}$，兩邊除以 $2^k$ 就是那個式子；往下展開得 $\frac{t_k}{2^k}=1+\sum_{j=1}^{k}\frac1j=1+H_k\approx\ln k$。所以 $T(n)\approx n\ln k=n\ln\lg n$。
+
+「主定理第二種情況、$\Theta(n\lg n)$」錯：第二種情況要 $f(n)=\Theta(n^{\log_ba})=\Theta(n)$，但 $\frac n{\lg n}$ 比 $n$ 小一個 $\lg n$ 的倍數。
+
+「比 $n$ 小所以 $\Theta(n)$」錯：第一種情況要小到 $O(n^{1-\epsilon})$；只小一個 $\lg n$ 不夠。
+
+「不是多項式地小，主定理不適用」對：這正是它落在兩種情況之間的原因，要用換變數或遞迴樹自己算。
+
+@q rg4-08 | dm-recur-gf#4 | 2 | 比較
+演算法甲 $T(n)=7T(n/2)+\Theta(n^2)$，演算法乙 $T(n)=8T(n/2)+\Theta(n^2)$。兩個的漸近時間各是？
+[x] 甲 $\Theta(n^{\lg7})\approx\Theta(n^{2.81})$；乙 $\Theta(n^3)$
+[ ] 兩個都是 $\Theta(n^3)$，只差常數
+[ ] 甲 $\Theta(n^2\lg n)$；乙 $\Theta(n^3)$
+[ ] 兩個都是 $\Theta(n^2)$
+---
+兩個都是 $a>b^d$（$7>4$、$8>4$）：$\Theta(n^{\log_2a})$。$\log_28=3$、$\log_27\approx2.807$。少一次遞迴呼叫改的是**次方**，不是常數，所以 $n$ 很大時差很多。（甲就是 Strassen 矩陣乘法，乙是一般的分治矩陣乘法。）
+
+@q rg4-09 | dm-recur-gf#4 | 3 | 情境
+To find both the maximum and the minimum of $n$ numbers, split them into halves, solve each half, and combine the two results with 2 comparisons. The number of comparisons satisfies $T(n)=2T(n/2)+2$ with $T(2)=1$, for $n$ a power of 2. Find $T(16)$.
+== 22
+---
+$t_k=2t_{k-1}+2$，$t_1=1$。特解 $c=2c+2$ → $c=-2$；$t_k=\alpha2^k-2$，$t_1=2\alpha-2=1$ → $\alpha=\frac32$。$T(n)=\frac{3n}2-2$，$T(16)=22$。分開找最大、最小要 $2(n-1)=30$ 次，分治省了大約 $\frac n2$ 次。
+
+@q rg4-10 | dm-recur-gf#4 | 3 | 情境
+The worst-case number of comparisons of merge sort satisfies $C(n)=2C(n/2)+n-1$ with $C(1)=0$, for $n$ a power of 2. Find $C(8)$.
+== 17
+---
+$t_k=2t_{k-1}+2^k-1$。對 $2^k$（2 是根）猜 $ck2^k$，對 $-1$ 猜常數：得特解 $k2^k+1$。$t_k=\alpha2^k+k2^k+1$，$t_0=0$ → $\alpha=-1$。$C(n)=n\lg n-n+1$，$C(8)=24-8+1=17$。直接代：$C(2)=1$、$C(4)=5$、$C(8)=2\cdot5+7=17$ ✓。
+
+@q rg4-11 | dm-recur-gf#4 | 2 | 找錯
+To solve $T(n) = 2T(n/2) + n$, a student sets $n = 2^k$ and $t_k = T(2^k)$, and writes $t_k = 2t_{k-1} + k$. Which of the following statements are correct? Select all that apply.
+[x] The correct transformed recurrence is $t_k = 2t_{k-1} + 2^k$.
+[x] The correct recurrence gives $t_k = 2^k (k + t_0)$, so $T(n) = n \lg n + T(1) \cdot n$.
+[ ] The student's recurrence also leads to $T(n) = \Theta(n \lg n)$.
+[x] The student's recurrence solves to $\Theta(2^k)$, which is $\Theta(n)$, so the $\lg n$ factor is lost.
+[ ] Under the substitution, $T(n/2)$ becomes $t_{k/2}$.
+---
+「應該是 $t_k=2t_{k-1}+2^k$」對：額外工作 $n$ 也要換成 $2^k$；寫成 $k$ 等於把 $n$ 換成 $\lg n$。
+
+「解是 $2^k(k+t_0)$」對：除以 $2^k$ 得 $\frac{t_k}{2^k}=\frac{t_{k-1}}{2^{k-1}}+1$，每層加 1。
+
+「學生的也是 $n\lg n$」錯、「學生的是 $\Theta(n)$」對：$t_k=2t_{k-1}+k$ 的齊次部分 $2^k$ 主導，$k$ 那項只貢獻低階，結果 $\Theta(2^k)=\Theta(n)$，少了 $\lg n$。
+
+「$T(n/2)$ 變 $t_{k/2}$」錯：$n/2=2^{k-1}$，所以是 $t_{k-1}$。
+
+@q rg4-12 | dm-recur-gf#4 | 2 | 計算
+When solving recurrences by substituting $n = 2^k$, expressions like $3^{\lg n}$ appear. Which of the following statements are correct? Select all that apply.
+[x] $3^{\lg n} = n^{\lg 3}$.
+[x] $n^{\lg 3}$ is about $n^{1.585}$.
+[ ] $3^{\lg n} = n^3$.
+[x] For constants $a, b > 1$, $a^{\log_b n} = n^{\log_b a}$.
+[ ] $3^{\lg n} = 3n$.
+---
+「$3^{\lg n}=n^{\lg3}$」對：兩邊取 $\lg$：左邊 $\lg n\cdot\lg3$，右邊 $\lg3\cdot\lg n$，相同。
+
+「約 $n^{1.585}$」對：$\lg3\approx1.585$。
+
+「$=n^3$」錯：把底數和指數搞混了；$n=8$ 時 $3^{\lg8}=27$，$8^3=512$。
+
+「一般式 $a^{\log_bn}=n^{\log_ba}$」對：同樣取對數就看得出來。這就是主定理裡 $n^{\log_ba}$ 的來源。
+
+「$=3n$」錯：$n=8$ 時是 27，不是 24。
+
+@q rg4-13 | dm-recur-gf#4 | 3 | 計算
+Let $T(n)=4T(n/2)+n^2$ with $T(1)=1$, for $n$ a power of 2. Find $T(8)$.
+== 256
+---
+$t_k=4t_{k-1}+4^k$，4 是特徵根，除以 $4^k$：$\frac{t_k}{4^k}=\frac{t_{k-1}}{4^{k-1}}+1$ → $\frac{t_k}{4^k}=k+1$。$T(n)=n^2(\lg n+1)$，$T(8)=64\times4=256$。這是 $a=b^d$（$4=2^2$），多一個 $\lg n$。
+
+@q rg4-14 | dm-recur-gf#4 | 2 | 觀念
+$T(n)$ 是遞增的。只用 $n=2^k$ 解出 $T(n)=\Theta(f(n))$，而 $f(2n)=\Theta(f(n))$（例如 $n^2$、$n\lg n$），那對所有的 $n$ 都有 $T(n)=\Theta(f(n))$。
+[x] 對
+[ ] 不對
+---
+任何 $n$ 都夾在兩個 2 的次方之間：$2^k\le n<2^{k+1}$。$T$ 遞增，所以 $T(2^k)\le T(n)\le T(2^{k+1})$，兩邊都是 $\Theta(f(2^k))$（因為 $f$ 翻倍只差常數倍）。所以只算 2 的次方是安全的；$f$ 像 $2^n$ 那樣翻倍會變平方的，才要小心。
+
+@q rg4-15 | dm-recur-gf#4 | 3 | 證明
+證明：$a>1$ 時，$T(n)=aT(n/b)+1$、$T(1)=1$（$n=b^k$）的解是 $\Theta(n^{\log_ba})$。
+---
+令 $t_k=T(b^k)$：$t_k=at_{k-1}+1$，$t_0=1$。特解 $c=ac+1$ → $c=\frac{-1}{a-1}$；$t_k=\alpha a^k-\frac1{a-1}$，$t_0=1$ → $\alpha=\frac a{a-1}$。所以 $t_k=\frac{a^{k+1}-1}{a-1}=\Theta(a^k)$。$k=\log_bn$：$a^{\log_bn}=n^{\log_ba}$。每一層的工作很少，總量由最底層的 $a^k$ 個小問題決定。
+
+@q rg4-16 | dm-recur-gf#4 | 1 | 計算
+Let $T(n)=T(n/4)+1$ with $T(1)=1$, for $n$ a power of 4. Find $T(64)$.
+== 4
+---
+$t_k=t_{k-1}+1$，$t_0=1$，所以 $t_k=k+1$，$T(n)=\log_4n+1$。$64=4^3$，$T(64)=4$。直接想：$64\to16\to4\to1$，3 次再加 $T(1)$ 的 1。
+
+@q rg4-17 | dm-recur-gf#4 | 2 | 陷阱
+Consider $T(n) = 2T(n/4) + \sqrt{n}$ with $T(1) = 1$, for $n$ a power of 4. Which of the following statements are correct? Select all that apply.
+[x] $T(n) = \Theta(\sqrt{n} \lg n)$.
+[ ] $T(n) = \Theta(\sqrt{n})$, because $\sqrt{n}$ is much smaller than $n$.
+[x] Here $n^{\log_4 2} = n^{1/2}$, which grows exactly as fast as the extra term $\sqrt{n}$.
+[x] The exact solution is $T(n) = \sqrt{n}\,(\log_4 n + 1)$.
+[ ] $T(n) = \Theta(n)$.
+---
+「$\Theta(\sqrt n\lg n)$」對：遞迴樹每層的總工作都是 $\sqrt n$（第 $j$ 層有 $2^j$ 個、每個 $\sqrt{n/4^j}=\sqrt n/2^j$），共 $\log_4n+1$ 層。
+
+「$\sqrt n$ 小所以 $\Theta(\sqrt n)$」錯：要比的是 $\sqrt n$ 和 $n^{\log_ba}$，不是和 $n$。
+
+「$n^{\log_42}=n^{1/2}$」對：兩者一樣大，是主定理的相等情況，多一個 $\lg n$。
+
+「精確解 $\sqrt n(\log_4n+1)$」對：驗算 $T(4)=2\cdot1+2=4=2\cdot2$、$T(16)=2\cdot4+4=12=4\cdot3$。
+
+「$\Theta(n)$」錯：比 $n$ 小很多。
+
+@q rg4-18 | dm-recur-gf#4 | 2 | 計算
+Let $T(n)=8T(n/2)+n^2$ with $T(1)=1$, for $n$ a power of 2. Find $T(4)$.
+== 112
+---
+$t_k=8t_{k-1}+4^k$，4 不是根，猜 $c4^k$：$c=2c+1$ → $c=-1$。$t_k=\alpha8^k-4^k$，$t_0=1$ → $\alpha=2$：$T(n)=2n^3-n^2$，$T(4)=128-16=112$。直接代：$T(2)=8+4=12$、$T(4)=96+16=112$ ✓。
+
+@q rg4-19 | dm-recur-gf#4 | 2 | 追蹤
+Let $T(n)=2T(n/2)+3$ with $T(1)=2$, for $n$ a power of 2. Find $T(32)$.
+== 157
+---
+$t_k=2t_{k-1}+3$，特解 $-3$：$t_k=\alpha2^k-3$，$t_0=2$ → $\alpha=5$。$T(n)=5n-3$，$T(32)=157$。展開驗算：$T(2)=7$、$T(4)=17$、$T(8)=37$，每次「乘 2 加 3」✓。
+
+@q rg4-20 | dm-recur-gf#4 | 3 | 計算
+Consider $T(n) = 2T(n/2) + n \lg n$ with $T(1) = 0$, for $n$ a power of 2. Which of the following statements are correct? Select all that apply.
+[x] $T(n) = \Theta(n \lg^2 n)$.
+[ ] $T(n) = \Theta(n \lg n)$, by the second case of the basic master theorem.
+[x] With $t_k = T(2^k)$, we have $\frac{t_k}{2^k} = \frac{t_{k-1}}{2^{k-1}} + k$.
+[x] The exact solution is $T(n) = \frac{n \lg n\,(\lg n + 1)}{2}$.
+[ ] $T(n) = \Theta(n^2)$.
+---
+「$\Theta(n\lg^2n)$」對、「$t_k/2^k$ 的遞迴」對：$t_k=2t_{k-1}+k2^k$，除以 $2^k$ 就是那個式子；加起來 $\frac{t_k}{2^k}=1+2+\cdots+k=\frac{k(k+1)}2$。
+
+「主定理第二種情況、$\Theta(n\lg n)$」錯：基本版主定理的額外項要是 $n^d$ 的形式，這裡多一個 $\lg n$，不適用。（擴充版會給出 $\Theta(n\lg^2n)$。）
+
+「精確式」對：驗算 $T(2)=0+2\cdot1=2$、$T(4)=2\cdot2+4\cdot2=12$，公式給 $\frac{2\cdot1\cdot2}2=2$、$\frac{4\cdot2\cdot3}2=12$。
+
+「$\Theta(n^2)$」錯：每層的工作最多 $n\lg n$，只有 $\lg n$ 層。
+
+@q rg5-05 | dm-recur-gf#5 | 2 | 計算
+What is the coefficient of $x^{10}$ in the expansion of $\frac{x^3}{(1-x)^2}$?
+== 8
+---
+$\frac1{(1-x)^2}=\sum(n+1)x^n$。乘上 $x^3$ 是整個往後挪 3 格：$x^{10}$ 的係數＝原本 $x^7$ 的係數 $=7+1=8$。
+
+@q rg5-06 | dm-recur-gf#5 | 3 | 計算
+In how many ways can 10 be made from coins worth 1, 2, and 5, using any number of each coin and ignoring order?
+== 10
+---
+生成函數 $\frac1{(1-x)(1-x^2)(1-x^5)}$，要 $x^{10}$ 的係數。分 5 元用幾個：0 個 → 用 1、2 元湊 10，2 元用 0～5 個，6 種；1 個 → 湊 5，2 元用 0～2 個，3 種；2 個 → 湊 0，1 種。$6+3+1=10$（程式展開也是 10）。
+
+@q rg5-07 | dm-recur-gf#5 | 3 | 計算
+The sequence satisfies $a_n = a_{n-1} + 2$ for $n \ge 1$ with $a_0 = 1$. Let $G(x) = \sum_{n \ge 0} a_n x^n$. Which of the following statements are correct? Select all that apply.
+[x] $G(x) = \frac{1}{1 - x} + \frac{2x}{(1 - x)^2}$.
+[x] $a_n = 2n + 1$.
+[ ] $G(x) = \frac{1 + 2x}{1 - x}$.
+[x] $G(x) = \frac{1 + x}{(1 - x)^2}$.
+[ ] $G(x) = \frac{1}{1 - 3x}$.
+---
+「$G=\frac1{1-x}+\frac{2x}{(1-x)^2}$」對：兩邊乘 $x^n$、從 $n=1$ 加起來：$G-1=xG+\frac{2x}{1-x}$，所以 $G(1-x)=1+\frac{2x}{1-x}$。
+
+「$a_n=2n+1$」對：$\frac1{1-x}$ 的係數是 1，$\frac{2x}{(1-x)^2}=\sum2nx^n$ 的係數是 $2n$。
+
+「$\frac{1+2x}{1-x}$」錯：它的係數是 $1,3,3,3,\ldots$。
+
+「$\frac{1+x}{(1-x)^2}$」對：通分 $\frac{(1-x)+2x}{(1-x)^2}$，跟第一個是同一個函數。
+
+「$\frac1{1-3x}$」錯：那是 $3^n$ 的生成函數。
+
+@q rg5-08 | dm-recur-gf#5 | 2 | 追蹤
+Which of the following statements about generating functions $\sum_{n \ge 0} a_n x^n$ are correct? Select all that apply.
+[x] $\frac{1}{(1 - x)^2}$ is the generating function of $a_n = n + 1$.
+[x] $\frac{x}{(1 - x)^2}$ is the generating function of $0, 1, 2, 3, \ldots$
+[ ] The coefficient of $x^{10}$ in $\frac{1}{(1 - x)^2}$ is 10.
+[x] The coefficient of $x^n$ in $\frac{1}{(1 - x)^3}$ is $\binom{n+2}{2}$.
+[x] Multiplying a generating function by $x$ shifts its sequence one place to the right and puts a 0 in front.
+---
+「$\frac1{(1-x)^2}$ 是 $n+1$」對：$(1+x+x^2+\cdots)^2$ 中 $x^n$ 的係數是 $i+j=n$（$i,j\ge0$）的組數，有 $n+1$ 組。
+
+「$\frac x{(1-x)^2}$ 是 $0,1,2,\ldots$」對：乘 $x$ 等於整個往右移一格。
+
+「$x^{10}$ 的係數是 10」錯：是 $n+1=11$。
+
+「$\frac1{(1-x)^3}$ 的係數 $\binom{n+2}2$」對：一般 $\frac1{(1-x)^k}$ 的 $x^n$ 係數是 $\binom{n+k-1}{k-1}$，也就是 $n$ 個相同的球放進 $k$ 個箱子的方法數。
+
+「乘 $x$ 往右移、前面補 0」對：所以 $\frac x{(1-x)^2}$ 是 $0,1,2,\ldots$。
+
+@q rg5-09 | dm-recur-gf#5 | 2 | 計算
+Let $G(x)=\frac1{(1-x)(1-2x)}$. What is the coefficient of $x^5$?
+== 63
+---
+部分分式：$\frac1{(1-x)(1-2x)}=\frac2{1-2x}-\frac1{1-x}$，係數 $2\cdot2^n-1=2^{n+1}-1$，$n=5$ 時 63。也可以看成兩個數列相乘：$x^n$ 係數 $=\sum_{i=0}^n2^i\cdot1=2^{n+1}-1$。
+
+@q rg5-10 | dm-recur-gf#5 | 2 | 陷阱
+What is the coefficient of $x^3$ in the expansion of $\frac1{1+x}$?
+== -1
+== −1
+---
+$\frac1{1+x}=\frac1{1-(-x)}=1-x+x^2-x^3+\cdots$，係數是 $(-1)^n$，$x^3$ 的係數 $-1$。把它當成 $\frac1{1-x}$ 寫 1 是最常見的錯；分母的符號決定正負交替。
+
+@q rg5-11 | dm-recur-gf#5 | 3 | 計算
+How many solutions does $e_1+e_2+e_3+e_4=12$ have in which every $e_i$ is a **positive odd** integer?
+== 35
+---
+每個變數 $x+x^3+x^5+\cdots=\frac x{1-x^2}$，四個相乘 $\frac{x^4}{(1-x^2)^4}$。要 $x^{12}$ 的係數＝$\frac1{(1-x^2)^4}$ 的 $x^8$ 係數，令 $y=x^2$ 就是 $\frac1{(1-y)^4}$ 的 $y^4$ 係數 $\binom{4+3}{3}=35$（程式窮舉也是 35）。換個想法：$e_i=2f_i+1$，$f_1+\cdots+f_4=4$，同樣 35。
+
+@q rg5-12 | dm-recur-gf#5 | 3 | 情境
+Three distinguishable dice are rolled. In how many outcomes is the total 10?
+== 27
+---
+一顆骰子 $x+x^2+\cdots+x^6$，三顆相乘，要 $x^{10}$ 的係數。$=x^3\frac{(1-x^6)^3}{(1-x)^3}$，等於 $\frac{(1-x^6)^3}{(1-x)^3}$ 的 $x^7$ 係數：$\binom92-3\binom32=36-9=27$（程式展開也是 27）。骰子有順序（一顆一顆不同），生成函數相乘剛好數「有序的三元組」。
+
+@q rg5-13 | dm-recur-gf#5 | 2 | 觀念
+Let $A(x) = \sum_{n \ge 0} a_n x^n$ be the generating function of $a_0, a_1, a_2, \ldots$ Which of the following statements are correct? Select all that apply.
+[x] $\frac{A(x)}{1 - x}$ is the generating function of the prefix sums $a_0,\ a_0 + a_1,\ a_0 + a_1 + a_2, \ldots$
+[x] $(1 - x)A(x)$ is the generating function of $a_0,\ a_1 - a_0,\ a_2 - a_1, \ldots$
+[x] Dividing $A(x)$ by $1 - x$ twice gives the generating function of the sums of the prefix sums.
+[x] If every $a_n = 1$, then $\frac{A(x)}{1 - x} = \frac{1}{(1 - x)^2}$, the generating function of $1, 2, 3, \ldots$
+[ ] Multiplying $A(x)$ by $x$ moves every term one place earlier, so the new constant term is $a_1$.
+---
+「除以 $1-x$ 是前綴和」對：$\frac1{1-x}=1+x+x^2+\cdots$，乘起來 $x^n$ 的係數是 $a_0+a_1+\cdots+a_n$。
+
+「乘 $1-x$ 是相鄰的差」對：$x^n$ 的係數是 $a_n-a_{n-1}$，剛好是上一個的反運算。
+
+「除兩次是前綴和的前綴和」對：每除一次 $1-x$ 就取一次前綴和。
+
+「全是 1 時得 $1,2,3,\ldots$」對：$1,1,1$ 的前綴和就是 $1,2,3$。
+
+「乘 $x$ 往前移、常數項變成 $a_1$」錯：乘 $x$ 是往**後**移：$0,a_0,a_1,\ldots$。
+
+@q rg5-14 | dm-recur-gf#5 | 2 | 找錯
+A student wants the coefficient of $x^4$ in $(1 + x + x^2 + x^3)^2$ and uses the formula for $\frac{1}{(1 - x)^2}$, getting 5. Which of the following statements are correct? Select all that apply.
+[x] The correct coefficient of $x^4$ is 3, from the power pairs $(1, 3)$, $(2, 2)$, and $(3, 1)$.
+[x] The formula for $\frac{1}{(1 - x)^2}$ also counts the pairs $(0, 4)$ and $(4, 0)$, which do not exist here because each factor stops at $x^3$.
+[ ] The student's answer 5 is correct.
+[x] $1 + x + x^2 + x^3 = \frac{1 - x^4}{1 - x}$.
+[ ] The coefficient of $x^6$ in $(1 + x + x^2 + x^3)^2$ is 0.
+---
+「係數 3」對：兩個因子各挑一個次方，加起來是 4，每個次方最多 3。
+
+「多算了 $(0,4)$、$(4,0)$」對：$\frac1{1-x}$ 是無限多項，沒有上限。
+
+「5 對」錯。
+
+「$\frac{1-x^4}{1-x}$」對：等比級數的有限和。用它展開 $\frac{(1-x^4)^2}{(1-x)^2}$，再扣掉超過的部分：$5-2\cdot1=3$。
+
+「$x^6$ 係數是 0」錯：$(3,3)$ 一組，係數 1。完整展開是 $1,2,3,4,3,2,1$。
+
+@q rg5-15 | dm-recur-gf#5 | 2 | 證明
+用「兩個數列相乘」的意思證明 $\frac1{(1-x)^2}=\sum_{n\ge0}(n+1)x^n$。
+---
+$\frac1{(1-x)^2}=\Big(\sum_ix^i\Big)\Big(\sum_jx^j\Big)$。乘開後 $x^n$ 的係數是所有 $i+j=n$（$i,j\ge0$）的項 $1\cdot1$ 加起來，$i$ 可以是 $0,1,\dots,n$，共 $n+1$ 個。所以係數是 $n+1$。一般：兩個生成函數相乘，係數是 $\sum_{i}a_ib_{n-i}$（卷積）。
+
+@q rg5-16 | dm-recur-gf#5 | 1 | 觀念
+$A(x)$ 是 $a_0,a_1,a_2,\dots$ 的生成函數。$x\cdot A(x)$ 是哪個數列的生成函數？
+[x] $0,a_0,a_1,a_2,\dots$
+[ ] $a_1,a_2,a_3,\dots$
+[ ] $a_0,a_0,a_1,a_1,\dots$
+[ ] $0,a_1,2a_2,3a_3,\dots$
+---
+乘 $x$ 讓每一項的次方加 1：原本 $a_ix^i$ 變成 $a_ix^{i+1}$，所以第 $n$ 個係數是 $a_{n-1}$，最前面補 0。解遞迴時 $a_{n-1}$ 那一項就是靠這個變成 $xG(x)$。
+
+@q rg5-17 | dm-recur-gf#5 | 2 | 情境
+只有 3 元和 5 元的郵票（每種不限張數），要剛好湊出 19 元，有幾種組合？
+== 1
+---
+生成函數 $\frac1{(1-x^3)(1-x^5)}$ 的 $x^{19}$ 係數。看 5 元用幾張：0 張剩 19（不是 3 的倍數）；1 張剩 14（不是）；2 張剩 9＝3×3 ✓；3 張剩 4（不是）。只有 1 種：兩張 5 元＋三張 3 元。
+
+@q rg5-18 | dm-recur-gf#5 | 3 | 計算
+$e_1+e_2+e_3=15$，每個 $0\le e_i\le6$ 的整數。有幾組解？
+== 10
+---
+每個因子 $1+x+\cdots+x^6=\frac{1-x^7}{1-x}$，三個相乘 $\frac{(1-x^7)^3}{(1-x)^3}$。$(1-x^7)^3=1-3x^7+3x^{14}-\cdots$，配上 $\frac1{(1-x)^3}$ 的係數 $\binom{n+2}2$：$\binom{17}2-3\binom{10}2+3\binom32=136-135+9=10$（程式窮舉也是 10）。
+
+@q rg5-19 | dm-recur-gf#5 | 2 | 計算
+Let $F_0 = 0$, $F_1 = 1$, and $F_n = F_{n-1} + F_{n-2}$, and let $F(x) = \sum_{n \ge 0} F_n x^n$. Which of the following statements are correct? Select all that apply.
+[x] $F(x) = \frac{x}{1 - x - x^2}$.
+[x] Summing the recurrence times $x^n$ for $n \ge 2$ gives $F(x) - x = x F(x) + x^2 F(x)$.
+[ ] $F(x) = \frac{1}{1 - x - x^2}$.
+[x] $\frac{1}{1 - x - x^2}$ is the generating function of $1, 1, 2, 3, 5, \ldots$, that is, of $F_{n+1}$.
+[ ] $F(x) = \frac{x}{(1 - x)^2}$.
+---
+「$F=\frac x{1-x-x^2}$」對、「推導」對：左邊 $\sum_{n\ge2}F_nx^n=F-F_0-F_1x=F-x$；右邊 $x(F-F_0)+x^2F=xF+x^2F$。移項得 $F(1-x-x^2)=x$。
+
+「$\frac1{1-x-x^2}$」錯、「它是 $F_{n+1}$ 的」對：$\frac{F(x)}{x}$ 就是整個往前移一格，$1,1,2,3,5,\ldots$。
+
+「$\frac x{(1-x)^2}$」錯：那是 $0,1,2,3,\ldots$。
+
+@q rg5-20 | dm-recur-gf#5 | 1 | 計算
+$(1+x^2)^5$ 展開後，$x^6$ 的係數是多少？
+== 10
+---
+$(1+y)^5$ 令 $y=x^2$，$x^6=y^3$，係數 $\binom53=10$。$x$ 的奇數次方係數全是 0。
+
+@q rg6-04 | dm-recur-gf#6 | 2 | 計算
+用 a、b、c、d 組成長度 3 的字串，a 出現**奇數**次。有幾個？
+== 28
+---
+a 奇數次的指數生成函數 $\frac{e^x-e^{-x}}2$，b、c、d 各 $e^x$：$\frac{e^x-e^{-x}}2e^{3x}=\frac{e^{4x}-e^{2x}}2$，$\frac{x^n}{n!}$ 係數 $\frac{4^n-2^n}2$，$n=3$ 時 $\frac{64-8}2=28$。直接數：a 一次 $3\cdot3^2=27$、a 三次 1，共 28 ✓。
+
+@q rg6-05 | dm-recur-gf#6 | 3 | 計算
+用 a、b、c 組成長度 4 的字串，a 出現偶數次、而且 b 出現奇數次。有幾個？
+== 20
+---
+$\frac{e^x+e^{-x}}2\cdot\frac{e^x-e^{-x}}2\cdot e^x=\frac{e^{2x}-e^{-2x}}4e^x=\frac{e^{3x}-e^{-x}}4$。係數 $\frac{3^n-(-1)^n}4$，$n=4$：$\frac{81-1}4=20$（程式列舉也是 20）。
+
+@q rg6-06 | dm-recur-gf#6 | 3 | 陷阱
+從 a、b、c 三種字母裡選 4 個（可以重複、**不管順序**，例如 aabc 和 abca 算同一種），a 至少要有一個。有幾種選法？
+== 10
+---
+不管順序 → 用一般生成函數：$\frac x{1-x}\cdot\frac1{1-x}\cdot\frac1{1-x}$ 的 $x^4$ 係數＝$\frac1{(1-x)^3}$ 的 $x^3$ 係數 $\binom52=10$。如果用指數生成函數會算成「字串」的個數 $3^4-2^4=65$，把 aabc、abca 算成不同的。先問順序算不算，再選工具。
+
+@q rg6-07 | dm-recur-gf#6 | 1 | 計算
+某數列的指數生成函數是 $e^{3x}$。$a_n$ 是多少？
+[x] $3^n$
+[ ] $\frac{3^n}{n!}$
+[ ] $3n$
+[ ] $1$
+---
+$e^{3x}=\sum\frac{(3x)^n}{n!}=\sum3^n\frac{x^n}{n!}$，$\frac{x^n}{n!}$ 前面的係數是 $3^n$。$\frac{3^n}{n!}$ 是 $x^n$ 的係數，答案要的是 $\frac{x^n}{n!}$ 的係數。
+
+@q rg6-08 | dm-recur-gf#6 | 2 | 計算
+BANANA 的 6 個字母有幾種排列？用指數生成函數的想法：A 恰 3 個、N 恰 2 個、B 恰 1 個。
+== 60
+---
+三個因子 $\frac{x^3}{3!}\cdot\frac{x^2}{2!}\cdot\frac{x}{1!}=\frac{x^6}{3!\,2!\,1!}$，換成 $\frac{x^6}{6!}$ 的係數：$\frac{6!}{3!\,2!\,1!}=\frac{720}{12}=60$。這就是多重集合排列數，EGF 的 $\frac1{k!}$ 剛好負責「同一個字母互換不算新的」。
+
+@q rg6-09 | dm-recur-gf#6 | 3 | 計算
+用 a、b、c 組成長度 5 的字串，a **最多**出現 2 次。有幾個？
+== 192
+---
+a 的 EGF：$1+x+\frac{x^2}{2!}$；b、c 各 $e^x$。$\Big(1+x+\frac{x^2}2\Big)e^{2x}$ 的 $\frac{x^5}{5!}$ 係數 $=\binom50 2^5+\binom51 2^4+\binom52 2^3=32+80+80=192$。驗算：全部 $243$，a 出現 3、4、5 次的有 $\binom532^2+\binom542+1=40+10+1=51$，$243-51=192$ ✓。
+
+@q rg6-10 | dm-recur-gf#6 | 3 | 情境
+長度 4 的 DNA 序列（A、C、G、T），A 和 G 都出現偶數次（0 次也算）。有幾種？
+== 72
+---
+$\Big(\frac{e^x+e^{-x}}2\Big)^2e^{2x}=\frac{e^{2x}+2+e^{-2x}}4e^{2x}=\frac{e^{4x}+2e^{2x}+1}4$。$n\ge1$ 時常數項不影響，係數 $\frac{4^n+2\cdot2^n}4$，$n=4$：$\frac{256+32}4=72$（程式列舉也是 72）。
+
+@q rg6-11 | dm-recur-gf#6 | 2 | 找錯
+How many strings of length 3 contain each of the letters `a`, `b`, `c` exactly once? A student multiplies ordinary generating functions $x \cdot x \cdot x = x^3$ and reads off the coefficient 1. Which of the following statements are correct? Select all that apply.
+[x] The correct answer is $3! = 6$.
+[x] With exponential generating functions, each letter contributes $\frac{x}{1!}$; the product is $x^3$, and the coefficient of $\frac{x^3}{3!}$ is 6.
+[ ] The student's answer 1 is correct.
+[x] Ordinary generating functions count selections in which order does not matter, so they give 1 here.
+[x] For length 4 with each of `a`, `b`, `c`, `d` exactly once, the same exponential method gives 24.
+---
+「答案 6」對：三個字母排列。
+
+「用指數生成函數得 6」對：$x^3=6\cdot\frac{x^3}{3!}$。排列問題（有順序）要用指數生成函數。
+
+「1 正確」錯：1 是「選出 a、b、c 各一個」的方法數，沒管順序。
+
+「一般生成函數不管順序」對：所以它算的是組合，不是排列。
+
+「長度 4 得 24」對：$x^4=24\cdot\frac{x^4}{4!}$，就是 $4!$。
+
+@q rg6-12 | dm-recur-gf#6 | 3 | 證明
+用「數字串」的想法說明 $e^{ax}\cdot e^{bx}=e^{(a+b)x}$ 對應的恆等式 $\sum_k\binom nk a^kb^{n-k}=(a+b)^n$。
+---
+右邊：長度 $n$ 的字串、每一位從 $a+b$ 種字母選，有 $(a+b)^n$ 個。左邊：把字母分成甲組 $a$ 種、乙組 $b$ 種。先決定哪 $k$ 個位置放甲組（$\binom nk$），甲組位置各 $a$ 種、乙組各 $b$ 種：$\binom nka^kb^{n-k}$，對 $k$ 加總。兩邊數的是同一堆字串。EGF 相乘的係數就是 $\sum_k\binom nk(\cdot)(\cdot)$ 這種形式。
+
+@q rg6-13 | dm-recur-gf#6 | 3 | 比較
+把 5 個球放進 3 個**不同**的箱子，每箱至少 1 個。球**都不同**時有幾種？球**都一樣**時有幾種？
+[x] 不同的球 150 種；一樣的球 6 種
+[ ] 不同的球 6 種；一樣的球 150 種
+[ ] 兩種都是 150
+[ ] 不同的球 243 種；一樣的球 21 種
+---
+不同的球：每個球選箱子＝長度 5、用 3 個字母、每個字母至少一次的字串，EGF $(e^x-1)^3$：$3^5-3\cdot2^5+3=150$。一樣的球：只看每箱幾個，$e_1+e_2+e_3=5$、$e_i\ge1$，一般生成函數 $\frac{x^3}{(1-x)^3}$ 的 $x^5$ 係數 $\binom42=6$。243 和 21 是沒有「至少 1 個」的限制。
+
+@q rg6-14 | dm-recur-gf#6 | 2 | 觀念
+數列 $a_n=n!$ 的指數生成函數 $\sum a_n\frac{x^n}{n!}$ 是什麼？
+[x] $\frac1{1-x}$
+[ ] $e^x$
+[ ] $e^{x}-1$
+[ ] $\frac1{(1-x)^2}$
+---
+$\sum n!\frac{x^n}{n!}=\sum x^n=\frac1{1-x}$。$n$ 個東西的排列數 $n!$，EGF 就是最簡單的 $\frac1{1-x}$。$e^x$ 是 $a_n=1$ 的 EGF。
+
+@q rg6-15 | dm-recur-gf#6 | 2 | 觀念
+When words are enumerated with exponential generating functions, each letter contributes a factor that depends on how many times it may appear. Which of the following statements are correct? Select all that apply.
+[x] For "the letter appears at least twice", the factor is $e^x - 1 - x$.
+[x] For "the letter appears at most once", the factor is $1 + x$.
+[x] For "the letter appears exactly twice", the factor is $\frac{x^2}{2!}$.
+[x] For "the letter appears an even number of times", the factor is $\frac{e^x + e^{-x}}{2}$.
+[ ] For "the letter may appear any number of times", the factor is $\frac{1}{1-x}$.
+---
+每個字母的因子是 $\sum\frac{x^k}{k!}$，只加總允許的出現次數 $k$。
+
+「至少兩次：$e^x-1-x$」對：從 $e^x$ 扣掉 $k=0$、$k=1$ 兩項。
+
+「至多一次：$1+x$」對：$k=0$ 或 1。
+
+「剛好兩次：$\frac{x^2}{2!}$」對：只有 $k=2$ 一項。
+
+「偶數次：$\frac{e^x+e^{-x}}2$」對：奇數次的項正負抵消。
+
+「任意次數：$\frac1{1-x}$」錯：那是一般生成函數的寫法；指數生成函數要 $\sum\frac{x^k}{k!}=e^x$。
+
+@q rg6-16 | dm-recur-gf#6 | 2 | 計算
+用 a、b 組成長度 4 的字串，兩個字母**都至少出現 2 次**。有幾個？
+== 6
+---
+$(e^x-1-x)^2$ 的 $\frac{x^4}{4!}$ 係數。長度 4、兩個都至少 2 次，只能各 2 次：$\frac{x^2}{2!}\cdot\frac{x^2}{2!}=\frac{x^4}{4}=6\cdot\frac{x^4}{4!}$，係數 6。就是 aabb 的排列 $\frac{4!}{2!2!}=6$。
+
+@q rg6-17 | dm-recur-gf#6 | 2 | 陷阱
+用指數生成函數算字串數，把 $\hat G(x)$ 展開後 $x^n$ 前面的係數是 $c$。答案是多少？
+[x] $c\cdot n!$
+[ ] $c$
+[ ] $\frac c{n!}$
+[ ] $c\cdot n$
+---
+EGF 的定義是 $\sum a_n\frac{x^n}{n!}$，所以 $x^n$ 的係數是 $\frac{a_n}{n!}$，答案 $a_n=c\cdot n!$。例：$e^{2x}$ 的 $x^3$ 係數 $\frac86$，乘 $3!$ 得 8（a、b 長度 3 的字串）。
+
+@q rg6-18 | dm-recur-gf#6 | 2 | 計算
+用 a、b、c 組成長度 5 的字串，a **恰好**出現 2 次。有幾個？
+== 80
+---
+EGF $\frac{x^2}{2!}e^{2x}$，$\frac{x^5}{5!}$ 係數：$\frac{x^2}{2}\cdot\sum2^m\frac{x^m}{m!}$ 取 $m=3$：$\frac{8}{2\cdot6}x^5=\frac23x^5$，乘 $5!$ 得 80。直接數：選 a 的位置 $\binom52=10$，其他 3 位各 2 種 $2^3=8$，$10\times8=80$ ✓。
+
+@q rg6-19 | dm-recur-gf#6 | 1 | 計算
+用 0、1、2、3 組成長度 5 的字串，0 **至少**出現一次。有幾個？
+== 781
+---
+EGF $(e^x-1)e^{3x}=e^{4x}-e^{3x}$，係數 $4^n-3^n$，$n=5$：$1024-243=781$。就是「全部」減「完全沒有 0」。
+
+@q rg6-20 | dm-recur-gf#6 | 3 | 觀念
+Let $\hat A(x)=\sum_{n\ge0}a_n\frac{x^n}{n!}$ and $\hat B(x)=\sum_{n\ge0}b_n\frac{x^n}{n!}$ be exponential generating functions. Which of the following statements about $\hat A(x)\hat B(x)$ are correct? Select all that apply.
+[x] Its coefficient of $\frac{x^n}{n!}$ is $\sum_{k=0}^n\binom nka_kb_{n-k}$.
+[ ] It is the exponential generating function of the ordinary convolution $c_n=\sum_{k=0}^na_kb_{n-k}$.
+[x] If $a_n=b_n=1$ for all $n$, its coefficient of $\frac{x^n}{n!}$ is $2^n$.
+[x] If $b_0=1$ and $b_n=0$ for all $n\ge1$, the product equals $\hat A(x)$.
+[x] Its coefficient of $x^n$ is $\sum_{k=0}^n\frac{a_kb_{n-k}}{k!\,(n-k)!}$.
+---
+「$\sum\binom nka_kb_{n-k}$」對：$\frac{x^k}{k!}\cdot\frac{x^{n-k}}{(n-k)!}=\binom nk\frac{x^n}{n!}$。意思是 $n$ 個位置裡挑 $k$ 個給第一部分，各自排。
+
+「是一般卷積的指數生成函數」錯：一般卷積少了 $\binom nk$；那是一般生成函數相乘的結果。
+
+「全是 1 時係數 $2^n$」對：$e^x\cdot e^x=e^{2x}$；也就是 $\sum_k\binom nk=2^n$。
+
+「$b$ 只有 $b_0=1$ 時乘積就是 $\hat A$」對：$\hat B(x)=1$。
+
+「$x^n$ 的係數」對：還沒乘 $n!$ 的版本，乘上 $n!$ 就回到第一條。
+
+@q nt1-05 | dm-nt-algebra#1 | 1 | 計算
+Use the Euclidean algorithm to compute $\gcd(1071,462)$. What is the answer?
+== 21
+---
+$1071=2\cdot462+147$；$462=3\cdot147+21$；$147=7\cdot21+0$。餘數變 0 時，最後的除數 21 就是 gcd（共 3 次除法）。
+
+@q nt1-06 | dm-nt-algebra#1 | 2 | 陷阱
+$6x+9y=7$ 有沒有整數解（$x,y$ 可以是負數）？
+[x] 沒有：左邊一定是 $\gcd(6,9)=3$ 的倍數，7 不是
+[ ] 有：$x$、$y$ 可以取負數，總湊得出來
+[ ] 有：Bézout 說 $6x+9y$ 可以是任何數
+[ ] 沒有：因為 6 和 9 都比 7 大
+---
+3 整除 6 和 9，就整除 $6x+9y$。Bézout 只保證湊得出 $\gcd=3$（例如 $6\cdot(-1)+9\cdot1=3$），所以湊得出的是 3 的所有倍數，7 不行。$ax+by=c$ 有整數解 ⇔ $\gcd(a,b)\mid c$。係數比 $c$ 大沒關係：$6\cdot(-1)+9\cdot1=3<6$。
+
+@q nt1-07 | dm-nt-algebra#1 | 3 | 追蹤
+When the Euclidean algorithm computes $\gcd(89,55)$, how many divisions does it perform, including the last one with remainder 0?
+== 9
+---
+89、55、34、21、13、8、5、3、2、1 是費氏數，每次商都是 1（最後一次 $2=2\cdot1+0$）：$89=55+34$、$55=34+21$、…、$3=2+1$、$2=2\cdot1$，共 9 次。相鄰的費氏數是讓除法次數最多的情況（Lamé），因為每次餘數只少一點點。
+
+@q nt1-08 | dm-nt-algebra#1 | 2 | 情境
+只有一個 6 公升和一個 10 公升的桶子（沒有刻度），可以裝滿、倒掉、互倒。下面哪一個量**量不出來**（放在某個桶子裡）？
+[x] 3 公升
+[ ] 4 公升
+[ ] 2 公升
+[ ] 8 公升
+---
+能量出的都是 $6x+10y$ 的形式，而它一定是 $\gcd(6,10)=2$ 的倍數，所以奇數公升都不行。2 的倍數（不超過 10）都量得出來，例如 4：裝滿 10、倒進 6 → 剩 4。
+
+@q nt1-09 | dm-nt-algebra#1 | 1 | 計算
+What is $\operatorname{lcm}(84,120)$?
+== 840
+---
+先求 $\gcd(84,120)$：$120=1\cdot84+36$、$84=2\cdot36+12$、$36=3\cdot12$，gcd 是 12。$\operatorname{lcm}=\frac{84\times120}{12}=840$。
+
+@q nt1-10 | dm-nt-algebra#1 | 2 | 證明
+證明：對任何正整數 $n$，$\gcd(n,n+1)=1$。
+---
+設 $d$ 整除 $n$ 和 $n+1$，則 $d$ 整除它們的差 $(n+1)-n=1$，所以 $d=1$。也可以用歐幾里得一步：$\gcd(n+1,n)=\gcd(n,1)=1$。相鄰的整數一定互質。
+
+@q nt1-11 | dm-nt-algebra#1 | 1 | 找錯
+小明算 $\gcd(48,18)$：「$48=2\cdot18+12$、$18=1\cdot12+6$、$12=2\cdot6+0$，最後的餘數是 0，所以 gcd 是 0。」錯在哪？
+[x] 答案是最後一個**不是 0** 的餘數（也就是最後的除數）6，不是 0
+[ ] 沒錯
+[ ] 第一步就錯了，應該是 $48=3\cdot18-6$
+[ ] 答案應該是 12
+---
+餘數變 0 代表上一個除數剛好整除，它就是 gcd：$\gcd(48,18)=\gcd(18,12)=\gcd(12,6)=\gcd(6,0)=6$。gcd 不可能是 0，1 一定是公因數。
+
+@q nt1-12 | dm-nt-algebra#1 | 2 | 計算
+Let $a=2^3\cdot3^2\cdot5$ and $b=2\cdot3^4\cdot7$. What are $\gcd(a,b)$ and $\operatorname{lcm}(a,b)$?
+== 18,22680
+?? gcd,lcm
+---
+用算術基本定理：gcd 每個質數取**小**的次方，lcm 取**大**的次方。$\gcd=2^1\cdot3^2=18$（5、7 只有一邊有，取 0 次）；$\operatorname{lcm}=2^3\cdot3^4\cdot5\cdot7=8\cdot81\cdot35=22680$。驗算 $\gcd\cdot\operatorname{lcm}=ab$ ✓。
+
+@q nt1-13 | dm-nt-algebra#1 | 2 | 反例
+$\gcd(a,b)=1$ 而且 $\gcd(b,c)=1$。一定有 $\gcd(a,c)=1$ 嗎？
+[x] 不一定：$a=c=2$、$b=3$，$\gcd(2,3)=\gcd(3,2)=1$，但 $\gcd(2,2)=2$
+[ ] 一定：互質會傳遞
+[ ] 一定：三個數兩兩互質
+[ ] 不一定，但只有 $a=c$ 時才會不互質
+---
+「互質」不遞移：$b$ 跟兩邊都沒有共同因數，不代表兩邊彼此沒有。$a=4$、$b=3$、$c=6$ 也是反例（$a\ne c$）。
+
+@q nt1-14 | dm-nt-algebra#1 | 3 | 計算
+已知 $252\cdot4+198\cdot(-5)=18=\gcd(252,198)$。下面哪一組也滿足 $252s+198t=18$？
+[x] $s=15$、$t=-19$
+[ ] $s=5$、$t=-6$
+[ ] $s=4+198$、$t=-5+252$
+[ ] $s=4+11$、$t=-5+14$
+---
+$s$ 加 $k$、$t$ 減 $j$ 要保持總和不變：$252k=198j$，兩邊除以 18 得 $14k=11j$，最小 $k=11$、$j=14$。所以 $s=4+11=15$、$t=-5-14=-19$，驗算 $3780-3762=18$ ✓。一般解 $s=4+11m$、$t=-5-14m$：$s$ 加的時候 $t$ 要減。第三、「$s=4+11$、$t=-5+14$」兩邊都用加的，總和會變大；$s=5,t=-6$ 代進去是 72。
+
+@q nt1-15 | dm-nt-algebra#1 | 2 | 比較
+「只用減法」的 gcd（每次大的減小的，直到一樣）和「用除法」的歐幾里得演算法，對 $n$ 位以內的數，最壞情況下各要幾步？
+[x] 減法版可能要 $O(n)$ 步（例如 $\gcd(n,1)$），除法版只要 $O(\log n)$ 步
+[ ] 兩個都是 $O(\log n)$
+[ ] 兩個都是 $O(n)$
+[ ] 減法版 $O(\log n)$，除法版 $O(n)$
+---
+$\gcd(1000,1)$ 用減法要減 999 次；用除法一步 $1000=1000\cdot1+0$。一次除法等於一口氣做完很多次減法。除法版每兩步至少讓數字減半，所以是 $O(\log n)$。
+
+@q nt1-16 | dm-nt-algebra#1 | 3 | 情境
+Two meshing gears have 48 and 36 teeth and start with their marks lined up. When the marks first line up again, how many turns has the larger gear made?
+== 3
+---
+兩個齒輪每轉過一齒、對方也轉過一齒。要兩邊同時回到起點，轉過的齒數要是 48 和 36 的公倍數，最小 $\operatorname{lcm}(48,36)=\frac{48\cdot36}{12}=144$ 齒。大齒輪轉 $144/48=3$ 圈，小齒輪轉 4 圈。
+
+@q nt1-17 | dm-nt-algebra#1 | 3 | 計算
+What is $\gcd(2^{12}-1,\ 2^8-1)$?
+== 15
+---
+$2^{12}-1=2^4(2^8-1)+(2^4-1)$，所以 $\gcd(2^{12}-1,2^8-1)=\gcd(2^8-1,2^4-1)$；$2^8-1=(2^4+1)(2^4-1)$，整除，答案 $2^4-1=15$。指數上剛好在做 $\gcd(12,8)=4$：$\gcd(2^a-1,2^b-1)=2^{\gcd(a,b)}-1$。直接算：$\gcd(4095,255)=15$ ✓。
+
+@q nt1-18 | dm-nt-algebra#1 | 1 | 計算
+What is $\gcd(84,126,210)$?
+== 42
+---
+$\gcd(a,b,c)=\gcd(\gcd(a,b),c)$。$\gcd(84,126)$：$126=84+42$、$84=2\cdot42$，得 42；$\gcd(42,210)=42$（$210=5\cdot42$）。
+
+@q nt1-19 | dm-nt-algebra#1 | 3 | 追蹤
+用延伸歐幾里得演算法倒推，找 $99s+78t=\gcd(99,78)$ 的那一組 $s,t$。
+[x] $s=-11$、$t=14$
+[ ] $s=14$、$t=-11$
+[ ] $s=-3$、$t=4$
+[ ] $s=11$、$t=-14$
+---
+$99=78+21$、$78=3\cdot21+15$、$21=15+6$、$15=2\cdot6+3$、$6=2\cdot3$，gcd 是 3。倒推：$3=15-2\cdot6=15-2(21-15)=3\cdot15-2\cdot21=3(78-3\cdot21)-2\cdot21=3\cdot78-11\cdot21=3\cdot78-11(99-78)=14\cdot78-11\cdot99$。驗算 $-1089+1092=3$ ✓。第二個把 $s,t$ 對調了；最後一個正負號全反，得 $-3$。
+
+@q nt1-20 | dm-nt-algebra#1 | 2 | 觀念
+$d$ 整除 $a$ 也整除 $b$，那 $d$ 一定整除 $\gcd(a,b)$。
+[x] 對
+[ ] 不對
+---
+Bézout：$\gcd(a,b)=sa+tb$，$d$ 整除 $a$、$b$ 就整除 $sa+tb$。所以 gcd 不只是「最大的」公因數，還是所有公因數的倍數。例：12 和 18 的公因數 1、2、3、6 都整除 6。
+
+@q nt2-08 | dm-nt-algebra#2 | 3 | 陷阱
+$6x\equiv6\pmod9$。小明兩邊除以 6，說 $x\equiv1\pmod9$。在 $0\le x<9$ 裡，真正的解有哪些？
+[x] 1、4、7
+[ ] 只有 1
+[ ] 沒有解
+[ ] 0～8 全部
+---
+同餘不能直接約分：6 在模 9 下沒有反元素（$\gcd(6,9)=3$）。正確做法是整個除以 3：$2x\equiv2\pmod3$，2 在模 3 可逆，$x\equiv1\pmod3$，所以 $x=1,4,7$。$d=\gcd(6,9)=3$ 整除 6，剛好 3 個解，跟「恰好 $d$ 個解」一致。
+
+@q nt2-09 | dm-nt-algebra#2 | 2 | 計算
+What is the last digit of $7^{2026}$?
+== 9
+---
+個位數＝模 10。$\gcd(7,10)=1$、$\varphi(10)=4$，所以 $7^4\equiv1\pmod{10}$（實際 $7,9,3,1$ 四個一循環）。$2026=4\cdot506+2$，$7^{2026}\equiv7^2=49\equiv9$。
+
+@q nt2-10 | dm-nt-algebra#2 | 3 | 計算
+What are the last two digits of $3^{2026}$?
+== 29
+---
+模 100，$\varphi(100)=100\cdot\frac12\cdot\frac45=40$，$3^{40}\equiv1$。$2026=40\cdot50+26$，算 $3^{26}\bmod100$：$3^5=243\equiv43$、$3^{10}\equiv43^2=1849\equiv49$、$3^{20}\equiv49^2=2401\equiv1$，$3^{26}=3^{20}\cdot3^5\cdot3\equiv43\cdot3=129\equiv29$（程式直接算也是 29）。
+
+@q nt2-11 | dm-nt-algebra#2 | 1 | 情境
+今天是星期二。100 天後是星期幾？
+[x] 星期四
+[ ] 星期二
+[ ] 星期三
+[ ] 星期五
+---
+星期每 7 天重複，看 $100\bmod7$：$100=14\cdot7+2$，往後 2 天，星期二 → 星期四。
+
+@q nt2-12 | dm-nt-algebra#2 | 2 | 情境
+A basket of eggs leaves 1 egg over when counted by twos, 2 over when counted by threes, and 4 over when counted by fives. What is the smallest possible number of eggs?
+== 29
+---
+每一個都是「差 1 個就整除」：$x+1$ 同時是 2、3、5 的倍數，也就是 30 的倍數。最小 $x=29$。2、3、5 兩兩互質，中國剩餘定理說模 30 只有一個解，所以下一個是 59。
+
+@q nt2-13 | dm-nt-algebra#2 | 3 | 計算
+How many positive integers $n$ satisfy $\varphi(n)=4$?
+== 4
+---
+$n=p_1^{k_1}\cdots$ 時 $\varphi(n)=\prod p_i^{k_i-1}(p_i-1)$。要乘起來是 4：質數只能用 $p-1\mid4$ 的 2、3、5。逐一湊：$5$（$\varphi=4$）、$8=2^3$（$4$）、$10=2\cdot5$（$1\cdot4$）、$12=4\cdot3$（$2\cdot2$）。共 4 個：5、8、10、12（程式搜到 200 也只有這 4 個）。
+
+@q nt2-14 | dm-nt-algebra#2 | 2 | 找錯
+小明用費馬小定理說 $2^{14}\equiv1\pmod{15}$。哪裡錯？正確的值是多少？
+[x] 15 不是質數，費馬小定理不能用；$2^4=16\equiv1$，$2^{14}=2^{12}\cdot2^2\equiv4$
+[ ] 沒錯
+[ ] 要用 $p=15$ 代 $a^{p-1}$，所以應該是 $2^{15}\equiv1$
+[ ] 15 不是質數，所以 $2^{14}\equiv0$
+---
+費馬小定理要 $p$ 是質數。合數要用 Euler 定理：$\varphi(15)=8$，$2^8\equiv1$，$2^{14}=2^8\cdot2^6\equiv64\equiv4$（直接看 $2^4\equiv1$ 更快）。2 和 15 互質，不可能是 0。
+
+@q nt2-15 | dm-nt-algebra#2 | 2 | 計算
+What is the remainder when $10!$ is divided by 11?
+== 10
+---
+Wilson 定理：$p$ 是質數 ⇒ $(p-1)!\equiv-1\pmod p$。$p=11$：$10!\equiv-1\equiv10$。原因：2～9 兩兩配成「互為反元素」的四對（乘起來 $\equiv1$），剩下 $1\times10\equiv-1$。
+
+@q nt2-16 | dm-nt-algebra#2 | 3 | 陷阱
+甲：$x\equiv1\pmod4$、$x\equiv3\pmod6$。乙：$x\equiv1\pmod4$、$x\equiv2\pmod6$。各有沒有解？
+[x] 甲有解（最小正解 9，模 12 唯一）；乙沒有解
+[ ] 兩個都沒有：4 和 6 不互質，不能用中國剩餘定理
+[ ] 兩個都有：中國剩餘定理保證有解
+[ ] 甲沒有解；乙有解
+---
+4 和 6 不互質，中國剩餘定理不能直接用，但不代表沒有解。要看兩個條件在公因數 2 上是否一致：甲 $1$、$3$ 都是奇數，一致 → 有解，模 $\operatorname{lcm}=12$ 唯一，$x=9$。乙要 $x$ 是奇數（模 4 餘 1）又是偶數（模 6 餘 2），矛盾。
+
+@q nt2-17 | dm-nt-algebra#2 | 2 | 證明
+證明：$\gcd(a,m)=1$ 時，$a$ 在模 $m$ 下的反元素唯一（在 $0,1,\dots,m-1$ 之中）。
+---
+設 $ax\equiv1$、$ay\equiv1\pmod m$。則 $x\equiv x(ay)=(xa)y\equiv y\pmod m$。$x$、$y$ 都在 $0$～$m-1$，又同餘，所以 $x=y$。（存在性由 Bézout：$sa+tm=1$ ⇒ $sa\equiv1$。）
+
+@q nt2-18 | dm-nt-algebra#2 | 2 | 追蹤
+Compute $5^{13}\bmod7$ by repeated squaring: $5^1\equiv5$, $5^2\equiv4$, $5^4\equiv2$, $5^8\equiv4$. Since $13=8+4+1$, what is the answer?
+== 5
+---
+$5^{13}=5^8\cdot5^4\cdot5^1\equiv4\cdot2\cdot5=40\equiv5\pmod7$。每次把上一個平方再模 7，只要 $\log_2 13$ 次左右，不用乘 13 次。驗算：$5^6\equiv1$（費馬），$5^{13}=5^{12}\cdot5\equiv5$ ✓。
+
+@q nt2-19 | dm-nt-algebra#2 | 2 | 觀念
+在 $0\le x<8$ 裡，$x^2\equiv1\pmod8$ 只有 $x=1$ 和 $x=7$（也就是 $\pm1$）兩個解。
+[ ] 對
+[x] 不對
+---
+$1^2=1$、$3^2=9\equiv1$、$5^2=25\equiv1$、$7^2=49\equiv1$，共 4 個解。模**質數**時 $x^2\equiv1$ 才只有 $\pm1$（因為 $p\mid(x-1)(x+1)$ 就要整除其中一個）；8 不是質數，$(x-1)(x+1)$ 可以把 8 拆給兩個因子。
+
+@q nt2-20 | dm-nt-algebra#2 | 2 | 計算
+What is the remainder when 123456789 is divided by 11?
+== 5
+---
+$10\equiv-1\pmod{11}$，所以 $10^k\equiv(-1)^k$：從個位開始，一正一負交錯加。$9-8+7-6+5-4+3-2+1=5$。（除以 9 的話 $10\equiv1$，直接把位數加起來：45，餘 0。）
+
+@q nt3-06 | dm-nt-algebra#3 | 3 | 計算
+RSA with $n=55$, $e=3$ and private key $d=27$. The ciphertext $c=13$ is received. What is the decrypted plaintext?
+== 7
+---
+$m=13^{27}\bmod55$。$27=16+8+2+1$；$13^2=169\equiv4$、$13^4\equiv16$、$13^8\equiv256\equiv36$、$13^{16}\equiv36^2=1296\equiv31$。$31\cdot36\equiv16$、$16\cdot4\equiv9$、$9\cdot13=117\equiv7$。驗算：加密 $7^3=343=6\cdot55+13$ ✓。
+
+@q nt3-07 | dm-nt-algebra#3 | 2 | 陷阱
+RSA：$p=5$、$q=11$。可以選 $e=5$ 當公鑰嗎？
+[x] 不行：$\varphi(n)=40$，$\gcd(5,40)=5$，5 在模 40 下沒有反元素，算不出私鑰 $d$
+[ ] 可以：5 是質數
+[ ] 不行：$e$ 不能等於 $p$
+[ ] 可以：只要 $e<n$
+---
+私鑰要 $ed\equiv1\pmod{\varphi(n)}$，所以 $e$ 必須跟 $\varphi(n)$ 互質，不是跟 $n$ 互質、也不只是質數。$e=5$ 剛好等於 $p$ 只是巧合，$e=4$、$e=10$ 也不行；$e=3$、7、9 都可以。
+
+@q nt3-08 | dm-nt-algebra#3 | 3 | 計算
+An attacker knows the RSA modulus $n=77$ and has somehow also learned $\varphi(n)=60$. What are $p$ and $q$ (smaller first)?
+== 7,11
+?? p,q
+---
+$\varphi(n)=(p-1)(q-1)=n-(p+q)+1$，所以 $p+q=n-\varphi(n)+1=18$，又 $pq=77$。$p$、$q$ 是 $x^2-18x+77=0$ 的根：$(x-7)(x-11)$。所以知道 $\varphi(n)$ 就等於能分解 $n$，兩件事一樣難。
+
+@q nt3-09 | dm-nt-algebra#3 | 2 | 找錯
+$p=5$、$q=11$、$e=3$。小明算私鑰：「求 3 在模 $n=55$ 下的反元素，$3\cdot37=111\equiv1$，所以 $d=37$。」錯在哪？
+[x] 要在模 $\varphi(n)=40$ 下求反元素，$d=27$；用 37 解密會錯（例如 $c=17$ 解出 52，不是原本的 8）
+[ ] 沒錯，$d=37$
+[ ] 要在模 $p\cdot q-1=54$ 下求
+[ ] 要在模 $e$ 下求
+---
+解密正確靠的是 $m^{ed}=m^{1+k\varphi(n)}\equiv m$，指數要模 $\varphi(n)$ 才會「歸零」，所以 $ed\equiv1\pmod{\varphi(n)}$。$3\cdot27=81=2\cdot40+1$ ✓。程式驗證：$8^3\bmod55=17$，$17^{37}\bmod55=52\ne8$。
+
+@q nt3-10 | dm-nt-algebra#3 | 1 | 計算
+RSA：$p=7$、$q=11$（$\varphi(n)=60$）。下面哪一個可以當公鑰 $e$？
+[x] 7
+[ ] 6
+[ ] 10
+[ ] 15
+---
+$e$ 要跟 60 互質。$60=2^2\cdot3\cdot5$：6、10、15 都跟 60 有公因數；7 沒有，$\gcd(7,60)=1$ ✓。
+
+@q nt3-11 | dm-nt-algebra#3 | 2 | 情境
+Alice 想用 RSA **簽名**一份文件，讓所有人都能確認是她簽的。她用哪把鑰匙簽，別人用哪把驗？
+[x] Alice 用自己的私鑰 $d$ 簽（$s=m^d\bmod n$），別人用 Alice 的公鑰 $e$ 驗（看 $s^e\bmod n$ 是不是 $m$）
+[ ] Alice 用自己的公鑰簽，別人用 Alice 的私鑰驗
+[ ] Alice 用收件人的公鑰簽，收件人用自己的私鑰驗
+[ ] 兩邊都用 Alice 的公鑰
+---
+簽名要「只有 Alice 做得出來、所有人都能檢查」：只有 Alice 有 $d$，所有人都有 $e$。$s^e=m^{de}\equiv m$，跟解密一樣的道理，只是兩把鑰匙的順序反過來。用收件人公鑰加密是「保密」，不是簽名。
+
+@q nt3-12 | dm-nt-algebra#3 | 3 | 計算
+Let $n=55$, $d=27$ and $e=3$. Alice signs the message $m=2$ as $s=m^d\bmod n$. What is $s$?
+== 18
+---
+$2^{27}\bmod55$：$2^8=256\equiv36$、$2^{16}\equiv36^2\equiv31$；$27=16+8+2+1$：$31\cdot36\equiv16$、$16\cdot4=64\equiv9$、$9\cdot2=18$。驗證：$18^3=5832=106\cdot55+2$ ✓，用公鑰還原得到 $m=2$。
+
+@q nt3-13 | dm-nt-algebra#3 | 1 | 觀念
+RSA 裡，哪些數是**公開**的？
+[x] $n$ 和 $e$
+[ ] $n$、$e$ 和 $\varphi(n)$
+[ ] $p$、$q$ 和 $e$
+[ ] 只有 $e$
+---
+公鑰是 $(n,e)$。$p$、$q$、$\varphi(n)$、$d$ 都要保密：知道其中任何一個，都能算出 $d$（$\varphi(n)$ 可以反推 $p,q$）。
+
+@q nt3-14 | dm-nt-algebra#3 | 3 | 陷阱
+An RSA public key is $n=3233$, $e=3$. Someone encrypts a very small plaintext $m$ and the ciphertext is $c=8$. What is the plaintext?
+== 2
+---
+$m^3=8<3233$，模 $n$ 根本沒有發生作用，密文就是 $m^3$ 本身，直接開立方：$m=2$。這是課本版 RSA 的弱點：$m$ 太小、$e$ 太小時不安全，實務上會先把訊息加上隨機的填充（padding）再加密。
+
+@q nt3-15 | dm-nt-algebra#3 | 2 | 證明
+證明：只要 $\gcd(e,\varphi(n))=1$，就一定找得到私鑰 $d$ 使 $ed\equiv1\pmod{\varphi(n)}$。
+---
+Bézout：$\gcd(e,\varphi(n))=1$ ⇒ 有整數 $s,t$ 使 $se+t\varphi(n)=1$。兩邊模 $\varphi(n)$：$se\equiv1$。取 $d=s\bmod\varphi(n)$（調成 $1$～$\varphi(n)-1$ 的正數）就好；延伸歐幾里得演算法直接算得出 $s$。
+
+@q nt3-16 | dm-nt-algebra#3 | 2 | 計算
+RSA with $p=3$, $q=11$ and $e=7$. What is the ciphertext for the plaintext $m=4$?
+== 16
+---
+$n=33$。$4^7=16384$；或一步步：$4^2=16$、$4^4=256\equiv25$、$4^7=4^4\cdot4^2\cdot4\equiv25\cdot16\cdot4=1600\equiv16$（$1600=48\cdot33+16$）。驗算：$\varphi=20$，$d=7^{-1}\bmod20=3$，$16^3=4096=124\cdot33+4$ ✓。
+
+@q nt3-17 | dm-nt-algebra#3 | 3 | 觀念
+RSA 解密只對「跟 $n$ 互質」的明文 $m$ 正確；如果 $m$ 剛好是 $p$ 的倍數就解不回來。
+[ ] 對
+[x] 不對
+---
+Euler 定理的證明需要互質，但結論對所有 $0\le m<n$ 都成立：分別看模 $p$ 和模 $q$。若 $p\mid m$，模 $p$ 下兩邊都是 0；若 $p\nmid m$，用費馬小定理。模 $q$ 同理，再用中國剩餘定理合起來 $m^{ed}\equiv m\pmod n$。程式把 $n=55$ 的 55 個明文全部試過，都解得回來（包括 5、10、11 這些）。
+
+@q nt3-18 | dm-nt-algebra#3 | 1 | 情境
+RSA 的 $n$ 是一個 600 位數（十進位）。$p$、$q$ 大約各是幾位數？
+[x] 約 300 位數
+[ ] 約 600 位數
+[ ] 約 24 位數（600 開根號）
+[ ] 約 2 位數
+---
+$n=pq$，位數大約相加：兩個 300 位數相乘大約 600 位。$p$、$q$ 通常選差不多大，太小的那個容易被找到。「開根號」是對數值開，不是對位數開。
+
+@q nt3-19 | dm-nt-algebra#3 | 3 | 陷阱
+有人提議 RSA 用 $p=q$（$n=p^2$），這樣只要找一個大質數。可以嗎？
+[x] 不行：對 $n$ 開根號就得到 $p$，馬上被分解；而且 $\varphi(n)$ 是 $p(p-1)$，不是 $(p-1)^2$
+[ ] 可以：$n$ 一樣很大，一樣難分解
+[ ] 可以，只是 $\varphi(n)$ 要改成 $(p-1)^2$
+[ ] 不行：因為 $p^2$ 不是質數
+---
+開平方根很快（牛頓法幾步就到），所以 $n=p^2$ 一點都不安全。另外 $\varphi(p^2)=p^2-p$，照 $(p-1)^2$ 算私鑰會算錯。$n=pq$ 本來就不是質數，那不是問題。
+
+@q nt3-20 | dm-nt-algebra#3 | 2 | 觀念
+用同一組公鑰，把同一個明文 $m$ 加密兩次（課本版 RSA，沒有隨機填充），兩次的密文一樣嗎？為什麼這可能是問題？
+[x] 一樣；攻擊者可以把猜到的明文自己加密來比對（例如投票只有「贊成／反對」）
+[ ] 不一樣：每次加密會產生不同的 $e$
+[ ] 一樣，但完全沒有問題，因為沒有 $d$ 就解不開
+[ ] 不一樣：模運算有隨機性
+---
+$c=m^e\bmod n$ 是固定的函數，同樣輸入一定同樣輸出。明文可能性很少時，攻擊者不用解密，只要把每個可能的 $m$ 用公開的 $(n,e)$ 加密一遍，看哪個等於 $c$。實務上加隨機填充，讓同一個訊息每次的密文都不一樣。
+
+@q nt4-06 | dm-nt-algebra#4 | 2 | 計算
+The additive group $\mathbb Z_{12}$ is cyclic. How many generators does it have (elements that reach all of 0 to 11 by repeatedly adding themselves)?
+== 4
+---
+$a$ 的階是 $\frac{12}{\gcd(a,12)}$，要等於 12 就要 $\gcd(a,12)=1$：1、5、7、11，共 $\varphi(12)=4$ 個。例如 5：5、10、3、8、1、6、11、4、9、2、7、0，全部跑到。
+
+@q nt4-07 | dm-nt-algebra#4 | 3 | 計算
+How many elements of the additive group $\mathbb Z_{25}$ have order exactly 5?
+== 4
+---
+$a$ 的階 $=\frac{25}{\gcd(a,25)}=5$ ⇔ $\gcd(a,25)=5$：$a=5,10,15,20$，共 4 個。它們加上 0 組成唯一的 5 階子群 $\{0,5,10,15,20\}$，那個子群是循環群，生成元有 $\varphi(5)=4$ 個。
+
+@q nt4-08 | dm-nt-algebra#4 | 2 | 觀念
+非負整數 $\{0,1,2,\dots\}$ 配上加法，是哪一種結構？
+[x] 有單位元素（0）的半群（monoid），但不是群
+[ ] 群：0 是單位元素
+[ ] 連半群都不是：不封閉
+[ ] 群：而且是交換群
+---
+封閉、結合都成立，0 是單位元素。缺的是反元素：3 的加法反元素 $-3$ 不在集合裡。補上負數才變成群 $(\mathbb Z,+)$。
+
+@q nt4-09 | dm-nt-algebra#4 | 3 | 計算
+Define $a*b=a+b-3$ on the integers; this is a group. What is its identity element, and what is the inverse of 5?
+== 3,1
+?? identity,inverse of 5
+---
+單位元素 $e$：$a*e=a+e-3=a$ ⇒ $e=3$。反元素：$5*b=5+b-3=3$ ⇒ $b=1$。一般 $a^{-1}=6-a$。結合律：$(a*b)*c=a+b+c-6=a*(b*c)$ ✓。單位元素不一定是 0，要從定義解。
+
+@q nt4-10 | dm-nt-algebra#4 | 1 | 情境
+把正方形轉 0°、90°、180°、270°（轉完正方形看起來一樣），用「先轉這個、再轉那個」當運算。這是幾階的群？是循環群嗎？
+[x] 4 階，是循環群（轉 90° 一直做就能得到全部）
+[ ] 4 階，不是循環群
+[ ] 8 階，是循環群
+[ ] 360 階
+---
+只有 4 個動作，任兩個接起來還是其中之一（例如 90°+270°=360°=0°）。轉 90° 做 1、2、3、4 次分別得到 90°、180°、270°、0°，所以由它生成，跟 $\mathbb Z_4$ 一樣。加上翻面才是 8 個元素。
+
+@q nt4-11 | dm-nt-algebra#4 | 2 | 證明
+證明：群的單位元素只有一個。
+---
+設 $e$、$e'$ 都是單位元素。$e*e'$：把 $e$ 當單位元素看，結果是 $e'$；把 $e'$ 當單位元素看，結果是 $e$。所以 $e=e*e'=e'$。（反元素唯一也類似：$b=b*e=b*(a*c)=(b*a)*c=e*c=c$。）
+
+@q nt4-12 | dm-nt-algebra#4 | 3 | 證明
+證明：質數 $p$ 階的群一定是循環群。
+---
+取一個不是單位元素的 $a$。$a$ 生成的子群 $\langle a\rangle=\{e,a,a^2,\dots\}$ 大小是 $a$ 的階。Lagrange：它整除 $p$，所以是 1 或 $p$；$a\ne e$，不是 1，只能是 $p$，也就是 $\langle a\rangle$ 就是整個群。所以任何非單位元素都是生成元。
+
+@q nt4-13 | dm-nt-algebra#4 | 1 | 找錯
+小明說：「$\mathbb Z_6$（加法、乘法都模 6）是體，因為加、減、乘都封閉。」錯在哪？
+[x] 體還要每個非零元素都有乘法反元素；$2\cdot3\equiv0$，2 沒有反元素（6 不是質數）
+[ ] 沒錯
+[ ] 減法不封閉
+[ ] 體要有無限多個元素
+---
+2 乘任何數模 6 都是偶數，永遠到不了 1。$\mathbb Z_n$ 是體 ⇔ $n$ 是質數；$\mathbb Z_6$ 只是環。有限體存在，例如 $\mathbb Z_7$。
+
+@q nt4-14 | dm-nt-algebra#4 | 3 | 計算
+How many subgroups does the additive group $\mathbb Z_{12}$ have, including $\{0\}$ and the whole group?
+== 6
+---
+循環群的子群也是循環群，而且 $n$ 的每個因數 $d$ 剛好對應一個 $d$ 階子群（由 $\frac{12}d$ 生成）。12 的因數 1、2、3、4、6、12 → 6 個：$\{0\}$、$\langle6\rangle$、$\langle4\rangle$、$\langle3\rangle$、$\langle2\rangle$、$\mathbb Z_{12}$。
+
+@q nt4-15 | dm-nt-algebra#4 | 2 | 比較
+Consider the multiplicative groups $\mathbb Z_5^*=\{1,2,3,4\}$ and $\mathbb Z_8^*=\{1,3,5,7\}$. Give the largest element order in each group, first modulo 5 and then modulo 8.
+== 4,2
+?? Maximum element order modulo 5, Maximum element order modulo 8
+---
+模 5 時，2 的冪依序為 2、4、3、1，所以階為 4，已等於群大小，最大階為 4。模 8 時，3、5、7 各平方皆為 1，且它們本身不是 1，因此階都是 2；1 的階為 1，最大階為 2。所以兩格依序填 4、2。兩個群雖各有四個元素，前者是循環群，後者不是。
+
+@q nt4-16 | dm-nt-algebra#4 | 2 | 陷阱
+交換群的每一個子群也是交換群。
+[x] 對
+[ ] 不對
+---
+子群的運算就是原本的運算，原本任兩個元素都能交換，子群裡的當然也能。反過來不成立：不能交換的群也有交換的子群（例如 $\{e\}$，或由一個元素生成的子群）。
+
+@q nt4-17 | dm-nt-algebra#4 | 1 | 觀念
+整數配上一般的加法和乘法 $(\mathbb Z,+,\times)$ 是什麼結構？
+[x] 環，但不是體
+[ ] 體
+[ ] 只是群，不是環
+[ ] 連環都不是
+---
+加法是交換群，乘法封閉、結合，有分配律 → 環。不是體：2 的乘法反元素 $\frac12$ 不是整數。有理數 $\mathbb Q$ 才是體。
+
+@q nt4-18 | dm-nt-algebra#4 | 3 | 計算
+$\mathbb Z_{15}^*$（1～14 裡跟 15 互質的數，乘法模 15）有 8 個元素。它的元素**實際上**出現了哪些階？
+[x] 1、2、4
+[ ] 1、2、4、8
+[ ] 1、3、5、15
+[ ] 1、2、3、4、5、6、7、8
+---
+Lagrange 只說階要整除 8，所以只可能是 1、2、4、8。實際算：$2^2=4$、$2^4=16\equiv1$（階 4）；$4^2\equiv1$、$11^2\equiv1$、$14^2\equiv1$（階 2）；7、8、13 也是 4。沒有任何元素階是 8，所以 $\mathbb Z_{15}^*$ 不是循環群。「$k$ 整除 $|G|$ 就有 $k$ 階元素」是錯的。
+
+@q nt4-19 | dm-nt-algebra#4 | 3 | 計算
+How many elements does $\mathbb Z_9^*$ (multiplication mod 9) have? It is cyclic; how many generators does it have?
+== 6,2
+?? elements,generators
+---
+跟 9 互質：1、2、4、5、7、8，共 $\varphi(9)=6$ 個。2 的冪次：2、4、8、7、5、1，跑遍全部，是循環群。6 階循環群的生成元有 $\varphi(6)=2$ 個：2 和 5（$5=2^5$，指數 5 跟 6 互質）。
+
+@q nt4-20 | dm-nt-algebra#4 | 2 | 陷阱
+正三角形的 6 個對稱動作（轉 0°、120°、240°，加上沿三條對稱軸翻面）用「接著做」當運算，是一個群。它是交換群嗎？
+[x] 不是：先翻面再轉 120°，和先轉 120° 再翻面，結果不一樣
+[ ] 是：群都可以交換
+[ ] 是：6 個元素的群都是交換群
+[ ] 不是：它根本不是群
+---
+群的定義只要封閉、結合、單位元素、反元素，沒有要求交換。把三個頂點標 1、2、3 試一次就看得出：翻面和轉動的順序換了，頂點落在不同位置。它是最小的不交換群；只看轉動的那 3 個（$\mathbb Z_3$）才是交換的。
+
+@q nt5-05 | dm-nt-algebra#5 | 2 | 計算
+Five beads are arranged in a circle, each black or white. Necklaces that can be turned into each other by turning the circle count as the same. How many necklaces are there?
+== 8
+---
+5 個旋轉：轉 0 格固定 $2^5=32$ 種；轉 1、2、3、4 格，因為 5 是質數，每個都把 5 顆串成一個循環，只有全黑、全白 2 種。Burnside：$\frac{32+4\cdot2}5=8$（程式列舉也是 8）。
+
+@q nt5-06 | dm-nt-algebra#5 | 3 | 計算
+A **bracelet** has 6 beads, each black or white; bracelets that match after turning or flipping count as the same. How many bracelets are there?
+== 13
+---
+12 個動作。旋轉：轉 0、1、2、3、4、5 格的循環數是 $\gcd(6,k)$：6、1、2、3、2、1 → $64+2+4+8+4+2=84$。翻面 6 個：穿過兩顆珠子的軸 3 條，循環數 4（兩顆自己＋兩對）→ 各 16；穿過兩個空隙的軸 3 條，循環數 3 → 各 8。合計 $84+48+24=156$，$156/12=13$（程式列舉也是 13）。
+
+@q nt5-07 | dm-nt-algebra#5 | 3 | 計算
+Each of the 6 faces of a cube is painted black or white, and the cube may be turned freely (colorings that match after turning count as the same). How many colorings are there?
+== 10
+---
+轉動有 24 種：不動 1 個 → $2^6=64$；繞面中心轉 90°、270° 共 6 個 → 上下面各自一個循環、側面 4 個一個循環，3 個循環 → 各 8；繞面中心轉 180° 共 3 個 → 4 個循環 → 各 16；繞對角頂點轉 120°、240° 共 8 個 → 2 個循環 → 各 4；繞對邊中點轉 180° 共 6 個 → 3 個循環 → 各 8。$\frac{64+48+48+32+48}{24}=\frac{240}{24}=10$（程式產生 24 個轉動驗過）。直接數也行：黑面 0～6 個分別有 1、1、2、2、2、1、1 種。
+
+@q nt5-08 | dm-nt-algebra#5 | 2 | 找錯
+4 顆珠子、黑白兩色，旋轉後一樣算同一條。小明：「16 種塗法，每 4 種是同一條（4 個旋轉），所以 $16/4=4$ 條。」錯在哪？
+[x] 不是每條項鍊各有 4 種塗法：全黑轉來轉去都是自己，只對應 1 種；正確是 Burnside 的 6 條
+[ ] 沒錯，是 4 條
+[ ] 應該是 $16/2=8$ 條
+[ ] 應該是 $16\times4=64$ 條
+---
+同一條項鍊的塗法有幾種，要看它被幾個旋轉固定：全黑、全白各 1 種；黑白交錯 2 種；其他 4 種。$1+1+2+4\cdot3=16$，共 $1+1+1+3=6$ 條。直接除以 $|G|$ 只有在「沒有任何塗法被非單位的旋轉固定」時才對，Burnside 就是在修正這個。
+
+@q nt5-09 | dm-nt-algebra#5 | 2 | 計算
+A necklace of 12 beads is turned by 8 positions. Into how many cycles are the bead positions divided?
+== 4
+---
+從珠子 0 開始一直加 8（模 12）：0→8→4→0，每個循環 3 顆，共 $12/3=4$ 個。一般轉 $k$ 格會分成 $\gcd(n,k)$ 個循環，每個長度 $\frac n{\gcd(n,k)}$。$\gcd(12,8)=4$ ✓。
+
+@q nt5-10 | dm-nt-algebra#5 | 3 | 計算
+A necklace has 6 beads, each painted one of 3 colors, and only turning the circle counts as the same. How many necklaces are there?
+== 130
+---
+轉 $k$ 格的循環數 $\gcd(6,k)$：$k=0$～5 是 6、1、2、3、2、1 → Fix 是 $3^6,3,3^2,3^3,3^2,3=729,3,9,27,9,3$，合計 780。$780/6=130$（程式列舉也是 130）。
+
+@q nt5-11 | dm-nt-algebra#5 | 1 | 情境
+Each of the 3 corners of an equilateral triangle is painted black or white; the triangle may be turned or flipped over. How many different colorings are there?
+== 4
+---
+三角形任兩個角都能互換位置，所以只看黑的有幾個：0、1、2、3 個，各一種，共 4 種。用 Burnside 驗算：6 個動作，不動 8、轉 120°/240° 各 2、三種翻面各 4（軸上的角自己一個循環、另兩個一個循環）：$\frac{8+2+2+12}6=4$ ✓。
+
+@q nt5-12 | dm-nt-algebra#5 | 3 | 陷阱
+4 顆珠子圍成一圈，**剛好** 2 顆黑、2 顆白，旋轉後一樣算同一條。有幾條？
+[x] 2 條：兩黑相鄰、兩黑相對
+[ ] 1 條：黑的都可以轉到一起
+[ ] 6 條：從 4 顆挑 2 顆
+[ ] 3 條
+---
+相對的兩黑（黑白黑白）怎麼轉都不會變成相鄰。Burnside 只數符合條件的塗法：不動 $\binom42=6$；轉 90°、270°：要四顆同色，不可能，0；轉 180°：1、3 同色、2、4 同色，要剛好兩黑 → 2。$\frac{6+0+2+0}4=2$。
+
+@q nt5-13 | dm-nt-algebra#5 | 3 | 證明
+$n$ 顆珠子的項鍊、$k$ 種顏色。說明為什麼「轉 $j$ 格」固定的塗法有 $k^{\gcd(n,j)}$ 種。
+---
+塗法在轉 $j$ 格後不變 ⇔ 每顆珠子跟它轉到的位置同色 ⇔ 同一個「循環」（$i\to i+j\to i+2j\to\cdots$，模 $n$）裡全部同色。從 $i$ 出發，回到 $i$ 要走 $\frac n{\gcd(n,j)}$ 步（最小的 $t$ 使 $n\mid tj$），所以每個循環長 $\frac n{\gcd(n,j)}$，共 $\gcd(n,j)$ 個循環。每個循環選一種顏色：$k^{\gcd(n,j)}$。
+
+@q nt5-14 | dm-nt-algebra#5 | 1 | 觀念
+用 Burnside 引理算出來的「所有 Fix 的平均」一定是整數。
+[x] 對
+[ ] 不對
+---
+引理說這個平均**等於**不同塗法（軌道）的個數，個數一定是整數。算出小數就代表某個 Fix 算錯了，可以拿來檢查。例如 4 顆 2 色：$(16+2+4+2)/4=6$。
+
+@q nt5-15 | dm-nt-algebra#5 | 2 | 比較
+6 顆珠子、黑白兩色：項鍊（只能轉）有 14 種，手環（能轉也能翻）有 13 種。少掉的那 1 種是怎麼來的？
+[x] 有一對塗法互為鏡像（例如 001011 和 001101），轉不過去，但翻面就重合，在手環裡合併成一種
+[ ] 翻面會讓全黑和全白變成同一種
+[ ] 手環少了一個「轉 180°」的動作
+[ ] 手環不能有黑白交錯的塗法
+---
+能翻面只會把原本不同的項鍊合併，不會拆開。程式檢查 14 條項鍊，只有 001011 和 001101 是彼此的鏡像、又不能互轉，所以 $14-1=13$。翻面不會改變顏色，全黑和全白不會合併。
+
+@q nt5-16 | dm-nt-algebra#5 | 3 | 情境
+Each of the 4 faces of a regular tetrahedron is painted black or white, and the tetrahedron may be turned freely. How many different colorings are there?
+== 5
+---
+轉動有 12 種：不動 → $2^4=16$；繞頂點和對面中心轉 120°、240°（8 個）→ 底面自己一個循環、其他三面一個循環，2 個循環 → 各 4；繞對邊中點轉 180°（3 個）→ 面兩兩交換，2 個循環 → 各 4。$\frac{16+32+12}{12}=5$。直覺：黑面 0～4 個，每種數量只有一種擺法（四面體任兩面都相鄰）。
+
+@q nt5-17 | dm-nt-algebra#5 | 2 | 計算
+A $1\times4$ strip has 4 cells, each painted black or white, and the strip may be flipped left to right (colorings that match after flipping count as the same). How many colorings are there?
+== 10
+---
+只有兩個動作：不動 → 16；左右翻轉 → 第 1、4 格同色、第 2、3 格同色，2 個循環 → 4。$\frac{16+4}2=10$。檢查：16 種裡有 4 種左右對稱（自己翻過去還是自己），其他 12 種兩兩配對成 6 種，$4+6=10$ ✓。
+
+@q nt5-18 | dm-nt-algebra#5 | 2 | 找錯
+算 6 顆珠子（黑白兩色）「轉 2 格」固定幾種塗法時，小華說：「要每顆都和下一顆同色，所以只有全黑、全白 2 種。」錯在哪？
+[x] 轉 2 格只要求每顆和「隔一顆」的同色：分成 $\{1,3,5\}$、$\{2,4,6\}$ 兩個循環，有 $2^2=4$ 種
+[ ] 沒錯，是 2 種
+[ ] 應該是 $2^6=64$ 種
+[ ] 應該是 $2^3=8$ 種
+---
+「下一顆」是轉 1 格的條件。轉 2 格時珠子 1 去 3、3 去 5、5 回 1，偶數位置另一圈：$\gcd(6,2)=2$ 個循環。例如黑白黑白黑白轉 2 格不變，小華的算法漏掉了它（程式驗證 4 種）。$2^3$ 是轉 3 格（$\gcd(6,3)=3$）。
+
+@q nt5-19 | dm-nt-algebra#5 | 3 | 計算
+Each cell of a $3\times3$ grid is painted black or white, and the grid may be turned by 0, 90, 180 or 270 degrees (colorings that match after turning count as the same). How many colorings are there?
+== 140
+---
+不動 $2^9=512$。轉 90°、270°：中心自己一個循環，四個角一個循環，四個邊一個循環 → 3 個循環 → 各 $2^3=8$。轉 180°：中心＋4 對 → 5 個循環 → $2^5=32$。$\frac{512+8+32+8}4=\frac{560}4=140$（程式列舉也是 140）。
+
+@q nt5-20 | dm-nt-algebra#5 | 1 | 計算
+Three beads are arranged in a circle, black or white, and only turning the circle counts as the same. How many necklaces are there?
+== 4
+---
+不動 $2^3=8$；轉 1 格、2 格都是一個循環 → 各 2。$\frac{8+2+2}3=4$：全黑、全白、一黑兩白、兩黑一白。

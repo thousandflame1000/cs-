@@ -1,0 +1,2654 @@
+@q hp1-01 | ds-heap#1 | 1 | 計算
+用陣列存堆積、從 1 開始編號。第 13 格的爸爸在第幾格？第 5 格的兩個孩子在哪兩格？
+== 6,10,11
+?? 爸爸,左孩子,右孩子
+---
+爸爸 $\lfloor13/2\rfloor=6$；孩子 $2\cdot5=10$、$2\cdot5+1=11$。
+
+@q hp1-02 | ds-heap#1 | 2 | 陷阱
+同樣的問題，改成從 **0** 開始編號：第 13 格的爸爸、第 5 格的兩個孩子各在哪？
+== 6,11,12
+?? 爸爸,左孩子,右孩子
+---
+從 0 開始：爸爸 $\lfloor(13-1)/2\rfloor=6$，孩子 $2\cdot5+1=11$、$2\cdot5+2=12$。爸爸剛好跟上一題一樣，孩子差 1——考試要看清楚編號從哪開始。
+
+@q hp1-03 | ds-heap#1 | 2 | 找錯
+While debugging a priority queue of job priorities, a program printed three arrays, each indexed from 1 and stored level by level; several jobs may share the same priority, so equal keys are allowed.
+
+| printout | array |
+|---|---|
+| 1 | $[9,6,8,5,5,4,3]$ |
+| 2 | $[9,7,8,7,6,8,1]$ |
+| 3 | $[9,7,8,3,5,6,4]$ |
+
+A student must decide which printouts are valid max-heaps and, before writing an automatic checker that compares every non-root cell with its parent, also wants to confirm the index arithmetic for this layout. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Because the key 5 appears twice, $[9,6,8,5,5,4,3]$ fails to be a max-heap.
+[x] $[9,7,8,7,6,8,1]$ is a max-heap.
+[ ] In $[9,7,8,3,5,6,4]$, the parent of the key 6 is the key 7.
+[ ] In such an array, the children of index $i$ are at indices $2i+1$ and $2i+2$.
+[ ] A max-heap cannot contain equal keys.
+---
+「5 出現兩次所以不是」錯：$9\ge6,8$；$6\ge5,5$；$8\ge4,3$，合法；重複的鍵沒關係。
+
+「$[9,7,8,7,6,8,1]$ 是」對：有重複的 7、8，但每個爸爸都 $\ge$ 孩子（7 對 7、6；8 對 8、1）。
+
+「6 的爸爸是 7」錯：6 在索引 6，爸爸在 $\lfloor6/2\rfloor=3$，是 8。（這個陣列本身也合法：$9\ge7,8$；$7\ge3,5$；$8\ge6,4$。）
+
+「孩子在 $2i+1$、$2i+2$」錯：那是索引從 0 開始的公式；從 1 開始時孩子在 $2i$、$2i+1$，爸爸在 $\lfloor i/2\rfloor$。
+
+「不能有相等的鍵」錯：只要求爸爸 $\ge$ 孩子。
+
+@q hp1-04 | ds-heap#1 | 2 | 追蹤
+Max-heap `[90, 50, 70, 20, 40, 10, 60]` 插入 85。插入後的陣列是？交換了幾次？
+== 90 85 70 50 40 10 60 20,2
+?? 陣列,交換次數
+---
+85 放第 8 格；爸爸第 4 格 20，換；爸爸第 2 格 50，換；爸爸第 1 格 90 比較大，停。
+
+@q hp1-05 | ds-heap#1 | 2 | 追蹤
+Max-heap `[90, 50, 70, 20, 40, 10, 60]` 做一次 extract-max。之後的陣列是？
+== 70 50 60 20 40 10
+== 70,50,60,20,40,10
+---
+最後一格 60 搬到根：`[60,50,70,20,40,10]`；孩子 50、70，跟大的 70 換：`[70,50,60,20,40,10]`；60 在第 3 格，孩子只有第 6 格的 10，停。
+
+@q hp1-06 | ds-heap#1 | 3 | 追蹤
+Max-heap `[90, 50, 70, 20, 40, 10, 60]` 連續做兩次 extract-max。之後的陣列是？
+== 60 50 10 20 40
+== 60,50,10,20,40
+---
+第一次後 `[70,50,60,20,40,10]`。第二次：10 搬到根 `[10,50,60,20,40]`，跟 60 換 `[60,50,10,20,40]`，10 在第 3 格已經沒有孩子（第 6 格不存在了），停。
+
+@q hp1-07 | ds-heap#1 | 3 | 追蹤
+陣列 `[12, 3, 17, 8, 25, 1, 6, 30, 10]`（從 1 開始）做 Build-Max-Heap（從 $\lfloor n/2\rfloor$ 往前，每個往下沉）。結果是？共交換幾次？
+== 30 25 17 10 12 1 6 8 3,5
+?? 陣列,交換次數
+---
+第 4 格 8 跟 30 換；第 3 格 17 不動；第 2 格 3 跟 30 換、再跟 10 換；第 1 格 12 跟 30 換、再跟 25 換。共 5 次（程式模擬確認）。
+
+@q hp1-08 | ds-heap#1 | 3 | 計算
+1 到 15 照順序放進陣列，做 Build-Max-Heap（由下往上往下沉），共交換幾次？如果改成一個一個插入，共交換幾次？
+== 11,34
+?? Build-Heap,逐一插入
+---
+Build-Heap：高度 1 的 4 個點各沉 1、高度 2 的 2 個各沉 2、根沉 3：$4+4+3=11$。逐一插入：第 $i$ 個要爬 $\lfloor\lg i\rfloor$ 層，$0+1\cdot2+2\cdot4+3\cdot8=34$。
+
+@q hp1-09 | ds-heap#1 | 2 | 觀念
+The Build-Heap procedure below turns an arbitrary array `a[1..n]` into a max-heap, where `sift_down(a, i, n)` repeatedly swaps `a[i]` with its larger child until neither child is larger:
+```
+build_heap(a, n):
+    for i = floor(n/2) downto 1:
+        sift_down(a, i, n)
+```
+For example, with $n = 15$ the loop visits indices 7 down to 1: four nodes of height 1, two of height 2, and the root, of height 3. A student claims that the running time grows like $n\lg n$, because the loop runs about $n/2$ times and each call of `sift_down` can take about $\lg n$ steps. Which of the following statements are correct? Select all that apply.
+[x] It runs in $O(n)$ time, because most nodes are near the bottom and can move down only a few levels.
+[x] About $n/2^{h+1}$ nodes have height $h$, and each moves down at most $h$ levels, so the total work, added over all heights, is less than $n$.
+[ ] It runs in $O(n)$ time because each node is compared only once.
+[x] Inserting the $n$ elements one by one instead can take time proportional to $n\lg n$.
+[x] Leaves never move down at all.
+---
+「大部分節點很矮」對：會沉很深的只有靠近根的少數幾個。
+
+「$\sum h\cdot n/2^{h+1}<n$」對：這是嚴格的證明。
+
+「每個只比較一次」錯：靠近根的要比較很多次。
+
+「一個一個插入是 $n\lg n$」對：大部分點在底層、要往上爬很遠。
+
+「葉子不用沉」對：Build-Heap 從最後一個內部節點 $\lfloor n/2\rfloor$ 開始往前做，葉子本身就是合法的堆積。
+
+@q hp1-10 | ds-heap#1 | 2 | 陷阱
+由大到小排好的陣列一定是 max-heap。對嗎？
+[x] 對
+[ ] 不對
+---
+第 $i$ 格的孩子在 $2i$、$2i+1$，位置比較後面，值就比較小（或相等）。反過來不成立：max-heap 不一定是排好的，例如 `[9,7,8,3,5,6,4]`。
+
+@q hp1-11 | ds-heap#1 | 2 | 觀念
+A max-heap of distinct keys is stored level by level in an array indexed from 1, so the children of index $i$ are at indices $2i$ and $2i+1$. A program needs the second-largest key of a heap that holds 7 keys, and a student proposes three shortcuts: always read index 2, scan indices 2 through 7, or compare only indices 2 and 3. To test them, the student builds several heaps from the keys 10, 20, 30, 40, 50, 60, 70 using different insertion orders and records where each key ends up. Which of the following statements are correct? Select all that apply.
+[x] The second-largest key can only be at index 2 or index 3.
+[ ] The second-largest key is always at index 2.
+[ ] The second-largest key can be anywhere from index 2 to index 7.
+[x] The largest key is at index 1.
+[ ] The smallest key is always at the last index $n$.
+---
+「第二大只在第 2 或 3 格」對：它的爸爸必須比它大，那只能是根，所以它是根的孩子。
+
+「一定在第 2 格」錯：左右孩子之間沒有大小規定。
+
+「第 2 到 7 格都可能」錯：第 4 格以後的爸爸都不是根。
+
+「最大的在第 1 格」對。
+
+「最小的一定在最後一格」錯：最小的一定在某個葉子，但不一定是最後一個。例如 $[9,8,1,7]$ 合法，最小的 1 在第 3 格，不在最後一格。
+
+@q hp1-12 | ds-heap#1 | 3 | 計算
+7 個互不相同的數做成 max-heap。第三大的數可能出現在哪些位置？（從 1 開始）
+[x] 第 2～7 格都有可能
+[ ] 只有第 2、3 格
+[ ] 只有第 4～7 格
+[ ] 只有第 3 格
+---
+它可以是根的孩子（第 2 大在另一邊），也可以是第 2 大的孩子（第 4～7 格）。程式窮舉 1～7 的所有 80 個 max-heap，位置正好是 2～7。
+
+@q hp1-13 | ds-heap#1 | 2 | 計算
+100 個元素的 max-heap（從 1 開始），最小值可能在第幾格到第幾格？
+== 51,100
+?? 從,到
+---
+最小值沒有孩子，一定是葉子。第 $\lfloor100/2\rfloor+1=51$ 到 100 格是葉子。
+
+@q hp1-14 | ds-heap#1 | 1 | 計算
+100 個元素的堆積，高度是多少？
+== 6
+---
+完全二元樹高度 $\lfloor\lg100\rfloor=6$（$64\le100<128$）。
+
+@q hp1-15 | ds-heap#1 | 3 | 計算
+用 1、2、3、4、5 這五個數，能排出幾種不同的 max-heap 陣列？
+== 8
+---
+5 一定在根。剩下 4 個：第 2 格的子樹有 3 個點（第 2、4、5 格），第 3 格只有 1 個點。先選哪 3 個去左邊：$\binom43=4$；左邊 3 個裡最大的當第 2 格、另兩個可以互換：2 種。$4\times2=8$（程式窮舉確認）。
+
+@q hp1-16 | ds-heap#1 | 2 | 追蹤
+陣列 `[2, 9, 7, 6, 5, 8]`（從 1 開始），只有第 1 格不符合 max-heap。對第 1 格做 heapify（往下沉）後的陣列是？
+== 9 6 7 2 5 8
+== 9,6,7,2,5,8
+---
+2 的孩子 9、7，跟 9 換；2 在第 2 格，孩子 6、5，跟 6 換；2 在第 4 格，沒有孩子，停。
+
+@q hp1-17 | ds-heap#1 | 3 | 找錯
+有人寫往下沉時「一律跟**左**孩子比，比左孩子小就交換」。對 `[3, 5, 9]` 做會怎樣？
+[x] 3 跟 5 換成 `[5, 3, 9]`，但 9 > 5，根不是最大，堆積壞了
+[ ] 得到 `[9, 5, 3]`，正確
+[ ] 不會交換
+[ ] 得到 `[5, 9, 3]`
+---
+往下沉一定要跟**比較大的**孩子換，換上來的才會比另一個孩子大。
+
+@q hp1-18 | ds-heap#1 | 2 | 情境
+An emergency room sees patients by severity, a number from 1 (mild) to 10 (critical). Patients arrive at any time, and whenever one of the 3 doctors becomes free, the most severe patient still in line is called; ties may be broken arbitrarily. Patients not yet seen are kept in a max-heap of size $n$, stored in an array, with severity as the key. On a busy night about 200 patients are in line at the same time, and before the system is installed in a larger hospital, where $n$ may approach 5000, the developers want to know how each operation scales. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Adding an arriving patient takes $O(1)$ worst-case time, since the patient is placed in the next free cell.
+[ ] Calling the next patient takes $O(1)$ time, since the most severe patient is at the root.
+[ ] Adding a patient takes $O(1)$ time and calling one takes $O(n)$ time.
+[x] Calling the next patient takes the root, moves the last element to the root, and moves it down.
+[ ] Both operations take $O(n)$ time.
+---
+「進來 $O(1)$」錯：放到下一格之後還要往上爬到正確位置，最壞 $O(\lg n)$。
+
+「叫人 $O(1)$」錯：**看**最嚴重的是 $O(1)$，但拿走之後要把最後一格補到根再往下沉，$O(\lg n)$。
+
+「$O(1)$ 和 $O(n)$」錯：那是沒排序的陣列。
+
+「拿根、補最後一格、往下沉」對：這就是 extract-max，只走一條路，$O(\lg n)$。
+
+「都 $O(n)$」錯：兩個都是 $O(\lg n)$。
+
+@q hp1-19 | ds-heap#1 | 3 | 比較
+Two programs build a max-heap from the keys $1, 2, \ldots, 15$, given in increasing order in an array indexed from 1. Method 1 runs Build-Heap on the array, calling sift-down on indices 7, 6, …, 1, so each key can only move down. Method 2 starts from an empty heap and inserts the keys one at a time in the given order, each time placing the new key in the next free cell and moving it up. Both programs count a swap each time two keys exchange places, and both stop moving a key as soon as the heap property holds around it. Which of the following statements are correct? Select all that apply.
+[x] Method 1 performs 11 swaps.
+[x] Method 2 performs 34 swaps.
+[x] Method 1 always runs in $O(n)$ time.
+[x] On increasing input of size $n$, the ratio between the numbers of swaps of method 2 and method 1 keeps growing as $n$ grows.
+[x] If the same keys are given in decreasing order instead, method 2 performs no swaps at all.
+---
+「Build-Heap 11 次」對：由下往上對每個內部節點往下調整，遞增輸入時每次都要換到底：4 個高度 1 的點各 1 次、2 個高度 2 的點各 2 次、根 3 次，共 11 次。
+
+「逐一插入 34 次」對：遞增輸入讓每個新元素都比所有祖先大，一路爬到根，第 $i$ 個爬 $\lfloor\lg i\rfloor$ 層，總和是 34。
+
+「Build-Heap $O(n)$」對：高度 $h$ 的節點最多換 $h$ 次，而大部分節點都很矮，加總是 $O(n)$。
+
+「比值一直變大」對：逐一插入約正比於 $n\lg n$，Build-Heap 不到 $n$。程式模擬：$n=15$ 約 3.1 倍、$n=1023$ 約 8.1 倍、$n=65535$ 約 14 倍。
+
+「遞減輸入不用換」對：每個新元素都比爸爸小，放下去就停。五句都對。
+
+@q hp1-20 | ds-heap#1 | 2 | 追蹤
+Max-heap `[90, 50, 70, 20, 40, 10, 60]`，把第 5 格的 40 改成 95（increase-key）。之後的陣列是？
+== 95 90 70 20 50 10 60
+== 95,90,70,20,50,10,60
+---
+值變大只可能比爸爸大，往上爬：跟第 2 格 50 換，再跟第 1 格 90 換。
+
+@q hp1-21 | ds-heap#1 | 3 | 陷阱
+A max-heap is stored in an array indexed from 1:
+
+| index | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|---|---|
+| key | 100 | 50 | 90 | 40 | 45 | 85 | 80 |
+
+A program deletes the key 40 at index 4, which belongs to a cancelled job, by moving the last element, 80, into index 4 and shrinking the heap to 6 keys. The programmer copied the repair step from Extract-max, which always moves the relocated key down, and is not sure that this is enough. Right after the repair, the program will serve the next 3 jobs with Extract-max, so every parent must again be at least as large as its children. Which of the following statements are correct? Select all that apply.
+[x] 80 must then move up, because it is larger than its new parent 50.
+[ ] 80 must then move down.
+[ ] No further adjustment is needed.
+[x] After the adjustment, the heap is $[100,80,90,50,45,85]$.
+[ ] When deleting from the middle of a heap, the moved element can only go down, just as when deleting the root.
+---
+「80 要往上」對：第 4 格的爸爸是第 2 格的 50。
+
+「往下沉」錯：第 4 格現在沒有孩子。
+
+「不用調整」錯。
+
+「結果 $[100,80,90,50,45,85]$」對：80 和 50 交換後，80 的爸爸 100 比它大，停。
+
+「中間刪除只會往下」錯：這題就是往上的例子。搬過來的最後一格可能比新爸爸大（往上），也可能比孩子小（往下）；只有刪根時才一定是往下。
+
+@q hp1-22 | ds-heap#1 | 3 | 證明
+證明：$n$ 個元素的堆積（從 1 開始），第 $\lfloor n/2\rfloor+1$ 到 $n$ 格都是葉子。
+---
+第 $i$ 格的左孩子在 $2i$。若 $i\ge\lfloor n/2\rfloor+1$，則 $2i\ge2\lfloor n/2\rfloor+2>n$，左孩子不存在，右孩子 $2i+1$ 更不存在，所以是葉子。反過來 $i\le\lfloor n/2\rfloor$ 時 $2i\le n$，有左孩子。所以 Build-Heap 從 $\lfloor n/2\rfloor$ 開始。
+
+@q hp1-23 | ds-heap#1 | 2 | 計算
+101 個元素的堆積有幾個葉子？有幾個節點剛好只有一個孩子？
+== 51,0
+?? 葉子,只有一個孩子
+---
+葉子是第 51～101 格，共 51 個。只有一個孩子的點：$n$ 是偶數時第 $n/2$ 格只有左孩子；101 是奇數，所以沒有。
+
+@q hp1-24 | ds-heap#1 | 1 | 觀念
+A timer service keeps its pending timers in a min-heap keyed by expiry time in milliseconds, so the next timer to fire is always found first. A snapshot of the array, indexed from 1, is
+
+| index | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| expiry (ms) | 120 | 150 | 130 | 400 | 160 | 135 |
+
+and new timers are inserted as requests arrive. Two timers may share the same expiry time, and the service fires a timer by removing the root and repairing the heap. A new team member reads the code and writes down some properties that every such heap must have. Which of the following statements are correct? Select all that apply.
+[x] The root holds the minimum key.
+[ ] The root holds the maximum key.
+[x] Every parent's key is at most each of its children's keys.
+[x] Every leaf holds a key at least as large as the root's key.
+[x] Along any path from the root down to a leaf, the keys never decrease.
+---
+「根是最小值」對：一路往上越來越小。
+
+「根是最大值」錯：那是 max-heap。
+
+「爸爸 $\le$ 孩子」對：這是定義。
+
+「每個葉子都 $\ge$ 根」對：根是最小值，所有點都 $\ge$ 它。
+
+「往下的路上不會變小」對：每一步都是爸爸到孩子。
+
+@q hp1-25 | ds-heap#1 | 3 | 計算
+1～10 照順序放進陣列做 Build-Max-Heap，結果是？
+== 10 9 7 8 5 6 3 1 4 2
+== 10,9,7,8,5,6,3,1,4,2
+---
+從第 5 格往前：5 跟 10 換；4 跟 9 換；3 跟 7 換；2 跟 10 換、再跟 5 換……逐步做完共 8 次交換（程式模擬確認）。
+
+@q hp1-26 | ds-heap#1 | 2 | 比較
+A scheduler stores $n$ job priorities and repeatedly asks for the largest one. Two designs are compared: a max-heap stored level by level in an array, and an array kept sorted in decreasing order. In a trial, the scheduler starts from the heap $[9, 7, 8, 3, 5, 6]$ and the sorted array $[9, 8, 7, 6, 5, 3]$, which hold the same six keys, and then inserts a new job with priority 10 into each. In the sorted array, the position of a new key may be found by repeatedly halving the range. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] Both structures can return the maximum key in $O(1)$ time.
+[ ] Inserting a key takes $O(\lg n)$ time in both structures in the worst case, since the sorted array can find the position by halving the range.
+[ ] Searching for an arbitrary key takes $O(\lg n)$ time in the max-heap, just as in the sorted array.
+[ ] Inserting 10 into the max-heap $[9, 7, 8, 3, 5, 6]$ (stored level by level) moves it up with exactly 3 swaps.
+[ ] Every max-heap stored in an array is also sorted in decreasing order.
+---
+「找最大都 $O(1)$」對：都在第一格。
+
+「插入兩者都 $O(\lg n)$」錯：排好的陣列用二分搜尋找位置只要 $O(\lg n)$，但要把後面的元素全部挪一格，最壞 $O(n)$。heap 才是 $O(\lg n)$。
+
+「heap 找任意值 $O(\lg n)$」錯：heap 只保證「爸爸比孩子大」，左右子樹之間沒有大小關係，找任意值最壞要看全部，$O(n)$。
+
+「插 10 交換 3 次」錯：10 放在第 7 格，爸爸是第 3 格的 8，換；再上去爸爸是根 9，換；到根停止，共 2 次。7 個元素的堆積高度只有 2。
+
+「heap 也是由大到小排好」錯：$[9,7,8,\ldots]$ 裡 7 排在 8 前面。heap 放棄「全部排好」，換來插入、取出都 $O(\lg n)$。
+
+@q hp1-27 | ds-heap#1 | 3 | 情境
+A log server stores $n=10^6$ records, each with a duration in milliseconds, and a nightly report needs the 10 slowest records. One script loads all the durations into an array, runs Build-Heap to make a max-heap, and then performs 10 Extract-max operations. A colleague suggests a second script that reads the records one by one and keeps only 10 candidates in a small heap, replacing a candidate whenever a slower record appears. A third option is to sort all $10^6$ durations and take the last 10. Which of the following statements are correct? Select all that apply.
+[x] The total time is $O(n+10\lg n)$, essentially $O(n)$.
+[ ] The total time is $O(n\lg n)$.
+[x] This is cheaper than fully sorting the records, which takes $O(n\lg n)$.
+[ ] Keeping a size-10 max-heap while scanning the records also finds the 10 largest in about $O(n\lg10)$ time.
+[ ] The total time is $O(n^2)$.
+---
+「$O(n+10\lg n)$」對：Build-Heap $O(n)$，每次 extract $O(\lg n)$，只做 10 次。
+
+「$O(n\lg n)$」錯：不用全部取出。
+
+「比全部排序省」對。
+
+「掃一遍、維護大小 10 的 max-heap」錯：要隨時踢掉「目前前 10 大裡最小的」，所以要用 **min**-heap，堆頂就是要比較、要踢的那個；max-heap 的堆頂是最大的，用不上。
+
+「$O(n^2)$」錯。
+
+@q hp1-28 | ds-heap#1 | 2 | 追蹤
+陣列 `[3, 9, 2, 1, 4, 5, 8, 7, 6]` 做 Build-Max-Heap 後是？
+== 9 7 8 6 4 5 2 1 3
+== 9,7,8,6,4,5,2,1,3
+---
+第 4 格 1 跟 7 換；第 3 格 2 跟 8 換；第 2 格 9 不動；第 1 格 3 跟 9 換、跟 7 換、再跟 6 換。共 5 次。
+
+@q hp1-29 | ds-heap#1 | 2 | 陷阱
+「Max-heap 同一層的元素，左邊的一定比右邊的大」對嗎？
+[ ] 對
+[x] 不對
+---
+Heap 只規定爸爸 ≥ 孩子，兄弟之間、同層之間沒有大小關係。例如 `[9,7,8,…]` 第 2 格 7 比第 3 格 8 小。
+
+@q hp1-30 | ds-heap#1 | 3 | 計算
+7 個元素的 max-heap，最小值可能在第 1～7 格的哪些位置？（元素互不相同）
+== 4 5 6 7
+== 4,5,6,7
+---
+最小值不能有孩子，只能在葉子第 4～7 格；而且每個葉子都可能（程式窮舉 1～7 的 80 個 max-heap 確認）。
+
+@q hp2-01 | ds-heap#2 | 2 | 比較
+A min-priority queue with $n$ elements, $n$ up to $10^5$, is kept as an array sorted in decreasing order, so the minimum is in the last cell; for example, the queue holding 9, 4, 7, and 1 is stored as $[9, 7, 4, 1]$. Insert keeps the array sorted by finding the new key's position and shifting the smaller keys one cell to the right, and Extract-min removes the last cell. A student compares this design with an unsorted array and with a binary heap, comparing the worst-case time of each operation. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Insert takes $O(\lg n)$ time, since the position can be found by repeatedly halving the range.
+[x] Extract-min takes $O(1)$ time, since it removes the last cell.
+[ ] Both Insert and Extract-min take $O(1)$ time.
+[ ] An unsorted array behaves the same way: Insert takes $O(n)$ time and Extract-min takes $O(1)$ time.
+[ ] Both Insert and Extract-min take $O(\lg n)$ time.
+---
+「Insert $O(\lg n)$」錯：找位置是 $O(\lg n)$，但要把元素挪出空位，最壞 $O(n)$。整理工作放在插入時做。
+
+「Extract-min $O(1)$」對：拿最後一格。
+
+「都 $O(1)$」錯。
+
+「沒排序的陣列一樣」錯：剛好相反，插入放尾巴 $O(1)$，取最小要掃一遍 $O(n)$。
+
+「都 $O(\lg n)$」錯：那是二元堆積，兩邊各付一點。
+
+@q hp2-02 | ds-heap#2 | 2 | 計算
+3 元堆積用陣列存、從 1 開始編號：第 $i$ 格的孩子在 $3i-1$、$3i$、$3i+1$，爸爸在 $\lfloor(i+1)/3\rfloor$。第 2 格的孩子、第 10 格的爸爸各在哪？
+== 5 6 7,3
+?? 孩子,爸爸
+---
+孩子 $3\cdot2-1=5$、6、7。爸爸 $\lfloor11/3\rfloor=3$（第 3 格的孩子是 8、9、10）。
+
+@q hp2-03 | ds-heap#2 | 3 | 計算
+4 元堆積（從 1 開始）：第 $i$ 格的孩子在 $4(i-1)+2$ 到 $4i+1$。第 3 格的孩子是哪幾格？第 20 格的爸爸是第幾格？
+== 10 11 12 13,5
+?? 孩子,爸爸
+---
+第 3 格：$4\cdot2+2=10$ 到 $13$。爸爸公式 $\lfloor(i-2)/4\rfloor+1$：$\lfloor18/4\rfloor+1=5$；驗算第 5 格的孩子是 18～21，包含 20。
+
+@q hp2-04 | ds-heap#2 | 2 | 計算
+100 個元素的 3 元堆積，高度是多少？
+== 4
+---
+每層最多 1、3、9、27、81 個，前 4 層共 40 個不夠，前 5 層共 121 個夠，所以有 5 層、高度 4。二元堆積是 6。
+
+@q hp2-05 | ds-heap#2 | 3 | 計算
+$d$ 元堆積做 Extract，每往下沉一層要比較約 $d$ 次（$d-1$ 次找最大的孩子、1 次跟自己比）。4096 個元素時，$d=4$ 和 $d=8$ 各大約要比較幾次？
+== 24,32
+?? d=4,d=8
+---
+層數 $\log_d4096$：$d=4$ 是 6 層、$d=8$ 是 4 層。比較次數 $d\log_dn$：$4\cdot6=24$、$8\cdot4=32$。$d=2$ 也是 $2\cdot12=24$。$d$ 太大反而變慢。
+
+@q hp2-06 | ds-heap#2 | 3 | 陷阱
+「$d$ 元堆積的 $d$ 越大越好，因為樹越矮」對嗎？
+[ ] 對
+[x] 不對
+---
+往上爬（Insert、Decrease-key）確實變快，$\log_dn$；但往下沉每層要比 $d$ 個孩子，Extract 是 $d\log_dn$，$d$ 很大時會變慢。所以 Decrease-key 很多、Extract 很少時才用大的 $d$。
+
+@q hp2-07 | ds-heap#2 | 2 | 情境
+一個程式做 $10^6$ 次 Decrease-key、只做 $10^3$ 次 Extract-min。二元堆積和 16 元堆積，哪個比較適合？
+[x] 16 元堆積：Decrease-key 只往上爬，樹矮就快；Extract 雖然變慢但次數很少
+[ ] 二元堆積：Extract 比較快
+[ ] 兩者一樣
+[ ] 都不適合，只能用排好序的陣列
+---
+讓做得多的操作變便宜。Decrease-key $\log_{16}n$ 只有 $\lg n$ 的 1/4。
+
+@q hp2-08 | ds-heap#2 | 2 | 情境
+A monitoring system receives $n = 10^7$ request durations, one at a time, and at any moment must report the $k = 100$ largest values seen so far. It keeps a min-heap of size $k$: the first $k$ values are inserted directly, and after that, when a new value is larger than the root, it replaces the root, which is then moved down to restore heap order; otherwise, the new value is ignored. The stream is too large to store, so only the heap stays in memory, and the dashboard reads the heap whenever an operator asks for the current top values. An intern suggests using a max-heap of size $k$ instead, because the task is about the largest values, and asks how much time and memory each version needs over the whole stream of values. Which of the following statements are correct? Select all that apply.
+[x] The total time is $O(n\lg k)$.
+[x] The root of the heap is the smallest of the current $k$ largest items.
+[ ] A max-heap of size $k$ would work equally well in $O(n\lg k)$ time.
+[x] Besides the input stream, only $O(k)$ memory is needed.
+[x] Each new item that is not larger than the root is discarded after a single comparison.
+---
+「$O(n\lg k)$」對：堆積大小一直是 $k$，每筆最多一次替換 $O(\lg k)$。
+
+「堆頂是前 $k$ 大裡最小的」對：所以新資料只要跟堆頂比，就知道要不要踢掉它。
+
+「max-heap 也行」錯：要踢的是前 $k$ 大裡最小的，max-heap 找它要掃過 $k$ 個，變成 $O(nk)$。
+
+「只要 $O(k)$ 記憶體」對：其他資料看完就丟。
+
+「不比堆頂大的比一次就丟」對：它不可能是前 $k$ 大。
+
+@q hp2-09 | ds-heap#2 | 3 | 追蹤
+資料依序 `5, 1, 9, 3, 7, 8, 2`，用大小 3 的 min-heap 留住最大的 3 個（前 3 個直接放；之後比堆頂大才替換）。最後堆頂是多少？一共替換了幾次？
+== 7,3
+?? 堆頂,替換次數
+---
+放 5、1、9 → 堆頂 1。3>1 替換 → {3,5,9}；7>3 → {5,7,9}；8>5 → {7,8,9}；2<7 不動。堆頂 7 就是第 3 大。
+
+@q hp2-10 | ds-heap#2 | 3 | 情境
+有 $k$ 個已經排好序的串列，總共 $n$ 個元素，要合併成一個排好的串列。把每個串列的第一個放進 min-heap，每次拿最小的、再放進它那個串列的下一個。總時間是？
+[x] $O(n\lg k)$
+[ ] $O(n\lg n)$
+[ ] $O(nk)$
+[ ] $O(n)$
+---
+堆積裡最多 $k$ 個元素，每個元素進出一次 $O(\lg k)$。$k=2$ 時就是合併排序的合併步驟。
+
+@q hp2-11 | ds-heap#2 | 2 | 陷阱
+兩個二元堆積，大小 $n$ 和 $m$，「把小的那個一個一個插進大的」做 Union，時間是 $O(\lg n)$。對嗎？
+[ ] 對
+[x] 不對
+---
+每次插入 $O(\lg(n+m))$，要插 $m$ 次，共 $O(m\lg(n+m))$。$m$ 小時比重建 $O(n+m)$ 好，但不是 $O(\lg n)$。真正 $O(\lg n)$ 的合併要用 leftist、binomial 等可合併的堆積。
+
+@q hp2-12 | ds-heap#2 | 2 | 比較
+大堆積 $10^6$ 個、小堆積 10 個。合併時「把 10 個逐一插入」和「接起來重做 Build-Heap」，大約各要多少步？
+[x] 逐一插入約 $10\times20=200$；重建約 $10^6$
+[ ] 兩者差不多
+[ ] 逐一插入約 $10^6$；重建約 200
+[ ] 兩者都約 $10^6$
+---
+$\lg10^6\approx20$。Build-Heap 不管哪邊大，都要掃全部 $O(n+m)$。兩堆差不多大時才值得重建。
+
+@q hp2-13 | ds-heap#2 | 3 | 觀念
+A library offers only a priority queue with Insert(item, priority), Extract-max, and Extract-min, implemented as a binary heap. A student needs a stack and a first-in-first-out queue for a project and tries to build them from it. One idea is to give each inserted item its insertion number as its priority, so the items pushed 1st, 2nd, 3rd, … get priorities 1, 2, 3, …; another is to give every item the same priority 0; a third is to use the decreasing priorities $-1, -2, -3, \ldots$. The student also wants to know how fast the simulated operations would be. Which of the following statements about simulating other structures with priority queues are correct? Select all that apply.
+[x] Giving each inserted item a priority larger than all earlier ones (for example, its insertion number) and removing with Extract-max makes a max-priority queue behave as a stack.
+[x] Giving increasing priorities and removing with Extract-min makes a min-priority queue behave as a first-in-first-out queue.
+[ ] Giving every item priority 0 makes a max-priority queue behave as a stack.
+[ ] If the priority queue is a binary heap, each simulated push and pop then takes $O(1)$ time.
+[ ] Giving decreasing priorities and removing with Extract-max makes a max-priority queue behave as a stack.
+---
+「遞增優先權＋Extract-max 是堆疊」對：越晚放進去優先權越大，所以最先被拿出來。
+
+「遞增優先權＋Extract-min 是佇列」對：最早放進去的優先權最小，最先出來。
+
+「全部設 0」錯：優先權都一樣時取出順序沒有保證。
+
+「二元堆積每次 $O(1)$」錯：每次 insert、extract 都是 $O(\lg n)$，比直接用陣列做堆疊（$O(1)$）慢；這種模擬只是說明優先佇列夠一般。
+
+「遞減優先權＋Extract-max 是堆疊」錯：最早放的優先權最大，最先出來，那是佇列。
+
+@q hp2-14 | ds-heap#2 | 2 | 陷阱
+二元堆積裡有好幾個優先權相同的元素時，Extract 會照「先放進去的先出來」的順序。對嗎？
+[ ] 對
+[x] 不對
+---
+往上爬、往下沉的交換不管誰先來，相同優先權的順序可能被打亂。需要先來先出時，把（優先權, 插入編號）一起當成鍵來比。
+
+@q hp2-15 | ds-heap#2 | 1 | 觀念
+A binary min-heap stores $n = 10^6$ timers in an array indexed from 1, and a second table records, for every timer, the index of the cell that currently holds it, so a timer's position can be found in $O(1)$ time. The timer service must support adding a timer, firing the earliest timer, moving a timer earlier, peeking at the earliest timer without firing it, and cancelling a timer at a known position. A reviewer asks for the worst-case cost of each operation. Which of the following operations can be done in $O(\lg n)$ worst-case time? Select all that apply.
+[x] Insert a new element.
+[x] Extract-min.
+[x] Decrease the key of the element at a given array index.
+[x] Report the minimum without removing it.
+[x] Delete the element at a given array index.
+---
+「Insert」可以：放到最後再往上換，最多爬樹高。
+
+「Extract-min」可以：最後一個搬到根再往下換。
+
+「給定位置降低 key」可以：值變小就往上換。
+
+「看最小值」可以：就在根，$O(1)$。
+
+「刪掉給定位置的元素」可以：把最後一個搬過來，視大小往上或往下換，最多爬樹高。五個都可以；不行的是「找某個 key」或「找第 $k$ 小」這種要搜尋的操作。
+
+@q hp2-16 | ds-heap#2 | 2 | 找錯
+A binary min-heap with $n = 10^5$ elements is stored in an array indexed from 1, and a route-planning program repeatedly lowers the key of some element by calling decrease-key, about 3 times per element on average. In one version, the caller passes the element's array index; in another, it passes only the element's value, and the heap must find the element first. A student also proposes keeping a separate table from each element to its current index, updated on every swap, and wonders how much that would help. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] Decrease-key runs in $O(\lg n)$ time when the element's array index is given.
+[ ] If only the element's value is given, it can be located in $O(\lg n)$ time by following the heap order down from the root.
+[ ] Decrease-key moves the element down toward the leaves.
+[ ] Keeping a separate table from each element to its current index, updated on every swap, lets decrease-key run in $O(1)$ time.
+[ ] Increasing an element's key takes $O(1)$ time, since the element can stay where it is.
+---
+「給位置就 $O(\lg n)$」對：值變小就往上換，最多爬樹高。
+
+「只給值可以沿 heap 順序 $O(\lg n)$ 找到」錯：堆積沒有左小右大的順序，不知道該往哪邊走，最壞要看全部 $\Theta(n)$。
+
+「往下沉」錯：min-heap 值變小只可能比父親小，要往上浮。
+
+「另外存位置表就 $O(1)$」錯：位置表省掉的是「找」的時間；往上浮仍然要 $O(\lg n)$。（Dijkstra、Prim 的實作就是這樣做。）
+
+「值變大 $O(1)$」錯：變大後可能比孩子大，要往下沉，$O(\lg n)$。
+
+@q hp5-31 | ds-heap#5 | 3 | 計算
+An operation-count comparison studies a priority queue whose reference size is 10000 elements. The workload performs 10000 Extract-min operations and 1 million Decrease-key operations. Use the prescribed proxies: binary-heap work is the sum of both operation counts multiplied by the logarithm of the reference size; Fibonacci-heap work is the Decrease-key count plus the Extract-min count multiplied by that logarithm. Take the logarithm to base 2 as 13.3 for this calculation.
+
+The proxies intentionally ignore allocation, pointer manipulation, hardware effects and constant factors. They are not measurements of seconds or processor instructions. As a separate workload, reduce the number of Decrease-key operations to 10000 while keeping the reference size and Extract-min count fixed. Compare the 2 numeric estimates and their ratios in both workloads before making any claim about actual speed. A smaller asymptotic proxy does not alone establish which implementation wins on every physical machine or small input. Which statements are correct? Select all that apply.
+[x] The binary heap takes about $1.34\times10^7$ steps.
+[x] The Fibonacci heap takes about $1.13\times10^6$ steps.
+[x] The binary heap takes about 12 times as many steps.
+[x] If instead $E=10^4$, the two step counts are within a factor of 2 of each other.
+[ ] At these sizes, the Fibonacci heap is always faster in practice.
+---
+「二元約 $1.34\times10^7$」對：$1.01\times10^6\times13.3$。
+
+「Fibonacci 約 $1.13\times10^6$」對：$10^6+1.33\times10^5$。
+
+「約 12 倍」對：比值約 11.9。
+
+「$E=10^4$ 時差不到 2 倍」對：二元 $2\times10^4\times13.3=2.66\times10^5$，Fibonacci $10^4+1.33\times10^5=1.43\times10^5$，比值約 1.86。Decrease-key 少的時候 Fibonacci heap 的優勢就不大。
+
+「實際一定比較快」錯：Fibonacci heap 常數大、指標多，12 倍的步數差可能被吃掉不少。
+
+@q hp2-18 | ds-heap#2 | 2 | 計算
+13 個元素的 3 元堆積（從 1 開始），有幾個葉子？
+== 9
+---
+最後一格 13 的爸爸是 $\lfloor14/3\rfloor=4$，所以第 1～4 格有孩子，其餘 9 格是葉子。
+
+@q hp2-19 | ds-heap#2 | 2 | 追蹤
+3 元 min-heap `[1, 4, 2, 6, 5, 7, 3, 8]`（從 1 開始，孩子在 $3i-1$～$3i+1$）插入 0。之後的陣列是？
+== 0 4 1 6 5 7 3 8 2
+== 0,4,1,6,5,7,3,8,2
+---
+0 放第 9 格；爸爸 $\lfloor10/3\rfloor=3$（值 2），換；爸爸 $\lfloor4/3\rfloor=1$（值 1），換；到根停。交換 2 次。
+
+@q hp2-20 | ds-heap#2 | 2 | 情境
+A delivery platform keeps pending orders keyed by their deadlines, measured in minutes after midnight. Orders arrive at any time, about 300 per minute at peak, and whenever one of the 500 couriers becomes free, the order with the earliest deadline is assigned to that courier. Let $n$ be the number of pending orders, which can reach 20000 during the dinner rush. The engineers compare a min-heap keyed by deadline, a first-in-first-out queue in arrival order, an array kept sorted by deadline, an unsorted array, and a max-heap keyed by deadline. For the sorted array, the position of a new order can be found by halving the search range, but the later orders must then be shifted one cell each, and the engineers want to know which designs keep both operations fast at peak load, when every millisecond counts. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] A min-heap keyed by deadline supports both adding an order and assigning the earliest one in $O(\lg n)$ time.
+[ ] A first-in-first-out queue always assigns the order with the earliest deadline.
+[ ] An array kept sorted by deadline allows both assigning and adding an order in $O(\lg n)$ time, by halving the search range.
+[ ] An unsorted array allows adding in $O(1)$ time and finding the earliest deadline in $O(\lg n)$ time.
+[ ] A max-heap keyed by deadline keeps the earliest deadline at its root.
+---
+「min-heap 兩種都 $O(\lg n)$」對：「隨時進來、每次拿最小」正是優先佇列。
+
+「先進先出佇列」錯：它只看到達順序，晚到但很急的單會被拖到。
+
+「排好序的陣列兩種都 $O(\lg n)$」錯：派單可以 $O(1)$，但進單時找位置雖然是 $O(\lg n)$，挪出空位最壞要 $\Theta(n)$。
+
+「沒排序的陣列找最早 $O(\lg n)$」錯：沒有順序可以利用，要掃一遍，$\Theta(n)$。
+
+「max-heap 根是最早到期」錯：max-heap 的根是最大的，也就是最晚到期的。
+
+@q hp5-32 | ds-heap#5 | 2 | 比較
+Compare inserting 1 key into 2 priority-queue organizations. For the binary min-heap example, begin with the 7-element array containing keys 1 through 7 in that order. Append the new key in position 8 and restore the min-heap order by moving it upward only while it is smaller than its parent. Run separate trials for inserting 0 and inserting 8, each from the same original heap.
+
+For the Fibonacci-heap example, the existing 7 elements are represented by a valid root list containing 3 trees. Insertion allocates a 1-node tree, joins it to that list and updates the minimum pointer if needed. No Extract-min occurs, and consolidation is deferred rather than performed during this insertion. Ignore allocation cost beyond a constant unit. Analyze general insertion bounds as well as the concrete root-list change and the binary heap's no-swap case. The 2 structures do not have to organize the same keys into identical trees. Which statements are correct? Select all that apply.
+[x] Binary-heap insertion has an O(log n) worst-case bound.
+[x] Fibonacci-heap insertion has constant amortized cost.
+[ ] The stated Fibonacci insertion leaves exactly three roots because equal-degree trees are immediately consolidated.
+[x] The Fibonacci insertion adds a one-node tree without consolidation.
+[x] The binary insertion of eight needs no upward swap because it is not smaller than its parent.
+---
+「二元插入最壞對數」對：新位置可能一路上浮，本例插零由位置八到四、二、一。「Fibonacci常數攤銷」對：加入單點根與更新最小指標。「仍三根因立刻合併」錯：本次沒有整理，三加一為四根。「不consolidate」對：這項工作留給Extract-min。「插八不交換」對：位置八的父鍵是四，八不比四小。
+
+@q hp2-22 | ds-heap#2 | 3 | 情境
+A program receives n keys and performs exactly 1 Extract-min after all arrivals are finished. No minimum query or deletion is required during the arrival phase. The 8-key example arrives in descending order: 8, 7, 6, 5, 4, 3, 2, 1. Treat n as variable when comparing bounds; the example shows why arrival order can matter for repeated insertion into particular structures.
+
+An unsorted array appends each key and later scans for its minimum. A sorted-array implementation keeps ascending order after every insertion by shifting elements. A binary-heap implementation inserts each key separately using upward restoration. A fourth method appends all keys without heap maintenance, then runs standard Build-Heap once before the final extraction. Each array has enough reserved storage, so resizing is excluded from the timing model. Compare total work for this complete operation sequence rather than choosing a structure from the worst-case bound of 1 operation viewed in isolation. Which statements are correct? Select all that apply.
+[x] An unsorted array takes $O(n)$ total time: $n$ inserts in $O(1)$ each and one $O(n)$ scan.
+[x] A binary heap with $n$ separate Inserts takes $O(n\lg n)$ time in the worst case.
+[ ] A sorted array gives the smallest total time.
+[ ] Collecting all $n$ items, running Build-Heap once, and then doing one Extract-min takes $\Theta(n\lg n)$ total time.
+[ ] All of these implementations take the same total time.
+---
+「沒排序的陣列 $O(n)$」對：插入直接放尾巴，最後掃一遍找最小。
+
+「二元堆積逐一插入 $O(n\lg n)$」對：每次插入最壞往上浮 $O(\lg n)$。
+
+「排好序的陣列最好」錯：每次插入要挪位置，$O(n^2)$。
+
+「最後 Build-Heap 要 $\Theta(n\lg n)$」錯：Build-Heap 只要 $O(n)$，再加一次 $O(\lg n)$ 的取出，總共 $O(n)$。
+
+「全部一樣」錯：看操作比例選實作。
+
+@q hp2-23 | ds-heap#2 | 2 | 計算
+Consider the binary min-heap whose array is 1, 4, 3, 8, 7, 6, 5, using indices 1 through 7. A Find-min operation reads the root without removing it or changing any array entry. For a separate Extract-min trial, remove the original root, move the last key 5 into its place, shrink the logical array by 1, and repeatedly exchange the replacement with the smaller child only when heap order is violated.
+
+The left and right children of the new root initially contain 4 and 3. After choosing the smaller child, continue only as far as the resulting heap requires. No other insertion or deletion occurs. Compare this concrete trace with asymptotic bounds for an arbitrary n-element binary heap. An upper bound may be valid even when it is looser than the usual logarithmic bound, while Find-min need not perform any restoration at all. Which statements are correct? Select all that apply.
+[x] Find-min reads the root in constant time without changing the heap.
+[x] Extract-min has an O(log n) worst-case upper bound.
+[x] An O(n) upper bound for Extract-min is valid but looser than its logarithmic bound.
+[x] The stated extraction moves the final key to the root and then restores order downward.
+[ ] The resulting root in this trace is four because restoration must choose the left child without comparing the right child.
+---
+「看根常數且不改堆」對：Find-min不拿走元素。「Extract-min最壞對數」對：下沉不超樹高。「線性鬆上界有效」對：O(log n)亦屬O(n)，不能因不緊便判錯。「最後一格補根下沉」對：本例五與孩子四、三比較。「新根四」錯：需選較小的三，交換後為3,4,5,8,7,6，五不大於其孩子六便停止。
+
+@q hp2-24 | ds-heap#2 | 3 | 證明
+證明：$d$ 元堆積（從 1 開始），第 $i$ 格的孩子在 $d(i-1)+2$ 到 $di+1$。
+---
+第 1 格有 $d$ 個孩子：2～$d+1$。照編號順序，第 $i$ 格之前的 $i-1$ 格共有 $d(i-1)$ 個孩子，佔掉第 2 到第 $d(i-1)+1$ 格；所以第 $i$ 格的孩子從 $d(i-1)+2$ 開始，連續 $d$ 個到 $di+1$。$d=2$ 時是 $2i$、$2i+1$。
+
+@q hp5-33 | ds-heap#5 | 2 | 觀念
+A priority-queue workload uses a reference size of 1024 elements and performs 1 million Decrease-key operations plus 1000 Extract-min operations. The prescribed comparison ignores insertion and allocation costs. With the base-2 logarithm fixed at ten, use binary-heap proxy work equal to ten times the sum of the 2 operation counts, and Fibonacci-heap proxy work equal to the Decrease-key count plus ten times the Extract-min count.
+
+These formulas describe asymptotic-operation models rather than a measured wall-clock measurement. The machine may assign different constants to array accesses, linked structures and memory allocation. The Fibonacci bounds are amortized over an operation sequence; the problem does not promise that each individual operation finishes after the same number of primitive steps. Compare the contribution of the large Decrease-key count, verify the numeric Fibonacci estimate, and separate a lower model estimate from an unconditional statement about performance on every implementation. Which statements are correct? Select all that apply.
+[x] The many Decrease-key operations make their constant amortized Fibonacci bound important in this comparison.
+[ ] The stated Fibonacci proxy equals eleven million units.
+[ ] A lower Fibonacci proxy proves that it is faster on every real machine and every small input.
+[x] The advantage in the Decrease-key term comes from its constant amortized bound.
+[ ] An amortized constant bound means every individual Fibonacci Decrease-key has constant worst-case time.
+---
+「大量Decrease-key讓常數攤銷重要」對：二元模型每次乘十，Fibonacci此項不乘十。「一千一百萬」錯：10⁶＋1000×10＝1,010,000；二元為(10⁶＋1000)×10＝10,010,000。「模型小就所有實作必快」錯：未計常數、配置與快取成本。「優勢來自該項常數攤銷」對。「攤銷就是單次最壞常數」錯：允許個別操作較慢，保證的是序列總成本的平均界。
+
+@q hp2-26 | ds-heap#2 | 2 | 計算
+An initially empty binary min-heap receives n distinct keys and then performs n Extract-min operations. For a concrete check, use keys 7, 2, 8, 1, 4, 6, 3, 5 in that arrival order. No new key arrives after extraction begins. A Find-min query may inspect the current minimum before each extraction, but that query itself does not remove or reorder an element.
+
+Compare building by n separate inserts with collecting the same keys and making 1 standard Build-Heap call. Array storage is already reserved, and ordinary comparisons and exchanges have unit cost. Use n for the original number of keys; individual heaps become smaller during extraction. Track the order of returned values and identify which phase still controls the standard worst-case total bound after the linear-time build improvement. Do not confuse reading the root with removing it and repairing heap order, or confuse a faster build with eliminating the cost of all later removals. Which statements are correct? Select all that apply.
+[x] The total time is $O(n \lg n)$.
+[x] The keys come out in increasing order, so this sequence of operations sorts the $n$ keys.
+[x] Looking at the minimum before each Extract-min takes only $O(1)$ time, since it is at the root.
+[x] Replacing the $n$ Insert operations by one Build-Heap call makes building take $O(n)$ time, but the total is still $O(n \lg n)$ because of the Extract-min operations.
+[x] Each Extract-min takes $O(\lg n)$ time in the worst case.
+---
+「總共 $O(n\lg n)$」對：$2n$ 個操作，各 $O(\lg n)$。
+
+「取出來由小到大，等於排序」對：這就是 heapsort 的想法。
+
+「看最小值 $O(1)$」對：但拿走後要把最後一個元素搬到根、往下調整。
+
+「改用 Build-Heap 建堆只要 $O(n)$，但總共仍是 $O(n\lg n)$」對：瓶頸在 $n$ 次取出。
+
+「Extract-min 最壞 $O(\lg n)$」對：往下沉最多樹高。五句都對。
+
+@q hp2-27 | ds-heap#2 | 3 | 找錯
+有人用 max-heap 找最大的 $k$ 筆：「每來一筆就插入，堆積長到 $n$，最後 Extract-max $k$ 次」，並說這比用大小 $k$ 的 min-heap 好，因為「max-heap 才能拿最大」。問題在哪？
+[x] 空間和時間都多花：要存全部 $n$ 筆、時間 $O(n\lg n)$；大小 $k$ 的 min-heap 只要 $O(k)$ 空間、$O(n\lg k)$ 時間
+[ ] max-heap 做不到
+[ ] 兩種方法結果不同
+[ ] 沒問題，max-heap 比較快
+---
+找最大的 $k$ 個，要隨時知道「目前留下的裡面最小的」才能決定踢誰，所以用 min-heap。若一次拿到全部資料，先 Build-Heap（$O(n)$）再 Extract $k$ 次也不錯。
+
+@q hp5-34 | ds-heap#5 | 2 | 比較
+2 priority queues each contain n keys, with n at least 2. The example uses 8 keys in each queue, so a merged explicit result must retain 16 keys including any duplicates. Compare ordinary array binary heaps, Fibonacci heaps with root lists, binomial heaps, and 2 already sorted arrays. The result must be a usable merged structure, not merely a constant-size description telling a later algorithm to inspect 2 old arrays.
+
+For the binary heaps, an allowed method copies both arrays into 1 destination and runs standard Build-Heap. For Fibonacci heaps, the root lists can be joined without immediately consolidating equal-degree roots. The sorted-array comparison requires writing 1 materialized sorted output array; its output size therefore matters even when key comparisons are favorable. Use standard amortized bounds for Fibonacci operations and worst-case structural bounds for the other stated methods. Distinguish delaying consolidation from doing no work at all on every possible kind of representation. Which statements are correct? Select all that apply.
+[x] Joining Fibonacci root lists can implement Union in constant amortized time without immediate consolidation.
+[x] Concatenating the binary-heap arrays and rebuilding standard takes O(n) total work.
+[ ] Two explicit sorted arrays can always be merged into a fully materialized sorted array in constant time independent of n.
+[x] The merged explicit array contains twice the original per-queue key count.
+[x] A binomial-heap Union has an O(log n) time bound for these equal-size inputs.
+---
+「Fibonacci接根串列常數」對：Union不立刻整理。「二元接陣列後建堆線性」對：複製2n個元素再線性Build-Heap，仍O(n)。「完整排序輸出常數」錯：單是寫出2n個元素已需線性工作；本例十六筆不是一個常數大小描述。「總數兩倍」對：兩個各n，保留全部鍵共2n。「二項堆對數Union」對：依階數合併如二進位進位，對數級數量的樹要處理。
+
+@q hp3-01 | ds-heap#3 | 1 | 計算
+節點 $x$ 有左子樹（高度 2 的完美二元樹），沒有右孩子。$s(x)$ 是多少？
+== 1
+---
+$s(x)=1+\min(s(\text{左}),s(\text{右}))$，右邊是空的 $s=0$，所以 $s(x)=1$。左邊再深都沒用，看的是最近的空位置。
+
+@q hp3-02 | ds-heap#3 | 2 | 計算
+節點的左孩子 $s=3$、右孩子 $s=2$。這個節點的 $s$ 是多少？符合 leftist 性質嗎？
+== 3,是
+?? s,符合嗎
+---
+$1+\min(3,2)=3$。左 $\ge$ 右，符合。
+
+@q hp3-03 | ds-heap#3 | 2 | 找錯
+In a leftist tree, $s(x)$ is the distance from $x$ to the nearest empty position: $s(\text{empty})=0$ and $s(x)=1+\min(s(\text{left}),s(\text{right}))$; every node needs $s(\text{left})\ge s(\text{right})$. Write $a(b,c)$ for node $a$ with left subtree $b$ and right subtree $c$; the trees below use the keys 10, 15, 20, 25, 30, 40. Which of the following statements are correct? Select all that apply.
+[x] $10(20,\ 15(25,30))$ violates the leftist property.
+[ ] In $10(20(30,40),\ 15)$, the right subtree has the larger $s$ value.
+[ ] $10(20(30,\ \text{empty}),\ 15)$ must swap its two subtrees, because the two $s$ values may not be equal.
+[ ] A leaf has $s=0$.
+[x] In a leftist tree with $n$ nodes, the path that always goes right from the root has at most $\lg(n+1)$ nodes.
+---
+「$10(20,15(25,30))$ 違反」對：根的左孩子 20 是葉子，$s=1$；右孩子 15 有兩個孩子，$s=2$。左 < 右。
+
+「$10(20(30,40),15)$ 右邊 $s$ 較大」錯：左邊 $s=2$、右邊 $s=1$。
+
+「$10(20(30,\text{empty}),15)$ 要交換」錯：20 的右邊是空的，$s(20)=1$；右邊葉子 15 也是 1，相等就符合規定，不用換。
+
+「葉子 $s=0$」錯：$s=0$ 的是空位置；葉子兩邊都是空的，$s=1+0=1$。
+
+「最右路徑最多 $\lg(n+1)$ 個點」對：$s(\text{根})=r$ 時，上面 $r$ 層都是滿的，至少 $2^r-1$ 個點。這是合併只要 $O(\lg n)$ 的原因。
+
+@q hp3-04 | ds-heap#3 | 2 | 計算
+有 20 個節點的 leftist heap，最右路徑（從根一直往右，算節點數）最多幾個節點？
+== 4
+---
+最右路徑 $r$ 個點代表上面 $r$ 層全滿，至少 $2^r-1$ 個點。$2^4-1=15\le20<31$，所以 $r\le4$，也就是 $\lfloor\lg21\rfloor=4$。
+
+@q hp3-05 | ds-heap#3 | 3 | 計算
+Leftist heap 的根 $s=4$，最少有幾個節點？
+== 15
+---
+$s(\text{根})=4$ 表示往下 4 層內都沒有空位置，前 4 層全滿：$1+2+4+8=15$。
+
+@q hp3-06 | ds-heap#3 | 3 | 追蹤
+合併兩棵 leftist min-heap：A＝`2(5(9,),7)`、B＝`3(4(8,),6)`。結果的前序走訪是？
+== 2 3 4 8 6 7 5 9
+== 2,3,4,8,6,7,5,9
+---
+2 當根，合併「7」和 B：3 當根，合併「6」和「7」得 `6(7,)`（交換到左邊）。3 的左 $s=1$、右 $s=1$，不換。回到 2：左 `5(9,)` $s=1$、右 3 那棵 $s=2$，交換。結果 `2(3(4(8,),6(7,)),5(9,))`（程式模擬確認）。
+
+@q hp3-07 | ds-heap#3 | 3 | 追蹤
+合併 A＝`1(3(6,8),4)` 和 B＝`2(5(7,),9)`（leftist min-heap）。過程中一共交換了幾次左右？
+== 1
+---
+1 當根，合併 4 和 B：2 當根，合併 9 和 4：4 當根，右邊接 9 → `4(,9)`，左 $s=0$ < 右，換成 `4(9,)`（第 1 次）。回到 2：左 `5(7,)` $s=1$、右 `4(9,)` $s=1$，不換。回到 1：左 $s=2$、右 $s=2$，不換。
+
+@q hp3-08 | ds-heap#3 | 2 | 追蹤
+空的 leftist min-heap 依序插入 5、3、8、1、4（插入＝跟單一節點合併）。最後的前序走訪是？
+== 1 3 5 8 4
+== 1,3,5,8,4
+---
+5；插 3 → `3(5,)`；插 8 → `3(5,8)`；插 1 → `1(3(5,8),)`；插 4 → 1 的右邊空、接上 4，左 $s=2\ge1$ 不換：`1(3(5,8),4)`。
+
+@q hp3-09 | ds-heap#3 | 3 | 追蹤
+Leftist min-heap `1(3(6,8),2(5(7,),4(9,)))` 做 Extract-min（拿掉根、合併左右子樹）。結果的前序走訪是？
+== 2 3 4 9 8 6 5 7
+== 2,3,4,9,8,6,5,7
+---
+合併 `3(6,8)` 和 `2(5(7,),4(9,))`：2 當根，合併 `4(9,)` 和 `3(6,8)`：3 當根，合併 8 和 `4(9,)`：4 當根、右接 8 → `4(9,8)`。3：左 6（$s=1$）、右 4（$s=2$），換 → `3(4(9,8),6)`。2：左 `5(7,)`（$s=1$）、右 3（$s=2$），換。
+
+@q hp3-10 | ds-heap#3 | 2 | 陷阱
+「Leftist heap 的高度一定是 $O(\lg n)$」對嗎？
+[ ] 對
+[x] 不對
+---
+只有**最右路徑**保證短，左邊可以很深。依序插入 5、4、3、2、1：每個新的最小值變成根、舊的整棵接到左邊，得到一條往左的鏈 `1(2(3(4(5,),),),)`，高度 $n-1$。
+
+@q hp3-11 | ds-heap#3 | 2 | 比較
+Two priority queues with n keys each must become 1 queue retaining all keys. In the array binary-heap design, the destination is a materialized array and the allowed method concatenates both input arrays before applying linear-time Build-Heap. In the standard leftist design, nodes have explicit child links and a stored measure of distance to an empty subtree. Heap shape need not be a complete binary tree.
+
+For an example, each input contains 16 keys, so the output must retain 32 keys, and neither queue can be treated as empty. The leftist merge chooses the smaller root, recursively merges its right subtree with the other heap, and repairs the leftist ordering of children on return. The property bounds the right path rather than every path in the tree. Consider insertion as a merge with a singleton as well as merging the 2 original queues. Compare bounds and the specified representations, without claiming that arbitrary trees are mathematically impossible to represent using arrays with explicit child indices. Which statements are correct? Select all that apply.
+[x] Array binary heaps can be concatenated and rebuilt in $O(n)$ time.
+[x] The stated leftist merge follows right paths and has an $O(\lg n)$ bound.
+[ ] Both materialized array merging and leftist merging have an $O(\lg n)$ bound.
+[x] Leftist insertion can merge the heap with a singleton in $O(\lg n)$ time.
+[x] The specified leftist representation uses explicit child links because its shape need not be complete.
+---
+「二元接起來建堆線性」對：輸出2n個元素，再線性Build-Heap是一種可行做法。「leftist右路徑對數」對：短的是右路徑。「兩種都對數」錯：明定要實體化陣列，光複製2n個鍵便非對數。「插入可合併單點」對：使用同一合併原語。「此表示用明確孩子連結」對：不要求完全二元樹形；這不等於宣稱任意樹不能用帶孩子索引的陣列表示。
+
+@q hp3-12 | ds-heap#3 | 2 | 觀念
+A leftist heap stores s of an empty subtree as 0 and s of a nonempty node as 1 plus the smaller child's s value. Its invariant requires the left child's value to be at least the right child's value. The standard merge descends through right-child links and checks the invariant again while returning from recursion. Children are exchanged when the recursive result makes the right value larger.
+
+Compare inputs with 7 and 15 nodes, and consider general input sizes n1 and n2 that are both at least 2. All logarithms use base 2. As a separate shape example, a heap with 31 nodes is 1 long chain of left children with increasing keys; every missing right subtree has s equal to 0. This chain still satisfies heap order and the leftist invariant. Decide which spine is bounded, and distinguish the usual sum-of-logarithms merge bound from a valid but looser bound involving their product. Which statements are correct? Select all that apply.
+[ ] The left spine of every n-node leftist heap contains at most $\lg(n+1)$ nodes.
+[x] Returning from merge swaps children when $s(\mathrm{left})<s(\mathrm{right})$.
+[ ] Merge follows left spines because the left side is always the shorter one.
+[x] For the stated sizes at least two, $O(\lg n_1\cdot\lg n_2)$ is a valid loose merge upper bound.
+[ ] Every n-node leftist heap has total height $O(\lg n)$.
+---
+「左路徑必對數」錯：三十一點的左鏈就有三十一點，lg32只有五。「必要時交換」對：把較短的空路徑一側放右。「沿較短左側」錯：保證短的是右側。「對數乘積是鬆上界」對：兩個對數都至少一，故其和不超過兩倍乘積；標準較緊界是O(lg n₁＋lg n₂)，不能把較鬆O上界直接判錯。「總高度必對數」錯：同一左鏈可有線性高度，只有右路徑受保證。
+
+@q hp3-13 | ds-heap#3 | 2 | 情境
+2 job servers each maintain a priority queue containing n jobs. During a server shutdown, every pending job must be retained and transferred into the other queue; selecting only the smallest job is not enough. The comparison repeatedly merges nonempty inputs of comparable size, with 16 jobs on each server and 32 jobs in total in the concrete example.
+
+One implementation stores a binary heap in an explicit array, another uses standard pointer-based leftist heaps, and a third maintains fully sorted arrays. Materialized array results must include all input keys rather than defer combining them through a small description. The leftist implementation performs Insert by merging with a singleton and Extract-min by removing the root and merging its children. An unsorted collection can defer ordering, but then finding its minimum still requires inspecting its contents. Compare the whole required operation set rather than treating cheap concatenation of collection descriptions as a constant-time implementation of every priority-queue operation. Which statements are correct? Select all that apply.
+[x] With leftist heaps, each merge takes $O(\lg n)$ time.
+[x] With binary heaps stored in arrays, each merge takes $O(n)$ time.
+[ ] With sorted arrays, each merge takes $O(\lg n)$ time.
+[ ] In a leftist heap, Insert takes $O(1)$ time in the worst case, because it only links a one-node heap to the root.
+[ ] With unsorted arrays, a merge can be done in $O(1)$ time by linking, and Extract-min also takes $O(1)$ time.
+---
+「leftist heap 合併 $O(\lg n)$」對：只沿兩棵的最右路徑走。需要常常合併時就用可合併的堆積。
+
+「二元堆積 $O(n)$」對：只能把陣列接起來再 Build-Heap。
+
+「排好序的陣列 $O(\lg n)$」錯：合併兩個排好的陣列要 $O(n)$。
+
+「leftist Insert 最壞 $O(1)$」錯：Insert 是跟單點的堆積**合併**，新點要沿最右路徑找到位置，$O(\lg n)$，不是直接接在根上。
+
+「沒排序的陣列：合併 $O(1)$、取最小也 $O(1)$」錯：就算用串列串起來能 $O(1)$ 合併，取最小值仍要掃全部，$O(n)$。
+
+@q hp3-14 | ds-heap#3 | 3 | 追蹤
+Skew heap（每次合併後**一律**交換左右）合併 A＝`2(5(9,),7)` 和 B＝`3(4(8,),6)`。結果的前序走訪是？
+== 2 3 6 7 4 8 5 9
+== 2,3,6,7,4,8,5,9
+---
+2 當根，合併 7 和 B：3 當根，合併 6 和 7：6 當根，右接 7 再交換 → `6(7,)`；3 交換左右 → `3(6(7,),4(8,))`；2 交換左右 → `2(3(…),5(9,))`。跟 leftist 的結果不同（程式模擬確認）。
+
+@q hp3-15 | ds-heap#3 | 2 | 比較
+Compare 2 deterministic meldable min-heaps. The leftist heap stores a numeric measure of the shortest downward route to an empty subtree and repairs the ordering of its children after recursively merging along right links. A skew heap uses the same choice of smaller root and recursively merges through the original right child, but unconditionally exchanges the children of visited nodes when returning. No random choice is made in either algorithm.
+
+The example contains 2 heaps of 16 keys each, for 32 keys in total. An individual skew-heap operation may encounter a long right path left by earlier operations, while the analysis bounds total work across a sequence through amortization. The leftist version instead uses its stored information to bound a single merge's right-path work. Distinguish an amortized statement from a worst-case statement and from an expected bound that would require a probability model. The lack of stored leftist measures in the skew heap does not make the 2 guarantees identical. Which statements are correct? Select all that apply.
+?? 複選
+[ ] A skew heap merge takes $O(\lg n)$ expected time, because the children are swapped at random.
+[ ] A leftist heap merge can take $\Theta(n)$ time in the worst case, just like a single skew heap merge.
+[ ] A skew heap merge takes $O(\lg n)$ time in the worst case.
+[x] Both kinds of heaps merge by walking down the right paths of the two trees.
+[ ] A leftist heap stores no extra information in its nodes.
+---
+「skew 期望、隨機交換」錯：skew heap 沒有隨機，路徑上每個點**一律**交換；保證是攤銷 $O(\lg n)$，整串操作平均。
+
+「leftist 最壞也可能 $\Theta(n)$」錯：leftist 靠每個點存的 $s$ 值保證最右路徑很短，最壞 $O(\lg n)$。會出現單次 $\Theta(n)$ 的是 skew heap。
+
+「skew 最壞 $O(\lg n)$」錯：單次合併可能走很長的右路徑。
+
+「兩者都沿右路徑合併」對：差別只在要不要依 $s$ 值決定是否交換。
+
+「leftist 不存額外資訊」錯：每個點要存 $s$ 值。skew heap 用攤銷保證換掉這個儲存和判斷。
+
+@q hp3-16 | ds-heap#3 | 3 | 陷阱
+Leftist heap 中，每個節點的右孩子一定是葉子或空的。對嗎？
+[ ] 對
+[x] 不對
+---
+只要求 $s(\text{左})\ge s(\text{右})$。例如 `10(20(30,40),15(25,))`：右孩子 15 有孩子，但左 $s=2\ge$ 右 $s=1$，合法。
+
+@q hp3-17 | ds-heap#3 | 3 | 計算
+100 個節點的 leftist heap，最右路徑最多幾個節點？
+== 6
+---
+$2^r-1\le100$：$r=6$ 時 63 ≤ 100，$r=7$ 時 127 > 100。所以最多 6 個，合併時每棵最多走 6 步。
+
+@q hp3-18 | ds-heap#3 | 3 | 證明
+證明：leftist heap 的最右路徑有 $r$ 個節點，則它至少有 $2^r-1$ 個節點。
+---
+對 $r$ 歸納。$r=1$：至少 1 個點。設成立，最右路徑 $r+1$ 個點的樹：根的右子樹最右路徑有 $r$ 個點；leftist 性質 $s(\text{左})\ge s(\text{右})=r$，所以左子樹的最右路徑也至少 $r$ 個點。兩邊各至少 $2^r-1$，加根：$2(2^r-1)+1=2^{r+1}-1$。
+
+@q hp3-19 | ds-heap#3 | 3 | 找錯
+In a leftist heap, every node satisfies $s(\text{left}) \ge s(\text{right})$, where $s(x)$ is the smallest number of edges on a downward path from $x$ to an empty subtree. The standard merge recurses along the right spines. A student changes it to recurse along the left spines instead. For example, the standard merge of two leftist heaps of 1000 nodes each follows right spines of at most about 10 nodes each, since $\lg 1001\approx10$. Which of the following statements are correct? Select all that apply.
+[x] In a leftist heap with $n$ nodes, the path from the root that always goes right has $O(\lg n)$ nodes.
+[x] The standard merge, which walks down the right spines, takes $O(\lg n)$ time.
+[x] The student's merge can take $\Omega(n)$ time, because the leftmost path of a leftist heap can contain almost all of its nodes.
+[x] The student's merge still produces a heap-ordered tree.
+[x] In a leftist heap, the left subtree of a node may have fewer nodes than its right subtree.
+---
+「最右路徑 $O(\lg n)$」對：根的 $s$ 值是 $r$ 時，上面 $r$ 層是滿的，至少有 $2^r-1$ 個點，所以 $r\le\lg(n+1)$。
+
+「標準合併 $O(\lg n)$」對：只沿兩棵樹的最右路徑走，總長 $O(\lg n)$。
+
+「沿左邊遞迴可能 $\Omega(n)$」對：leftist 性質只保證右邊短，左邊可以很長，例如依序插入 5、4、3、2、1 後，左邊是一條長度約 $n$ 的鏈。
+
+「仍是 heap」對：每一步仍是較小的根當新根，heap 順序還在，壞掉的是時間保證。
+
+「左子樹點數可以比右子樹少」對：性質比的是 $s$ 值，不是點數。例如左邊只有一個點（$s=1$），右邊是一條往左長的鏈（$s$ 也是 1），右邊的點可以比左邊多很多。五句都對。
+
+@q hp3-20 | ds-heap#3 | 2 | 計算
+合併兩棵 leftist heap，各 7 個和 15 個節點。遞迴合併最多走幾步（每步處理一個節點）？
+== 7
+---
+最右路徑最多 $\lfloor\lg8\rfloor=3$ 和 $\lfloor\lg16\rfloor=4$ 個點；每步把其中一條路往下走一個，最多 $3+4=7$ 步。
+
+@q hp3-21 | ds-heap#3 | 2 | 觀念
+A standard leftist min-heap has explicit child links and a root containing its smallest key. Its mutating operations use 1 merge routine: choose the smaller root, merge along the relevant right path, repair child ordering, and update the stored leftist value on return. Reading the minimum does not mutate the heap and need not invoke that routine.
+
+Begin with 7 keys whose minimum is 1 and consider separate operations from the same initial state. In the insertion trial, a newly allocated node containing 0 is a singleton heap. In the extraction trial, remove the existing root and retain both subtrees as valid leftist heaps that must be combined. A third trial only asks for the smallest current value and leaves all nodes in place. Assume enough storage and constant-time access through the root pointer. Compare these implementations with appending to an implicit complete-tree array, which is the standard binary-heap insertion method rather than the specified leftist representation. Which statements are correct? Select all that apply.
+[x] Insert merges the heap with a new one-node heap.
+[x] Extract-min removes the root and merges its left and right subtrees.
+[ ] Insert appends the new key at the end of an array and moves it up.
+[x] Both Insert and Extract-min take $O(\lg n)$ time.
+[x] Find-min just reads the root and takes $O(1)$ time.
+---
+「Insert ＝ 跟單點合併」對。
+
+「Extract-min ＝ 拿掉根、合併左右子樹」對：根的兩個子樹各自都是 leftist heap。
+
+「放到陣列最後再往上」錯：那是二元堆積的做法；leftist heap 形狀不固定，用指標，不用陣列。
+
+「都是 $O(\lg n)$」對：都只做一次合併。
+
+「Find-min 看根 $O(1)$」對：heap 順序保證根最小，不用合併。
+
+@q hp3-22 | ds-heap#3 | 1 | 計算
+葉子的 $s$ 是多少？空的位置呢？
+== 1,0
+?? 葉子,空
+---
+空的 $s=0$；葉子往左或往右一步就碰到空，$s=1$。
+
+@q hp3-23 | ds-heap#3 | 2 | 追蹤
+空的 leftist min-heap 依序插入 5、4、3、2、1。最後的高度是多少？
+== 4
+---
+每個新元素都比根小，當新根、舊的整棵接到右邊後因為 $s$ 交換到左邊，形成 `1(2(3(4(5,),),),)`，高度 4。這說明 leftist heap 可以很不平衡，但合併照樣快。
+
+@q hp3-24 | ds-heap#3 | 3 | 情境
+A service frequently combines 2 priority queues and also needs insertion, minimum lookup and removal of a minimum. Each input to a union has about n elements, with n at least 2; the concrete comparison uses n equal to 1024 and k equal to 8. Repeat this workload k times on independent comparable-size inputs so that the total count of union requests is an explicit parameter rather than hidden inside n.
+
+The binary-heap alternative materializes the merged array and applies Build-Heap. The standard leftist alternative merges along bounded right paths, with ordinary linked nodes and a root pointer. A Find-min request in either min-heap merely reads its current root. Do not turn a possible difference in representation constants into a theorem that the array version wins for every operation mix. Also distinguish a tight constant bound from a looser logarithmic upper bound, and a per-operation bound from a bound for all k operations together. Which statements are correct? Select all that apply.
+[ ] Both the materialized binary-array union and the leftist union take $O(\lg n)$ time.
+[ ] The total cost of k such unions is $O(\lg n)$ independent of k.
+[ ] Binary arrays are always preferable regardless of how many unions the service performs.
+[x] Leftist Extract-min has an $O(\lg n)$ time bound.
+[x] Leftist Find-min also has a valid $O(\lg n)$ upper bound, although its constant bound is tighter.
+---
+「兩種Union都對數」錯：明定的陣列合併加建堆要線性。「k次總界不看k」錯：請求數不能消失，標準比較為O(k lg n)與O(kn)。「陣列一概較好」錯：常數與操作比例均要看，不能否認不同漸近合併界。「取最小後重合併對數」對。「Find-min的對數上界有效」對：實際只看根為O(1)，而n≥2時O(1)也屬O(lg n)；不緊不等於錯。
+
+@q hp3-25 | ds-heap#3 | 2 | 計算
+Leftist heap `10(20(30,40),15(25,))` 中，各節點的 $s$：根、20、15 各是？
+== 2,2,1
+?? 根,20,15
+---
+葉子 30、40、25 的 $s=1$。20：$1+\min(1,1)=2$。15：右邊空，$1+0=1$。根：$1+\min(2,1)=2$。
+
+@q hp3-26 | ds-heap#3 | 3 | 陷阱
+A leftist-heap merge recursively follows the right paths of its 2 inputs, choosing a smaller root at each step. When recursion returns to a visited node, the recursive result has replaced that node's right subtree. The implementation compares the 2 children's stored s values, exchanges the children if the left value is smaller, and then recomputes the current node's s value.
+
+Use s of an empty subtree equal to 0. At 1 visited node, the old left subtree has s equal to 1, but the newly merged right subtree has s equal to 2. This local repair can occur below the final result's root as well as at the root itself. A separate node outside both traversed right paths has exactly the same children as before the operation. Determine where repairs are permitted, which child determines the recomputed value, and why checking only the new overall root would not maintain the invariant throughout the tree. Which statements are correct? Select all that apply.
+[x] Children may be swapped at any node on the merge path, not only at the new root.
+[ ] Children are swapped only at the new root.
+[x] After a possible swap at node $x$, its $s$-value is updated to one more than the $s$-value of its right child.
+[x] A node that is not on the merge path never has its children swapped during that merge.
+[x] The swaps keep the right path of the result at $O(\lg n)$ nodes.
+---
+「路徑上每個點都可能交換」對：每一層的右子樹都被換成合併的結果，$s$ 值可能變大，都要檢查。
+
+「只在新根交換」錯。
+
+「交換後 $s(x)=s(\text{右})+1$」對：交換後右邊是比較短的那邊，$s(x)$ 由它決定。
+
+「不在路徑上的點不會交換」對：它們的子樹沒變。
+
+「交換讓右路徑維持 $O(\lg n)$」對：交換正是為了保持 leftist 性質，而 leftist 性質保證最右路徑短。
+
+@q hp3-27 | ds-heap#3 | 2 | 比較
+Insert the distinct keys 1 through 7, in increasing order, into 2 initially empty min-priority queues. The first is an array binary heap, whose insertion appends a key and exchanges it upward only if it is smaller than its parent. The second is a standard leftist heap, whose insertion merges the current heap with a singleton carrying the new key. Both structures must retain ordinary min-heap order.
+
+After all insertions, compare the roots and the binary array contents. A separate binary-heap trial uses the reverse arrival order, 7 through 1, while keeping the same insertion algorithm. The leftist operation need not leave the most recently allocated node at the root: comparison of root keys still governs the merge. Neither implementation has permission to change a key's value, and there are no deletions in these trials. Use insertion order to reason about whether upward exchanges are necessary, rather than confusing a particular array layout with the universal minimum-at-root property. Which statements are correct? Select all that apply.
+[x] The root of both heaps is 1.
+[x] The binary heap array is $[1, 2, 3, 4, 5, 6, 7]$, and no swap is ever needed.
+[ ] The root of the leftist heap is 7, because in a leftist heap the most recently inserted key is merged in at the top.
+[x] In any min-heap, the root holds the minimum key.
+[x] Inserting the same keys into the binary heap in the order $7, 6, \ldots, 1$ would need swaps.
+---
+「根都是 1」對、「任何 min-heap 的根都是最小值」對：heap 性質保證。
+
+「陣列就是 1～7、不用交換」對：每個新鍵都比爸爸大，放在最後一格就好。
+
+「leftist 的根是 7」錯：最後插入的不一定在根，最小的才在根。
+
+「反過來插入要交換」對：每個新鍵都比目前所有鍵小，要一路爬到根。
+
+@q hp4-01 | ds-heap#4 | 1 | 計算
+$B_5$ 有幾個節點？高度是多少？
+== 32,5
+?? 節點數,高度
+---
+每升一級節點加倍、高度加 1：$2^5=32$、高度 5。
+
+@q hp4-02 | ds-heap#4 | 2 | 計算
+$B_5$ 在深度 3 有幾個節點？
+== 10
+---
+深度 $i$ 有 $\binom ki$ 個：$\binom53=10$。各深度 1、5、10、10、5、1，合計 32。
+
+@q hp4-03 | ds-heap#4 | 2 | 計算
+有 27 個元素的 binomial heap 由哪些樹組成？（寫下標，大的先）
+== 4 3 1 0
+== 4,3,1,0
+---
+$27=11011_2=16+8+2+1$：$B_4$、$B_3$、$B_1$、$B_0$。
+
+@q hp4-04 | ds-heap#4 | 2 | 計算
+63 個元素的 binomial heap 有幾棵樹？64 個呢？
+== 6,1
+?? 63個,64個
+---
+$63=111111_2$，6 棵（$B_5$～$B_0$）；$64=1000000_2$，只有一棵 $B_6$。多一個元素，樹反而從 6 棵變 1 棵。
+
+@q hp4-05 | ds-heap#4 | 3 | 計算
+合併兩個 binomial heap，各有 13 個和 7 個元素。合併後由哪些樹組成？過程中「兩棵合成一棵」發生幾次？
+== 4 2,4
+?? 樹,合成次數
+---
+$1101_2+0111_2$：位 0 兩棵合一（1 次，進位）；位 1 一棵＋進位，合一（2）；位 2 兩棵＋進位共三棵，合兩棵留一棵（3）；位 3 一棵＋進位，合一（4）；位 4 剩進位。結果 $20=10100_2$：$B_4$、$B_2$。也可以用「每合一次少一棵」：$3+3-2=4$。
+
+@q hp4-06 | ds-heap#4 | 2 | 計算
+23 個元素的 binomial heap 再插入 1 個，會發生幾次「兩棵合成一棵」？
+== 3
+---
+$23=10111_2$，加 1 從最低位連續進位 3 次（尾巴有 3 個 1）：$11000_2$，剩 $B_4$、$B_3$。
+
+@q hp4-07 | ds-heap#4 | 3 | 計算
+空的 binomial heap 連續插入 100 個元素，「兩棵合成一棵」總共發生幾次？
+== 97
+---
+每合一次樹少一棵；插入 100 次共做出 100 棵單點樹，最後剩 $100=1100100_2$ 的 3 棵，所以合了 $100-3=97$ 次——跟二進位計數器一樣，平均每次插入不到 1 次。
+
+@q hp4-08 | ds-heap#4 | 2 | 觀念
+A binomial tree of order zero is a single node, and height counts edges rather than nodes. A tree of order k is constructed by linking two trees of order k minus one, making one root a child of the other. No nodes are created or discarded during a link. In the concrete construction, start with 16 singleton trees and repeatedly link equal-order trees until a single tree of order 4 remains.
+
+Record the height of the final tree, the orders of its root's children, and the number of nodes at each depth. For the depth calculation, use depth 0 for the root and examine depth 2 as a numerical check. Compare the recursive construction with the incorrect idea that every child has the same order as the largest child. The total node count alone does not determine the depth of each node, so the recursive structure must be used as well. Which statements are correct? Select all that apply.
+?? 複選
+[ ] The root of $B_k$ has $k-1$ children, which are roots of $B_{k-2}, \ldots, B_0$.
+[ ] $B_k$ has $2^k$ nodes and height $k+1$.
+[ ] All children of the root of $B_k$ are roots of copies of $B_{k-1}$.
+[x] $B_k$ has exactly $\binom{k}{d}$ nodes at depth $d$.
+[ ] $B_k$ is formed by linking $k$ copies of $B_1$.
+---
+「根有 $k-1$ 個孩子」錯：$B_k$ 是兩棵 $B_{k-1}$ 連起來，根多了一個 $B_{k-1}$ 孩子；遞迴下去，根有 $k$ 個孩子 $B_{k-1},\ldots,B_0$。
+
+「$2^k$ 個點、高 $k+1$」錯：點數對，但高度是 $k$：$B_0$ 高 0，每連一次高度加 1。
+
+「孩子全是 $B_{k-1}$」錯：大小各不相同。
+
+「深度 $d$ 有 $\binom kd$ 個點」對：這也是名字裡「binomial」的由來。
+
+「$k$ 個 $B_1$ 連起來」錯：那樣點數只有 $2k$。
+
+@q hp4-09 | ds-heap#4 | 3 | 追蹤
+13 個元素的 binomial heap（$B_3$、$B_2$、$B_0$），最小值在 $B_3$ 的根。做 Extract-min 之後由哪些樹組成？合成了幾次？
+== 3 2,3
+?? 樹,合成次數
+---
+拿掉 $B_3$ 的根，它的孩子 $B_2$、$B_1$、$B_0$ 是一個 7 個元素的 heap；剩下的是 $B_2$、$B_0$（5 個）。$5+7$：$0101+0111$，位 0、1、2 各合一次，得 $12=1100_2$：$B_3$、$B_2$。
+
+@q hp4-10 | ds-heap#4 | 2 | 計算
+1000 個元素的 binomial heap，Find-min 要看幾個根？
+== 6
+---
+$1000=1111101000_2$，有 6 個 1，就是 6 棵樹、6 個根。最多是 $\lfloor\lg n\rfloor+1=10$ 棵。
+
+@q hp4-11 | ds-heap#4 | 2 | 陷阱
+「Binomial heap 的 Insert 最壞是 $O(1)$」對嗎？
+[ ] 對
+[x] 不對
+---
+最壞要連續進位 $\lg n$ 次（例如 $n=2^k-1$ 時插入），$O(\lg n)$。$O(1)$ 是攤銷：跟二進位計數器一樣，平均每次合成不到 1 次。
+
+@q hp4-12 | ds-heap#4 | 2 | 比較
+A service merges two nonempty min-priority queues and must retain every item. For the general complexity comparison each input has n items, and the binary-heap output must be a materialized array. The permitted binary method concatenates the inputs and then applies linear-time Build-Heap. The binomial method merges root lists by order and links trees with equal orders until every surviving order is unique.
+
+Trace a separate unequal-size example in which the binomial heaps contain 13 and 11 items. Their sizes in binary are 1101 and 1011, so each initial root list contains three trees. A link preserves the total number of items while reducing the number of roots by one. Determine the final size and tree orders before judging the proposed result. In particular, a tree of order 0 represents one real item; it cannot remain as an extra tree after all 24 items have already been accounted for by larger trees. Which statements are correct? Select all that apply.
+[x] Two binary heaps stored in arrays can be merged in $O(n)$ time by concatenating the arrays and running Build-Heap.
+[x] Two binomial heaps can be merged in $O(\lg n)$ time.
+[ ] Two binary heaps can be merged in $O(\lg n)$ time by inserting the elements of one heap into the other.
+[ ] Merging binomial heaps with 13 and 11 elements produces a heap that consists of exactly the trees $B_4$, $B_3$, and $B_0$.
+[ ] Merging binomial heaps with 13 and 11 elements requires no linking of trees, because the two heaps contain trees of different sizes.
+---
+「二元堆積串起來 Build-Heap，$O(n)$」對：Build-Heap 是線性時間。
+
+「binomial heap $O(\lg n)$」對：合併就像二進位加法，每一位最多連結一次，共 $O(\lg n)$ 位。
+
+「一個一個插入，$O(\lg n)$」錯：要插 $n$ 次，每次 $O(\lg n)$，共 $O(n\lg n)$。
+
+「13＋11 得到 $B_4$、$B_3$、$B_0$」錯：$13=1101_2$、$11=1011_2$，相加 $24=11000_2$，結果只有 $B_4$ 和 $B_3$；兩個 $B_0$ 已經進位連成 $B_1$。
+
+「不用連結」錯：兩邊都有 $B_0$ 和 $B_3$，二進位加法有進位，就要連結（兩個 $B_0$ 連成 $B_1$，一路進位上去）。
+
+@q hp4-13 | ds-heap#4 | 2 | 計算
+100 個元素的 binomial heap，一個節點最多有幾個孩子？
+== 6
+---
+最大的樹是 $B_6$（64 個點，$100=1100100_2$），它的根有 6 個孩子。一般最多 $\lfloor\lg n\rfloor$ 個。
+
+@q hp4-14 | ds-heap#4 | 3 | 計算
+$B_4$ 有幾個葉子？
+== 8
+---
+葉子是沒有孩子的點。$B_k$ 由兩棵 $B_{k-1}$ 接成，接上去那棵的根變成內部點，但它原本就有孩子（$k-1\ge1$ 時）不是葉子，所以葉子數加倍：$B_1$ 有 1 個、$B_2$ 2 個、$B_3$ 4 個、$B_4$ 8 個（$2^{k-1}$）。
+
+@q hp4-15 | ds-heap#4 | 3 | 證明
+證明：$B_k$ 在深度 $i$ 恰有 $\binom ki$ 個節點。
+---
+對 $k$ 歸納。$B_0$：深度 0 有 1 個 $=\binom00$。$B_k$ 是兩棵 $B_{k-1}$：一棵在原位（深度 $i$ 有 $\binom{k-1}i$ 個），另一棵接到根下面、整棵往下一層（深度 $i$ 的點來自它的深度 $i-1$，$\binom{k-1}{i-1}$ 個）。合計 $\binom{k-1}i+\binom{k-1}{i-1}=\binom ki$（巴斯卡公式）。
+
+@q hp4-16 | ds-heap#4 | 2 | 追蹤
+兩棵 $B_1$：一棵是 3 帶孩子 8，另一棵是 7 帶孩子 9（min-heap）。合成一棵 $B_2$ 後，根是誰？根有哪些孩子？
+== 3,7 8
+?? 根,根的孩子
+---
+根比較小的當新根：3。7 那棵整個接到 3 下面當最左孩子，所以 3 的孩子是 7（帶 9）和 8。
+
+@q hp4-17 | ds-heap#4 | 2 | 觀念
+A canonical binomial min-heap contains at most one tree of each order and obeys min-heap order within every tree. Start with a heap containing 13 nodes. Its root list therefore represents the binary expansion 1101: trees of orders 3, 2 and 0. Tree height counts edges, and an order-k tree contains exactly two to the power k nodes. Every root can be inspected through the root list.
+
+Consider separate trials that decrease the key of a known node, insert one new singleton, or locate a minimum. Decrease-key exchanges a key and its associated item upward while its parent is larger. Insertion may cause links analogous to carries in binary addition; a general worst-case bound must cover sizes other than 13 as well. The minimum need not be the first root in a list ordered by tree degree, but heap order restricts where it can occur. Which statements follow from these representation rules? Select all that apply.
+[x] Decrease-key takes $O(\lg n)$ worst-case time: the key moves up inside its own tree.
+[x] Insert takes $O(\lg n)$ time in the worst case.
+[x] The tallest tree in the heap, $B_k$, has height $k\le\lg n$.
+[x] The heap contains at most $\lfloor\lg n\rfloor+1$ trees.
+[x] The minimum key is always at the root of one of the trees.
+---
+「Decrease-key $O(\lg n)$」對：每棵樹都是 heap，值變小就往上和父親交換，最多爬到根。
+
+「Insert 最壞 $O(\lg n)$」對：像二進位加 1，最壞一路進位 $O(\lg n)$ 次。
+
+「最高的樹高 $k\le\lg n$」對：$B_k$ 有 $2^k$ 個節點，$2^k\le n$。
+
+「最多 $\lfloor\lg n\rfloor+1$ 棵」對：哪些 $B_k$ 存在就是 $n$ 的二進位哪幾位是 1，例如 $n=13=1101_2$ 有 $B_3,B_2,B_0$ 三棵。
+
+「最小值在某棵樹的根」對：每棵樹都是 heap，所以找最小只要看 $O(\lg n)$ 個根。五句都對。
+
+@q hp4-18 | ds-heap#4 | 2 | 計算
+Binomial heap 由 $B_5$、$B_2$、$B_0$ 組成，共有幾個元素？
+== 37
+---
+$32+4+1=37=100101_2$。
+
+@q hp4-19 | ds-heap#4 | 2 | 陷阱
+一個合法的 binomial heap 可以有兩棵 $B_2$。對嗎？
+[ ] 對
+[x] 不對
+---
+每種大小最多一棵，所以樹的組成剛好對應 $n$ 的二進位。合併過程中暫時出現兩棵一樣大的，要馬上合起來。
+
+@q hp4-20 | ds-heap#4 | 3 | 計算
+31 個元素的 binomial heap 插入 1 個元素，會合成幾次？合完剩幾棵樹？
+== 5,1
+?? 合成次數,剩幾棵
+---
+$31=11111_2$，加 1 連續進位 5 次，得 $100000_2$：一棵 $B_5$。這就是單次插入最壞 $O(\lg n)$ 的情況。
+
+@q hp4-21 | ds-heap#4 | 2 | 觀念
+A binomial min-heap stores 31 logical items with finite keys, and a handle identifies an item x that must be deleted. The implementation can assign a special sentinel key smaller than every ordinary key. During Decrease-key it exchanges keys together with their associated item records; the handle follows the logical item, so it does not accidentally identify a different item after an exchange.
+
+Evaluate the method that decreases x to the sentinel and then calls Extract-min. An order-4 tree has 16 nodes and height 4, and no tree in the 31-item heap can have larger order. Removing a root still requires incorporating its children into the remaining root list. For comparison, a binary heap also has a known location for the item and supports upward repair after a decrease. Do not confuse deleting a logical item with physically freeing the originally addressed node while leaving its old item somewhere else in the structure. Which statements are correct? Select all that apply.
+?? 複選
+[x] In a binomial heap with $n$ nodes, decreasing $x$'s key to $-\infty$ and then running Extract-min deletes $x$ in $O(\lg n)$ time.
+[ ] In a binomial heap, $x$ can simply be cut out in $O(1)$ time.
+[ ] In a binomial heap with $n$ nodes, Extract-min takes $O(1)$ time, because the minimum is at a root.
+[ ] Deleting an arbitrary node from a binomial heap requires rebuilding the whole heap in $O(n)$ time.
+[ ] The same method works in a binary min-heap with $n$ elements, but there it takes $\Theta(n)$ time, because the heap is stored in an array.
+---
+「降到 $-\infty$ 再 Extract-min」對：往上爬最多走樹高 $\lg n$，Extract-min 也是 $O(\lg n)$。
+
+「直接剪掉 $O(1)$」錯：剪掉後它的孩子們要重新放回去，還得維持每棵樹都是 binomial tree，沒那麼便宜。
+
+「Extract-min $O(1)$」錯：要比 $O(\lg n)$ 個根才找得到最小的；拿掉後它的孩子們組成一個 binomial heap，再和原本的合併，也是 $O(\lg n)$。
+
+「要整個重建」錯：把鍵降到 $-\infty$ 再做 Extract-min 就好，兩步都是 $O(\lg n)$。
+
+「二元 heap 要 $\Theta(n)$」錯：位置已知，往上換到根 $O(\lg n)$，再 Extract-min $O(\lg n)$。這招對很多堆積都適用。
+
+@q hp4-22 | ds-heap#4 | 2 | 找錯
+Two valid binomial min-heaps each contribute one tree of order 3. The roots have keys 4 and 9, and all keys inside each tree satisfy ordinary parent-not-greater-than-child order. Each tree contains 8 nodes. A link joins the trees by making one root a child of the other and changes neither any key nor the internal links already present within either input tree.
+
+An erroneous implementation places the root with key 4 below the root with key 9. Compare this result with the correctly directed link, considering both structural properties and key order. Count the combined nodes and the final tree order separately: a wrong comparison does not make nodes disappear or prevent the underlying unlabeled shape from being a binomial tree. The same reasoning should extend from order 3 to arbitrary equal order k. Determine which claimed properties are preserved and which require the smaller key to become the parent. Which statements are correct? Select all that apply.
+[x] This violates min-heap order, because a smaller key ends up below a larger one.
+[x] The correct link makes the tree with the smaller root the new root.
+[x] Two linked $B_k$ trees still have $2^{k+1}$ nodes in total; only the key order is wrong.
+[x] Linking two $B_k$ trees correctly gives a $B_{k+1}$ tree.
+[ ] In a min-heap, the direction of the link does not matter, as long as the two trees have the same order.
+---
+「違反 min-heap」對：min-heap 要爸爸 $\le$ 孩子。
+
+「根比較小的當新根」對：另一棵接下去當它的孩子。
+
+「節點數仍是 $2^{k+1}$」對：形狀也一樣是 $B_{k+1}$，問題只在順序。
+
+「兩棵 $B_k$ 變 $B_{k+1}$」對。
+
+「方向不重要」錯。
+
+@q hp4-23 | ds-heap#4 | 3 | 比較
+Use a binomial-heap insertion implementation specialized to adding a singleton. It begins at order 0, links whenever that order is already occupied, and stops immediately at the first unoccupied order. It does not scan the rest of the root list after stopping. Charge one unit per link plus constant overhead per insertion, so this question measures the carry work of the specified implementation.
+
+Start from an empty heap and insert 16 items. As intermediate checks, inserting into a 7-item heap encounters occupied orders 0, 1 and 2; inserting into a 6-item heap encounters an unoccupied order 0. Every link reduces the current root count by one, while every newly inserted singleton first increases that count by one. Use these accounting facts to compare total links over the whole sequence with the cost of an individual insertion. An amortized bound across a sequence must not be interpreted as the same worst-case bound for every operation. Which statements are correct? Select all that apply.
+[x] Inserting into a binomial heap with $n$ nodes mirrors adding 1 to $n$ in binary: each linking of two trees corresponds to a 1 bit turning into 0.
+[ ] Over $n$ insertions, the total number of linkings can be as large as about $n\lg n$.
+[ ] Every insertion performs exactly one linking.
+[x] A single insertion can take $\Theta(\lg n)$ time.
+[ ] Since the average cost per insertion is $O(1)$, every single insertion takes $O(1)$ time.
+---
+「插入就是二進位加 1」對：$n$ 的二進位第 $i$ 位是 1 表示有 $B_i$。加一棵 $B_0$ 時，碰到同大小的就合成往上進位。
+
+「總合成數可到約 $n\lg n$」錯：第 $i$ 位每 $2^i$ 次才進位一次，總數小於 $n$；精確地說是 $n$ 減去 $n$ 二進位的 1 的個數。
+
+「每次恰好一次合成」錯：$n$ 是偶數時（最低位 0）插入不用合成；$n=7=111_2$ 時要合成 3 次。
+
+「單次可到 $\Theta(\lg n)$」對：$n=2^k-1$ 時一路進位 $k$ 次。
+
+「平均 $O(1)$ 就每次 $O(1)$」錯：平均（攤銷）是整串操作的總成本除以次數，個別一次仍可能很貴，上一條就是例子。
+
+@q hp4-24 | ds-heap#4 | 1 | 觀念
+Binomial heap 的每一棵樹都必須滿足什麼？
+[x] 是 min-heap（爸爸 ≤ 孩子）
+[ ] 是完全二元樹
+[ ] 每個點的左子樹都比右子樹小
+[ ] 所有葉子同深度
+---
+每棵是 binomial tree 而且是 min-heap，所以最小值一定在某個根上。$B_k$ 不是二元樹，根有 $k$ 個孩子。
+
+@q hp4-25 | ds-heap#4 | 2 | 情境
+A workload frequently inserts jobs and merges two job queues, but removes minima only occasionally. Compare a materialized array binary heap with a canonical binomial heap. Each union combines 2 nonempty queues of n items each, with n equal to 16 in the numerical example, so the final queue must represent 32 items. The binary method concatenates both arrays and applies linear-time Build-Heap; the binomial method links equal-order trees while combining ordered root lists.
+
+For insertion, distinguish a worst-case claim from an amortized claim. A binomial heap whose size has many trailing binary ones can perform multiple links during one insertion. For minimum removal, the number of roots is bounded by the number of possible tree orders, rather than by the total number of stored items. Assume ordinary implementations and compare asymptotic operation bounds; the workload description alone does not specify enough machine-level constants to determine an exact running time or guarantee a measured winner. Which statements are correct? Select all that apply.
+?? 複選
+[ ] In a binomial heap, Insert takes $O(1)$ worst-case time and Union also takes $O(1)$ time.
+[x] In an array-based binary heap, Union takes $O(n)$ time.
+[ ] The binary heap is better here, since its Union takes $O(\lg n)$ time.
+[ ] In a binomial heap, Extract-min takes $\Theta(n)$ time, because every tree must be examined.
+[ ] The two structures perform the same here.
+---
+「binomial：Insert 最壞 $O(1)$、Union $O(1)$」錯：Insert 是攤銷 $O(1)$、最壞 $O(\lg n)$；Union 是 $O(\lg n)$。Union 只要 $O(1)$ 的是 Fibonacci heap。
+
+「二元堆積 Union $O(n)$」對：只能把陣列接起來重建，Union 是二元堆積的弱點。
+
+「二元堆積比較好」錯。
+
+「binomial Extract-min $\Theta(n)$」錯：只有 $O(\lg n)$ 棵樹，看一遍根是 $O(\lg n)$，整理也是 $O(\lg n)$。
+
+「一樣」錯。
+
+@q hp4-26 | ds-heap#4 | 3 | 計算
+$B_6$ 根的 6 個孩子分別是幾個節點的樹？加起來再加上根，驗算總數。
+== 32 16 8 4 2 1,64
+?? 孩子大小,總數
+---
+孩子依序是 $B_5,\dots,B_0$：$32+16+8+4+2+1=63$，加根 64 $=2^6$。
+
+@q hp4-27 | ds-heap#4 | 2 | 計算
+6 個元素的 binomial heap 和 9 個元素的合併，結果有哪些樹？
+== 3 2 1 0
+== 3,2,1,0
+---
+$6+9=15=1111_2$：$B_3$、$B_2$、$B_1$、$B_0$。過程：$0110+1001$ 沒有任何一位兩邊都有，所以一次都不用合成，直接把樹放在一起。
+
+@q hp5-01 | ds-heap#5 | 2 | 計算
+空的 Fibonacci heap 連續插入 10 個元素，再做一次 Extract-min。consolidate 之後剩幾棵樹？這次合併了幾次？
+== 2,7
+?? 剩幾棵,合併次數
+---
+插入不整理，根串列有 10 個單點。拿掉最小的剩 9 個；度數一樣就兩兩合併，跟二進位加法一樣：$9=1001_2$，剩度數 3 和度數 0 兩棵。每合一次少一棵：$9-2=7$ 次。
+
+@q hp5-02 | ds-heap#5 | 3 | 計算
+空的 Fibonacci heap 連續插入 100 個元素，再做一次 Extract-min。這一次要合併幾次？
+== 95
+---
+剩 99 個單點，$99=1100011_2$ 有 4 個 1，最後剩 4 棵，合併 $99-4=95$ 次。這一次是 $\Theta(n)$，但用的是前面 100 次插入存下的位能。
+
+@q hp5-03 | ds-heap#5 | 2 | 計算
+Fibonacci heap 的位能 $\Phi=t+2m$。目前 7 棵樹、4 個標記。再插入一個元素後 $\Phi$ 是多少？
+== 16
+---
+插入前 $7+2\cdot4=15$；插入多一棵樹，$\Phi=16$。實際成本 $O(1)$、$\Delta\Phi=1$，攤銷 $O(1)$。
+
+@q hp5-04 | ds-heap#5 | 3 | 計算
+Fibonacci heap 根串列有 7 棵樹，度數 1、0、2、0、1、0、0（還沒剪過任何節點，每棵度數 $d$ 的樹有 $2^d$ 個點）。consolidate 後剩哪些度數？合併了幾次？
+== 3 2,5
+?? 度數,合併次數
+---
+點數 $2+1+4+1+2+1+1=12=1100_2$：剩度數 3 和 2。每合一次少一棵：$7-2=5$。
+
+@q hp5-05 | ds-heap#5 | 2 | 追蹤
+In a Fibonacci min-heap, root z has key 4, its child y has key 10, and y has a child x with key 18. Node y is not marked, and x has not yet lost its parent. Decrease x's key to 2, making the new key smaller than y's key. All other keys and parent-child relations are initially unchanged, and the standard cut and cascading-cut procedures are used.
+
+Trace the actual cut, the movement into the root list, and the handling of y's mark. As a separate counterfactual trial, restore the same initial tree but mark y before decreasing x; determine whether losing another child then causes y to be cut from z. A root ends the upward cascading procedure. Compare these procedures with binary-heap repair by exchanging a decreased key with its parent: the Fibonacci algorithm uses structural cuts rather than repeatedly swapping x's key upward through its original ancestors. Which statements are correct? Select all that apply.
+[x] $x$ is cut from $y$ and added to the root list.
+[x] $y$ becomes marked.
+[x] $y$ stays attached to its own parent.
+[ ] $x$ and $y$ swap positions, as in a binary heap, and $x$ keeps moving up while it is smaller than its parent.
+[x] Had $y$ already been marked, $y$ would also be cut, and such cuts could continue further up the tree.
+---
+「$x$ 剪下放進根串列」對：heap 性質被破壞，直接剪掉，不往上換。
+
+「$y$ 被標記」對：$y$ 不是根，第一次失去孩子只做標記。
+
+「$y$ 留在原位」對：沒有標記時只標記、不剪。
+
+「和 $y$ 交換」錯：那是二元堆積的作法，要 $O(\lg n)$；Fibonacci heap 用剪下換來攤銷 $O(1)$。
+
+「$y$ 已標記就跟著剪，可能一路往上」對：這是連鎖剪下（cascading cut）。
+
+@q hp5-06 | ds-heap#5 | 3 | 追蹤
+Fibonacci heap 中有一條路 $w\to z\to y\to x$（$w$ 是 $z$ 的爸爸……），$w$ 不是根且沒標記，$z$、$y$ 都有標記。把 $x$ 改小到比 $y$ 小，總共剪了幾刀？最後哪個節點有標記？
+== 3,w
+?? 剪幾刀,有標記的
+---
+剪 $x$；$y$ 已標記，剪 $y$；$z$ 已標記，剪 $z$；$w$ 沒標記，標記它，停。剪下的 $y$、$z$ 變成根，標記清掉。
+
+@q hp5-07 | ds-heap#5 | 3 | 計算
+上一題的 cascading cut（剪 3 刀，$y$、$z$ 的標記清掉，$w$ 新標記），位能 $\Phi=t+2m$ 改變了多少？
+== 1
+---
+根多 3 棵：$\Delta t=3$。標記少 2 個、多 1 個：$\Delta m=-1$。$\Delta\Phi=3-2=1$。實際剪了 3 刀，但每個被清掉的標記退回 2，攤銷就是常數——剪幾刀都一樣。
+
+@q hp5-08 | ds-heap#5 | 2 | 陷阱
+「Fibonacci heap 的 Decrease-key 最壞是 $O(1)$」對嗎？
+[ ] 對
+[x] 不對
+---
+cascading cut 可能一路剪到根附近，單次可以到 $O(\lg n)$ 甚至更多；$O(1)$ 是攤銷，靠標記存下的位能付。
+
+@q hp5-09 | ds-heap#5 | 3 | 計算
+Fibonacci heap 中度數 5 的節點，它的子樹至少有幾個節點？（用費氏數 $F_1=F_2=1$，下界是 $F_{k+2}$）
+== 13
+---
+$F_7=13$（1, 1, 2, 3, 5, 8, 13）。對照 binomial tree 度數 5 有 32 個點；被剪過之後會變少，但有 cascading cut，最少還有 13 個。
+
+@q hp5-10 | ds-heap#5 | 3 | 計算
+100 個元素的 Fibonacci heap，一個節點的度數最多是多少？（用 $F_{k+2}\le n$）
+== 9
+---
+$F_{11}=89\le100<144=F_{12}$，所以 $k+2\le11$，$k\le9$。Binomial heap 是 6；Fibonacci 稍大，但仍是 $O(\lg n)$。
+
+@q hp5-11 | ds-heap#5 | 2 | 觀念
+A standard Fibonacci heap uses marks and cascading cuts to limit how many children a nonroot node can lose while remaining attached to its parent. The degree analysis relates the minimum possible subtree size of a degree-k node to Fibonacci numbers. Define the sequence by F0 equal to 0, F1 equal to 1, and each subsequent term equal to the sum of the preceding two terms.
+
+For numerical checks, a degree-4 node requires at least F6 nodes, while a degree-6 node requires at least F8 nodes. Compute these values and compare them with a heap containing only 13 nodes. This is a necessary size condition, rather than a statement that every subtree of that size has the corresponding degree. Separately inspect Insert: it adds a singleton root and updates the minimum pointer without needing to consolidate equal-degree roots. Decide which operation's analysis actually needs a logarithmic maximum-degree guarantee. Which statements are correct? Select all that apply.
+[x] A degree-k node has at least $F_{k+2}$ nodes in its subtree.
+[x] The exponential growth of these numbers gives an $O(\lg n)$ maximum degree.
+[ ] A heap with only 13 nodes can contain a degree-6 node under the stated size bound.
+[ ] A degree-4 node can have a subtree of just 4 nodes because its root already counts as one.
+[ ] The constant amortized Insert bound depends on this logarithmic degree theorem.
+---
+「至少費氏數下界」對：由保留孩子與連鎖剪下的限制得到。「最大度數對數」對：費氏數隨索引呈指數成長。「十三點可有度六」錯：F8＝21，已超出全堆點數。「度四只需四點」錯：F6＝8。「插入常數靠度數界」錯：插入只接單點根與更新最小指標；度數界用在Extract-min整理的攤銷分析。
+
+@q hp5-12 | ds-heap#5 | 2 | 比較
+A Fibonacci min-heap maintains a root list, a minimum pointer, node degrees and marks. Begin with 1024 successive singleton insertions and no extraction. The heap can therefore have 1024 roots even though its minimum is directly available. A subsequent Extract-min must examine the remaining roots and consolidate equal-degree trees, so that individual operation can perform much more than constant actual work.
+
+Compare standard amortized bounds for the listed operations, taking each operation in a valid sequence with the usual potential analysis. Decrease-key may trigger several cuts, but changes in marks and roots pay for that work across a sequence. Union splices two root lists and updates a minimum pointer; it does not eagerly link every equal-degree pair. In a separate small union trial, the input lists have 3 and 5 roots and need only a constant number of list-boundary changes. Distinguish amortized guarantees from claims that every actual execution touches only a constant number of nodes. Which operations qualify? Select all that apply.
+[x] Insert
+[x] Decrease-key
+[ ] Extract-min
+[x] Find-min
+[x] Union of two Fibonacci heaps
+---
+「Insert」對：只把新節點丟進根串列，實際也是 $O(1)$。
+
+「Decrease-key」對：剪下來丟到根串列，可能連鎖剪（cascading cut），但用位能函數分攤後是 $O(1)$。
+
+「Find-min」對：一直有指標指著最小的根。
+
+「Union」對：兩條根串列接起來、比一下最小值。
+
+「Extract-min」錯：前面拖延的整理工作（把同度數的樹合併）都在這裡做，攤銷 $O(\lg n)$。Delete＝Decrease-key 到負無限大＋Extract-min，所以也是 $O(\lg n)$。
+
+@q hp5-13 | ds-heap#5 | 3 | 情境
+An application chooses a min-priority queue for 1024 items. In a simplified storage model, the binary heap stores only an 8-byte key per item in a contiguous array. A Fibonacci node stores the same 8-byte key, four 8-byte links and 8 additional bytes of degree and mark information. Ignore allocation headers, alignment padding and any payload common to both representations so that the comparison has explicitly stated costs.
+
+The workload has many Insert and Extract-min operations but relatively few Decrease-key calls. Both implementations are correct, and the simplified byte model alone does not supply an exact execution-time prediction. Compare memory footprint, contiguous accesses, pointer-related work and the operation mix before interpreting the asymptotic advantage of a Fibonacci heap. An efficient amortized bound for one operation does not imply that all operations have that bound, nor does a larger constant factor disprove the algorithm's correctness. Identify reasonable explanations for choosing the binary heap in this setting. Which statements are correct? Select all that apply.
+?? 複選
+[ ] Each node of a Fibonacci heap needs fewer pointers than an element of a binary heap.
+[x] A binary heap stores its elements contiguously in an array, which makes its memory accesses fast.
+[ ] Fibonacci heaps give wrong results in some cases.
+[ ] A binary heap supports Decrease-key in $O(1)$ time.
+[ ] The Fibonacci heap loses its advantage only when the algorithm performs many Decrease-key operations.
+---
+「Fibonacci heap 指標比較少」錯：剛好相反，每個節點要存爸爸、孩子、左右兄弟、度數、標記，常數大。
+
+「二元堆積用陣列、連續存放」對：位置連續，常數很小。
+
+「Fibonacci heap 會出錯」錯：它是正確的，只是慢。
+
+「二元堆積 Decrease-key $O(1)$」錯：要往上浮，$O(\lg n)$。
+
+「Decrease-key 多時才失去優勢」錯：方向反了。它的優勢來自攤銷 $O(1)$ 的 Decrease-key，Decrease-key **少**時優勢才消失。
+
+@q hp5-14 | ds-heap#5 | 3 | 找錯
+有人實作 Fibonacci heap 時拿掉標記和 cascading cut：Decrease-key 只剪 $x$ 本身。會出什麼問題？
+[x] 樹可能被剪得很稀疏，度數 $k$ 的節點底下只剩很少點，最大度數不再是 $O(\lg n)$，Extract-min 的界壞掉
+[ ] Decrease-key 會變成 $O(n)$
+[ ] 結果不再是 min-heap
+[ ] 沒問題，只是比較省記憶體
+---
+最大度數的上界靠「每個點最多失去一個孩子」。孩子可以被剪光的話，一個度數很大的根底下可能只剩一串單點，consolidate 的工作量就沒有保證。
+
+@q hp5-15 | ds-heap#5 | 2 | 計算
+兩個 Fibonacci heap：一個 3 棵樹 1 個標記，另一個 5 棵樹 2 個標記。Union 之後位能 $\Phi=t+2m$ 是多少？跟合併前兩者位能的和比呢？
+== 14,一樣
+== 14,相同
+== 14,相等
+?? 位能,跟原本總和比
+---
+$t=8$、$m=3$，$\Phi=14$；原本 $5+9=14$，$\Delta\Phi=0$。Union 只把兩個根串列接起來，實際 $O(1)$、攤銷 $O(1)$。
+
+@q hp5-16 | ds-heap#5 | 2 | 追蹤
+Fibonacci heap 的根串列有 5 棵樹，最小的根有 3 個孩子。Extract-min 時，consolidate 開始前根串列有幾棵樹？
+== 7
+---
+拿掉最小的根（剩 4 棵），把它的 3 個孩子都丟進根串列：$4+3=7$ 棵，然後才兩兩合併度數一樣的。
+
+@q hp5-17 | ds-heap#5 | 2 | 陷阱
+「Fibonacci heap 裡的每一棵樹都是 binomial tree」對嗎？
+[ ] 對
+[x] 不對
+---
+只做 Insert 和 Extract-min 時確實是；但 Decrease-key 會剪掉子樹，樹的形狀就不再是 binomial tree，所以度數 $k$ 的下界才從 $2^k$ 降成 $F_{k+2}$。
+
+@q hp5-18 | ds-heap#5 | 3 | 計算
+空的 Fibonacci heap 連續插入 1000 個元素，再做一次 Extract-min。這一次合併幾次？
+== 991
+---
+剩 999 個單點，$999=1111100111_2$ 有 8 個 1，剩 8 棵，合併 $999-8=991$ 次。
+
+@q hp5-19 | ds-heap#5 | 3 | 證明
+用位能 $\Phi=t+2m$ 證明 Fibonacci heap 的 Insert 攤銷 $O(1)$。
+---
+Insert 只建一個節點放進根串列，實際成本 $O(1)$。根多一棵、標記不變：$\Delta\Phi=1$。攤銷 $=O(1)+1=O(1)$。而且 $\Phi\ge0$ 且一開始是 0，所以攤銷總和是實際總和的上界。
+
+@q hp5-20 | ds-heap#5 | 3 | 比較
+Compare two explicit insertion implementations. The binomial heap adds a singleton at order 0, links occupied equal-order trees as carries, and stops at the first unoccupied order without scanning unaffected higher orders. Charge constant overhead plus one unit per link. The Fibonacci heap simply adds the singleton to its root list and updates its minimum pointer, leaving all consolidation for a later Extract-min operation.
+
+For a concrete trial, the binomial heap initially contains 15 items, represented by one tree of each order 0 through 3. Insert one new item and count the links needed to obtain the tree representing 16 items. In a separate Fibonacci trial, begin with 15 singleton roots and insert another singleton without extracting anything. Also consider an insertion-only sequence beginning from an empty binomial heap, so that total carry work can be charged across the whole sequence. Keep worst-case time for one insertion distinct from the amortized cost of all such insertions. Which statements are correct? Select all that apply.
+[x] In a binomial heap, Insert takes $O(\lg n)$ time in the worst case.
+[x] In a binomial heap, Insert takes $O(1)$ amortized time over a sequence of insertions starting from an empty heap.
+[x] In a Fibonacci heap, Insert takes $O(1)$ time even in the worst case.
+[x] Inserting one element into a binomial heap that holds 15 elements performs 4 links and leaves a single tree $B_4$.
+[x] Unlike a binomial heap, a Fibonacci heap does not link any trees during Insert.
+---
+「binomial 最壞 $O(\lg n)$」對、「攤銷 $O(1)$」對：binomial heap 插入就像二進位計數器加 1，會連續把同樣大小的樹合併；最壞合併 $\lg n$ 次，但從空的開始連續插入時，總合併次數不超過插入次數，攤銷 $O(1)$。
+
+「Fibonacci 最壞也是 $O(1)$」對：只丟進根串列、更新最小值指標，整理全部延到 Extract-min。
+
+「15 個元素再插一個合併 4 次、剩一棵 $B_4$」對：15 個元素是 $B_3,B_2,B_1,B_0$ 各一棵，新元素 $B_0$ 先跟 $B_0$ 合成 $B_1$，再跟 $B_1$、$B_2$、$B_3$ 一路合併。
+
+「Fibonacci 插入時不合併」對：這正是兩者的差別。五句都對。
+
+@q hp5-21 | ds-heap#5 | 2 | 觀念
+Which of the following statements about marks in a Fibonacci heap are correct? Select all that apply.
+?? 複選
+[ ] A node becomes marked as soon as it loses a child, even if it is a root.
+[ ] A marked node stays marked when it is cut from its parent and becomes a root.
+[ ] Every Extract-min clears all marks in the heap.
+[x] When a marked node loses a second child, it is also cut from its parent.
+[ ] Once a node is marked, it stays marked until it is deleted.
+---
+「根失去孩子也標記」錯：標記的意思是「成為別人的孩子之後已經失去過一個孩子」，根不用標記。
+
+「被剪下變成根仍保持標記」錯：變成根（或之後被合成接到別的根下面重新當孩子）就清掉、重新開始算。
+
+「每次 Extract-min 清掉所有標記」錯：只有被剪下、或被接到別人下面的節點會清掉。
+
+「再失去第二個孩子就跟著被剪」對：這是連鎖剪下（cascading cut），保證每棵子樹的大小對度數是指數，度數因此是 $O(\lg n)$。
+
+「標記到刪除才清」錯：被剪下就清掉。
+
+@q hp5-22 | ds-heap#5 | 2 | 計算
+Fibonacci heap 有 6 棵樹、5 個標記。做一次 Find-min，位能變多少？
+== 0
+---
+Find-min 只看記住的最小指標，不改結構，$\Delta\Phi=0$，實際 $O(1)$。
+
+@q hp5-23 | ds-heap#5 | 1 | 觀念
+Which of the following statements about Insert in a Fibonacci heap are correct? Select all that apply.
+?? 複選
+[x] It adds the new node directly to the root list.
+[ ] It never updates the pointer to the minimum; that is left to Extract-min.
+[ ] It moves the new node up to its correct position, as in a binary heap.
+[ ] It links trees of equal degree before returning.
+[ ] It takes $O(1)$ time only in the amortized sense; a single Insert can take $\Theta(\lg n)$ time.
+---
+「直接放進根串列」對：能拖就拖，完全不整理。
+
+「不更新最小指標」錯：新鍵比較小就要更新，否則 Find-min 會答錯；比一次就好，$O(1)$。
+
+「往上爬」錯：那是二元堆積。
+
+「合併同度數的樹」錯：那是 Extract-min 才做。
+
+「只有攤銷 $O(1)$」錯：Insert 每次實際都只做常數件事，最壞也是 $O(1)$。
+
+@q hp5-24 | ds-heap#5 | 3 | 情境
+Starting from an empty Fibonacci heap, $n$ Insert operations are performed, followed by many rounds of "one Extract-min, then one Insert". Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] The first Extract-min takes time proportional to $n$, because it consolidates $n - 1$ single-node trees.
+[ ] After the first Extract-min, the root list still contains about $n/2$ trees.
+[ ] Every later round also needs about $n$ links during consolidation.
+[ ] In each later round, the new node is linked into an existing tree during Insert, so consolidation is never needed again.
+[ ] After the first Extract-min, the heap consists of exactly one tree.
+---
+「第一次 Extract-min 正比於 $n$」對：之前的 Insert 只把單點丟進根串列，什麼都沒整理。
+
+「整理後還有約 $n/2$ 棵」錯：consolidate 把同度數的兩兩連結，直到度數都不同；度數最多 $O(\lg n)$，所以只剩 $O(\lg n)$ 棵。
+
+「之後每輪也要約 $n$ 次連結」錯：根串列只多了一個新點和被拿掉根的孩子（$O(\lg n)$ 個），每輪只做 $O(\lg n)$ 的工作。這就是攤銷的直覺：一次很貴，換來之後很多次便宜。
+
+「Insert 時就接進樹裡，之後不用整理」錯：Fibonacci heap 的 Insert 從不連結，只丟進根串列；每次 Extract-min 仍要整理。
+
+「只剩一棵」錯：剩下 $n-1$ 個點，棵數跟 $n-1$ 的二進位表示中 1 的個數有關，一般不只一棵。
+
+@q srt1-01 | ds-sort#1 | 2 | 追蹤
+對 `[6, 3, 8, 2, 5]` 做插入排序。處理完第 4 個元素（2）之後，陣列是？
+== 2 3 6 8 5
+== 2,3,6,8,5
+---
+處理 3 → `[3,6,8,2,5]`；處理 8 不動；處理 2，一路往前插到最前面 → `[2,3,6,8,5]`。前 4 個已經排好。
+
+@q srt1-02 | ds-sort#1 | 2 | 計算
+對 `[6, 3, 8, 2, 5]` 做插入排序，總共要把元素往後挪幾次？這陣列有幾個逆序對？
+== 6,6
+?? 挪幾次,逆序對
+---
+每挪一次剛好消掉一個逆序對，所以兩者相等。逆序對：(6,3)(6,2)(6,5)(3,2)(8,2)(8,5)，共 6。
+
+@q srt1-03 | ds-sort#1 | 2 | 追蹤
+對 `[29, 10, 14, 37, 13]` 做選擇排序（每輪找剩下最小的，跟這輪的第一格交換）。兩輪之後的陣列是？
+== 10 13 14 37 29
+== 10,13,14,37,29
+---
+第 1 輪最小 10，跟 29 換 → `[10,29,14,37,13]`；第 2 輪從第 2 格看，最小 13，跟 29 換 → `[10,13,14,37,29]`。
+
+@q srt1-04 | ds-sort#1 | 1 | 計算
+選擇排序對 10 個數排序，總共比較幾次？跟輸入順序有沒有關係？
+== 45,沒有
+?? 比較次數,有沒有關係
+== 45,無關
+---
+第 $i$ 輪要在剩下的 $10-i$ 個裡找最小，比 $9+8+\cdots+1=45$ 次。不管輸入長怎樣都一樣，所以選擇排序最好也是 $\Theta(n^2)$。
+
+@q srt1-05 | ds-sort#1 | 2 | 追蹤
+Merge sort is applied without recursion to the array `[8, 3, 5, 1, 9, 6, 2, 7]` with $n = 8$. It merges pairs of neighboring runs level by level, starting from runs of length 1:
+```
+width = 1
+while width < n:
+    for lo = 0, 2*width, 4*width, ... while lo < n:
+        merge A[lo .. lo+width-1] with A[lo+width .. lo+2*width-1]
+    width = 2 * width
+```
+Each merge repeatedly compares the fronts of its two runs and outputs the smaller one; when one run is used up, the rest of the other is copied without comparisons. Which of the following statements are correct? Select all that apply.
+[x] After the first level, the runs are `[3,8]`, `[1,5]`, `[6,9]`, `[2,7]`.
+[x] After the second level, the runs are `[1,3,5,8]` and `[2,6,7,9]`.
+[x] The third level, merging two runs of length 4, uses at most 7 comparisons.
+[x] Three levels of merging are needed for 8 elements.
+[ ] For some input of 8 elements, the three levels together use more than 24 comparisons.
+---
+「第一層」對：兩兩合併。
+
+「第二層」對：前半只會跟前半合，`[3,8]` 和 `[1,5]` 合成 `[1,3,5,8]`。
+
+「第三層最多 7 次」對：每次比較輸出一個，最後一個不用比，$4+4-1=7$。
+
+「三層」對：$8=2^3$，width 依序是 1、2、4。
+
+「某個輸入超過 24 次」錯：每層最多比較次數是第一層 $4\times1$、第二層 $2\times3$、第三層 7，總共最多 17 次。
+
+@q srt1-06 | ds-sort#1 | 3 | 計算
+合併兩個排好的串列，`[1,3,5,7]` 和 `[2,4,6,8]` 要比較幾次？`[1,2,3,4]` 和 `[5,6,7,8]` 呢？
+== 7,4
+?? 第一組,第二組
+---
+第一組兩邊交錯，直到最後一個才用完一邊：$4+4-1=7$ 次。第二組左邊 4 個都比右邊小，比 4 次左邊就用完，右邊直接接上。合併的比較次數介於 $\min(m,n)$ 和 $m+n-1$ 之間。
+
+@q srt1-07 | ds-sort#1 | 3 | 陷阱
+The records `[(Amy,90), (Ben,85), (Cal,90), (Dan,85)]` are sorted by score in increasing order with the selection sort below; on a tie it picks the earliest minimum.
+```
+for i = 1 to n-1:
+    m = index of the smallest score among positions i..n (earliest one on a tie)
+    swap the records at positions i and m
+```
+A sort is stable if records with equal scores keep their original relative order. Which of the following statements are correct? Select all that apply.
+[x] After the first round, the order is Ben, Amy, Cal, Dan.
+[x] The second round swaps Amy with Dan, moving Amy behind Cal.
+[ ] In the final result, Amy still comes before Cal, as in the input.
+[ ] Selection sort always keeps records with equal scores in their original order.
+[ ] Picking the latest minimum on a tie instead would make this selection sort stable.
+---
+「第一輪後 Ben, Amy, Cal, Dan」對：最小分 85 最早的是 Ben，跟第 1 格的 Amy 交換。
+
+「第二輪 Amy 和 Dan 交換」對：第 2～4 格最小是 Dan 的 85，跟第 2 格的 Amy 交換，得到 Ben, Dan, Cal, Amy；第三輪 Cal、Amy 同分取前面的 Cal，不動。
+
+「Amy 仍在 Cal 前面」錯：結果是 Ben, Dan, Cal, Amy。Amy 被長距離交換甩到後面，所以這裡不穩定。
+
+「選擇排序一定穩定」錯：見上。
+
+「同分改取最後一個就穩定」錯：問題出在交換可以跨很遠、跳過相同的值，和挑哪一個最小值無關；例如 $[2,2,1]$ 不論怎麼挑，第一輪都會把第一個 2 換到最後。
+
+@q srt1-08 | ds-sort#1 | 2 | 情境
+A school keeps student records that are already sorted by name:
+```
+name   class
+Amy    302
+Ben    301
+Cal    302
+Dan    301
+Eve    302
+```
+Now the records must be sorted by class, so that students in the same class remain in name order. Recall that a sort is stable if records with equal keys keep their original relative order. Which of the following statements are correct? Select all that apply.
+[x] The sort by class must be stable.
+[x] A stable sort by class produces Ben, Dan, Amy, Cal, Eve.
+[ ] The sort by class must be in place, so that the name order is not lost.
+[ ] Any sufficiently fast sort will do for the sort by class, stable or not.
+[ ] The sort by class must be unstable, so that it can reorder the names within each class.
+---
+「依班級排序要穩定」對：穩定排序保持同班學生原本的先後，也就是姓名順序。「先排次要鍵、再用穩定排序排主要鍵」是多鍵排序的標準做法。
+
+「穩定排序得到 Ben, Dan, Amy, Cal, Eve」對：301 班的 Ben、Dan 保持原順序在前，302 班的 Amy、Cal、Eve 在後。
+
+「要原地」錯：原地與否和保留順序無關。
+
+「夠快就好」錯：不穩定的排序可能打亂同班的姓名順序，例如把 Dan 排到 Ben 前面。
+
+「要不穩定」錯：剛好相反。
+
+@q srt1-09 | ds-sort#1 | 2 | 計算
+6 個數完全倒過來排（`[6,5,4,3,2,1]`），有幾個逆序對？
+== 15
+---
+每一對都是逆序：$\binom62=15$。這是插入排序的最壞情況，要挪 15 次。
+
+@q srt1-10 | ds-sort#1 | 3 | 情境
+A device stores $n = 10{,}000$ records in flash memory, where writing an element costs about 100 times as much as reading or comparing one. The records arrive in reverse sorted order, and the device must sort them in increasing order. The candidates are selection sort, insertion sort, merge sort, and bubble sort. Count a swap as two element writes. Which of the following statements are correct? Select all that apply.
+[x] Selection sort performs at most $n-1 = 9{,}999$ swaps, so it writes only $O(n)$ elements.
+[x] Insertion sort writes about as many elements as there are inversions, here about $5\times10^7$.
+[x] Selection sort still makes about $5\times10^7$ comparisons.
+[ ] Merge sort writes fewer elements than selection sort, since it is asymptotically faster.
+[x] Merge sort writes about $n\lg n \approx 1.3\times10^5$ elements, more than selection sort does.
+---
+「選擇排序最多 9,999 次交換」對：每輪最多一次交換，寫入 $O(n)$。
+
+「插入排序寫入≈逆序對，約 $5\times10^7$」對：反序輸入有 $n(n-1)/2=49{,}995{,}000$ 個逆序對，每消掉一個就要搬一次。
+
+「選擇排序仍約 $5\times10^7$ 次比較」對：每輪都要掃完剩下的；比較便宜，所以選擇排序在這裡最划算。
+
+「合併排序寫得比較少」錯：漸近時間快不代表寫入少。
+
+「合併排序寫約 $1.3\times10^5$ 個」對：每層都要把全部元素寫一遍，約 $\lg 10^4\approx13.3$ 層，$10^4\times13.3\approx1.3\times10^5$，比選擇排序的不到 $2\times10^4$ 次寫入多。
+
+@q srt1-11 | ds-sort#1 | 3 | 追蹤
+對 `[4, 10, 3, 5, 1]` 做堆積排序（max-heap）。Build-Heap 後是 `[10,5,3,4,1]`；接著每輪把根跟最後一格交換、範圍縮一格、根往下沉。兩輪之後的陣列是？
+== 4 1 3 5 10
+== 4,1,3,5,10
+---
+第 1 輪：10 換到最後 `[1,5,3,4 | 10]`，1 往下沉 → `[5,4,3,1 | 10]`。第 2 輪：5 換到倒數第 2 `[1,4,3 | 5,10]`，1 往下沉 → `[4,1,3 | 5,10]`。
+
+@q srt1-12 | ds-sort#1 | 1 | 觀念
+A program must sort an array of $10^8$ records of 64 bytes each, 6.4 GB in total, on a machine with 8 GB of memory, so even an extra buffer half the size of the array would not fit. An algorithm is in place if it uses only $O(1)$ extra space besides the array, ignoring recursion. Which of the following array-based sorting algorithms are in place? Select all that apply.
+[x] Heapsort
+[ ] Merge sort that keeps an extra buffer half the size of the array
+[x] Selection sort
+[ ] Merge sort
+[ ] Merge sort that copies runs into a temporary array
+---
+「堆積排序」是：只在原陣列裡交換。
+
+「選擇排序」是：同上。
+
+「半大小緩衝的合併排序」不是：要 3.2 GB 的額外空間，$6.4+3.2=9.6>8$ GB，放不下；就算放得下，額外空間也不是 $O(1)$。
+
+「合併排序」「複製到暫存陣列的合併排序」都不是：合併兩段時要另開空間放結果，標準寫法要 $n$ 格。
+
+@q srt1-13 | ds-sort#1 | 2 | 計算
+插入排序對 100 個數排序：最好情況比較幾次？最壞情況比較幾次？
+== 99,4950
+?? 最好,最壞
+---
+已經排好時每個新元素只跟前一個比一次：99。完全倒過來時第 $i$ 個要比 $i-1$ 次：$1+2+\cdots+99=4950$。
+
+@q srt1-14 | ds-sort#1 | 2 | 計算
+對 `[2, 3, 4, …, 100, 1]`（1 在最後）做插入排序，要挪幾次？
+== 99
+---
+逆序對只有「每個數都比最後的 1 大」這 99 對。最後一步 1 要往前挪 99 格，其他每步都不用挪。
+
+@q srt1-15 | ds-sort#1 | 3 | 陷阱
+`[51, 52, …, 100, 1, 2, …, 50]`（兩段各自排好，只是前後對調）。插入排序要挪幾次？
+== 2500
+---
+前半每個數都比後半每個數大：$50\times50=2500$ 個逆序對，約 $n^2/4$。看起來「很整齊」，對插入排序其實很糟——要看的是逆序對有多少，不是有幾段。
+
+@q srt1-16 | ds-sort#1 | 2 | 情境
+A program stores $10^6$ records in a singly linked list; each node holds a record and a pointer to the next node, and there is no way to jump directly to the $i$-th node without walking from the head. Allocating a separate array of $10^6$ entries is not allowed. The list must be sorted in $O(n\lg n)$ worst-case time. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] Merge sort fits, since it only walks forward and merges by relinking pointers.
+[ ] Heapsort fits, because it only walks forward through the data and needs no extra array.
+[ ] Quicksort guarantees $O(n\lg n)$ time in the worst case on a linked list.
+[ ] Merge sort on a linked list needs an extra array of size $n$.
+[ ] Selection sort guarantees $O(n\lg n)$ time in the worst case.
+---
+「合併排序可以」對：只需從頭往後走，合併時改指標就好，不需要額外陣列。
+
+「堆積排序可以」錯：它靠索引 $2i$、$2i+1$ 找孩子，串列做不到。
+
+「快速排序最壞 $O(n\lg n)$」錯：最壞是 $n^2$。
+
+「串列上合併排序要額外陣列」錯：在串列上合併只要改指標，不需要額外陣列。
+
+「選擇排序 $O(n\lg n)$」錯：永遠是 $n^2$。
+
+@q srt1-17 | ds-sort#1 | 2 | 計算
+合併排序對 1000 個數排序，遞迴切半要切幾層才會切到單一元素？
+== 10
+---
+$\lceil\lg1000\rceil=10$（$2^{10}=1024$）。每層合併做 $O(n)$ 事，共 $O(n\lg n)$。
+
+@q srt1-18 | ds-sort#1 | 2 | 找錯
+A merge step of merge sort is written as follows:
+```
+while both runs are nonempty:
+    if front(left) < front(right): output front(left) and remove it
+    else:                          output front(right) and remove it
+copy the rest of the nonempty run to the output
+```
+Consider merging the left run $[2_a, 5]$ with the right run $[2_b, 7]$, where $2_a$ and $2_b$ have equal values and $2_a$ came first in the original input. Which of the following statements about this merge sort are correct? Select all that apply.
+[x] With this merge step, merge sort is no longer stable.
+[x] For the example runs, the output is $2_b, 2_a, 5, 7$.
+[x] Writing $\le$ instead of $<$ makes it stable again.
+[x] The output values are still in sorted order.
+[ ] It is still stable, because both runs were already sorted before the merge began.
+---
+「不再穩定」對、「輸出 $2_b,2_a,5,7$」對：兩個前端相等時條件不成立，拿了右邊，右邊的相同值跑到左邊前面。
+
+「改成 $\le$ 就穩定」對：相等先拿左邊，左段原本在前面的值就留在前面。
+
+「數值仍排好」對：只是相同值的先後被打亂。
+
+「兩段已排好所以穩定」錯：兩段各自排好不能保證穩定，相等時拿哪邊才是關鍵。
+
+@q srt1-19 | ds-sort#1 | 2 | 計算
+泡沫排序（每輪從頭到尾，相鄰逆序就交換）對 `[5, 1, 4, 2, 8]` 排序，總共交換幾次？
+== 4
+---
+每次交換相鄰兩個，剛好消掉一個逆序對。逆序對 (5,1)(5,4)(5,2)(4,2)，共 4。
+
+@q srt1-20 | ds-sort#1 | 3 | 情境
+A file of $10^8$ records must be sorted, but the memory holds only $10^7$ records at a time. The storage device reads and writes about $2\times10^6$ records per second when it accesses them in order, but only a few thousand records per second when it jumps around the file. Which of the following statements are correct? Select all that apply.
+[x] Sort $10^7$ records at a time in memory, write each sorted run back, and then merge the 10 runs.
+[x] Merging the 10 runs only needs to read each run sequentially from front to back.
+[ ] Heapsort in place on the whole file is the most reasonable plan, since it needs no extra memory.
+[ ] Insertion sort, inserting one record at a time into the file, is the most reasonable plan.
+[ ] Quicksort on the whole file is the most reasonable plan, since it is fastest on average.
+---
+放不進記憶體時瓶頸是儲存裝置的讀寫：「分段排好再合併」，合併時「每段依序往後讀」，全部都是連續存取，這就是外部排序。全部讀寫一次約 $10^8/(2\times10^6)=50$ 秒。
+
+「整個檔案做堆積排序」錯、「整個檔案做快速排序」錯：兩者都要在整個檔案上隨機跳，速度會掉到每秒幾千筆。
+
+「插入排序」錯：$n^2$，而且也要隨機存取。
+
+@q srt1-21 | ds-sort#1 | 1 | 觀念
+The list of (key, label) pairs `[(3,a), (1,b), (3,c), (2,d)]` is sorted by key. Two programs produce different outputs:
+```
+output X:  (1,b) (2,d) (3,a) (3,c)
+output Y:  (1,b) (2,d) (3,c) (3,a)
+```
+Both outputs are sorted by key, and each program gives the same output every time it is run on this input. Which of the following statements about stable sorting are correct? Select all that apply.
+[x] A stable sort keeps equal keys in their original order, so it must produce output X.
+[x] Insertion sort and the standard merge sort are stable.
+[ ] The program producing output Y is stable, because it gives the same output on every run.
+[ ] A sort is stable if its worst-case and average-case times are equal.
+[ ] A sort is stable if it needs no extra space beyond the input array.
+---
+「穩定排序一定得到 X」對：鍵相同的 (3,a) 原本在 (3,c) 前面，穩定排序要保持這個先後。
+
+「插入排序、標準合併排序穩定」對：插入排序遇到相等就停、合併排序相等時先拿左邊。
+
+「每次輸出一樣就穩定」錯：穩定跟可重現性無關；Y 每次都一樣，但把 (3,c) 排到 (3,a) 前面，不穩定。
+
+「最壞等於平均就穩定」錯、「不用額外空間就穩定」錯：穩定跟時間、空間都無關。
+
+@q srt1-22 | ds-sort#1 | 2 | 反例
+The selection sort below is applied to $[2_a, 2_b, 1]$, where $2_a$ and $2_b$ have equal values and $2_a$ comes first; on a tie it picks the earliest minimum.
+```
+for i = 1 to n-1:
+    m = index of the smallest value among positions i..n (earliest one on a tie)
+    swap the elements at positions i and m
+```
+Recall that a sort is stable if equal values keep their original relative order. Which of the following statements are correct? Select all that apply.
+[x] In round 1, the minimum 1 is swapped with $2_a$, giving $[1, 2_b, 2_a]$.
+[x] This example shows that selection sort is not stable.
+[x] Long-distance swaps can move an element past an equal one.
+[ ] The result is $[1, 2_a, 2_b]$, so selection sort is stable on this input.
+[x] On the input $[1, 2_a, 2_b]$, the same procedure keeps $2_a$ before $2_b$.
+---
+「第 1 輪 1 跟 $2_a$ 交換」對：$2_a$ 被丟到最後；第 2 輪 $[2_b,2_a]$ 中最早的最小值是 $2_b$，不動。
+
+「不穩定」對、「長距離交換跳過相同值」對：$2_b$ 跑到 $2_a$ 前面，原因是交換可以跨很遠。
+
+「結果是 $[1,2_a,2_b]$」錯：結果是 $[1,2_b,2_a]$。
+
+「輸入 $[1,2_a,2_b]$ 時保持順序」對：每輪的最小值都已在定位，只和自己交換，相同值的先後沒變。不穩定是指「有些輸入會打亂」，不是每個輸入都會。
+
+@q srt1-23 | ds-sort#1 | 3 | 計算
+對 `[6, 3, 8, 2, 5]` 做插入排序（往前比到「比自己小的」或到最前面就停），總共比較幾次？
+== 8
+---
+處理 3：比 6（1 次，到最前面）。處理 8：比 6（1）。處理 2：比 8、6、3（3，到最前面）。處理 5：比 8、6、3（3，3 比 5 小停）。$1+1+3+3=8$。比較次數＝挪的次數（6）＋沒到最前面就停的那幾次（2）。
+
+@q srt1-24 | ds-sort#1 | 3 | 比較
+A library implements quicksort on an array of $n$ elements in place: `split` rearranges `A[lo..hi]` so that one chosen element ends at position `p`, with no larger element before it and no smaller element after it, using only a few index variables; the function then calls itself on the two parts.
+```
+quicksort(A, lo, hi):
+    if lo < hi:
+        p = split(A, lo, hi)
+        quicksort(A, lo, p - 1)
+        quicksort(A, p + 1, hi)
+```
+The documentation says that the extra space is usually $O(\lg n)$. A tester sorts an already sorted array of $n = 10^6$ elements with the last element always chosen as the splitting element, and the program crashes with a stack overflow after about 100000 nested calls. A colleague suggests always recursing on the smaller part first and handling the larger part with a loop instead of a second call. Which of the following statements are correct? Select all that apply.
+[x] The extra space comes from the recursion stack.
+[x] In the worst case, the recursion depth is $n$.
+[x] Recursing on the smaller part first keeps the depth $O(\lg n)$.
+[x] Partitioning itself needs only $O(1)$ extra space.
+[ ] The extra space comes from an auxiliary array used for merging the two parts.
+---
+「partition 本身是原地的」，額外空間「全在遞迴深度」；切得很不平均時「深度 $n$」。「先遞迴小的、大的用迴圈接著做」，小的最多 $n/2$，深度不超過 $\lg n$。快速排序不合併，沒有輔助陣列。
+
+@q srt1-25 | ds-sort#1 | 2 | 情境
+A standard library's sort uses quicksort, but once a subarray has 16 elements or fewer it switches to insertion sort. Measurements on one machine show that sorting 16 random integers takes about 120 ns with insertion sort and about 250 ns with the library's quicksort, even though insertion sort makes about $16^2/4 = 64$ element moves on average while quicksort makes only about $2n\ln n \approx 89$ comparisons. A student asks why this switch makes the whole sort faster, and whether it changes the sort's asymptotic running time or its stability. Which of the following statements explain why? Select all that apply.
+?? 複選
+[x] On tiny inputs, insertion sort's small constant factor wins.
+[ ] Insertion sort has a better asymptotic running time than quicksort.
+[ ] Small subarrays are always already sorted, so insertion sort does no work on them.
+[ ] It is done so that the overall result becomes stable.
+[ ] Recursion is impossible on subarrays of fewer than 16 elements.
+---
+$n$ 很小時漸近符號沒意義，比的是常數：插入排序只有兩層簡單迴圈，「常數小、沒有遞迴開銷」。它最壞 $n^2$，漸近比較差；小區段不一定排好；快排本身不穩定，最後只在小段用插入排序也不會讓整體穩定；遞迴當然可以做。
+
+@q srt1-26 | ds-sort#1 | 2 | 比較
+A spreadsheet must sort 50000 rows by the "city" column while keeping rows with the same city in their previous order, for example the order produced by an earlier sort by name. The sort must also finish in $O(n\lg n)$ time even on adversarial inputs, because users can paste arbitrary data. The developer considers the 5 algorithms below and wants the sort to finish in under 1 second, each in its usual textbook form, and checks which of them guarantee both requirements. Which of the following sorting algorithms are both stable and $O(n\lg n)$ in the worst case? Select all that apply.
+?? 複選
+[x] Merge sort
+[ ] Heapsort
+[ ] Quicksort
+[ ] Insertion sort
+[ ] Selection sort
+---
+合併排序最壞 $O(n\lg n)$，相等時先拿左邊就穩定，代價是要 $O(n)$ 額外空間。堆積排序不穩定；快速排序最壞 $n^2$ 而且不穩定；插入排序穩定但最壞 $n^2$；選擇排序最壞 $n^2$ 也不穩定。
+
+@q srt1-27 | ds-sort#1 | 3 | 陷阱
+堆積排序是穩定的，因為 heap 的操作都很「規律」。對嗎？
+[ ] 對
+[x] 不對
+---
+例如 `[1a, 1b]` 已經是 max-heap，第一輪把根 1a 換到最後：結果 `[1b, 1a]`，順序反了。根和最後一格的交換會打亂相同值。
+
+@q srt1-28 | ds-sort#1 | 2 | 計算
+插入排序的時間是 $\Theta(n+I)$（$I$＝逆序對）。一個長度 1000 的陣列，每個元素離它排好後的位置都不到 5 格。插入排序大約要做多少事？
+[x] $O(n)$：每個元素只會跟附近幾格的元素形成逆序對，$I=O(n)$
+[ ] $O(n\lg n)$
+[ ] $O(n^2)$
+[ ] 看資料而定，沒辦法估
+---
+離正確位置不到 5 格，表示它只可能跟前後 8 格內的元素逆序，$I\le8n$，總時間 $O(n)$。這種「幾乎排好」正是插入排序的主場。
+
+@q srt2-01 | ds-sort#2 | 2 | 計算
+用比較排序排 5 個不同的數，最壞情況至少要比較幾次？
+== 7
+---
+$5!=120$，$2^6=64<120\le128=2^7$，所以決策樹高度至少 7。（真的有方法只用 7 次。）
+
+@q srt2-02 | ds-sort#2 | 2 | 計算
+排序 6 個不同的數，最壞至少比較幾次？10 個呢？
+== 10,22
+?? 6個,10個
+---
+$6!=720$，$2^{10}=1024\ge720>512$，至少 10。$10!=3628800$，$2^{21}=2097152<10!\le2^{22}=4194304$，至少 22。
+
+@q srt2-03 | ds-sort#2 | 1 | 觀念
+排序 4 個不同的數，決策樹至少要有幾片葉子？為什麼？
+== 24
+---
+$4!=24$ 種輸入順序，每一種的「正確排法」都不同，必須走到不同的葉子。
+
+@q srt2-04 | ds-sort#2 | 2 | 陷阱
+「比較排序的平均情況可以比 $\Theta(n\lg n)$ 快，只是最壞情況不行」對嗎？
+[ ] 對
+[x] 不對
+---
+$n!$ 片葉子的二元樹，平均深度也至少 $\lg n!$。所以比較排序的平均也是 $\Omega(n\lg n)$；只有**最好**情況能更快（例如插入排序遇到已排好的 $n-1$ 次）。
+
+@q srt2-05 | ds-sort#2 | 2 | 計算
+11 個數，用「兩兩一組」的方法同時找最大和最小，最少比較幾次？
+== 15
+---
+$\lceil3n/2\rceil-2=\lceil16.5\rceil-2=15$。$n$ 是奇數時第一個數先同時當最大和最小，剩 10 個兩兩一組：每組 3 次，$5\times3=15$。
+
+@q srt2-06 | ds-sort#2 | 2 | 計算
+16 個數用錦標賽法找第二小，總共要比較幾次？
+== 18
+---
+冠軍（最小）要 $n-1=15$ 次；第二小一定是被冠軍打敗過的，冠軍打了 $\lg16=4$ 場，從這 4 個找最小再 3 次。$15+3=18=n+\lceil\lg n\rceil-2$。
+
+@q srt2-07 | ds-sort#2 | 2 | 觀念
+A tournament organizer must find the strongest of $n = 64$ players, where each match compares two players and always has a winner, and the stronger player always wins. One method is a single pass: the current champion plays each new player in turn, so it uses 63 matches. A student wants to prove that no method can use fewer than 63 matches, without drawing a decision tree, and then generalize the argument to any $n$ distinct numbers. Which of the following statements explain why finding the maximum of $n$ numbers needs at least $n-1$ comparisons? Select all that apply.
+[x] Every number other than the maximum must lose at least one comparison.
+[x] Each comparison makes only one number lose.
+[x] So at least $n-1$ comparisons are needed.
+[x] A simple scan uses exactly $n-1$ comparisons, so the bound is tight.
+[x] This argument counts required events rather than leaves of a decision tree.
+---
+「非最大的 $n-1$ 個數都要輸一次」，「一次比較只讓一個數輸」，所以「至少 $n-1$ 次」；「從頭掃一遍剛好 $n-1$ 次」，下界是緊的。這種論證「數必須發生的事件」，不是數決策樹的葉子。五句都對。
+
+@q srt2-08 | ds-sort#2 | 3 | 陷阱
+The textbook theorem says that every comparison sort needs $\Omega(n\lg n)$ comparisons in the worst case; for $n = 20$, for example, $\lg(20!) \approx 61.1$, so some input forces at least 62 comparisons. A student must list the assumptions that the proof really uses, after seeing that a method which tallies how often each value occurs sorts $10^6$ integers between 0 and 255 in linear time, and that some sorting programs are written without recursion. Which of the following assumptions are needed for the theorem "every comparison sort needs $\Omega(n\lg n)$ comparisons in the worst case"? Select all that apply.
+[x] The algorithm gets information only by comparing two elements.
+[x] The elements may all be distinct, so $n!$ different orders must be distinguished.
+[ ] The input is random.
+[ ] The keys are integers in a small range.
+[ ] The algorithm is recursive.
+---
+決策樹論證只用到「每步只能比兩個元素」和「要分辨 $n!$ 種順序」，前兩個需要。這是最壞情況下界，對任何輸入都成立，不需要假設隨機。整數範圍小時反而可以用計數排序突破下界；遞迴與否無關。
+
+@q srt2-09 | ds-sort#2 | 3 | 證明
+證明 $\lg(n!)=\Omega(n\lg n)$。
+---
+$n!=1\cdot2\cdots n\ge\left(\frac n2\right)^{n/2}$（後面 $n/2$ 個因數每個都 $\ge n/2$）。取 $\lg$：$\lg n!\ge\frac n2\lg\frac n2=\frac n2(\lg n-1)$，當 $n\ge4$ 時 $\ge\frac n4\lg n$，所以 $\Omega(n\lg n)$。上界 $n!\le n^n$ 給 $O(n\lg n)$。
+
+@q srt2-10 | ds-sort#2 | 2 | 比較
+合併排序排 4 個數，最壞比較幾次？跟下界比呢？
+== 5,一樣
+?? 合併排序,跟下界比
+== 5,相同
+== 5,相等
+---
+兩組各合併 1 次，最後合併 2+2 最多 3 次：$1+1+3=5$。下界 $\lceil\lg24\rceil=5$，剛好達到。
+
+@q srt4-91 | ds-sort#4 | 2 | 陷阱
+Counting sort runs in $O(n)$ time when the values lie in $0..n$. Which of the following statements about the $\Omega(n\lg n)$ lower bound for sorting are correct?
+[x] The two facts agree: the bound covers only comparison sorts.
+[x] Counting sort uses the key values directly as array indices.
+[ ] Counting sort actually takes $O(n\lg n)$ time once the counts are added up.
+[ ] The lower bound proof is wrong, as counting sort shows.
+[ ] The two facts are consistent only because counting sort can handle at most $\lg n$ numbers.
+---
+決策樹模型裡每一步只能問「$a_i<a_j$？」，「下界只限制比較排序」；計數排序「直接拿值當格子編號」，一次有很多種結果，不在這個模型裡。累加計數也是 $O(n)$；下界本身沒錯；計數排序能排很多數，只要值的範圍不大。
+
+@q srt2-12 | ds-sort#2 | 3 | 計算
+在排好的 1000 個數中用比較找一個值（可能不在裡面），最壞至少要比較幾次？
+== 10
+---
+可能的結果有 1001 種（在第 1～1000 格，或不在），決策樹至少要 1001 片葉子：$2^h\ge1001$，$h\ge10$。二分搜尋最壞 $\lceil\lg1001\rceil=10$ 次，剛好達到。
+
+@q srt2-13 | ds-sort#2 | 2 | 計算
+排序 3 個不同的數：插入排序最壞比較幾次？下界是多少？
+== 3,3
+?? 插入排序,下界
+---
+插入排序最壞 $1+2=3$。下界 $\lceil\lg6\rceil=3$。3 個數時插入排序就是最佳的。
+
+@q srt2-14 | ds-sort#2 | 3 | 情境
+A startup claims to have a comparison-only sort that sorts any $n$ numbers with at most $5n$ comparisons, and it shows test results on inputs of up to 1000 numbers, all sorted correctly and quickly. The algorithm gets information about the input only by comparing two elements at a time, and its output must be correct for every one of the $n!$ possible orders of $n$ distinct numbers. An investor asks a computer scientist whether the claim can be true for every $n$, and whether good test results on small inputs prove anything about large ones. The scientist recalls that a decision tree of height $h$ has at most $2^h$ leaves and computes $\lg(n!)$ for a few sizes:
+
+| $n$ | 10 | 100 | 1000 |
+|---|---|---|---|
+| $\lg(n!)$ | 21.8 | 524.8 | 8529.4 |
+| $5n$ | 50 | 500 | 5000 |
+
+Which of the following statements are correct? Select all that apply.
+[x] This is impossible for large $n$, because then $5n<\lg(n!)$.
+[x] For $n=1000$, $\lg(1000!)\approx8530$, which is more than 5000.
+[x] The decision tree would have too few leaves to distinguish all $n!$ orders.
+[ ] It is possible, because the lower bound concerns only the average case.
+[ ] It is impossible, because comparison sorts always need at least $n^2$ comparisons.
+---
+高度 $5n$ 的決策樹只有 $2^{5n}$ 片葉子，「$5n<\lg(n!)$ 時不夠分辨 $n!$ 種順序」：$n=1000$ 時「$\lg(1000!)\approx8530>5000$」。$\lg(n!)$ 是最壞情況的下界（平均也一樣）；合併排序 $O(n\lg n)$ 就做得到，下界不是 $n^2$。
+
+@q srt2-15 | ds-sort#2 | 2 | 比較
+同時找最大和最小：分開找、兩兩一組，對 100 個數各要比較幾次？
+== 198,148
+?? 分開找,兩兩一組
+---
+分開找：$99+99=198$。兩兩一組：50 組各比 1 次，再 50 個小的找最小 49 次、50 個大的找最大 49 次：$50+49+49=148=\frac{3n}2-2$。
+
+@q srt2-16 | ds-sort#2 | 3 | 證明
+證明：同時找最大和最小，用「兩兩一組」只要 $\frac{3n}{2}-2$ 次（$n$ 偶數）。
+---
+分成 $\frac n2$ 組，每組比 1 次分出大小（$\frac n2$ 次）。最大值一定在「大的」那 $\frac n2$ 個裡，用 $\frac n2-1$ 次找出；最小值在「小的」那 $\frac n2$ 個裡，$\frac n2-1$ 次。合計 $\frac n2+2(\frac n2-1)=\frac{3n}2-2$。
+
+@q srt2-17 | ds-sort#2 | 2 | 觀念
+For a comparison sort on $n$ distinct elements, the decision tree has one internal node for each comparison that the algorithm might make and one leaf for each possible output order, so it has at least $n!$ leaves; for $n = 3$, the tree of insertion sort has 6 leaves and height 3. Each run of the algorithm follows one root-to-leaf path and makes one comparison per internal node on that path. A student uses this model to relate the shape of the tree to the costs of the algorithm. In the decision-tree model of a comparison sort, which of the following statements are correct? Select all that apply.
+?? 複選
+[x] The height of the tree equals the worst-case number of comparisons.
+[ ] The height of the tree equals the average number of comparisons.
+[ ] The height of the tree equals the best-case number of comparisons.
+[ ] The number of leaves equals the worst-case number of comparisons made.
+[ ] The height of the tree equals the amount of extra space needed.
+---
+從根走到葉的一條路就是一次執行，「最長的路就是最壞情況」。平均比較次數是葉子的平均深度；最短的路才是最好情況；葉子數至少 $n!$，不是比較次數；決策樹只描述比較，不描述空間。
+
+@q srt2-18 | ds-sort#2 | 3 | 計算
+排序 12 個不同的數，最壞至少要比較幾次？
+== 29
+---
+$12!=479001600$，$2^{28}=268435456<12!\le2^{29}=536870912$，至少 29 次。
+
+@q srt2-19 | ds-sort#2 | 2 | 找錯
+Someone says: "Finding the maximum needs only $\lg n$ comparisons: compare in pairs like a tournament for $\lg n$ rounds." For $n = 16$ players, the tournament has 4 rounds with 8, 4, 2, and 1 matches. On a parallel machine with 8 processors, every match in a round can be played at the same time, so the tournament finishes in 4 steps. A student must decide what the claim gets right and what it gets wrong about the number of comparisons, which is what a sequential program pays for. Which of the following statements are correct? Select all that apply.
+[x] There are $\lg n$ rounds, but each round contains many comparisons.
+[x] The total number of comparisons is $n-1$.
+[x] The round count is parallel time, not total work.
+[x] Each comparison eliminates exactly one player.
+[ ] The tournament makes $n\lg n$ comparisons in total, $n$ in each of $\lg n$ rounds.
+---
+「$\lg n$ 輪但每輪很多場」：第 1 輪 $n/2$ 場、第 2 輪 $n/4$ 場……；「每場淘汰一人」，要淘汰 $n-1$ 人，「共 $n-1$ 場」。輪數是平行比較時的時間，不是總次數；每輪場數越來越少，不是每輪 $n$ 場。
+
+@q srt2-20 | ds-sort#2 | 2 | 陷阱
+「插入排序在某些輸入只要 $n-1$ 次比較，所以比較排序的下界 $\Omega(n\lg n)$ 對某些輸入不成立」對嗎？
+[ ] 對
+[x] 不對
+---
+下界說的是**最壞情況**（決策樹的高度），最好情況本來就可以很淺。插入排序的最壞情況仍是 $\Theta(n^2)$。
+
+@q srt2-21 | ds-sort#2 | 3 | 情境
+A university sorts the final grades of $n = 10^6$ students, where every grade is one of only $k = 11$ known values: 0, 10, 20, …, 100. A teaching assistant points out that the textbook's lower bound says every comparison sort needs at least $\lg(n!)$ comparisons in the worst case, about $1.85\times10^7$ for this $n$, and worries that sorting will therefore be slow. A colleague suggests a different method: make one pass over the data, record how many times each of the 11 values appears, and then write out each value as many times as it appeared, in increasing order. A third person worries that such data cannot be sorted correctly at all, because many grades are equal and cannot be told apart, and a fourth believes that so many equal values push the lower bound up to $n^2$. Which of the following statements are correct? Select all that apply.
+[x] The $\lg(n!)$ bound no longer applies here.
+[x] Recording how many times each of the $k$ values appears sorts the numbers in $O(n+k)$ time.
+[ ] Comparison sorting always needs $\lg(n!)$ comparisons, whatever the values happen to be.
+[ ] The lower bound rises to $n^2$, since many values are equal.
+[ ] Such data cannot be sorted correctly, since equal values cannot be told apart.
+---
+決策樹下界來自「要分辨 $n!$ 種順序」；值大量重複時，可能的結果少很多，「下界不再適用」。「直接記每種值有幾個」再依序輸出，$O(n+k)$ 就排完，就是計數排序的想法。相等的值不需要區分。
+
+@q srt2-22 | ds-sort#2 | 1 | 計算
+A comparison sort on $n$ distinct elements can be drawn as a binary decision tree: each internal node compares two elements, each of its 2 branches follows one outcome, and each leaf gives a final order of the elements. If the tree has height $h$, every input is sorted with at most $h$ comparisons. A student wants to derive the lower bound for comparison sorting step by step from this picture, for example for $n = 10$, where $10! = 3628800$, and then compare it with the number of comparisons merge sort actually makes. Which of the following statements are correct? Select all that apply.
+[x] It has at most $2^h$ leaves.
+[x] Sorting $n$ distinct elements needs at least $n!$ leaves.
+[x] Hence $2^h\ge n!$.
+[x] Hence $h\ge\lg(n!)$, which is $\Omega(n\lg n)$.
+[x] Merge sort shows that this bound can be met up to a constant factor.
+---
+每次比較分兩條路，「往下 $h$ 層最多 $2^h$ 片葉子」；每種輸入順序要到不同的葉子，「至少 $n!$ 片」，所以「$2^h\ge n!$」「$h\ge\lg(n!)=\Omega(n\lg n)$」；「合併排序」$O(n\lg n)$ 達到這個下界。五句都對。
+
+@q srt2-23 | ds-sort#2 | 3 | 比較
+「找第二小」用錦標賽要 $n+\lceil\lg n\rceil-2$ 次；先找最小（$n-1$ 次）再從剩下的找最小（$n-2$ 次）要幾次？$n=100$ 時各是多少？
+== 105,197
+?? 錦標賽,找兩次
+---
+錦標賽：$100+7-2=105$。找兩次：$99+98=197$。錦標賽記住了「誰輸給冠軍」，第二輪只要在這 7 個裡找。
+
+@q srt2-24 | ds-sort#2 | 2 | 觀念
+In the decision-tree argument for comparison sorting, an algorithm that sorts $n$ distinct elements is drawn as a tree whose internal nodes are comparisons and whose leaves are final rearrangements of the input. A student draws the tree for insertion sort on 3 elements, which has 6 leaves and height 3, and asks why the proof insists that every one of the $3! = 6$ input orders must reach a different leaf, rather than letting two orders share one, which would allow a smaller tree. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] Two orders sharing a leaf get the same rearrangement, so one is sorted wrongly.
+[ ] More leaves make the algorithm faster, so each order is given its own leaf.
+[ ] Each leaf can store only one number, so each order needs its own leaf.
+[ ] Different input orders may share a leaf when the algorithm is clever enough.
+[ ] Each leaf corresponds to one comparison made by the algorithm.
+---
+葉子代表「最後怎麼重排」，同一個重排方式不可能同時把兩種不同順序都排對，所以「到同一片葉子至少一個會排錯」。快慢看深度，不看葉子數；葉子不存數字；比較是內部節點，不是葉子。
+
+@q srt3-01 | ds-sort#3 | 2 | 追蹤
+對 `[7, 2, 9, 4, 1, 6, 5]` 用 Lomuto partition（最後一個 5 當 pivot）。結束後陣列是？pivot 在第幾格（從 1 開始）？
+== 2 4 1 5 9 6 7,4
+?? 陣列,pivot位置
+---
+≤ 5 的依序是 2、4、1，被換到前三格：`[2,4,1,7,9,6,5]`；最後 5 跟第 4 格的 7 換：`[2,4,1,5,9,6,7]`。
+
+@q srt3-02 | ds-sort#3 | 2 | 追蹤
+對 `[5, 3, 8, 1, 9, 2, 7]` 做 Lomuto partition（pivot 7）。結束後陣列是？
+== 5 3 1 2 7 8 9
+== 5,3,1,2,7,8,9
+---
+5、3 ≤ 7，原地不動（$i$、$j$ 同一格）；8 跳過；1 換到第 3 格 → `[5,3,1,8,9,2,7]`；9 跳過；2 換到第 4 格 → `[5,3,1,2,9,8,7]`；最後 7 換到第 5 格。
+
+@q srt3-03 | ds-sort#3 | 3 | 計算
+對 `[9, 1, 8, 2, 7, 3, 5]` 做 Lomuto partition（pivot 5）。比較了幾次？真的交換了幾次（同一格自己換不算）？
+== 6,4
+?? 比較,交換
+---
+pivot 跟前 6 個各比一次。1、2、3 各換一次到前面，最後 pivot 再換一次：4 次。結果剛好是 `[1,2,3,5,7,8,9]`。
+
+@q srt3-04 | ds-sort#3 | 2 | 計算
+用最後一個當 pivot，對已經排好的 `[1, 2, …, 8]` 做 quicksort，總共比較幾次？
+== 28
+---
+每次 pivot 都是最大的，切成 $n-1$ 和 0：$7+6+\cdots+1=28=\binom82$。
+
+@q srt3-05 | ds-sort#3 | 3 | 陷阱
+用最後一個當 pivot，對**完全倒過來**的 `[8, 7, …, 1]` 做 quicksort，總共比較幾次？
+== 28
+---
+第一次 pivot 1 是最小的，切成 0 和 7；剩下 `[7,6,…,2,8]` 的 pivot 8 又是最大的……每次都切得最不平均，一樣 28 次。倒序也是最壞情況。
+
+@q srt3-06 | ds-sort#3 | 3 | 陷阱
+Lomuto partition（條件 `A[j] <= x`）對 5 個**全部相同**的數做 quicksort，比較幾次？
+== 10
+---
+每個元素都 ≤ pivot，全部被分到左邊，切成 $n-1$ 和 0：$4+3+2+1=10$，是 $\Theta(n^2)$。大量重複值時要用三向切分（小於、等於、大於）。
+
+@q srt3-07 | ds-sort#3 | 2 | 計算
+隨機選 pivot 的 quicksort，排好後的第 3 小和第 12 小（$z_3$、$z_{12}$）被比較的機率？
+== 1/5
+== 0.2
+---
+$z_3$ 到 $z_{12}$ 共 10 個，第一個被選為 pivot 的必須是兩端之一：$\frac2{10}=\frac15$。
+
+@q srt3-08 | ds-sort#3 | 3 | 計算
+隨機 quicksort 排 3 個不同的數，期望比較幾次？
+== 8/3
+---
+相鄰的兩對一定被比到（各 1）；$z_1$、$z_3$ 的機率 $\frac23$。$1+1+\frac23=\frac83$。驗算：pivot 是中間那個（機率 1/3）時比 2 次；是兩端（2/3）時比 2＋1＝3 次：$\frac13\cdot2+\frac23\cdot3=\frac83$。
+
+@q srt3-09 | ds-sort#3 | 3 | 計算
+隨機 quicksort 排 6 個不同的數，期望比較幾次？（寫分數或小數）
+== 103/10
+== 10.3
+---
+$\sum_{i<j}\frac2{j-i+1}$：距離 1 的 5 對各 1；距離 2 的 4 對各 $\frac23$；距離 3 的 3 對各 $\frac24$；距離 4 的 2 對各 $\frac25$；距離 5 的 1 對 $\frac26$。$5+\frac83+\frac32+\frac45+\frac13=\frac{103}{10}$（程式用遞迴式驗算一致）。
+
+@q srt3-10 | ds-sort#3 | 2 | 觀念
+為什麼 $z_i$ 和 $z_j$ 被比較，等於「$z_i,\dots,z_j$ 中第一個被選為 pivot 的是 $z_i$ 或 $z_j$」？
+[x] 中間的值先當 pivot 會把 $z_i$、$z_j$ 分到兩邊，之後永遠碰不到；兩端之一先當 pivot 時會跟範圍內每個比
+[ ] 因為 pivot 只跟相鄰的比
+[ ] 因為 $z_i$、$z_j$ 一定在同一邊
+[ ] 因為比較的順序是隨機的
+---
+在那之前，$z_i..z_j$ 都在同一段裡（範圍外的 pivot 不會把它們分開）；所以決定性的是這一段裡誰先被挑中。
+
+@q srt3-11 | ds-sort#3 | 2 | 計算
+A badly tuned quicksort always splits its subarray in the ratio 1 : 9, so a call on $m$ elements makes recursive calls on about $m/10$ and $9m/10$ elements, and each call spends time linear in its size on the split. It is run on an input of $n = 10^6$ elements. A student draws the calls level by level: at every level, the subarrays together contain at most $n$ elements, the shortest route from the top to a base case has about $\log_{10} n = 6$ levels, and the longest has about $\log_{10/9} n$ levels. The student compares the depth with that of perfect halving, about $\lg 10^6 \approx 20$ levels, and a classmate argues that a depth of over 100 levels must make the running time quadratic, since 131 is much larger than 20. Which of the following statements are correct? Select all that apply.
+[x] The deepest path of the recursion has about $\log_{10/9}10^6\approx131$ levels.
+[x] Splitting exactly in half would give about 20 levels.
+[x] The total time is still $\Theta(n\lg n)$.
+[x] Each level of the recursion does $O(n)$ work in total.
+[ ] Because the depth is about 131 rather than 20, the total time becomes $\Theta(n^2)$.
+---
+最深的路每次只剩 $\frac9{10}$，「約 131 層」；對半切「約 20 層」。常數變大但仍是對數，「每層合起來 $O(n)$」，總共「仍是 $\Theta(n\lg n)$」，不是 $n^2$。
+
+@q srt3-12 | ds-sort#3 | 2 | 比較
+Quicksort is run on $n$ distinct keys with the Lomuto partition, which compares every other element of the subarray with the pivot exactly once. Version L always picks the last element of the subarray as the pivot; version R picks the pivot uniformly at random among the elements of the subarray. A tester runs both versions on an already sorted input with $n = 10^4$ keys, on a reversed input, and on a random input, and records the number of comparisons each time; version R is run 100 times on each input with different random seeds. The tester also asks whether version R could still, with some tiny probability, take quadratic time on some run, and whether its expected cost depends on how the input happens to be ordered, which matters because the real data often arrives nearly sorted. Which of the following statements are correct? Select all that apply.
+[x] On an input that is already sorted, version L performs exactly $n(n-1)/2$ comparisons.
+[x] The worst-case running time of version R is still quadratic in $n$.
+[x] For every input, the expected running time of version R is $O(n \lg n)$.
+[ ] For version R, an already sorted input is still the worst case with high probability.
+[ ] The expected number of comparisons of version R depends on the order of the keys in the input.
+---
+「已排好時 L 剛好 $n(n-1)/2$ 次比較」對：最後一個永遠是最大值，分割成 $m-1$ 個和 0 個，大小 $m$ 的子陣列比 $m-1$ 次；$\sum_{m=1}^{n}(m-1)=n(n-1)/2$。
+
+「R 的最壞仍是平方」對：每次都剛好抽到最大或最小的機率很小，但不是 0。
+
+「R 對每種輸入期望 $O(n\lg n)$」對：隨機是演算法自己擲的，跟輸入無關。
+
+「排好的輸入對 R 還是很可能最壞」錯：R 不看輸入順序挑 pivot，排好的輸入跟其他輸入一樣。
+
+「R 的期望比較次數跟輸入順序有關」錯：鍵值互異時，比較次數的分布只看亂數，任何順序都一樣。隨機化把「壞運氣」從輸入搬到亂數上。
+
+@q srt3-13 | ds-sort#3 | 3 | 情境
+一個網站用「最後一個當 pivot」的 quicksort 排使用者上傳的資料。攻擊者可以怎麼讓伺服器變慢？怎麼防？
+[x] 上傳已經排好（或倒序）的大量資料讓它跑 $\Theta(n^2)$；改成隨機選 pivot
+[ ] 上傳很多重複值；改用堆積排序就沒事，所以 quicksort 沒救
+[ ] 上傳亂序資料；改成固定選第一個當 pivot
+[ ] 沒辦法攻擊
+---
+確定的 pivot 規則可以被反推出最壞輸入。隨機選 pivot（或改用最壞 $O(n\lg n)$ 的排序）就讓攻擊者無法預測。
+
+@q srt3-14 | ds-sort#3 | 2 | 計算
+用最後一個當 pivot，對已排好的 15 個數做 quicksort，比較幾次？改用「三數取中」（第一、中間、最後三個裡，取大小在中間的那個當 pivot）呢？
+== 105,34
+?? 最後一個,三數取中
+---
+最後一個：$\binom{15}2=105$。三數取中在排好的資料上每次都挑到正中間，幾乎對半切，程式模擬 partition 只比 34 次（不算挑 pivot 的那幾次）。
+
+@q srt3-15 | ds-sort#3 | 2 | 觀念
+Lomuto partition 進行中，陣列分成四段：`A[p..i]`、`A[i+1..j-1]`、`A[j..r-1]`、`A[r]`。各是什麼？
+[x] ≤ pivot、> pivot、還沒看、pivot
+[ ] > pivot、≤ pivot、還沒看、pivot
+[ ] 已排好、沒排好、還沒看、pivot
+[ ] ≤ pivot、還沒看、> pivot、pivot
+---
+這是迴圈不變量：每一步 $j$ 往右一格，看到的值 ≤ pivot 就換進左段（$i$ 加 1）。最後把 pivot 換到兩段中間。
+
+@q srt3-16 | ds-sort#3 | 3 | 證明
+用迴圈不變量說明 Lomuto partition 結束後，pivot 左邊都 ≤ 它、右邊都 > 它。
+---
+不變量：每輪開始時 `A[p..i]` 都 ≤ $x$、`A[i+1..j-1]` 都 > $x$。初始兩段都空，成立。每輪：若 `A[j]` > $x$，$j$ 加 1，第二段多一個 > $x$ 的，成立；若 ≤ $x$，$i$ 加 1 後把 `A[i]`（原本第二段的第一個，> $x$）和 `A[j]` 交換，第一段多一個 ≤ $x$、第二段整體右移一格，成立。結束時 $j=r$，把 `A[r]` 和 `A[i+1]`（> $x$ 或剛好是 $r$）交換，pivot 到 $i+1$，左 ≤、右 >。
+
+@q srt3-17 | ds-sort#3 | 2 | 陷阱
+「Quicksort 平均比合併排序快，所以 quicksort 的比較次數一定比較少」對嗎？
+[ ] 對
+[x] 不對
+---
+隨機 quicksort 期望約 $1.39n\lg n$ 次比較，合併排序最壞約 $n\lg n$ 次。Quicksort 實際快是因為原地、常數小、存取連續，不是比較次數少。
+
+@q srt3-18 | ds-sort#3 | 1 | 觀念
+Quicksort 的最壞情況是怎麼發生的？
+[x] 每次 pivot 都是最大或最小，切成 $n-1$ 和 0
+[ ] 每次都剛好對半切
+[ ] 資料有重複值
+[ ] 陣列太大
+---
+$T(n)=T(n-1)+\Theta(n)$，加起來 $\Theta(n^2)$。
+
+@q srt3-19 | ds-sort#3 | 2 | 計算
+隨機 quicksort 排 10 個數，最小值 $z_1$ 和最大值 $z_{10}$ 被直接比較的機率？
+== 1/5
+== 0.2
+---
+$\frac2{10-1+1}=\frac15$：只有第一個 pivot 剛好挑到 $z_1$ 或 $z_{10}$ 才會比到它們，之後就被分開了。
+
+@q srt3-20 | ds-sort#3 | 3 | 計算
+隨機 quicksort 排 5 個數，最小值 $z_1$ 期望會被比較幾次？
+== 77/30
+---
+$z_1$ 跟 $z_j$ 被比較的機率 $\frac2j$：$\frac22+\frac23+\frac24+\frac25=1+\frac23+\frac12+\frac25=\frac{77}{30}\approx2.57$。
+
+@q srt3-21 | ds-sort#3 | 2 | 情境
+An embedded device must sort an array of $10^7$ records by a timestamp, stably, so that records with equal timestamps keep their original order, but only about 1 MB of memory is free beyond the array itself, far less than a second copy of the array. The developers consider plain quicksort, which sorts in place; merge sort, which is stable; and heapsort, which sorts in place in $O(n\lg n)$ time. A team member argues that every in-place sort is automatically stable, and another worries about quicksort's recursion stack. Which of the following statements are correct? Select all that apply.
+[x] Plain quicksort is not suitable, because it is not stable.
+[x] Merge sort is stable but needs $O(n)$ extra space.
+[ ] Quicksort is suitable because it sorts in place, and every in-place sort is stable.
+[ ] Quicksort usually needs $O(n)$ extra space for its recursion stack.
+[ ] Heapsort is both stable and in place, so it is the best choice here.
+---
+partition 的長距離交換會打亂相同值，「快速排序不穩定」；「合併排序穩定但要 $O(n)$ 空間」。原地和穩定是兩回事；快排的遞迴通常是 $O(\lg n)$；堆積排序原地但不穩定。（把原始位置當第二鍵可以強迫穩定，但要多存位置。）
+
+@q srt3-22 | ds-sort#3 | 3 | 找錯
+Someone says: "Lomuto partition uses the last element as the pivot, so even splits are likely; the average is $n\lg n$, and the worst case happens only when all values are equal." Which of the following statements are correct?
+[x] Already sorted input is also a worst case.
+[x] Reverse-sorted input is also a worst case.
+[x] Input with all values equal is a worst case as well.
+[x] Choosing the pivot at random removes the dependence on the input order.
+[ ] The worst case happens only when all values are equal, as the claim says.
+---
+固定拿最後一個當 pivot，「已排好」「倒序」時 pivot 每次都是最大或最小，$\Theta(n^2)$；「全部相等」時 Lomuto 讓全部進左邊，也是 $\Theta(n^2)$。所以不只全部相等。「隨機選 pivot」就不再依賴輸入的順序。
+
+@q srt3-23 | ds-sort#3 | 2 | 計算
+Quicksort 對 `[3, 7, 1, 6, 2, 5, 4]`（最後一個當 pivot）排序，總共比較幾次？
+== 10
+---
+pivot 4 剛好在中間：比 6 次，partition 後是 `[3,1,2,4,7,5,6]`，切成 `[3,1,2]` 和 `[7,5,6]`。兩邊各 3 個，pivot 各自也在中間：各比 2 次。$6+2+2=10$，是最好的情況之一。
+
+@q srt3-24 | ds-sort#3 | 2 | 比較
+Quicksort 和合併排序都是「切開、遞迴」。兩者的工作量主要花在哪？
+[x] Quicksort 花在切（partition），合併什麼都不用做；合併排序切不用做事，花在合併
+[ ] 兩個都花在合併
+[ ] 兩個都花在切
+[ ] Quicksort 花在合併
+---
+Quicksort partition 完左右已經分好大小，遞迴回來直接接著就好；合併排序隨便切一半，回來才要花 $O(n)$ 合併。
+
+@q srt3-25 | ds-sort#3 | 3 | 觀念
+隨機 quicksort 期望比較次數約 $2n\ln n$。$n=100$ 時大約幾次？
+[x] 約 650 次（精確值 $\sum\frac2{j-i+1}\approx648$）
+[ ] 約 100 次
+[ ] 約 4950 次
+[ ] 約 200 次
+---
+$2\cdot100\cdot\ln100\approx921$ 是漸近式的高估；精確加總約 648。最壞是 $\binom{100}2=4950$。
+
+@q srt3-26 | ds-sort#3 | 2 | 追蹤
+對 `[6, 8, 2, 7, 1, 5, 3, 4]` 做 Lomuto partition（pivot 4），結束後 pivot 左邊、右邊各是哪些數（照陣列順序）？
+== 2 1 3,8 5 6 7
+?? 左邊,右邊
+---
+2 ≤ 4，跟第 1 格的 6 換 → `[2,8,6,7,1,5,3,4]`；1 跟第 2 格的 8 換 → `[2,1,6,7,8,5,3,4]`；3 跟第 3 格的 6 換 → `[2,1,3,7,8,5,6,4]`；最後 4 跟第 4 格的 7 換 → `[2,1,3,4,8,5,6,7]`。右邊的順序被打亂了，這正是不穩定的來源。
+
+@q srt4-01 | ds-sort#4 | 1 | 計算
+計數排序 `A = [4, 1, 3, 4, 3, 0, 2, 1]`（值在 0..4）。第 1 步計數後，`C[0..4]` 是？
+== 1 2 1 2 2
+== 1,2,1,2,2
+---
+0 有 1 個、1 有 2 個、2 有 1 個、3 有 2 個、4 有 2 個。
+
+@q srt4-02 | ds-sort#4 | 2 | 計算
+接上題，做完前綴和後 `C[0..4]` 是？
+== 1 3 4 6 8
+== 1,3,4,6,8
+---
+逐項累加：1、1+2、3+1、4+2、6+2。`C[x]` 是「$\le x$ 的有幾個」，也就是值 $x$ 最後一個該放的位置。
+
+@q srt4-03 | ds-sort#4 | 2 | 追蹤
+接上題，由後往前放：第一個被放的是 `A[8]=1`，它放到 B 的第幾格？之後 `C[1]` 變成多少？
+== 3,2
+?? 放到第幾格,C[1]
+---
+`C[1]=3`，所以放 `B[3]`，然後 `C[1]` 減 1 變 2，下一個 1 會放到 `B[2]`。
+
+@q srt4-04 | ds-sort#4 | 3 | 追蹤
+接上題，`A[2]=1`（第一個 1）和 `A[8]=1`（第二個 1）最後各在 B 的第幾格？
+== 2,3
+?? A[2]的1,A[8]的1
+---
+由後往前，`A[8]` 先放到 `B[3]`，`A[2]` 後放到 `B[2]`。原本在前的還是在前——穩定。最後 `B=[0,1,1,2,3,3,4,4]`。
+
+@q srt4-05 | ds-sort#4 | 2 | 陷阱
+In the last step of counting sort, the input is scanned **from front to back** instead of from back to front, while everything else stays the same (place $x$ at position $C[x]$, then decrease $C[x]$). Which of the following statements are correct?
+?? 複選
+[x] The output is still sorted, but equal values come out in reversed order.
+[ ] The output is no longer sorted.
+[ ] It writes outside the bounds of the output array.
+[ ] The sort stays stable, since $C[x]$ is decreased after each element is placed.
+[ ] The output is still sorted, and the sort is still stable.
+---
+$C[x]$ 是值 $x$ 的最後一個位置；由前往後時先遇到的放在最後面，大小順序沒錯，但「同值的順序反過來」，所以不穩定。位置都在範圍內，不會出界。要由前往後又穩定，就改用每個值的第一個位置並往後加。
+
+@q srt4-06 | ds-sort#4 | 2 | 計算
+Counting sort is used on $n$ integers whose values lie in $0..n^2$. Which of the following statements are correct?
+[x] It takes $\Theta(n^2)$ time, since $k=n^2$ in $\Theta(n+k)$.
+[x] Radix sort in base $n$ needs two digits and runs in $\Theta(n)$.
+[ ] It takes $\Theta(n)$ time, since counting sort is always linear.
+[ ] It takes $\Theta(n\lg n)$ time, the same as comparison sorting.
+[ ] Its time does not depend on $n$, only on the range of values.
+---
+計數排序只有在 $k=O(n)$ 時才線性；範圍到 $n^2$ 時光掃計數陣列就要 $n^2$，「$\Theta(n^2)$」。改用「以 $n$ 為底的基數排序」，每個數只有兩位，兩次 $\Theta(n)$ 的計數排序。時間 $\Theta(n+n^2)$ 當然跟 $n$ 有關。
+
+@q srt4-07 | ds-sort#4 | 2 | 追蹤
+基數排序（從個位開始）對 `[170, 45, 75, 90, 802, 24, 2, 66]`。第一輪（個位）之後是？
+== 170 90 802 2 24 45 75 66
+== 170,90,802,2,24,45,75,66
+---
+個位：0 的 170、90；2 的 802、2；4 的 24；5 的 45、75；6 的 66。同一位相同的保持原順序。
+
+@q srt4-08 | ds-sort#4 | 3 | 追蹤
+接上題，第二輪（十位）之後是？
+== 802 2 24 45 66 170 75 90
+== 802,2,24,45,66,170,75,90
+---
+十位：802、2 是 0；24 是 2；45 是 4；66 是 6；170、75 是 7（170 在前，因為上一輪它在前）；90 是 9。
+
+@q srt4-09 | ds-sort#4 | 2 | 追蹤
+基數排序 `[329, 457, 657, 839, 436, 720, 355]`，做完個位和十位兩輪後是？
+== 720 329 436 839 355 457 657
+== 720,329,436,839,355,457,657
+---
+個位後：`720, 355, 436, 457, 657, 329, 839`。十位：2 的 720、329；3 的 436、839；5 的 355、457、657（照上一輪的順序）。
+
+@q srt4-10 | ds-sort#4 | 3 | 陷阱
+Suppose radix sort is changed to sort by the **most** significant digit first and the least significant digit last, using a stable sort in every pass. Which of the following statements are correct?
+[x] The final result is ordered mainly by the least significant digit.
+[x] The earlier passes matter only among numbers with equal least significant digits.
+[x] A correct MSD radix sort splits into buckets and recurses.
+[x] For the input `[21, 12]`, the result would be `[21, 12]`.
+[ ] The final result is correctly sorted, since every pass is stable.
+---
+最後一輪決定主要順序，「結果主要依最低位排」，「前面幾輪只在最低位相同時才有影響」：`[21, 12]` 先依十位得 12、21，再依個位得「21、12」，錯了。要從最低位排到最高位；MSD 版要「分組遞迴」。每輪穩定不夠，順序也要對。
+
+@q srt4-11 | ds-sort#4 | 3 | 計算
+排 100 萬個 $0$～$2^{32}-1$ 的整數。用基數排序，以 $2^{16}=65536$ 為底（每一位的值是 0..65535，每輪計數排序 $k=65536$）。要做幾輪？
+== 2
+---
+$2^{32}=(2^{16})^2$，所以每個數以 65536 為底時只有 2 位，2 輪，每輪 $\Theta(n+65536)$。以 10 為底要 10 輪；以 256 為底要 4 輪。
+
+@q srt4-12 | ds-sort#4 | 3 | 比較
+Radix sort is applied to numbers in $0..2^b-1$ using base $2^r$: there are $b/r$ passes, each taking $\Theta(n+2^r)$ time. Which of the following statements are correct?
+?? 複選
+[x] Choosing $r\approx\lg n$ is best.
+[ ] A larger $r$ is always better, because there are fewer passes.
+[ ] A smaller $r$ is always better, because each pass is faster.
+[ ] With $r=\lg n$, each pass takes $\Theta(n\lg n)$ time.
+[ ] The choice of $r$ does not affect the total time.
+---
+$r=\lg n$ 時 $2^r=n$，每輪 $\Theta(n)$，輪數 $\frac b{\lg n}$，「最好」。$r$ 太大，$2^r$ 個計數器比資料還多；$r$ 太小輪數太多；所以 $r$ 的選擇會影響總時間。
+
+@q srt4-13 | ds-sort#4 | 2 | 情境
+One million exam scores, each an integer from 0 to 100, must be sorted. Which of the following statements are correct?
+[x] Counting sort with $k=101$ takes $\Theta(n+k)=\Theta(n)$ time.
+[x] It needs only a few passes over the scores plus passes over 101 counters.
+[x] Merge sort would take $\Theta(n\lg n)$ time here.
+[x] Counting sort can be done stably, so equal scores keep their order.
+[x] The memory needed for the counters is tiny compared with the data.
+---
+值的範圍很小時，「計數排序」直接數每個分數有幾人：「掃兩遍資料、一遍 101 個計數器」，$\Theta(n)$，比「合併排序的 $\Theta(n\lg n)$」快；由後往前放就「穩定」；101 個計數器「幾乎不佔空間」。五句都對。
+
+@q srt4-14 | ds-sort#4 | 2 | 情境
+500,000 student IDs, each of 10 decimal digits, are sorted with radix sort, one digit per pass. Which of the following statements are correct?
+[x] It takes 10 passes.
+[x] The total time is $\Theta(10(n+10))=\Theta(n)$.
+[ ] It takes 1 pass, since each ID fits in one machine word.
+[ ] It takes about $\lg n\approx19$ passes, one for each doubling of $n$.
+[ ] The total time is $\Theta(n\lg n)$, the same as comparison sorting.
+---
+每輪處理一位，「10 位數就 10 輪」，每輪是範圍 10 的計數排序 $\Theta(n+10)$；位數和每位的範圍都是常數，「總共線性」。輪數由位數決定，跟 $n$ 無關。
+
+@q srt4-15 | ds-sort#4 | 2 | 觀念
+Bucket sort uses about $n$ buckets and insertion sort inside each bucket. Which of the following statements are correct?
+?? 複選
+[x] Its expected $\Theta(n)$ time assumes uniformly spread inputs.
+[ ] It assumes the inputs are integers, and its worst case is $\Theta(n\lg n)$.
+[ ] It assumes that the inputs are already sorted within each bucket before it starts.
+[ ] It needs no assumption about the inputs, and its worst case is $\Theta(n)$.
+[ ] Its worst case is $\Theta(n)$, reached when all inputs fall into one bucket.
+---
+「均勻分布」讓每個桶期望只有常數個，期望 $\Theta(n)$。全部擠到同一個桶時就是對 $n$ 個做插入排序，最壞 $\Theta(n^2)$；桶排序常用在 $[0,1)$ 的實數上，不要求整數，也不要求先排好。
+
+@q srt4-16 | ds-sort#4 | 2 | 計算
+桶排序把 $[0,1)$ 分成 10 個桶（第 $\lfloor10x\rfloor$ 號）。輸入 `0.42, 0.32, 0.73, 0.15, 0.48, 0.97, 0.36, 0.04, 0.41, 0.66`。哪一號桶最多？有幾個？
+== 4,3
+?? 桶號,個數
+---
+0.42、0.48、0.41 都進 4 號桶。3 號桶有 0.32、0.36 兩個，其他都是 0 或 1 個。
+
+@q srt4-17 | ds-sort#4 | 2 | 陷阱
+計數排序不能處理負數。對嗎？
+[ ] 對
+[x] 不對
+---
+值在 $-m..k$ 時，全部加 $m$ 平移到 $0..k+m$，排完再減回去。只要範圍不大就行。
+
+@q srt4-18 | ds-sort#4 | 2 | 比較
+Counting sort is applied to the array $A = [3, 1, 3, 0, 2, 1]$ of $n = 6$ integers in the range $0$ to $k = 3$. It first counts each value in an array $C[0..k]$, then replaces $C$ by its prefix sums, and finally scans $A$ from right to left, placing each element into an output array $B$. Which of the following statements are correct? Select all that apply.
+[x] After the prefix-sum step, $C = [1, 3, 4, 6]$.
+[x] Counting sort uses $O(n + k)$ extra space for $B$ and $C$, so it does not sort in place.
+[ ] Counting sort is not stable, because equal keys are placed at positions computed from $C$ rather than compared with each other.
+[x] Merge sort is stable as long as the merge step takes the element from the left half when two keys are equal.
+[ ] If $k = n^2$, counting sort still runs in $O(n)$ time.
+---
+「前綴和後 $C=[1,3,4,6]$」對：計數是 0 一個、1 兩個、2 一個、3 兩個，即 $[1,2,1,2]$；累加得 $[1,3,4,6]$，意思是「≤ $i$ 的有幾個」，也就是值 $i$ 最後一個該放的位置。
+
+「$O(n+k)$ 額外空間、不是原地」對：輸出 $B$ 要 $n$ 格、$C$ 要 $k+1$ 格。
+
+「不穩定」錯：從右往左掃、每放一個就把 $C$ 減 1，相同的值中原本靠右的放在靠右，順序保持，所以穩定。這也是它能當基數排序每一輪的原因。
+
+「合併時相等取左邊就穩定」對：左半原本就在右半前面，相等時先取左邊，相對順序不變。
+
+「$k=n^2$ 還是 $O(n)$」錯：時間是 $O(n+k)=O(n^2)$，光是掃 $C$ 就要 $n^2$ 步。值範圍大時改用基數排序。
+
+@q srt4-19 | ds-sort#4 | 3 | 證明
+證明：LSD 基數排序（每輪用穩定排序）排完 $d$ 輪後，數字依完整的值排好。
+---
+對輪數 $i$ 歸納：$i$ 輪後，數字依「最低 $i$ 位」排好。$i=1$ 顯然。第 $i+1$ 輪依第 $i+1$ 位排：兩數第 $i+1$ 位不同，順序由它決定，正確；相同時，穩定排序保持上一輪的順序，而上一輪已依最低 $i$ 位排好，所以也正確。$i=d$ 時就是完整的值。
+
+@q srt4-20 | ds-sort#4 | 2 | 找錯
+A student's radix sort uses an unstable sort (equal keys may be swapped) for each digit. Sorting `[13, 11]`, the pass on the units digit gives `[11, 13]`, and both tens digits are 1. Which of the following statements are correct?
+[x] The final result may be `[13, 11]`.
+[x] The work of the units-digit pass is lost when the tens-digit pass swaps equal keys.
+[x] Using a stable counting sort for each digit fixes the problem.
+[x] Radix sort's correctness proof depends on every pass being stable.
+[ ] The final result is always `[11, 13]`, since the units pass has already ordered them.
+---
+十位相同時，不穩定的排序可能把 11、13 對調，「結果可能是 `[13, 11]`」，「上一輪的成果就丟了」；「每輪用穩定的計數排序」就沒問題，因為基數排序的正確性「正靠每一輪都穩定」。
+
+@q srt4-21 | ds-sort#4 | 1 | 計算
+用十進位基數排序排一群非負整數，最大的是 99999。要幾輪？
+== 5
+---
+5 位數就排 5 輪（不足 5 位的前面補 0）。
+
+@q srt4-22 | ds-sort#4 | 3 | 追蹤
+用**以 4 為底**的基數排序（每輪看一位，從最低位開始）排 `[13, 6, 9, 4]`。第一輪之後是？
+== 4 13 9 6
+== 4,13,9,6
+---
+以 4 為底：13＝31、6＝12、9＝21、4＝10。最低位分別是 1、2、1、0。0 的在前：4；1 的照原順序：13、9；2 的：6。
+
+@q srt4-23 | ds-sort#4 | 2 | 觀念
+Counting sort processes n integer keys in the range 0 through k, using a count array with one entry per possible key. Consider its standard implementation with an output array. Which statements are correct? Select all that apply.
+[x] The count array has k plus one entries.
+[x] Its running time is $\Theta(n+k)$.
+[x] It can avoid the comparison-sorting lower bound because it uses the integer keys as indices.
+[ ] Its running time is always $\Theta(n)$ even when $k=n^2$.
+[ ] Its auxiliary storage is always constant regardless of n and k.
+---
+「k＋1 格」對：包含 0 到 k。「Θ(n＋k)」對：需處理輸入、輸出及計數範圍。「不受比較排序下界約束」對：它不是只靠兩兩比較決定結果。「k＝n² 仍線性」錯：此時 Θ(n＋n²)＝Θ(n²)。「額外空間恆定」錯：標準實作有計數陣列與輸出陣列，額外空間為 O(n＋k)。
+
+@q srt4-24 | ds-sort#4 | 3 | 情境
+Many lowercase strings of length 1 to 3 must be sorted in dictionary order with radix sort. Which of the following statements are correct?
+[x] Pad short strings on the right with a blank smaller than 'a'.
+[x] Each pass then sorts by one of 27 possible symbols, from the rightmost position to the leftmost.
+[ ] Short strings should be padded on the left with 'a', so that all strings line up at the right.
+[ ] Strings of different lengths cannot be sorted with radix sort, even after padding.
+[ ] Only the first character needs to be sorted, since dictionary order depends on it alone.
+---
+字典順序裡 "ab" < "abc"，所以「補在右邊、補比 'a' 小的空白」，每輪「27 種符號、由右往左」。補在左邊會變成先比長度，補 'a' 還會讓 "a" 和 "aa" 分不出來；只看第一個字排不出完整順序。
+
+@q srt4-25 | ds-sort#4 | 2 | 計算
+計數排序 `A = [4, 1, 3, 4, 3, 0, 2, 1]` 的最後結果 B 是？
+== 0 1 1 2 3 3 4 4
+== 0,1,1,2,3,3,4,4
+---
+依前綴和 `C=[1,3,4,6,8]` 由後往前放，每放一個 `C` 減 1。
+
+@q srt5-01 | ds-sort#5 | 2 | 追蹤
+12 個數找第 5 小。partition 後 pivot 排第 8 小。接下來往哪邊、找第幾小？
+== 左,5
+?? 哪邊,第幾小
+== 左邊,5
+---
+第 5 小比 pivot 小，在左邊；左邊有 7 個，答案是左邊的第 5 小（不用減）。
+
+@q srt5-02 | ds-sort#5 | 2 | 追蹤
+15 個數找第 9 小。partition 後 pivot 排第 4 小。接下來往哪邊、找第幾小？
+== 右,5
+?? 哪邊,第幾小
+== 右邊,5
+---
+左邊 3 個加 pivot 共 4 個比答案小，往右找第 $9-4=5$ 小。
+
+@q srt5-03 | ds-sort#5 | 3 | 追蹤
+用 Randomized-Select 的步驟（但 pivot 固定取最後一個、Lomuto partition）在 `[7, 2, 9, 4, 1, 6, 5]` 找第 3 小。一共做了幾次 partition？答案是？
+== 3,4
+?? partition次數,答案
+---
+pivot 5 → `[2,4,1,5,9,6,7]`，5 排第 4，往左找第 3 小。`[2,4,1]` pivot 1 → `[1,4,2]`，1 排第 1，往右找第 2 小。`[4,2]` pivot 2 → `[2,4]`，2 排第 1，往右找第 1 小：剩 `[4]`，答案 4（程式模擬確認）。
+
+@q srt5-04 | ds-sort#5 | 3 | 計算
+Randomized-Select 運氣最差時：在 10 個數裡找最小值，每次 pivot 都挑到剩下的最大值。總共比較幾次？
+== 45
+---
+每次只少一個：$9+8+\cdots+1=45=\binom{10}2$，是 $\Theta(n^2)$。所以 Randomized-Select 只有**期望** $O(n)$。
+
+@q srt5-05 | ds-sort#5 | 2 | 計算
+Median of medians 處理 45 個數：分幾組？「中位數的中位數」要在幾個數裡遞迴找？
+== 9,9
+?? 組數,遞迴大小
+---
+$45/5=9$ 組，每組一個中位數，共 9 個，遞迴在這 9 個裡找中位數（大小 $n/5$）。
+
+@q srt5-06 | ds-sort#5 | 3 | 計算
+Median of medians，45 個相異的數（9 組都滿 5 個），取第 5 小的組中位數當 $x$。**保證**比 $x$ 大的至少有幾個？
+== 14
+---
+組中位數 ≥ $x$ 的有 5 組（含 $x$ 自己那組）。另外 4 組各有中位數和比它大的 2 個，共 3 個 > $x$：12 個；$x$ 那組有 2 個比 $x$ 大。合計 14（程式造出剛好 14 的例子），約 $\frac{3n}{10}=13.5$。
+
+@q srt5-07 | ds-sort#5 | 2 | 比較
+Median of medians 改成每組 7 個，遞迴式是？還是線性嗎？
+[x] $T(n)\le T(n/7)+T(5n/7)+O(n)$；$\frac17+\frac57=\frac67<1$，線性
+[ ] $T(n)\le T(n/7)+T(6n/7)+O(n)$；不是線性
+[ ] $T(n)=2T(n/2)+O(n)$
+[ ] $T(n)\le T(n/7)+T(5n/7)+O(n)$；$\Theta(n\lg n)$
+---
+每組 7 個，一半的組各有 4 個 ≥ $x$：至少 $\frac12\cdot\frac n7\cdot4=\frac{2n}7$ 個在一邊，遞迴另一邊最多 $\frac{5n}7$。
+
+@q srt5-08 | ds-sort#5 | 3 | 證明
+說明 median of medians 每組 3 個時為什麼不是線性。
+---
+每組 3 個：一半的組各有 2 個 ≥ $x$，保證約 $\frac12\cdot\frac n3\cdot2=\frac n3$ 個在一邊，遞迴最多 $\frac{2n}3$。遞迴式 $T(n)=T(\frac n3)+T(\frac{2n}3)+cn$。遞迴樹每一層子問題大小加起來還是 $n$（$\frac13+\frac23=1$），深度 $\Theta(\lg n)$，總共 $\Theta(n\lg n)$。要 $<1$ 才會變成等比級數。
+
+@q srt5-09 | ds-sort#5 | 2 | 比較
+Which of the following statements comparing Randomized-Select and the median-of-medians Select are correct?
+[x] Randomized-Select runs in expected $O(n)$ time.
+[x] Randomized-Select's worst case is $\Theta(n^2)$.
+[x] Median-of-medians Select runs in $O(n)$ time in the worst case.
+[x] Median-of-medians Select has a much larger constant factor.
+[ ] Both run in $O(n)$ time in the worst case, since both discard a constant fraction each round.
+---
+隨機 pivot 期望切得夠平均，「期望 $O(n)$」，但運氣最差時每次只少一個，「最壞 $\Theta(n^2)$」；median of medians 用保證夠中間的 pivot 換到「最壞 $O(n)$」，代價是「常數很大」。隨機版不保證每輪都丟掉固定比例。
+
+@q srt5-10 | ds-sort#5 | 2 | 情境
+We need the median salary of $10^7$ people (just this one value). Which of the following statements are correct?
+?? 複選
+[x] A selection algorithm finds the 5,000,000th smallest in expected $O(n)$ time.
+[ ] Building a heap and extracting the minimum 5 million times is faster than selection.
+[ ] Sorting is necessary; no method faster than $O(n\lg n)$ exists.
+[ ] Binary search on the unsorted array finds it in $O(\lg n)$ time.
+[ ] Scanning once while keeping a running average gives the median.
+---
+只要一個位置的值，「選擇演算法期望 $O(n)$」，不必全部排序。heap 方法要 $O(n+\frac n2\lg n)$，比較慢；沒排序不能二分搜尋；平均數不是中位數。
+
+@q srt5-11 | ds-sort#5 | 3 | 情境
+The 100 largest of $n$ numbers are needed, in any order. Which of the following statements are correct?
+[x] Select the 100th largest, then partition once: $O(n)$ total.
+[x] If the 100 must also be in order, sorting them adds only $O(100\lg100)$.
+[x] Running 100 separate selections would cost $O(100n)$.
+[x] Scanning the data while keeping a min-heap of size 100 also works, in $O(n\lg100)$ time.
+[ ] Sorting everything and taking the last 100 takes only $O(n)$ time, since 100 is a constant.
+---
+「選出第 100 大再切一次」，總共 $O(n)$；要排好順序「再加 $O(100\lg100)$」；「100 次選擇」是 $O(100n)$。「大小 100 的最小堆」每個數最多花 $\lg100$，也是線性。全部排序是 $O(n\lg n)$。
+
+@q srt5-12 | ds-sort#5 | 2 | 找錯
+In a student's Select, after partitioning the pivot is the $k$-th smallest; if $i>k$, the code searches the right part for the $i$-th smallest. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] It should search the right part for the $(i-k)$-th smallest.
+[ ] It should search the left part instead, since $i>k$.
+[ ] Searching for the $(i+k)$-th smallest is right, because the left part and the pivot are skipped.
+[ ] The student's code is correct, since partitioning does not change ranks.
+[ ] Using $i-k+1$ is needed, since the pivot itself must be counted again on the right.
+---
+「右邊找第 $i-k$ 小」對：右邊的排名要扣掉左邊和 pivot 共 $k$ 個；例如 10 個數找第 7 小、pivot 第 4，就在右邊 6 個中找第 3 小。
+
+「改找左邊」錯：$i>k$ 時答案比 pivot 大，在右邊。
+
+「找第 $i+k$ 小」錯：跳過的 $k$ 個要扣掉，不是加上。
+
+「程式沒錯」錯：右邊子陣列的排名從 1 重新算，原本的第 $i$ 小在那裡是第 $i-k$ 小。
+
+「要用 $i-k+1$」錯：pivot 不在右邊，$k$ 已經把它算進去了。
+
+@q srt5-13 | ds-sort#5 | 1 | 計算
+9 個相異的數，中位數是第幾小？
+== 5
+---
+$n$ 是奇數時中位數是第 $\frac{n+1}2$ 小：第 5 小，左右各 4 個。
+
+@q srt5-14 | ds-sort#5 | 3 | 證明
+用代入法證明：$T(n)\le T(n/5)+T(7n/10)+cn$ 的解是 $O(n)$。
+---
+猜 $T(n)\le dn$。代入：$T(n)\le d\frac n5+d\frac{7n}{10}+cn=\frac{9}{10}dn+cn$。要 $\le dn$，只要 $cn\le\frac{1}{10}dn$，即 $d\ge10c$。取 $d=10c$（並讓小的 $n$ 也成立）即得 $T(n)=O(n)$。關鍵是 $\frac15+\frac7{10}<1$。
+
+@q srt5-15 | ds-sort#5 | 2 | 計算
+Median of medians 每組 7 個時，遞迴到答案那一邊最多剩多少比例的元素？
+== 5/7
+---
+一半的組（$\frac n{14}$ 組）各有 4 個 ≥ $x$：至少 $\frac{4n}{14}=\frac{2n}7$ 個在 $x$ 的一邊，所以另一邊最多 $\frac{5n}7$。
+
+@q srt5-16 | ds-sort#5 | 3 | 陷阱
+「Median of medians 選出的 $x$ 就是全部資料的中位數」對嗎？
+[ ] 對
+[x] 不對
+---
+$x$ 只保證排在大約 30%～70% 之間，不一定剛好在中間。它的用處是「夠中間」，讓每次至少丟掉 $\frac{3n}{10}$ 個，不是直接給答案。
+
+@q srt5-17 | ds-sort#5 | 2 | 比較
+In practice, the median is usually found with Randomized-Select rather than the median-of-medians algorithm. Which of the following statements explain why?
+[x] Randomized-Select has a much smaller constant factor.
+[x] The value of median of medians lies mainly in its worst-case guarantee.
+[ ] Median of medians sometimes gives wrong answers.
+[ ] Randomized-Select is also linear in the worst case.
+[ ] Median of medians requires the input to be sorted first.
+---
+median of medians 每層要分組、找組中位數、遞迴兩次，常數大，所以「隨機版常數小」比較實用；它的價值「在理論上的最壞保證」。它是正確的；Randomized-Select 最壞仍是 $\Theta(n^2)$；不需要先排序。
+
+@q srt5-18 | ds-sort#5 | 2 | 情境
+Both the 25th percentile and the 75th percentile of $n$ values are needed. Which of the following statements are correct?
+[x] They can be found in $O(n)$ time with two selections.
+[x] The second selection can be restricted to one side of the first selection's final partition.
+[x] Sorting is not necessary.
+[x] Every value must still be examined at least once, so $\Omega(n)$ time is needed.
+[x] Any fixed number of percentiles can be found in $O(n)$ total time.
+---
+每次選擇 $O(n)$，「兩次還是 $O(n)$」，「不必排序」；第 75 百分位一定在第一次切完的右段，「可以只在那一段找」。每個值都得看過，「至少 $\Omega(n)$」；常數個百分位就是常數次選擇。五句都對。
+
+@q srt5-19 | ds-sort#5 | 2 | 陷阱
+「Randomized-Select 期望 $O(n)$，前提是輸入資料的順序是亂的」對嗎？
+[ ] 對
+[x] 不對
+---
+隨機的是 pivot 的選法，不是輸入。對任何固定的輸入，期望時間都是 $O(n)$。
+
+@q srt5-20 | ds-sort#5 | 3 | 計算
+Randomized-Select is run on $n=1024$ elements, and in the ideal case each partition discards exactly half. Which of the following statements are correct?
+[x] The partitions make about $1023+511+255+\cdots\approx2048$ comparisons in total.
+[x] The total is linear because the counts form a geometric series.
+[ ] The total is about $n\lg n=10240$ comparisons, since there are about 10 levels.
+[ ] The total is about $n=1024$ comparisons, one for each element of the input array.
+[ ] The total is about $\lg n=10$ comparisons, one per level.
+---
+每層比較次數是剩下的元素數減一，「$1023+511+\cdots\approx2n$」，是「等比級數」所以線性。只走一邊，不是每層處理全部；第一次 partition 就要 1023 次。
+
+@q srt5-21 | ds-sort#5 | 2 | 觀念
+Which of the following statements explain why Select takes linear time while quicksort takes $n\lg n$?
+[x] Select recurses only into the side holding the answer.
+[x] With even splits, quicksort satisfies $T(n)=2T(n/2)+n$.
+[x] With even splits, Select satisfies $T(n)=T(n/2)+n$, which sums to about $2n$.
+[x] Both use the same partition procedure.
+[ ] Select always picks the exact median as its pivot.
+---
+「只遞迴有答案的那一邊」，所以「$T(n)=T(n/2)+n\approx2n$」；quicksort 兩邊都做，「$T(n)=2T(n/2)+n$」，$n\lg n$。兩者「用同一種 partition」。隨機版不保證 pivot 是中位數。
+
+@q srt5-22 | ds-sort#5 | 3 | 情境
+A sensor with very little memory receives $n$ readings, can store only $O(1)$ of them, and can read the data only once from start to end. Which of the following statements are correct?
+?? 複選
+[x] The linear-time Select algorithm cannot be used directly to find the exact middle value.
+[ ] Select needs only $O(1)$ space and a single pass over the data.
+[ ] Median-of-medians Select works within these limits.
+[ ] Because Select runs in expected $O(n)$ time, it works within these limits.
+[ ] Randomized-Select works within these limits if its pivot is taken from the first reading.
+---
+Select 要反覆 partition、重排整個陣列，需要存下全部資料；只讀一次又只存常數筆時「不能直接用」。median of medians 也一樣要存全部；線性時間不等於線性一次掃描；pivot 怎麼選都要重排資料。
+
+@q srt5-23 | ds-sort#5 | 2 | 計算
+In median of medians on $n$ numbers, the numbers are split into blocks of 5, and each block is sorted to find its median. Which of the following statements about this step are correct?
+[x] It takes $O(n)$ time in total.
+[x] Sorting 5 numbers takes at most 7 comparisons.
+[ ] It takes $O(n\lg n)$ time, since every block must be sorted.
+[ ] It takes $O(n^2)$ time, since each block is compared with all the others.
+[ ] It takes $O(\lg n)$ time, since only the medians matter.
+---
+「5 個數排序最多 7 次比較」，是常數，$\frac n5$ 組「總共 $O(n)$」。每組排序是常數時間，不是 $\lg n$；組和組之間不必互相比較；每組都要看過，至少線性。
+
+@q srt5-24 | ds-sort#5 | 2 | 追蹤
+Quickselect looks for the 7th smallest of 10 numbers. After partitioning, the pivot is the 7th smallest element. Which of the following statements are correct?
+?? 複選
+[x] The pivot is returned as the answer.
+[ ] The search continues in the left part for the 7th smallest.
+[ ] The search continues in the right part for the 1st smallest.
+[ ] The search continues in the right part for the 0th smallest.
+[ ] The search continues in both parts to confirm the answer.
+---
+pivot 的排名剛好等於要找的 $i$，「它就是答案，直接回傳」。左段只有 6 個；右段的元素都比答案大；不需要再確認。

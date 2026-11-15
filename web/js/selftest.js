@@ -20,8 +20,8 @@
   S.load(); S.st = defaultState(); QBANK.build();
 
   // 1. 資料一致性
-  { const f = [], lids = new Set(DATA.lessons.map(l => l.id));
-    DATA.quiz.forEach(q => { if (!lids.has(q.ch)) f.push(`${q.id}：章節 ${q.ch} 不存在`); });
+  { const f = [], lids = new Set(DATA.lessons.map(l => l.id)), fids = new Set((DATA.found || []).map(x => typeof x === 'string' ? x : x.id));
+    DATA.quiz.forEach(q => { if (!lids.has(q.ch) && !fids.has(q.ch)) f.push(`${q.id}：章節 ${q.ch} 不存在`); if (q.kp && !(DATA.kp && DATA.kp.nodes && DATA.kp.nodes[q.kp])) f.push(`${q.id}：知識點 ${q.kp} 不存在`); });
     DATA.cards.forEach(c => { if (!lids.has(c.ch)) f.push(`${c.id}：章節 ${c.ch} 不存在`); });
     (DATA.plan || []).forEach(p => (p.lessons || []).forEach(l => { if (!lids.has(l)) f.push(`計畫第 ${p.day} 天：${l} 不存在`); }));
     const ids = DATA.quiz.map(q => q.id); ids.filter((x, i) => ids.indexOf(x) !== i).forEach(x => f.push('重複題號 ' + x));
@@ -71,7 +71,7 @@
     for (const l of DATA.lessons) {
       if (!l.intuit) f.push(`${l.id}：沒有直觀版`); else cnt(tryMd(l.intuit, l.id, f));
       cnt(tryMd(l.body, l.id + ' 本文', f));
-      const w = l.worked; if (!w) { f.push(`${l.id}：沒有跟著做的例題`); continue; }
+      const w = l.worked; if (!w) continue;   // 舊章例題已停用（改成知識點例題）
       if (!w.steps.length || !w.ans) f.push(`${l.id}：例題缺步驟或答案`);
       cnt(tryMd(w.q, l.id + ' 例題', f)); w.steps.forEach((x, i) => { steps++; tryMd(x.t, `${l.id} 第${i + 1}步標題`, f); cnt(tryMd(x.b, `${l.id} 第${i + 1}步`, f)); }); tryMd(w.ans, l.id + ' 答案', f); tryMd(w.err, l.id + ' 常錯', f);
     }
@@ -79,9 +79,7 @@
   await tick();
 
   // 6. 短片：每支畫開頭、中間、結尾三格
-  { const f = [], cv = document.createElement('canvas'); cv.width = Clips.W; cv.height = Clips.H; const c2 = cv.getContext('2d');
-    for (const c of Clips.list) for (const t of [0, c.dur / 2, c.dur - .01]) { try { Clips.render(c2, c, t); } catch (e) { f.push(`${c.id} @${t.toFixed(1)}s：${e.message}`); } }
-    section('短片', f, `${Clips.list.length} 支 × 3 格`); }
+  { const f = Clips.list.filter(c => !Clips.videoOf(c.id)).map(c => c.id + ' 沒有 MP4'); section('短片', f, `${Clips.list.length} 支 MP4`); }
   await tick();
 
   // 7. 每個頁面都能打開

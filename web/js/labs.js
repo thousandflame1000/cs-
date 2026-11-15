@@ -54,7 +54,7 @@ const Labs = {
 
 function makePlayer(ctrl, note, stage, frames, render) {
   let i = 0, timer = null, speed = 900;
-  ctrl.innerHTML = `<button class="btn sm" data-a="first" aria-label="第一步">⏮</button><button class="btn sm" data-a="prev" aria-label="上一步">◀ 上一步</button><button class="btn sm primary" data-a="play">▶ 播放</button><button class="btn sm" data-a="next" aria-label="下一步">下一步 ▶</button><button class="btn sm" data-a="last" aria-label="最後">⏭</button>
+  ctrl.innerHTML = `<button class="btn sm ic-only" data-a="first" aria-label="第一步" title="第一步">${ICON('first')}</button><button class="btn sm ic-only" data-a="prev" aria-label="上一步" title="上一步">${ICON('prev')}</button><button class="btn sm primary" data-a="play">${ICON('play')} 播放</button><button class="btn sm ic-only" data-a="next" aria-label="下一步" title="下一步">${ICON('next')}</button><button class="btn sm ic-only" data-a="last" aria-label="最後一步" title="最後一步">${ICON('last')}</button>
     <label class="spd">速度<input type="range" min="150" max="2000" step="50" value="${2150 - speed}" aria-label="速度"></label><span class="stepc"></span>`;
   const show = () => {
     const f = frames[i];
@@ -62,11 +62,11 @@ function makePlayer(ctrl, note, stage, frames, render) {
     render(f, stage);
     $('.stepc', ctrl).textContent = `步驟 ${i + 1} / ${frames.length}`;
   };
-  const stop = () => { clearInterval(timer); timer = null; const b = $('[data-a="play"]', ctrl); if (b) b.textContent = '▶ 播放'; };
+  const stop = () => { clearInterval(timer); timer = null; const b = $('[data-a="play"]', ctrl); if (b) b.innerHTML = ICON('play') + ' 播放'; };
   const play = () => {
     if (timer) return stop();
     if (i >= frames.length - 1) i = 0;
-    $('[data-a="play"]', ctrl).textContent = '⏸ 暫停';
+    $('[data-a="play"]', ctrl).innerHTML = ICON('pause') + ' 暫停';
     timer = setInterval(() => { if (i < frames.length - 1) { i++; show(); } else stop(); }, speed);
   };
   ctrl.onclick = e => {

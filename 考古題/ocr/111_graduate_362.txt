@@ -1,0 +1,93 @@
+=== PAGE p-1.pgm
+MH: 362 AUF 11] SH ERALHBAFARRA
+AA: RCA) HAR: 362
+fi-k : 4 # > R2F
+
+ 
+
+. (10%) Which one of the following graphs has an Eulerian cycle?
+
+(A) a SES © 2 (D) ZY « <x
+
+. (10%) Which solves a, = Gy-1 +6Qy_2 for ay in terms of ay = A and a,=B:
+(A) =[(-3)"(2A — B) + 2"(3A + B)] (B) =[(-3)"(2A ~ B) + 2"(3A - B)]
+(C) £[(-2)"GA — B) + 3"(2A + B)] (D) 4[(-2)"(4 +B) +3"(2A+B)]
+(B) F[(-2)"(B4 ~ B) + 3"(2A ~ B)]
+
+. (10%) The generating function in partial fraction decomposition for the recurrence equation a, =
+—An-1 + 6ay-2 for on in terms of dy = A and a, =B is:
+
+(A) 2A + +) B 2 4 [Pate 422) (C) = [74 + 34-. 3 (D) 2 [PA 4 —B +) (2 spa +243)
+
+1-3x 1+2x 1-3x 1+2x 1-3x 1+2x. 1-2x 1+3x 1-2x 1+3x.
+
+. (0%) The number of positive integer solutions of x, + x2 fe *+X, =r equals (A) (a) (B)
+Mr) © G) ®) r™ © on)!
+
+. (10%) Risa non-symmetric relation on 4 if there exist x,y € A such that (x,y) ER but
+
+(y,x) € R. If |A| = m, how many non-symmetric relations on A are there? (A) 2(?-m)/2 (B) 27 —
+2(m?+m)/2 (C) 3(n?—-m)/2 (D) 2(m?+m)/2 (BE) gm?—m
+
+. 6%) If A is similar to B, how many of the following statements are true?
+¢ A-? is similar to BU}.
+* A and B have the same eigenvalues.
+* A and B represent the same transformation with respect to different bases.
+¢ The nullity of A is the same as the nullity of B.
+(A)0 (B) 1(C)2(D)3 &) 4
+
+. (6%) How many of the following statements are true?
+* — The inverse of an orthogonal matrix is orthogonal.
+* The product of two orthogonal matrices is an orthogonal matrix.
+¢ Every matrix with orthonormal columns is invertible.
+° If A, BER™", and A+ iB isa unitary matrix, then A’B is symmetric.
+(A)0 (B) 1(C)2(D) 3 &)4
+
+. (5%) Assume that A € R™” and A? + 44+ 61, = O.If (A+ 3Iny* = aA + bl, Whatis the
+value of 2a + b? (A) -2 (B)-1 (C) 0(D) 1 (E)2
+
+LHR
+=== PAGE p-2.pgm
+FAR :
+
+#tB > RBA)
+Risk: 4
+
+  
+
+362 HeeRAS 111 SF RGALEHALSRRA .
+$3: 362
+
+# 2 AZH D> HF
+
+ 
+
+9. (5%) ___ Given a basis S = {(¢ — 1), (¢ — 1)?, (¢ — 1), 1} of a vector space P,(t) of polynomials
+of degrees 3. If the coordinate of x = 5t3 — 4t? + 3t —2 with respect to S is (a,b,c,d), then at b+
+c+d=?
+
+(A)26 (B) 27 (C) 28 (D) 29 (E) 30
+
+9-15 7
+10. (10%) Given A= S ; 2 “4 The largest eigenvalue is (A) 6 (B) 7 (C) 8 (D) 9 (E) 10
+0 0-1 8
+
+11. (10%) Given A= [E 4}. Assume that B? = A and B has real eigenvalues. What is the matrix
+
+B?
+
+1f1+4¥5 -1+¥5 1f 2+¥5 3-5 af 34+¥5 -14+¥5
+wpe 1-245. @ Fs 1+ 245. OL ie a aye
+(py 2/1 + 5V5 1-¥5 (E) 2 14+5¥5 3 ¥8)
+
+413-375 3-¥5. 271-3495 1-3¥5.
+
+12. (10%) Let U = span{( 1,3, —2,2,3),(1,4,—3,4,2),(2,3,-1,—2, 9), (2,4,-2,0,8)} and
+
+W = span{(1,3, 6, 2,1),(1,5,—6,6,3),( 2, 5, 3, 2, 1),(2,7,—3,6,3)} be two subspaces of R®>. The
+dimension of UMW is (A) 0(B) 1(C)2(D) 3) 4
+
+BRM SME
+
+ee
+

@@ -1,0 +1,1330 @@
+@q pr1-01 | os-process#1 | 1 | 觀念
+程式（program）和行程（process）的差別？
+[x] 程式是存在磁碟上的指令檔；行程是正在執行的程式，有自己的記憶體、暫存器、狀態
+[ ] 兩者一樣
+[ ] 行程是程式的原始碼
+[ ] 一個程式只能有一個行程
+---
+同一個程式可以同時跑好幾個行程（例如開兩個瀏覽器視窗）。
+
+@q pr1-02 | os-process#1 | 2 | 觀念
+行程從 running 變成 ready，最常見的原因是？
+[x] 分到的時間用完，CPU 被收回
+[ ] 要等 I/O
+[ ] 執行結束
+[ ] I/O 完成
+---
+等 I/O 是 running → waiting；I/O 完成是 waiting → ready；結束是 running → terminated。
+
+@q pr1-03 | os-process#1 | 2 | 陷阱
+行程可以直接從 waiting 變成 running。對嗎？
+[ ] 對
+[x] 不對
+---
+I/O 完成只代表它「可以跑了」，CPU 可能正在給別人用。五狀態圖中只有 ready → running 這條路。
+
+@q pr1-04 | os-process#1 | 2 | 觀念
+A text-editor process with process ID 412 is running when its time slice expires, and the kernel switches to another process. At that moment the editor's program counter is 0x4005f0, its 16 general-purpose registers hold intermediate values, its scheduling priority is 20, it has three files open (including `notes.txt`, which is 2 MB long), and it uses 48 MB of memory. Later the kernel must let the editor continue exactly where it stopped. Which of the following are kept in the editor's process control block (PCB)? Select all that apply.
+[x] The saved program counter 0x4005f0 and the saved values of the 16 registers
+[x] The process state, now ready instead of running, and the scheduling priority 20
+[ ] The full 2 MB contents of `notes.txt` and of the other open files
+[ ] The source code of the editor, so that the process can be recompiled when needed
+[ ] A complete copy of the 48 MB that the process has stored in memory
+---
+PCB 存的是「讓行程停下來、之後能從原地接著跑」需要的資訊：程式計數器與暫存器、行程狀態與排程資訊（優先權）、記憶體管理資訊、開啟的檔案等 I/O 狀態。
+
+「PC 和 16 個暫存器」對：沒有它們就不知道從哪條指令、用什麼值接著跑。
+
+「狀態和優先權」對：被搶走後變成 ready，排程器靠優先權決定下一個。
+
+「檔案的 2 MB 內容」錯：PCB 只記開了哪些檔案（開檔表），檔案內容還在磁碟或快取裡。
+
+「原始碼」錯：執行中的行程跑的是編譯好的機器碼，原始碼根本不在裡面。
+
+「48 MB 整份複製」錯：資料還留在記憶體原處，PCB 只記「怎麼找到它們」的管理資訊。
+
+@q pr1-05 | os-process#1 | 2 | 觀念
+context switch 在做什麼？為什麼是純負擔？
+[x] 把目前行程的狀態存進它的 PCB，再從另一個行程的 PCB 載入；切換期間沒有做任何使用者的工作
+[ ] 把行程從磁碟搬到記憶體
+[ ] 把程式重新編譯
+[ ] 讓兩個行程同時在同一個 CPU 上跑
+---
+切換太頻繁（例如 RR 時間片太小）會讓 CPU 大部分時間花在切換上。
+
+@q pr1-06 | os-process#1 | 2 | 情境
+單核 CPU 上，行程 A 正在跑，B 等的磁碟讀取剛完成、作業系統處理完這個通知。這時 B 在什麼狀態？
+[x] ready
+[ ] running
+[ ] waiting
+[ ] terminated
+---
+B 從 waiting 變 ready；要不要立刻切給 B，是排程器（和是否可搶先）決定的。
+
+@q pr1-07 | os-process#1 | 3 | 計算
+行程輪流使用 CPU，每次給 4 ms，每次 context switch 花 1 ms，每個行程都用滿 4 ms。CPU 花在真正工作的比例是？
+== 0.8
+== 80%
+---
+每 5 ms 只有 4 ms 做事：$4/5=80\%$。時間片改成 1 ms 就只剩 50%。
+
+@q pr1-08 | os-process#1 | 2 | 觀念
+new 狀態的行程要變成 ready，是誰決定的？
+[x] 長期排程器（決定要不要讓新的行程進入記憶體）
+[ ] 短期排程器
+[ ] 使用者
+[ ] I/O 裝置
+---
+短期排程器（CPU 排程器）負責 ready → running，頻率高很多。
+
+@q pr2-01 | os-process#2 | 2 | 計算
+```
+for (i = 0; i < 3; i++) fork();
+printf("x");
+```
+共印出幾個 x？
+== 8
+---
+每一輪所有行程都 fork 一次，數量翻倍：$2^3=8$ 個行程，各印一次。
+
+@q pr2-02 | os-process#2 | 3 | 計算
+```
+for (i = 0; i < 3; i++) { fork(); printf("x"); }
+```
+共印出幾個 x？
+== 14
+---
+第 $i$ 輪結束時有 $2^i$ 個行程，各印一次：$2+4+8=14$。
+
+@q pr2-03 | os-process#2 | 2 | 計算
+```
+if (fork() == 0) fork();
+printf("x");
+```
+共有幾個行程？
+== 3
+---
+父行程拿到正數，不進 if；子行程拿到 0，再 fork 一次。共 父、子、孫 3 個。
+
+@q pr2-04 | os-process#2 | 3 | 計算
+`fork() && fork() || fork();` 之後共有幾個行程（含原本的）？
+== 5
+---
+原本 P 的第一次 fork：P 拿正數 → 繼續 `&& fork()` 生 C2；P 的 `&&` 為真，`||` 短路不再 fork。C2 拿 0 → `&&` 為假 → 執行 `|| fork()` 生 C3。第一次 fork 的子行程 C1 拿 0 → `&&` 短路為假 → `|| fork()` 生 C4。共 P、C1、C2、C3、C4。
+
+@q pr2-05 | os-process#2 | 2 | 觀念
+`fork()` 的回傳值？
+[x] 父行程拿到子行程的 PID（正數）；子行程拿到 0；失敗回傳 −1
+[ ] 父子都拿到 0
+[ ] 父行程拿到 0；子行程拿到父的 PID
+[ ] 父子都拿到子行程的 PID
+---
+程式靠回傳值分辨自己是父還是子。
+
+@q pr2-06 | os-process#2 | 2 | 陷阱
+`exec()` 成功之後，它下一行的程式碼還會被執行。對嗎？
+[ ] 對
+[x] 不對
+---
+`exec` 用新程式整個取代目前的記憶體映像，原本的程式碼已經不在了，所以成功的 `exec` 不會返回；只有失敗才會繼續往下。
+
+@q pr2-07 | os-process#2 | 2 | 觀念
+An administrator runs `ps` on a busy server and sees two odd kinds of entries. Process 4120 is marked `<defunct>` and uses no processor time; it exited 2 hours ago, but its parent, a long-running daemon with ID 1033, is still alive and has never called `wait`. Process 5277 is still running normally, but its parent process ID is now 1, because its original parent exited yesterday. The administrator wants to name the two cases correctly and to know what the kernel keeps for each. Which of the following statements about zombie and orphan processes are correct? Select all that apply.
+?? 複選
+[ ] A zombie is a process whose parent exited first and which is then adopted by init.
+[ ] An orphan is a process that has exited but whose parent has not yet called wait.
+[ ] A zombie keeps running on the CPU until it is collected.
+[x] A zombie keeps a small entry, such as its exit status, until the parent calls wait.
+[ ] An orphan is killed by the kernel immediately, because no parent remains to collect its exit status.
+---
+「zombie：父行程先走、被 init 接手」錯、「orphan：結束了、父行程還沒 wait」錯：兩個定義對調了。zombie 是自己結束了、父行程還沒 wait；orphan 是父行程先走，由 init（或 systemd）接手，之後由 init 負責 wait 它。
+
+「zombie 還在用 CPU」錯：它已經結束，只剩一小筆資料。
+
+「zombie 留著結束碼等 wait」對：父行程 wait 讀走後才完全消失。父行程一直不 wait，zombie 就會一直佔著行程表。
+
+「orphan 立刻被殺」錯：它照常執行，只是換了父行程。
+
+@q pr2-08 | os-process#2 | 3 | 計算
+```
+int x = 5;
+if (fork() == 0) x = x + 10;
+else { wait(NULL); x = x * 2; }
+printf("%d ", x);
+```
+輸出是？
+== 15 10
+---
+fork 之後父子各有一份 `x`（互不影響）。子行程先印 15；父行程 `wait` 等子結束後印 10。
+
+@q pr2-09 | os-process#2 | 2 | 情境
+shell 執行一個指令的典型流程是？
+[x] fork 出子行程，子行程 exec 那個程式，父行程（shell）wait 它結束
+[ ] shell 自己 exec 那個程式
+[ ] shell 在自己的記憶體裡多跑一份
+[ ] 直接呼叫那個程式的函式
+---
+shell 自己 exec 的話，shell 就被取代、消失了。
+
+@q pr2-10 | os-process#2 | 3 | 計算
+```
+for (i = 0; i < 2; i++) { if (fork() == 0) break; }
+printf("x");
+```
+共印出幾個 x？
+== 3
+---
+子行程一出生就 break，不再 fork。原本的行程迴圈跑 2 次、生 2 個子行程。共 3 個行程，各印一次。
+
+@q pr3-01 | os-process#3 | 2 | 觀念
+A web server process with ID 7100 runs four threads that all execute the same function `handle()`:
+```
+int hits = 0;               /* global */
+void *handle(void *arg) {
+    int local = 0;          /* on this thread's stack */
+    ...
+}
+```
+Before creating the threads, the main thread opens a log file and stores its descriptor, 3, in a global variable. A new developer asks which of these things each thread has for itself and which are shared, and whether one thread can use data that lives on another thread's stack while that thread is still running. Which of the following statements are correct? Select all that apply.
+[x] Each thread has its own program counter and its own set of register values.
+[x] Each thread has its own stack.
+[ ] Each thread has its own private copy of the process's global variables.
+[x] A file opened by one thread can be read by another thread of the same process through the same file descriptor.
+[x] If a thread stores the address of one of its local variables in a global variable, another thread can access that local variable through this address while the first thread's function has not returned.
+---
+執行緒要能各自跑在程式的不同位置，所以「各自的程式計數器與暫存器」對、「各自的堆疊」對（各自的函式呼叫、區域變數）。
+
+「全域變數各一份」錯：程式碼、全域資料、動態配置的記憶體都是整個行程共用的；這也是需要同步的原因。
+
+「同一個檔案描述子可共用」對：開啟的檔案屬於行程，不用重新開。
+
+「透過位址存取別人的區域變數」對：每條執行緒的堆疊是各自的，但都放在同一個位址空間裡，沒有硬體隔開。只要那個函式還沒回傳（堆疊框還在），其他執行緒拿到位址就能讀寫——這也是常見的 bug 來源。
+
+@q pr3-02 | os-process#3 | 2 | 比較
+使用者層級執行緒（多對一）和核心層級執行緒的差別？
+[x] 使用者層級切換快、不用進核心，但一條執行緒呼叫會卡住的 I/O 就讓整個行程卡住、也不能用多核；核心層級反過來
+[ ] 使用者層級可以用多核
+[ ] 核心層級切換比較快
+[ ] 兩者一樣
+---
+核心只看得到一個行程，排程的單位是它，所以一條卡住整個都卡住。
+
+@q pr3-03 | os-process#3 | 2 | 觀念
+使用者執行緒和核心執行緒的三種搭配方式，哪一種能讓一條執行緒阻塞時其他條繼續跑、又能用多核？
+[x] 一個使用者執行緒配一個核心執行緒，以及多個配多個
+[ ] 只有多個配一個
+[ ] 只有一個配一個
+[ ] 都不行
+---
+多對一的核心只有一個排程單位。Linux、Windows 用一對一。
+
+@q pr3-04 | os-process#3 | 2 | 計算
+一個行程開了 4 條執行緒，各自宣告了區域變數 `int a;`，程式還有一個全域變數 `int g;`。記憶體中一共有幾個 `a`、幾個 `g`？
+== 4,1
+?? a,g
+---
+區域變數在各自的堆疊上，4 份；全域變數只有一份，大家共用（所以要同步）。
+
+@q pr3-05 | os-process#3 | 3 | 情境
+一個多執行緒程式中，有一條執行緒呼叫了 `fork()`。在 POSIX 下，子行程裡有幾條執行緒？
+[x] 1 條：只複製呼叫 fork 的那條
+[ ] 跟父行程一樣多
+[ ] 0 條
+[ ] 看作業系統隨機決定
+---
+所以 fork 之後通常馬上 exec。複製全部執行緒會讓別條執行緒拿著的鎖處於奇怪狀態。
+
+@q pr3-06 | os-process#3 | 2 | 比較
+建立執行緒和建立行程，哪個比較便宜？為什麼？
+[x] 執行緒：共享位址空間，不用複製整份記憶體
+[ ] 行程：比較獨立
+[ ] 一樣
+[ ] 看程式大小
+---
+代價是共享資料要自己同步，一條寫壞記憶體會影響整個行程。
+
+@q pr4-01 | os-process#4 | 2 | 觀念
+An operating system must stop user programs from taking over the machine, so some instructions are privileged: if a user-mode program tries to execute one, the CPU traps to the kernel instead. A student classifies 5 instructions found in the processor manual: disable interrupts, set the timer that triggers the next scheduling interrupt in 10 ms, read a clock that the system lets user programs read, copy one general-purpose register into another, and the trap instruction used for system calls, on a machine with 4 cores. Which of the following instructions must be privileged, so that a user-mode program cannot execute them? Select all that apply.
+[x] An instruction that disables interrupts.
+[x] An instruction that sets the timer which triggers the next scheduling interrupt.
+[ ] An instruction that reads a clock that user programs are allowed to read.
+[ ] An instruction that copies one general-purpose register into another.
+[ ] The trap instruction that a program uses to make a system call, since it enters kernel mode.
+---
+判斷標準：會影響整個系統或其他行程、或能讓程式奪走作業系統控制權的，才必須是特權指令。
+
+「關中斷」對：關掉中斷，計時器就叫不回作業系統，程式可以霸占 CPU。
+
+「設定計時器」對：理由同上，程式可以把下一次排程中斷延到很久以後。
+
+「讀可公開的時鐘」錯：只是讀，不影響別人。
+
+「暫存器互相複製」錯：只動自己的暫存器，不影響別人。（改記憶體保護用的暫存器才必須是特權指令。）
+
+「系統呼叫的 trap 指令」錯：它本來就是給使用者程式用的，執行後硬體切到核心模式、跳到作業系統指定的位置，程式無法選擇跳到哪裡，所以安全。如果它是特權指令，使用者程式就永遠無法請作業系統服務。
+
+@q pr4-02 | os-process#4 | 2 | 比較
+A student traces 3 events on a running system: a division by zero in a user program, a disk controller signaling that a 4 KiB transfer has finished, and the timer firing after 10 ms to end a process's time slice. The student must classify each event as an interrupt, which comes asynchronously from hardware outside the executing instruction, or as a trap, which is caused synchronously by the instruction being executed, and describe what the CPU does in each case, including which mode it switches to and who chooses the handler. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] An interrupt is raised synchronously by the instruction being executed, for example a division by zero.
+[ ] A trap arrives asynchronously from external hardware, for example when a disk finishes a transfer.
+[ ] Interrupts are generated by software, while traps are generated by hardware devices.
+[x] Both switch the CPU to kernel mode and run a handler chosen by the operating system.
+[ ] A timer interrupt is a trap, because the operating system itself set the timer.
+---
+「中斷由正在執行的指令同步產生」錯、「trap 由外部硬體非同步產生」錯：兩者對調了。中斷是外部硬體非同步產生，跟目前在跑哪一條指令無關；trap 是正在執行的指令同步產生，例如系統呼叫、除以零，同樣的程式、同樣的輸入每次都在同一條指令發生。
+
+「中斷是軟體、trap 是硬體」錯：也說反了。
+
+「兩者都切到核心模式、跑作業系統指定的處理程式」對：所以使用者程式不能決定跳到哪裡。
+
+「計時器中斷是 trap」錯：計時器是外部硬體，到時間就打斷，跟當時在跑哪條指令無關，是中斷。誰設定的不重要。
+
+@q pr4-03 | os-process#4 | 2 | 觀念
+A user program calls `read(fd, buf, 4096)` to read 4096 bytes from a file. The C library's wrapper for `read` places the system call number and the 3 arguments in registers and executes the trap instruction; the kernel then checks the arguments, finds the data, and copies it into `buf`. In one test the data is already in the page cache and the call returns in about 2 µs; in another the data must come from a disk that needs about 5 ms, and meanwhile the scheduler runs other processes. A student traces the CPU mode and the process state at each step, from the call until `read` returns to the program, and explains why the library cannot read the disk by itself in user mode, even though it runs in the same process. Which of the following statements are correct? Select all that apply.
+[x] The CPU switches from user mode to kernel mode through a trap, the kernel performs the read, and then the CPU returns to user mode.
+[x] If the data is not in memory yet, the process may wait while other processes run, and resumes in the kernel when the data arrives.
+[x] Reading the disk needs privileged operations that the library cannot perform in user mode.
+[x] Before the trap, the library wrapper places the system call number and the arguments where the kernel expects them, such as in registers.
+[x] When `read()` returns to the program, the CPU is back in user mode.
+---
+「使用者 → trap 進核心 → 回到使用者」對：系統呼叫是使用者程式請核心做特權工作的唯一入口。
+
+「資料還沒到時會等，期間別人在跑」對：行程在核心裡進入 waiting，磁碟完成後再回到 ready，最後從核心返回。
+
+「讀磁碟要特權」對：所以函式庫自己做不到，只能請核心做。
+
+「先把呼叫編號、參數放好」對：核心靠編號查表找到對應的處理函式。
+
+「回來後在使用者模式」對：一定回到使用者模式，否則保護就失效了。五句都對。
+
+@q pr4-04 | os-process#4 | 2 | 比較
+Two operating-system designs are compared. In a monolithic kernel, such as Linux, the file system, the network stack, and the device drivers all run in kernel mode and call each other directly. In a microkernel, only scheduling, memory management, and the sending of messages run in kernel mode, and the file system and drivers are user-level servers that communicate by messages. A test of 10000 file reads shows the monolithic design about 30% faster, while in a second test 1 buggy network driver crashes the monolithic kernel but only restarts its server on the microkernel. Which of the following statements are correct? Select all that apply.
+[x] In a monolithic kernel, services such as file systems and drivers run in kernel mode and call each other directly, which is fast.
+[x] In a microkernel, most services are user-level servers reached by messages, which isolates them better but costs more.
+[ ] A microkernel is usually faster, because it needs fewer switches between user mode and kernel mode for each service request.
+[ ] In a microkernel, a crash in a user-level driver always brings down the whole system.
+[ ] Linux is a microkernel.
+---
+「單核心直接呼叫、快」對。
+
+「微核心用訊息傳遞、隔離好但成本高」對：核心只留最基本的排程、行程間通訊、記憶體管理。
+
+「微核心比較快」錯：一次服務要經過好幾次訊息傳遞和模式切換，通常比較慢。
+
+「使用者層的驅動程式崩潰一定拖垮系統」錯：它只是一個普通的使用者行程，可以重新啟動；這正是微核心隔離的好處。
+
+「Linux 是微核心」錯：Linux 是單核心（加上可載入模組）。
+
+@q pr4-05 | os-process#4 | 3 | 陷阱
+「核心模式的程式碼可以執行任何指令，所以作業系統的每一行都應該在核心模式跑」對嗎？
+[ ] 對
+[x] 不對
+---
+核心裡的程式一出錯整個系統就掛了。能放在使用者模式的就放外面（這正是微核心的想法），只把真正需要特權的留在核心。
+
+@q pr5-01 | os-process#5 | 2 | 比較
+Two processes on the same machine need to exchange a large amount of data. One design uses a shared-memory region; the other uses message passing through the kernel. Which of the following statements are correct? Select all that apply.
+[x] Once the shared-memory region has been set up, reading and writing it does not require a system call.
+[x] With shared memory, the two processes themselves are responsible for synchronizing their accesses.
+[ ] With message passing, the kernel is no longer involved after the communication link has been created.
+[x] Message passing extends more naturally to processes running on different machines.
+[x] For large data on one machine, message passing usually costs more, because the data is copied into and out of the kernel.
+---
+「建好後讀寫不用系統呼叫」對：共享區被對應到兩個行程的位址空間，之後就是一般的記憶體存取。
+
+「要自己同步」對：核心不管你怎麼讀寫那塊記憶體，誰先寫、誰後讀要靠行程自己用鎖或號誌協調。
+
+「建好連結後核心就不參與」錯：訊息傳遞每次 send／receive 都是系統呼叫，由核心搬資料。
+
+「比較容易延伸到不同機器」對：兩台機器沒有共同的記憶體，只能傳訊息。
+
+「大量資料時訊息傳遞較貴」對：要複製兩次（送方→核心→收方）。
+
+@q pr5-02 | os-process#5 | 2 | 觀念
+In message passing, a synchronous send makes the sender wait until the message has been received, while an asynchronous send returns as soon as the message has been handed to the system. Which of the following statements are correct? Select all that apply.
+[x] With a synchronous send, the sender cannot continue until the receiver has taken the message.
+[ ] With an asynchronous send, the sender also waits until the receiver has taken the message, but the system buffers it meanwhile.
+[ ] An asynchronous send guarantees that the message has already been received when it returns.
+[x] With no buffering at all, a synchronous send and a waiting receive make the two processes meet.
+[ ] An asynchronous send can never be used together with a receive that waits for a message.
+---
+「同步傳送要等對方收到」對。
+
+「非同步也要等對方收到」錯：非同步傳送交給系統就馬上繼續，系統用緩衝區先保管訊息。
+
+「非同步回來時保證對方已收到」錯：只保證交給系統了。
+
+「沒有緩衝時兩邊在那一點會合」對：傳送端等接收端拿走，接收端等訊息到來，誰先到誰等，這叫 rendezvous。
+
+「非同步傳送不能配會等待的接收」錯：這是很常見的組合：傳送端不等、接收端在沒有訊息時等待。
+
+@q pr5-03 | os-process#5 | 2 | 比較
+Compare ordinary pipes with named pipes (FIFOs). Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] An ordinary pipe has a name in the file system, so any process with permission can open it by that name.
+[x] A named pipe has a name in the file system, so unrelated processes can open it.
+[ ] A named pipe can be used only between a parent and its child.
+[ ] A named pipe disappears as soon as all processes using it have exited.
+[ ] An ordinary pipe lets both processes send data to each other through the same pipe.
+---
+「一般 pipe 有名字」錯：一般 pipe 沒有名字，只能靠繼承檔案描述子分享，通常是 `pipe()` 之後 `fork()`，所以只限有親屬關係的行程。
+
+「具名管道在檔案系統有名字」對：任何有權限的行程都能用名字打開。
+
+「只能父子用」錯：那是一般 pipe 的限制。
+
+「行程都結束就消失」錯：具名管道會一直留在檔案系統裡，直到被刪除；所有描述子關掉就消失的是一般 pipe。
+
+「一般 pipe 可以雙向」錯：一般 pipe 是單向的，雙向要開兩個。
+
+@q pr5-04 | os-process#5 | 3 | 情境
+A process produces hundreds of large images per second and hands it to another process on the same machine. Which of the following statements are correct? Select all that apply.
+[x] Shared memory suits this best, because the data does not have to be copied through the kernel.
+[ ] With a pipe or message passing, each piece of data is copied only once, directly from the sender to the receiver.
+[ ] A network socket to the local machine is the fastest choice for this amount of data.
+[x] With shared memory, the processes still need synchronization, to signal when an image is ready.
+[ ] With shared memory, every write to the shared region requires a system call.
+---
+「共享記憶體最合適」對：資料寫在共用區域，對方直接讀。
+
+「pipe 只複製一次」錯：要複製兩次，從傳送端到核心、再從核心到接收端；資料量大時這是主要成本。
+
+「本機 socket 最快」錯：仍要經過核心複製，還多了網路協定的處理。
+
+「仍需要同步」對：要讓對方知道「這一張寫好了」、自己知道「那一張已讀完可以覆蓋」。
+
+「每個位元組都要系統呼叫」錯：建立共享區之後就是一般的記憶體存取。
+
+@q pr5-05 | os-process#5 | 2 | 計算
+一般 pipe 的緩衝區是 64 KB，寫端寫了 100 KB、讀端還沒讀。寫端會怎樣（預設阻塞模式）？
+[x] 寫滿 64 KB 後阻塞，等讀端讀走一些才繼續
+[ ] 丟掉多的 36 KB
+[ ] 回傳錯誤
+[ ] 覆蓋前面的資料
+---
+pipe 就是一個有限大小的緩衝區：滿了寫的人等、空了讀的人等。
+
+@q sc1-01 | os-sched#1 | 1 | 觀念
+Three processes do no I/O. The table gives each process's arrival time and execution time in milliseconds, and the timeline shows when the CPU ran each process. In this run, no process is interrupted once it has started.
+```
+process  arrival  execution
+P1       0        5
+P2       1        3
+P3       2        1
+
+timeline:  0-5  P1     5-8  P2     8-9  P3
+```
+Use the standard definitions of turnaround time, waiting time, and response time. Which of the following statements are correct? Select all that apply.
+[x] The turnaround time of $P_2$ is 7 ms.
+[x] The waiting time of $P_3$ is 6 ms.
+[x] The response time of $P_2$ is 4 ms.
+[x] In this run, every process has equal waiting time and response time.
+[ ] The turnaround time of $P_2$ is 3 ms, measured from its first start to its completion.
+---
+三個定義：周轉＝完成－到達；等待＝周轉－執行（沒有 I/O 時）；回應＝第一次拿到 CPU－到達。
+
+「$P_2$ 周轉 7」對：8－1。
+
+「$P_3$ 等待 6」對：周轉 9－2＝7，再減執行 1。
+
+「$P_2$ 回應 4」對：5－1。
+
+「每個行程等待＝回應」對：一開始跑就不被打斷，只在開始前等過。$P_1$ 都是 0、$P_2$ 都是 4、$P_3$ 都是 6。
+
+「$P_2$ 周轉 3」錯：從第一次開始算到完成，漏掉開始前等的那 4 ms。
+
+@q sc1-02 | os-sched#1 | 2 | 計算
+行程 X 在時間 3 到達、需要 CPU 5 個單位，第一次在時間 6 開始跑，在時間 15 完成。周轉、等待、回應時間各是？
+== 12,7,3
+?? 周轉,等待,回應
+---
+周轉 $15-3=12$；等待 $12-5=7$；回應 $6-3=3$。
+
+@q sc1-03 | os-sched#1 | 2 | 比較
+Two computer systems serve very different users. System I runs a shared word processor: 50 people type at the same time, and each keystroke needs about 2 ms of processing before the character appears on the screen. System II runs overnight payroll: 10,000 report jobs, each needing about 3 s of processing, are submitted at 11 p.m. and must all be finished by 8 a.m.; nobody looks at a report until the morning. Which of the following statements about the scheduling goals of the two systems are correct? Select all that apply.
+?? 複選
+[x] System I cares most about response time, and system II cares most about throughput.
+[ ] Both systems care most about response time, since someone eventually reads every result.
+[ ] System I cares most about turnaround time, and system II cares most about response time.
+[ ] Both systems care only about keeping CPU utilization as close to 100% as possible.
+[ ] System II cares most about response time, since each report must start printing quickly.
+---
+「I 看回應時間、II 看產出量」對：打字的人在意按鍵後多久看到字，就是回應時間；報表只要早上八點前全部做完，看的是單位時間做完多少（產出量）和整批的周轉時間。
+
+「兩者都最在意回應時間」錯：報表晚上沒人看，早一點開始沒有好處。
+
+「I 看周轉、II 看回應」錯：剛好說反。
+
+「兩者只看 CPU 使用率」錯：使用率高只表示 CPU 沒閒著，不保證打字反應快或報表準時做完。
+
+「II 在意每份報表很快開始印」錯：沒有人在旁邊等第一個反應。
+
+@q sc1-04 | os-sched#1 | 3 | 陷阱
+「等待時間 = 開始執行時間 − 到達時間」對所有排程法都成立。對嗎？
+[ ] 對
+[x] 不對
+---
+只在不可搶先時成立。可搶先時行程會被打斷好幾次，等待時間要把每一段等待加起來（＝周轉 − 執行時間）；「開始 − 到達」是回應時間。
+
+@q sc1-05 | os-sched#1 | 2 | 計算
+CPU 在 20 個時間單位內完成了 5 個行程。產出量（throughput）是多少？
+== 0.25
+== 1/4
+---
+每個時間單位完成 $5/20=0.25$ 個行程。
+
+@q sc2-01 | os-sched#2 | 2 | 計算
+行程（到達, 執行）：A (0,7)、B (2,4)、C (4,1)、D (5,4)。FCFS 的平均等待時間？
+== 4.75
+---
+A 0–7、B 7–11、C 11–12、D 12–16。等待：0、5、7、7，平均 4.75。
+
+@q sc2-02 | os-sched#2 | 2 | 計算
+同上（A (0,7)、B (2,4)、C (4,1)、D (5,4)），不可搶先的 SJF 平均等待時間？
+== 4
+---
+時間 0 只有 A，跑完到 7；這時 B、C、D 都到了，挑最短 C（7–8），再 B（8–12）、D（12–16）。等待 0、6、3、7，平均 4。
+
+@q sc2-03 | os-sched#2 | 3 | 追蹤
+同上，SRTF（可搶先的 SJF）的時間軸和平均等待時間？
+== A B C B D A,3
+?? 執行順序,平均等待
+---
+A 0–2；B 到（4 < A 剩 5）搶走 2–4；C 到（1 < B 剩 2）4–5；B 5–7；D 7–11（D 4 < A 5）；A 11–16。等待 A 9、B 1、C 0、D 2，平均 3。
+
+@q sc2-04 | os-sched#2 | 3 | 追蹤
+同上，RR 時間片 2（新到的行程排在被換下的行程前面）。平均等待時間？
+== 5
+---
+A 0–2、B 2–4、A 4–6、C 6–7、B 7–9、D 9–11、A 11–13、D 13–15、A 15–16。等待 A 9、B 3、C 2、D 6，平均 5。
+
+@q sc2-05 | os-sched#2 | 2 | 比較
+同一組行程（A (0,7)、B (2,4)、C (4,1)、D (5,4)），SRTF 和 RR(q=2) 的平均回應時間各是？
+== 0.5,1.5
+?? SRTF,RR2
+---
+SRTF：A 0、B 0、C 0、D 2，平均 0.5。RR：A 0、B 0、C 2、D 4，平均 1.5。這組資料 SRTF 等待和回應都最好，但它需要預知執行時間。
+
+@q sc2-06 | os-sched#2 | 2 | 觀念
+Four jobs arrive at time 0 with these CPU bursts:
+
+| job | $P_1$ | $P_2$ | $P_3$ | $P_4$ |
+|---|---|---|---|---|
+| burst | 6 | 8 | 7 | 3 |
+
+Run in arrival order, their average waiting time is $(0+6+14+21)/4 = 10.25$; run shortest first, it is $(0+3+9+16)/4 = 7$. A real system, however, does not know the length of the next burst in advance, and new short jobs may keep arriving while long ones wait. The course asks students to explain both the optimality result and its practical limits. Which of the following statements about SJF scheduling are correct? Select all that apply.
+[x] SJF minimizes the average waiting time when all jobs are available at once.
+[x] In practice the next CPU burst must be predicted, for example with an exponential average.
+[ ] SJF is optimal because it is the fairest scheduling method.
+[ ] SJF never starves any process, since every job eventually becomes the shortest one.
+[ ] When all jobs arrive together, SJF simply runs them in arrival order.
+---
+把短的往前排，讓最多行程少等，「平均等待時間最小」；但事先不知道執行時間，「只能預估」。它不公平：短工作源源不絕時，長工作可能一直被插隊而飢餓。照到達順序的是 FCFS。
+
+@q sc2-07 | os-sched#2 | 2 | 計算
+FCFS：一個需要 20 的長行程在時間 0 到，兩個各需要 1 的短行程在時間 1 到。平均等待時間？
+== 13
+---
+長的 0–20；短的 20–21、21–22。等待 0、19、20，平均 13。短的被長的卡住，這就是 convoy effect。
+
+@q sc2-08 | os-sched#2 | 2 | 觀念
+A server uses preemptive priority scheduling with priorities 0 (highest) to 127 (lowest). A backup job with priority 120 has been in the ready queue for 3 hours, because new jobs with priorities between 10 and 50 arrive every few seconds and always run first. The administrator considers several fixes, such as raising the priority of a process by 1 for every minute it waits, or giving each running process a longer time slice, and wants to know which fixes actually guarantee that the backup job runs. Which of the following statements about starvation in priority scheduling are correct? Select all that apply.
+[x] Aging, which raises a process's priority the longer it waits, is a common remedy.
+[x] With aging, a process that waits long enough eventually gets the CPU.
+[x] Starvation can occur under preemptive priority scheduling as well.
+[ ] Enlarging the time slice removes starvation, since each process then runs for longer.
+[ ] Lowering the priority of waiting processes over time removes starvation.
+---
+「等越久優先權越高」（aging），「等得夠久就輪得到」。「搶先式也會飢餓」：高優先權的行程源源不絕，低優先權的一樣輪不到。時間片大小不影響誰先被選；讓等待的人優先權越來越低剛好相反。
+
+@q sc2-09 | os-sched#2 | 3 | 追蹤
+可搶先優先權排程（數字小優先）：P1 (到達 0、執行 5、優先 3)、P2 (1, 3, 1)、P3 (2, 8, 4)、P4 (3, 2, 2)。P1 什麼時候完成？
+== 10
+---
+P1 0–1；P2（優先 1）搶 1–4；P4（2）4–6；P1（3）6–10；P3 10–18。
+
+@q sc2-10 | os-sched#2 | 3 | 陷阱
+RR 的時間片越小越好，因為回應越快。對嗎？
+[ ] 對
+[x] 不對
+---
+太小時 context switch 佔掉大部分 CPU；太大就退化成 FCFS。經驗法則是讓大約 80% 的「一次連續使用 CPU 的長度」比時間片短。
+
+@q sc2-11 | os-sched#2 | 2 | 比較
+A grading system runs student submissions and receives new ones all day, so the ready queue is never empty. Short submissions take about 2 seconds, a few long ones take 10 minutes, and some submissions are marked urgent. The operators compare the scheduling algorithms below, assuming no aging, and want to know which of them can keep a submission waiting forever if short or urgent jobs keep arriving at about 30 per minute. Each algorithm is run on the same machine with a single processor and no other load. Which of the following scheduling algorithms can cause starvation? Select all that apply.
+[x] SJF
+[x] SRTF
+[x] Priority scheduling without aging
+[ ] FCFS
+[ ] Round robin
+---
+SJF、SRTF 可能被新來的短工作一直插隊；優先權排程沒有 aging 時，高優先權源源不絕，低的就永遠輪不到。FCFS 和 RR 遲早輪得到每個行程，不會飢餓。
+
+@q sc2-12 | os-sched#2 | 3 | 計算
+同一組 A (0,7)、B (2,4)、C (4,1)、D (5,4)，RR 時間片改成 3（規則同前）。平均等待時間？
+== 7
+---
+A 0–3、B 3–6、A 6–9、C 9–10、D 10–13、B 13–14、A 14–15、D 15–16。等待 A 8、B 8、C 5、D 7，平均 7——比 q=2 還差，時間片大小對結果影響很大。
+
+@q sc3-01 | os-sched#3 | 2 | 計算
+三個週期性工作（週期, 執行時間）：(4,1)、(6,2)、(12,1)。CPU 使用率 $U$ 是多少？
+== 2/3
+== 0.667
+---
+$\frac14+\frac26+\frac1{12}=\frac{3+4+1}{12}=\frac23$。
+
+@q sc3-02 | os-sched#3 | 2 | 計算
+A real-time system runs $n$ periodic tasks under rate-monotonic (RM) scheduling, with deadlines equal to periods, and checks the sufficient condition $U\le n(2^{1/n}-1)$, where $U$ is the total utilization. For $n = 3$, a task set with utilization 0.667 passes the test, while another with utilization 0.85 fails it. The engineers want to know the value of the bound for 3 tasks and for very many tasks, and what failing the test does and does not tell them about the second task set, before they run a full simulation. Which of the following statements are correct? Select all that apply.
+[x] For $n=3$ the bound is about 0.78.
+[x] Three tasks with total utilization 0.667 always meet their deadlines under RM.
+[x] As $n\to\infty$, the bound approaches $\ln2\approx0.693$.
+[x] The condition is sufficient but not necessary.
+[ ] Every set of 3 tasks with utilization above 0.78 misses some deadline under RM.
+---
+$3(2^{1/3}-1)\approx0.7798$，「約 0.78」，0.667 在上限內「一定排得完」；$n$ 越大上限越低，「趨近 $\ln2$」。它「只是充分條件」：超過上限不代表一定排不出來，例如週期互為倍數時可以到 1。
+
+@q sc3-03 | os-sched#3 | 3 | 反例
+Two periodic tasks are released together at time 0, with deadlines equal to their periods:
+
+| task | period | execution time |
+|---|---|---|
+| $T_1$ | 5 | 2 |
+| $T_2$ | 7 | 4 |
+
+A student computes the total utilization and then simulates both rate-monotonic (RM) scheduling, which gives $T_1$ the higher fixed priority because its period is shorter, and earliest-deadline-first (EDF) scheduling, which always runs the job with the nearest deadline. The student draws both timelines from time 0 to time 35, the least common multiple of the periods, and checks every deadline. A classmate argues that a utilization below 1 guarantees success for both algorithms, while another argues that both must fail, because the utilization is above the RM bound of about 0.83 for 2 tasks. The student wants to settle the question by looking at the first deadline of $T_2$, at time 7, under each algorithm. Which of the following statements are correct? Select all that apply.
+[x] The total utilization is about 0.97.
+[x] Under RM, the second task misses its deadline at time 7.
+[x] Under EDF, all deadlines are met.
+[ ] Both RM and EDF meet all deadlines, since the utilization is below 1.
+[ ] Neither RM nor EDF can meet all deadlines, since the utilization exceeds the RM bound.
+---
+$\frac25+\frac47\approx0.97$。RM 時週期 5 的優先：第一個 0–2、第二個 2–5、第一個 5–7，「第二個只跑了 3 單位就到期限 7」。EDF 在時間 5 看到第二個的期限 7 比較早，先做它就趕得上；$U\le1$ 時「EDF 一定排得出來」（程式模擬確認）。$U<1$ 不保證 RM 可行；超過 RM 上限也不代表 EDF 不行。
+
+@q sc3-04 | os-sched#3 | 3 | 陷阱
+三個工作 (5,2)、(4,1)、(10,3)，$U=0.95$，超過 RM 的上限 0.78。所以 RM 一定排不完。對嗎？
+[ ] 對
+[x] 不對
+---
+上限只是充分條件，超過只代表「不保證」。實際模擬一個週期 20，RM 剛好都趕得上；要畫時間軸（或做回應時間分析）才知道。
+
+@q sc3-05 | os-sched#3 | 2 | 觀念
+RM 和 EDF 的優先權怎麼決定？
+[x] RM：週期越短越優先（固定不變）；EDF：期限越近越優先（隨時在變）
+[ ] RM：執行時間越短越優先
+[ ] EDF：週期越短越優先
+[ ] 兩者都看到達時間
+---
+EDF 對單處理器是最佳的：$U\le1$ 就一定排得完。
+
+@q sc3-06 | os-sched#3 | 2 | 計算
+兩個工作 (週期 4, 執行 2)、(週期 5, 執行 2)。$U$ 是多少？EDF 能不能排？
+== 0.9,能
+?? U,EDF
+== 0.9,可以
+---
+$\frac24+\frac25=0.9\le1$，EDF 可以。這組 RM 也剛好排得完（程式模擬週期 20）。
+
+@q sc3-07 | os-sched#3 | 3 | 計算
+三個工作 (週期 10, 執行 3)、(週期 15, 執行 $x$)、(週期 30, 執行 6)。EDF 要排得完，$x$ 最大可以是多少（整數）？
+== 7
+---
+$\frac3{10}+\frac x{15}+\frac6{30}\le1$：$0.3+0.2+\frac x{15}\le1$，$x\le7.5$，整數 7。
+
+@q sc4-01 | os-sched#4 | 2 | 觀念
+Two identical cores have 4 and 0 runnable jobs respectively. Each job has recently used private cached data on its current core; moving it does not copy those private cache contents into the destination cache. A measured migration costs 2 ms of extra data loading, while an idle destination could execute useful work afterward. Compare retaining processor affinity with reducing queue imbalance, without assuming either goal dominates for every job duration. Which statements are correct? Select all that apply.
+[x] Affinity tries to keep a process on the same CPU so that it can reuse its warm cache.
+[x] Load balancing moves processes to idle CPUs, where their cache contents are cold.
+[ ] The two goals never pull against each other, since moving a process to another CPU costs nothing.
+[ ] Load balancers move a process whenever two CPUs differ by even one runnable process.
+[ ] Affinity means keeping the CPU physically warm so that it runs faster.
+---
+「親和性」希望留在同一顆 CPU 用熱的快取；「負載平衡」要搬到閒的 CPU，搬過去快取就冷了，兩者互相拉扯。所以通常只在不平衡得夠嚴重時才搬，不會差一個就搬。「熱的快取」是指裡面有這個行程的資料，不是溫度。
+
+@q sc4-02 | os-sched#4 | 2 | 觀念
+多層回饋佇列（MLFQ）怎麼升降級？
+[x] 用完整個時間片的行程降到較低（時間片較長）的佇列；等太久的可以升級避免飢餓
+[ ] 每個行程固定在一個佇列
+[ ] 用完時間片就升級
+[ ] 隨機升降
+---
+CPU 密集的行程慢慢沉下去，互動式的（常常提早讓出 CPU）留在上面，回應快。
+
+@q sc4-03 | os-sched#4 | 2 | 觀念
+Use the classic CFS model that orders runnable tasks by vruntime and chooses its smallest value. Three tasks have vruntimes 12,8,15 and weights 1024,2048,1024 respectively. For the numerical model, an execution interval dt adds dt times 1024 divided by weight to vruntime. A balanced ordered tree stores waiting tasks, and the minimum is directly available. Analyze selection and weight effects under these stated rules, rather than assuming nice values impose a fixed-priority sequence. Which statements are correct? Select all that apply.
+[x] It picks the runnable process with the smallest vruntime.
+[x] Runnable processes are kept in a balanced search tree ordered by vruntime.
+[x] The leftmost node of that tree runs next.
+[x] A process with a higher weight (lower nice value) accumulates vruntime more slowly.
+[ ] It runs processes in a fixed priority order given by their nice values.
+---
+CFS「挑 vruntime 最小的」，用「依 vruntime 排序的平衡搜尋樹」存，「最左邊的節點」就是下一個。「權重高的 vruntime 長得慢」，所以分到更多 CPU。nice 值只影響權重，不是固定的優先順序。
+
+@q sc4-04 | os-sched#4 | 3 | 計算
+CFS 中兩個行程權重比 3:1，都一直需要 CPU。長期來看各分到 CPU 的比例？
+== 3/4,1/4
+== 75%,25%
+---
+CFS 讓兩者 vruntime 一樣大；權重 3 的 vruntime 長得是權重 1 的 $\frac13$，所以實際跑的時間是 3 倍。
+
+@q sc4-05 | os-sched#4 | 2 | 情境
+A basic MLFQ uses levels 0,1,2, with level 0 highest and respective time slices 4,8,16 ms. New jobs start at the top. A job that blocks before using its slice retains its level; exhausting a slice causes demotion. An interactive job repeatedly executes for 1 ms, then waits 100 ms for input. There are no priority boosts during this trace. Determine its queue behavior from actual execution, not the length of its input wait. Which statements are correct? Select all that apply.
+?? 複選
+[x] It usually stays in the top level, with high priority and a short time slice.
+[ ] It sinks to the lowest level, since it uses the CPU so little.
+[ ] It moves down one level each time it waits for input.
+[ ] It is moved to the lowest level so that CPU-bound jobs can respond faster.
+[ ] It leaves the queues until the user types again, and then restarts at the bottom level.
+---
+它常常沒用完時間片就自己讓出 CPU，所以「留在最上層」，互動式程式的回應時間因此很短。用完時間片的 CPU 密集工作才往下沉；等輸入不會讓它降級；等待時它不在就緒佇列裡，回來時也不會被放到最底層。
+
+@q sy1-01 | os-sync#1 | 2 | 觀念
+A web server counts visits in a shared variable `count`, which starts at 5. Two threads each handle one request and execute `count++` exactly once, without any synchronization, on a machine where `count++` compiles into three instructions:
+```
+load  r, count
+add   r, r, 1
+store r, count
+```
+The threads may run on different cores at the same time, or they may share one core and be switched at any instruction boundary. A tester runs the program 1000 times and records the final value of `count`, expecting it always to be 7. Which of the following statements are correct? Select all that apply.
+[x] The final value of `count` can be 6 or 7.
+[ ] The final value can be 5 if both threads read before either one writes.
+[ ] The final value is always 7.
+[x] Lost updates can also occur on a single-core machine.
+[ ] The final value can be 8.
+---
+`count++` 是「讀、加 1、寫回」三步。
+
+「可能 6 或 7」對：兩條都讀到 5 再各自寫回 6，結果是 6；不交錯時是 7。
+
+「兩條都先讀就會是 5」錯：都讀到 5 之後各自寫回的是 6，不是 5。每條執行緒最後寫回的值至少是 6。
+
+「一定是 7」錯：如上。
+
+「單核心也會遺失更新」對：讀完還沒寫回就被切換，另一條執行緒讀到的還是舊值。
+
+「可能是 8」錯：只有兩次加 1，最多 7。
+
+@q sy1-02 | os-sync#1 | 2 | 計算
+兩條執行緒各做 3 次 `count++`（每次都是讀、加、寫三步，可能任意交錯），count 從 0 開始。最後的值最小可能是多少？
+== 2
+---
+最小值常考：A 讀 0；B 跑完前兩次（count=2）；A 寫回 1；B 第三次讀 1；A 跑完剩下兩次（count=3）；B 寫回 2。答案 2，而不是直覺的 3。
+
+@q sy1-03 | os-sync#1 | 2 | 觀念
+A solution to the critical-section problem must satisfy three requirements: mutual exclusion, progress, and bounded waiting. A student tests several candidate solutions for 2 processes with a simulator that runs each candidate for $10^6$ steps under random scheduling and reports how often each requirement fails. One candidate never lets any process enter, another forces the two processes to take turns strictly, and a third lets a fast process enter again and again while the other waits. The student wants to understand what each requirement means and how the three relate to one another, for example whether two of them imply the third. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Any two of these three requirements together imply the third.
+[ ] Code that never lets any process enter violates mutual exclusion.
+[x] Bounded waiting limits how many times others may enter after a process has asked to enter.
+[ ] Progress requires that the critical section be short.
+[ ] Strict alternation, where two processes must take turns entering, satisfies all three requirements.
+---
+「任兩個推得出第三個」錯：三個是各自獨立的要求。例如「永遠不讓人進」滿足互斥和 bounded waiting（沒人插隊），卻違反 progress。
+
+「永遠不讓人進違反互斥」錯：沒人在裡面，當然不會兩人同時在裡面，互斥是成立的；違反的是 progress。只做到互斥很容易，難的是同時滿足另外兩個。
+
+「bounded waiting 的意思」對：不會被別人無限次插隊。
+
+「progress 要求臨界區很短」錯：progress 是「沒人在裡面時，想進的人要能在有限時間內決定誰進，而且不想進的人不能擋路」。
+
+「嚴格輪流滿足三個」錯：對方不想進時自己也進不去，違反 progress。
+
+@q sy1-04 | os-sync#1 | 3 | 找錯
+Two processes, $P_0$ and $P_1$, share a variable `turn`, initially 0, and protect their critical sections as follows:
+```
+P0:  while (turn != 0) ;   /* critical section */   turn = 1;
+P1:  while (turn != 1) ;   /* critical section */   turn = 0;
+```
+In a test, $P_0$ wants to enter its critical section about 100 times per second, while $P_1$ enters only once per minute and spends the rest of its time on unrelated work outside its critical section. A student checks the scheme against the three requirements of the critical-section problem: mutual exclusion, progress, and bounded waiting. The student notices that $P_0$ often sits in its `while` loop even though no process is in its critical section at that moment, and wants to explain why, and what a fairer scheme would need to remember besides `turn`. The student's notes also record how many times $P_0$ entered between two entries of $P_1$. Which of the following statements are correct? Select all that apply.
+[x] Mutual exclusion holds.
+[x] If $P_1$ never wants to enter, then $P_0$ can enter at most once.
+[x] The processes are forced to enter in the strict order $P_0, P_1, P_0, P_1, \ldots$
+[ ] The scheme satisfies the progress requirement, because a process never waits while the critical section is empty.
+[x] $P_1$ may have to wait while $P_0$ stays outside its critical section.
+---
+「互斥成立」對：`turn` 同時只能是一個值。
+
+「$P_1$ 不想進時 $P_0$ 最多進一次」對：離開時把 `turn` 交給 $P_1$，就只能等 $P_1$ 交回來。
+
+「強制嚴格輪流」對。
+
+「滿足 progress」錯：沒有人在臨界區時，一個不想進的行程卻能擋住想進的人。
+
+「$P_1$ 可能白等」對：$P_1$ 離開時把 `turn` 設成 0，要等 $P_0$ 進出一次才會變回 1；$P_0$ 不來，$P_1$ 就一直等。這正是違反 progress 的樣子。
+
+@q sy1-05 | os-sync#1 | 3 | 找錯
+Two processes, $P_0$ and $P_1$, try to protect their critical sections with flags only. Process $P_i$, where $j = 1 - i$ is the other process, runs
+```
+flag[i] = true;
+while (flag[j]) ;      /* wait while the other one wants in */
+/* critical section */
+flag[i] = false;
+```
+and both flags start false. A student simulates the code under every interleaving of the two processes' first two steps. In one interleaving, $P_0$ sets `flag[0]`, then $P_1$ sets `flag[1]`, and only then do both reach their `while` loops. A classmate suggests inserting a short delay between setting the flag and checking the other flag, hoping that this makes the problem rare enough to ignore, and another wonders whether the flags at least keep the two processes out of the critical section at the same time, which is the most important requirement of all. Which of the following statements are correct? Select all that apply.
+[x] Mutual exclusion holds.
+[x] If both processes set their flags before either checks, both wait forever.
+[ ] The code violates mutual exclusion.
+[ ] Adding a short delay between setting the flag and checking the other flag removes the problem completely.
+[ ] Bounded waiting is the only requirement that this code violates.
+---
+「互斥成立」對：先舉旗再檢查，兩人不可能都看到對方的旗子是放下的。
+
+「兩人都舉旗就永遠互等」對：沒人在臨界區、兩人都想進，卻誰都進不去，違反 progress。
+
+「違反互斥」錯。
+
+「中間加延遲就好」錯：兩人仍可能都先舉旗再檢查，延遲只改變機率。要加一個決定誰讓的共享變數，這就是之後會學到的 Peterson 演算法的 `turn`。
+
+「只違反 bounded waiting」錯：違反的是 progress。
+
+@q sy1-06 | os-sync#1 | 2 | 陷阱
+「只有多核心電腦才會有競爭條件」對嗎？
+[ ] 對
+[x] 不對
+---
+單核心上，執行緒在「讀完還沒寫回」時被計時器中斷切走，一樣會交錯。
+
+@q sy1-07 | os-sync#1 | 2 | 情境
+A bank account has balance 1000. Two threads each run a withdrawal of 600 with no locking, using these steps:
+```
+b = balance;            /* read into a local variable */
+if (b >= 600)
+    balance = b - 600;  /* write back; otherwise do nothing */
+```
+The threads may interleave at any point between these steps, for example when one thread is switched out right after reading the balance. The bank's auditors want to know which final balances and which numbers of successful withdrawals are possible, since the account must never pay out more money than it holds. A developer then proposes putting the read, the check, and the write together in one critical section, and the auditors ask whether that would rule out every bad outcome, including the case in which both withdrawals succeed. The developers must answer in writing before the next audit. Which of the following outcomes are possible? Select all that apply.
+[x] Both withdrawals succeed and the final balance is 400.
+[x] Exactly one withdrawal succeeds and the final balance is 400.
+[ ] Both withdrawals succeed and the final balance is $-200$.
+[ ] Both withdrawals fail and the final balance is 1000.
+[ ] Even if the read, the check, and the write are placed in one critical section, both withdrawals may still succeed.
+---
+「兩筆都成功、餘額 400」可能：兩個都先讀到 1000、都通過檢查、各寫回 400，錢被領走 1200，餘額卻是 400。這是典型的競爭條件。
+
+「只有一筆成功、餘額 400」可能：一個整段做完，另一個才讀到 400，檢查不通過。
+
+「兩筆都成功、餘額 $-200$」不可能：每個執行緒只讀一次，寫回的永遠是「自己讀到的值 $-600$」；讀到 400 的那個不會通過檢查。
+
+「兩筆都失敗」不可能：先讀的那個一定讀到 1000。
+
+「放進臨界區仍可能兩筆都成功」不可能：整段不可被插隊，第二個一定讀到 400，檢查不通過。
+
+@q sy2-01 | os-sync#2 | 2 | 觀念
+Peterson's solution for two processes $P_0$ and $P_1$ uses shared variables flag[2] and turn. Process $P_i$ (with $j=1-i$) runs: flag[i] = true; turn = j; while (flag[j] && turn == j) wait; then its critical section; then flag[i] = false. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] The two processes can never be in their critical sections at the same time.
+[ ] By setting turn = j, process $P_i$ claims priority for itself when both want to enter.
+[ ] Swapping the first two statements (setting turn = j before flag[i] = true) still keeps the two processes out of their critical sections at the same time.
+[ ] Process $P_i$ keeps looping while flag[j] is true or turn equals j.
+[ ] On processors that may reorder memory operations, the algorithm works correctly without any extra instruction that forces memory operations to take effect in program order.
+---
+「不會同時在臨界區」對：兩個都想進時，turn 只能是其中一個值，後寫 turn 的那個會等。
+
+「turn = j 是搶優先」錯：剛好相反，是**讓對方先**；這就是它公平、不會餓死的原因。
+
+「先寫 turn 再寫 flag 也行」錯：反例：$P_0$ 寫 turn = 1；$P_1$ 寫 turn = 0、flag[1] = true，看到 flag[0] 還是 false 就進去；$P_0$ 接著寫 flag[0] = true，看到 turn 是 0，也進去了。
+
+「flag[j] 為真**或** turn 等於 j 就等」錯：條件是「且」。用「或」的話，只有 $P_i$ 想進時 turn 仍是 j，它會一直等，連 progress 都不成立。
+
+「會重排記憶體的處理器上不需要屏障」錯：讀 flag[j] 可能被提前到寫 flag[i] 之前，兩邊都讀到 false 就一起進去；現代處理器上要加記憶體屏障。
+
+@q sy2-02 | os-sync#2 | 3 | 追蹤
+Peterson：P0 和 P1 幾乎同時想進。P0 先執行 `turn=1`，接著 P1 執行 `turn=0`。誰會進入臨界區？
+== P0
+---
+最後 `turn=0`（P1 最後讓給 P0）。P0 的條件 `flag[1] && turn==1` 為假，進入；P1 的 `flag[0] && turn==0` 為真，等。最後寫 turn 的人讓步。
+
+@q sy2-03 | os-sync#2 | 2 | 觀念
+In Peterson's solution, process $P_i$ runs flag[i] = true; turn = j; while (flag[j] && turn == j) wait; before its critical section, and flag[i] = false after it. Which of the following statements are correct? Select all that apply.
+[x] If $P_i$ is waiting and $P_j$ tries to re-enter right after leaving, $P_i$ enters first.
+[x] A waiting process waits for at most one entry of the other process into the critical section.
+[x] Bounded waiting comes from the way turn is written, not merely from there being only two processes.
+[ ] Peterson's solution does not satisfy bounded waiting, because a process that leaves can immediately re-enter ahead of a waiting one.
+[x] If neither process is in its critical section and only $P_i$ wants to enter, $P_i$ enters without waiting.
+---
+「$P_j$ 再想進時把 turn 讓給 $P_i$」對：$P_j$ 寫 turn = i 後，自己的條件 turn == i 成立而等待，$P_i$ 的條件 turn == j 不成立，可以進去。
+
+「最多等對方進出一次」對：這就是 bounded waiting。
+
+「靠 turn 的寫法，不只因為兩個行程」對：換個寫法（例如不讓給對方）兩個行程也可能一直被插隊。
+
+「不滿足」錯：見上。
+
+「只有一方想進時直接進」對：flag[j] 是 false，迴圈條件不成立。這是 progress。
+
+@q sy2-04 | os-sync#2 | 3 | 陷阱
+「Peterson 演算法在現代多核心 CPU 上，照原樣寫就一定正確」對嗎？
+[ ] 對
+[x] 不對
+---
+CPU 和編譯器可能重排記憶體讀寫（例如先讀 `flag[j]` 再寫 `flag[i]`），兩邊都看到對方旗子沒舉就同時進入。要加 memory barrier。
+
+@q sy2-05 | os-sync#2 | 2 | 觀念
+Which of the following statements about the limitations of Peterson's solution are correct? Select all that apply.
+[x] As written, it works for only two processes.
+[ ] A process that cannot enter is put to sleep until the other process leaves.
+[ ] It does not guarantee mutual exclusion.
+[ ] It requires a special hardware instruction that reads and writes memory in one indivisible step.
+[x] On processors that reorder memory operations, it needs extra ordering instructions.
+---
+「只適用兩個行程」對：推廣到 $n$ 個行程有麵包店演算法。
+
+「進不去就睡覺」錯：它是忙碌等待，一直跑迴圈、佔著處理器；要睡覺得靠作業系統提供的機制（例如號誌）。
+
+「不保證互斥」錯：在依序執行的記憶體上它是正確的。
+
+「需要特殊硬體指令」錯：只用一般的讀寫，這正是它的特點。
+
+「現代處理器要加排序的指令」對：所以實務上改用硬體原子指令。
+
+@q sy3-01 | os-sync#3 | 2 | 觀念
+Which of the following statements about test_and_set(&lock) are correct? Select all that apply.
+?? 複選
+[ ] It atomically returns the new value of lock and sets lock to true, so a return value of true means the lock was acquired.
+[ ] Another thread may write lock between its read and its write.
+[ ] It only reads lock.
+[x] A spinlock can be written as: while (test_and_set(&lock)) wait; then the critical section; then lock = false.
+[ ] It waits until lock becomes true.
+---
+「回傳新值」錯：回傳的是**舊值**，同時把 lock 設成 true；舊值是 false 代表搶到了。回傳新值的話永遠是 true，沒有意義。
+
+「中間可能被別人寫」錯：「原子」的意思就是讀和寫這兩步中間不會被任何人插隊。
+
+「只讀」錯。
+
+「這樣寫 spinlock」對：搶不到就一直試。
+
+「等到變 true」錯：它不等，立刻回傳。
+
+@q sy3-02 | os-sync#3 | 2 | 觀念
+用 test_and_set 寫鎖：`while (test_and_set(&lock));` 進入、`lock=false;` 離開。這把鎖滿足 bounded waiting 嗎？
+[x] 不保證：每次放鎖時誰搶到看運氣，某個行程可能一直搶不到
+[ ] 滿足
+[ ] 連互斥都不滿足
+[ ] 滿足，因為是硬體指令
+---
+要滿足 bounded waiting，離開時要主動把鎖「交給」下一個在等的行程（課本有 waiting[] 陣列的版本）。
+
+@q sy3-03 | os-sync#3 | 2 | 計算
+`compare_and_swap(&v, expected, new)`：若 `v==expected` 就把 `v` 設成 `new`；一律回傳 `v` 的舊值。`v=5` 時呼叫 `compare_and_swap(&v, 5, 9)`，回傳什麼？之後 `v` 是多少？
+== 5,9
+?? 回傳,v
+---
+相等，所以換成 9；回傳舊值 5。呼叫者看到回傳值等於 expected 就知道成功了。
+
+@q sy3-04 | os-sync#3 | 2 | 計算
+`v=7` 時呼叫 `compare_and_swap(&v, 5, 9)`。回傳什麼？之後 `v` 是多少？
+== 7,7
+?? 回傳,v
+---
+不相等，不換；回傳舊值 7。呼叫者發現不等於 5，就知道有人先改了，通常會重讀再試。
+
+@q sy3-05 | os-sync#3 | 2 | 陷阱
+「關中斷就能保護臨界區」在多核心上也可行。對嗎？
+[ ] 對
+[x] 不對
+---
+關中斷只擋得住同一顆 CPU 上的切換，其他核心照樣同時執行。而且要通知每顆 CPU 關中斷很慢、讓使用者程式關中斷也很危險。
+
+@q sy3-06 | os-sync#3 | 3 | 情境
+用 compare_and_swap 實作「原子加 1」：
+```
+do { old = v; } while (compare_and_swap(&v, old, old+1) != old);
+```
+為什麼要用迴圈？
+[x] 讀出 old 之後可能有別人先改了 v，CAS 會失敗（回傳值 ≠ old），要重讀再試
+[ ] 為了讓 v 多加幾次
+[ ] CAS 第一次一定會失敗
+[ ] 不需要迴圈
+---
+這種「樂觀」寫法不用上鎖，衝突少時很快。
+
+@q sy4-01 | os-sync#4 | 2 | 觀念
+號誌 S 的 `wait(S)` 和 `signal(S)` 在做什麼？
+[x] wait：S 減 1，若變成負的就去睡（排隊）；signal：S 加 1，若有人在排隊就叫醒一個
+[ ] wait：S 加 1；signal：S 減 1
+[ ] wait：等 S 變 0；signal：把 S 設成 1
+[ ] 兩個都只讀 S
+---
+（這是不忙碌等待的版本；S 為負時，絕對值就是在等的行程數。）
+
+@q sy4-02 | os-sync#4 | 2 | 計算
+號誌 S 初值 3。依序有 5 個行程呼叫 `wait(S)`，接著 1 個呼叫 `signal(S)`。現在 S 是多少？有幾個行程還在等？
+== -1,1
+?? S,在等的行程
+---
+5 次 wait：$3-5=-2$，前 3 個通過、2 個在等。1 次 signal：$-1$，叫醒一個，還剩 1 個在等。
+
+@q sy4-03 | os-sync#4 | 2 | 觀念
+要保證 P1 的敘述 A 在 P2 的敘述 B 之前執行，用號誌怎麼寫？
+[x] 號誌 S 初值 0；P1 執行 A 之後 `signal(S)`；P2 在 B 之前 `wait(S)`
+[ ] S 初值 1；P1 `wait(S)`、P2 `signal(S)`
+[ ] S 初值 0；P1 `wait(S)`、P2 `signal(S)`
+[ ] 不需要號誌
+---
+P2 先到的話會在 wait 卡住，直到 P1 做完 A 才 signal。
+
+@q sy4-04 | os-sync#4 | 3 | 找錯
+有限緩衝區的生產者，有人寫成 `wait(mutex); wait(empty); 放入; signal(mutex); signal(full);`。會出什麼問題？
+[x] 緩衝區滿了時，生產者拿著 mutex 在 `wait(empty)` 睡著；消費者要先拿 mutex 才能取出，永遠拿不到——兩邊永遠互等
+[ ] 沒有問題
+[ ] 會放超過緩衝區大小
+[ ] 消費者會讀到空的格子
+---
+要先 `wait(empty)` 再 `wait(mutex)`：確定有空位才去拿鎖。signal 的順序就無所謂。
+
+@q sy4-05 | os-sync#4 | 2 | 計算
+有限緩衝區 $n=5$ 格，生產者消費者用三個號誌。初值各是？
+== 1,5,0
+?? mutex,empty,full
+---
+mutex 保護緩衝區、一次一人；一開始 5 個空格、0 個滿格。
+
+@q sy4-06 | os-sync#4 | 2 | 觀念
+第一類讀者寫者問題（讀者優先）的缺點？
+[x] 讀者源源不絕時，寫者可能永遠等不到（飢餓）
+[ ] 讀者會讀到寫一半的資料
+[ ] 兩個寫者可能同時寫
+[ ] 讀者不能同時讀
+---
+第二類（寫者優先）則可能讓讀者飢餓。
+
+@q sy4-07 | os-sync#4 | 3 | 情境
+哲學家用餐：5 個人、5 根筷子，每人先拿左邊再拿右邊。為什麼可能大家永遠卡住？列一個避免的方法。
+[x] 五人同時拿起左筷，都在等右筷；方法例如：最多 4 人同時上桌、或有一人先拿右再拿左
+[ ] 不會卡住
+[ ] 因為筷子太少，沒有辦法避免
+[ ] 每人一次拿兩根就會卡住
+---
+讓其中一人反著拿，就打破了「循環等待」。
+
+@q sy4-08 | os-sync#4 | 2 | 比較
+計數號誌和二元號誌（mutex lock）的差別？
+[x] 計數號誌的值可以大於 1，代表有幾個相同的資源可用；二元號誌只有 0、1
+[ ] 二元號誌比較快所以不能用來同步
+[ ] 計數號誌不能用 wait
+[ ] 兩者完全一樣
+---
+例如 3 台印表機用初值 3 的計數號誌。
+
+@q sy5-01 | os-sync#5 | 2 | 觀念
+監視器（monitor）保證什麼？
+[x] 任何時刻最多只有一個行程在監視器的程序裡執行
+[ ] 所有行程輪流執行
+[ ] 不可能有人永遠等下去
+[ ] 不需要條件變數
+---
+互斥由語言自動處理，不用自己寫 wait／signal 包起來。
+
+@q sy5-02 | os-sync#5 | 2 | 比較
+條件變數的 `x.signal()` 和號誌的 `signal(S)`，差在哪？
+[x] 沒有人在 x 上等時，`x.signal()` 什麼都不做（沒有記憶）；號誌的 signal 會讓值加 1，之後的 wait 會直接通過
+[ ] 兩者一樣
+[ ] 條件變數的 signal 會累積
+[ ] 號誌的 signal 沒有效果
+---
+所以條件變數要搭配狀態檢查：「先檢查條件，不成立才 wait」。
+
+@q sy5-03 | os-sync#5 | 2 | 比較
+Hoare 和 Mesa 語意的差別？
+[x] Hoare：signal 後被叫醒的人立刻接手，條件保證成立；Mesa：被叫醒的人只是回到排隊，輪到它時條件可能又不成立了
+[ ] Mesa 是立刻接手
+[ ] 兩者一樣
+[ ] Hoare 不允許 signal
+---
+Java、pthread 都是 Mesa 語意。
+
+@q sy5-04 | os-sync#5 | 3 | 陷阱
+Mesa 語意的監視器裡，等條件的程式寫 `if (!條件) x.wait();` 就夠了。對嗎？
+[ ] 對
+[x] 不對
+---
+要寫 `while (!條件) x.wait();`。被叫醒到真正拿回監視器之間，別人可能已經改了狀態（或是假醒）。醒來要再檢查一次。
+
+@q sy5-05 | os-sync#5 | 2 | 情境
+用監視器寫有限緩衝區，消費者發現緩衝區空了，要怎麼做？
+[x] 在條件變數 notEmpty 上 wait（同時暫時離開監視器），等生產者放入後 signal(notEmpty)
+[ ] 一直跑迴圈檢查
+[ ] 直接回傳錯誤
+[ ] 自己放一個東西進去
+---
+wait 會釋放監視器，不然生產者進不來。
+
+@q sy6-01 | os-sync#6 | 2 | 比較
+死結、飢餓、活鎖這三種活性問題各是什麼意思？
+[x] 死結：一群人互相等、都不動；飢餓：某人一直輪不到但系統在動；活鎖：大家都在動但都沒進展（互相讓來讓去）
+[ ] 三個一樣
+[ ] 飢餓就是死結
+[ ] 活鎖是死結的一種，大家都不動
+---
+活鎖像兩個人在走廊互相讓路，一直左右閃。
+
+@q sy6-02 | os-sync#6 | 2 | 觀念
+In a real-time system, tasks $T_{hi}$, $T_{mid}$, $T_{lo}$ have high, medium, and low priority. Which of the following statements about priority inversion are correct? Select all that apply.
+[x] If $T_{hi}$ waits for a lock held by $T_{lo}$, and $T_{mid}$ takes the CPU away from $T_{lo}$, then $T_{hi}$ is indirectly delayed by $T_{mid}$.
+[x] With priority inheritance, $T_{lo}$ temporarily runs at $T_{hi}$'s priority while it holds the lock that $T_{hi}$ needs.
+[x] Priority inversion does not change the assigned priority of any task.
+[x] The medium-priority task is what can make the delay of $T_{hi}$ unbounded.
+[x] With priority inheritance, $T_{mid}$ can no longer take the CPU from $T_{lo}$ while $T_{lo}$ holds that lock.
+---
+「$T_{hi}$ 被 $T_{mid}$ 間接卡住」對：這就是優先權反轉。
+
+「priority inheritance：暫時繼承高優先權」對。
+
+「不改變優先權設定」對：優先權本身沒變，是等待關係造成的。
+
+「中優先的讓等待沒有上限」對：只有 $T_{lo}$ 時，$T_{hi}$ 最多等它用完鎖；$T_{mid}$（可能好幾個）一直插進來，等待就沒有上限。
+
+「繼承後 $T_{mid}$ 搶不走」對：$T_{lo}$ 趕快做完、放鎖，$T_{hi}$ 就能跑。五句都對。
+
+@q sy6-03 | os-sync#6 | 2 | 情境
+Which of the following statements about when to spin (busy-wait) for a lock instead of sleeping are correct? Select all that apply.
+[x] Spinning is better on a multicore system when the lock will be released very soon.
+[ ] Spinning is better on a single-core system.
+[ ] Spinning is better when the lock is held for a long time.
+[x] Sleeping and being woken costs at least two context switches.
+[ ] A lock should either always spin or always sleep; spinning briefly and then sleeping is never useful.
+---
+「多核、很快就放」對：等一下比切換便宜。
+
+「單核比較好」錯：拿鎖的人根本跑不了（CPU 被等的人佔著），忙碌等待只是浪費。
+
+「拿很久時比較好」錯：空轉很久浪費 CPU。
+
+「睡覺要兩次切換」對：換出去、再換回來。
+
+「先轉再睡沒用」錯：很多鎖就是先轉一下、還拿不到才睡，兩種情況都兼顧。
+
+@q sy6-04 | os-sync#6 | 3 | 陷阱
+「沒有死結就不會有飢餓」對嗎？
+[ ] 對
+[x] 不對
+---
+例如優先權排程，低優先的行程一直被插隊，系統沒死結但它餓死了。兩者是不同的問題。
+
+@q sy6-05 | os-sync#6 | 2 | 情境
+即時系統中高優先工作偶爾錯過期限，追查發現它在等一把被低優先工作拿著的鎖，而中優先工作一直在跑。最直接的修法？
+[x] 開啟 priority inheritance
+[ ] 把高優先工作的優先權再調高
+[ ] 把中優先工作刪掉
+[ ] 加更多 CPU
+---
+優先權再高也沒用，問題在拿鎖的低優先工作跑不到。
+
+@q dl1-01 | os-deadlock#1 | 1 | 觀念
+一群行程發生死結，必定同時成立的四個條件是？
+[x] 互斥、持有並等待、不可搶占、循環等待
+[ ] 互斥、progress、bounded waiting、一次做完
+[ ] 飢餓、忙碌等待、時間片太小、行程太多
+[ ] 資源不足、CPU 太慢、記憶體不夠、行程太多
+---
+四個同時成立才可能死結；打破任何一個就不會。
+
+@q dl1-02 | os-deadlock#1 | 2 | 情境
+十字路口四台車同時開進路口中央、各自擋住右邊的車。「每台車都佔著自己那塊路面，又想往前開進下一塊」是哪個條件？
+[x] 持有並等待
+[ ] 互斥
+[ ] 不可搶占
+[ ] 循環等待
+---
+「一塊路面一次只能一台」是互斥；「不能把車吊走」是不可搶占；「四台車繞一圈互等」是循環等待。
+
+@q dl1-03 | os-deadlock#1 | 2 | 觀念
+「每個行程一開始就把要用的資源全部申請到，拿不全就一個都不拿」打破了哪個條件？
+[x] 持有並等待
+[ ] 互斥
+[ ] 不可搶占
+[ ] 循環等待
+---
+代價是資源使用率低、可能飢餓（要很多資源的行程很難一次湊齊）。
+
+@q dl1-04 | os-deadlock#1 | 2 | 觀念
+「所有資源編號，每個行程只能照編號由小到大申請」打破哪個條件？
+[x] 循環等待
+[ ] 持有並等待
+[ ] 互斥
+[ ] 不可搶占
+---
+循環等待需要有人拿著大號等小號，但規定只能由小到大要，所以不會繞成一圈。
+
+@q dl1-05 | os-deadlock#1 | 3 | 陷阱
+「四個條件都成立，就一定會死結」對嗎？
+[ ] 對
+[x] 不對
+---
+它們是**必要**條件：死結一定四個都成立，但四個都成立不一定已經死結（例如資源有多個實例時，有環也可能沒死結）。
+
+@q dl1-06 | os-deadlock#1 | 2 | 觀念
+為什麼通常不靠打破「互斥」來防止死結？
+[x] 很多資源本來就不能共用（例如印表機、寫入中的檔案）
+[ ] 互斥不是必要條件
+[ ] 打破互斥一定會飢餓
+[ ] 互斥只跟 CPU 有關
+---
+唯讀檔案可以共用（沒有互斥），但大部分資源做不到。
+
+@q dl2-01 | os-deadlock#2 | 2 | 觀念
+Which of the following statements about cycles in a resource-allocation graph are correct?
+?? 複選
+[x] With one instance per resource type, a cycle means that a deadlock exists.
+[ ] With several instances per resource type, a cycle means that a deadlock exists.
+[ ] With one instance per resource type, a deadlock can exist without any cycle.
+[ ] With several instances per resource type, a deadlock is impossible.
+[ ] If some process lies outside the cycle, there is definitely no deadlock.
+---
+單一實例時，環上每個行程等的資源都被環上下一個行程拿著，誰都放不出來，有環 ⇔ 死結，所以「單一實例有環就死結」對，「單一實例沒有環也能死結」錯。多實例時環外的行程可能放出一份資源讓環解開，有環只是「可能」，但死結仍然可能發生。環外有行程不代表它手上剛好有環需要的資源。
+
+@q dl2-02 | os-deadlock#2 | 3 | 反例
+Resource R has 2 instances. P1 holds one R and waits for S; P2 holds one R; P3 holds S and waits for R. The graph has the cycle P1→S→P3→R→P1. Which of the following statements are correct?
+[x] P2 waits for nothing, so it finishes and releases its R.
+[x] P3 then gets R, finishes and releases S.
+[x] After that, P1 can continue.
+[x] With several instances, a resource on a cycle may be released by a process outside the cycle.
+[ ] P1 and P3 are deadlocked, because they lie on a cycle.
+---
+「P2 不等任何東西」會做完放掉 R；「P3 拿到 R」做完放掉 S；「P1 就能繼續」。多實例時環上的資源可能「被環外的行程釋放」，所以有環不一定死結，「P1、P3 死結」錯。
+
+@q dl2-03 | os-deadlock#2 | 2 | 比較
+Which of the following statements comparing deadlock prevention with deadlock avoidance are correct?
+[x] Prevention keeps one of the four necessary conditions from ever holding.
+[x] Avoidance needs each process's maximum demand in advance.
+[ ] Avoidance permanently breaks one of the four conditions, just as prevention does.
+[ ] Prevention examines each request at run time with a safety check.
+[ ] Prevention deals with deadlocks only after they happen.
+---
+預防用規則讓「四個條件之一永遠不成立」；避免則在執行時對每個請求試算安全狀態，所以「要事先知道最大需求」。避免並不打破任何條件，安全檢查是避免的做法、不是預防；事後處理的是偵測與復原。
+
+@q dl2-04 | os-deadlock#2 | 3 | 證明
+證明：資源編號、只准由小到大申請，就不會有循環等待。
+---
+假設有循環 $P_0\to P_1\to\cdots\to P_{k}\to P_0$，$P_i$ 拿著 $R_i$ 等 $P_{i+1}$ 手上的 $R_{i+1}$。規則要求要申請的編號比手上拿的大：$R_0<R_1<\cdots<R_k<R_0$，矛盾。
+
+@q dl2-05 | os-deadlock#2 | 2 | 情境
+Which of the following statements about how operating systems and databases usually handle deadlock are correct?
+[x] General desktop systems such as Linux and Windows mostly ignore deadlock, leaving it to users or administrators.
+[x] They ignore it because deadlocks are rare and handling them costs a lot.
+[x] Database systems commonly detect deadlocks and recover by aborting a transaction.
+[ ] Desktop systems run a banker's safety check before every allocation.
+[ ] Desktop systems enforce strict deadlock prevention on all resources.
+---
+死結很少發生、處理成本太高，一般作業系統大多「忽略」（鴕鳥法）；資料庫的交易本來就能整個撤銷，常做「偵測後中止交易」。三句都對。一般系統不知道每個行程的最大需求，不會每次跑 Banker，也不會對所有資源做嚴格預防。
+
+@q dl2-06 | os-deadlock#2 | 2 | 觀念
+Which of the following statements about edge directions in a resource-allocation graph are correct?
+?? 複選
+[x] A request edge points from a process to a resource, and an assignment edge points from a resource to a process.
+[ ] A request edge points from a resource to a process, and an assignment edge points from a process to a resource.
+[ ] Both kinds of edges point from a process to a resource.
+[ ] Both kinds of edges point from a resource to a process.
+[ ] Request edges join two processes, pointing from the waiting one to the holding one.
+---
+行程 P 在等資源 R，畫 P→R；R 分給了 P，畫 R→P，所以「請求邊 P→R、分配邊 R→P」對，其他方向的組合都錯。直接連兩個行程的是 wait-for graph，不是資源配置圖。方向讓「誰等誰」可以沿著箭頭讀出來。
+
+@q dl3-01 | os-deadlock#3 | 2 | 計算
+Banker：三種資源，Max 和 Allocation 如下，Need 是？
+P0：Max (3,2,2)、Allocation (1,0,1)。
+== 2,2,1
+---
+Need＝Max − Allocation＝(2,2,1)。
+
+@q dl3-02 | os-deadlock#3 | 3 | 追蹤
+Banker：Available＝(2,1,1)。
+P0 Alloc (1,0,1) Need (2,2,1)；P1 Alloc (2,1,1) Need (2,1,1)；P2 Alloc (1,1,0) Need (1,1,1)；P3 Alloc (0,1,1) Need (1,1,1)；P4 Alloc (1,0,0) Need (2,1,1)。
+從 P0 掃到 P4，能完成的就完成（Work 加上它的 Alloc），掃完一輪再從頭掃。得到的安全序列是？
+== P1 P2 P3 P4 P0
+== P1,P2,P3,P4,P0
+== 1 2 3 4 0
+---
+第一輪：P0 要 B=2、Work 只有 1，不行；P1 可以 → Work (4,2,2)；P2 → (5,3,2)；P3 → (5,4,3)；P4 → (6,4,3)。第二輪：P0 → (7,4,4)。全部完成，安全（程式確認）。安全序列不唯一，例如 P1 P0 P2 P3 P4 也可以。
+
+@q dl3-03 | os-deadlock#3 | 3 | 追蹤
+Banker's algorithm with three resource types and Available $=(2,1,1)$. Allocation/Need: P0 (1,0,1)/(2,2,1); P1 (2,1,1)/(2,1,1); P2 (1,1,0)/(1,1,1); P3 (0,1,1)/(1,1,1); P4 (1,0,0)/(2,1,1). P0 now requests $(1,0,1)$. Which of the following statements are correct?
+[x] The request satisfies Request ≤ Need and Request ≤ Available.
+[x] After pretending to grant it, Available becomes $(1,1,0)$ and no process's Need fits, so the state would be unsafe.
+[x] The banker's algorithm makes P0 wait.
+[ ] The request is granted immediately, because it passes both checks.
+[ ] Granting the request would immediately cause a deadlock.
+---
+$(1,0,1)\le(2,2,1)$、$\le(2,1,1)$，「兩個前提成立」。假裝給了：Available $(1,1,0)$，其他人的 Need 都要至少 1 個第三種資源，P0 的 Need 變 $(1,2,0)$ 要第二種 2 個，沒有人能完成，不安全（程式確認），所以「讓 P0 等」。通過兩個前提只是第一關，不代表立刻給。不安全不等於已經死結，只是可能走到死結，Banker 不冒這個險。
+
+@q dl3-04 | os-deadlock#3 | 3 | 追蹤
+同一個狀態，改成 P4 申請 (0,1,0)。給了之後安全嗎？
+== 安全
+== 是
+---
+給了之後 Available＝(2,0,1)、P4 Need＝(2,0,1)：P4 可以先做完，放出 (1,1,0)＋(2,0,1)……程式找到安全序列 P4、P1、P2、P3、P0。所以可以給。
+
+@q dl3-05 | os-deadlock#3 | 2 | 陷阱
+「系統處在不安全狀態，就代表已經死結了」對嗎？
+[ ] 對
+[x] 不對
+---
+死結 ⊂ 不安全。不安全只是「有可能」走到死結（如果行程真的都要到 Max）；Banker 選擇不進入不安全狀態，是保守的做法。
+
+@q dl3-06 | os-deadlock#3 | 2 | 計算
+4 個行程共用同一種資源，每個最多需要 3 個。系統至少要有幾個這種資源，才保證不會死結？
+== 9
+---
+最壞情況：每人都拿到 2 個、都還差 1 個。只要再多 1 個就有人能做完並放出資源：$4\times(3-1)+1=9$。
+
+@q dl3-07 | os-deadlock#3 | 2 | 計算
+系統有 6 台印表機，$n$ 個行程每個最多需要 2 台。$n$ 最多是多少，保證不會死結？
+== 5
+---
+需要 $n(2-1)+1\le6$，$n\le5$。
+
+@q dl3-08 | os-deadlock#3 | 2 | 觀念
+Which of the following statements about what the banker's algorithm must know are correct?
+[x] Each process's maximum demand for each resource type (Max).
+[x] Each process's current Allocation.
+[x] The number of Available instances of each resource type.
+[x] Needing Max in advance is a main reason it is rarely used in general-purpose systems.
+[ ] Exactly what each process's next request will be.
+---
+試算安全狀態要用 Need＝Max−Allocation 和 Available，所以「Max」「Allocation」「Available」都要知道；一般系統很難事先知道最大需求，這是「不實用的主要原因」。它不需要預知下一個請求的內容，請求來了再檢查。
+
+@q dl3-09 | os-deadlock#3 | 2 | 計算
+Which of the following statements about the running time of the banker's safety algorithm with $n$ processes and $m$ resource types are correct?
+?? 複選
+[x] It runs in $O(mn^2)$ time.
+[ ] It runs in $O(mn)$ time, since each process is checked only once.
+[ ] It runs in $O(m\cdot n!)$ time, since it tries every order of the processes.
+[ ] It runs in $O(n^2)$ time, independent of $m$.
+[ ] It runs in $O(mn\lg n)$ time, since the processes are first sorted by Need.
+---
+每一輪至少完成一個行程，否則就停，最多 $n$ 輪；每輪掃 $n$ 個行程、每次比 $m$ 種資源，所以是 $O(mn^2)$。同一個行程可能被看很多輪，不是只看一次；它不必試所有順序，也不需要排序；比較 Need 和 Work 要看 $m$ 種資源，不能忽略 $m$。
+
+@q dl4-01 | os-deadlock#4 | 2 | 比較
+偵測到死結後，「一次終止全部相關行程」和「一次終止一個直到死結解開」的取捨？
+[x] 全部終止快但浪費大量已完成的工作；一次一個損失少，但每終止一個就要重跑偵測，比較慢
+[ ] 兩者一樣
+[ ] 一次一個一定比較快
+[ ] 全部終止損失比較少
+---
+選擇時看哪個比較能接受：時間還是已完成的工作。
+
+@q dl4-02 | os-deadlock#4 | 2 | 觀念
+Deadlock is to be resolved by preempting resources. Which of the following issues must be handled?
+[x] Selecting a victim
+[x] Rolling the victim back to some safe state
+[x] Preventing the same process from being chosen as the victim again and again (starvation)
+[ ] Guaranteeing mutual exclusion, progress and bounded waiting
+[ ] Restarting the whole machine
+---
+選誰當犧牲者、rollback 到安全的狀態、避免同一個行程一直被選中而飢餓，這是搶占的三件事；常見做法是把被 rollback 的次數算進成本。互斥、progress、bounded waiting 是臨界區解法的條件；不需要重開機。
+
+@q dl4-03 | os-deadlock#4 | 2 | 情境
+One process must be terminated to break a deadlock. Which of the following make a process a better victim?
+[x] It has only just started running.
+[x] It holds many resources.
+[ ] It has almost finished.
+[ ] It has already been terminated many times.
+[ ] It has a high priority.
+---
+損失越少、解開效果越大越好：「剛開始跑」白做的工作少，「拿很多資源」的釋放後最可能解開。快跑完的終止最可惜；一直被終止的會飢餓，應該避開；高優先權的工作更不該犧牲。
+
+@q dl4-04 | os-deadlock#4 | 3 | 陷阱
+「死結偵測演算法跑得越頻繁越好」對嗎？
+[ ] 對
+[x] 不對
+---
+偵測本身要 $O(mn^2)$ 之類的時間。太頻繁浪費 CPU；太久跑一次，死結的行程卡很久、牽連的行程也越多。常見做法是 CPU 使用率掉下來時才跑。

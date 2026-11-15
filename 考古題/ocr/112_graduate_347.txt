@@ -1,0 +1,332 @@
+=== PAGE p-1.pgm
+題 號 : 347 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+科目 : 資 料 結 構 與 演算 法 題 號 : 347
+1
+
+本 試卷 有 14 題 選擇 題 ( 題 號 1-14), #457 題 為 單 選 題 , 其 他 選擇 題 為 複 選
+題 。 單 選 題 該 題 答對 得 5 分 , 答 錯 倒 扣 1 分 。 未 答 者 得 0 分 。 複 選 題 每 個
+選項 單獨 計 分 選項 答 對 者 得 1 分, 選項 答 錯 者 倒 扣 0.5 D> Be
+題 未 作答 者 , 整 題 得 0 分 。 選 擇 題 請 於 答 守 卡 上 作答 。 另 有 2 題 非 選 擇 是
+(ABE 15-16) , 請 於 試卷 本 上 作答 。
+
+Multiple Choice Problems (70 points, 5 points for each problem)
+1. Assuming we have n data points. Among the variant characteristics of the data points,
+
+please select the correct descriptions.
+
+(A) Ifthe worst-case running time is the most important, merge sort can be a good
+choice with O(n log n) time.
+
+(B) Ifthe input happens to be sorted already, bubble sort can be a best choice with
+O(n) time.
+
+(C) If the input array is in random order and the average sorting time is most
+important, quick sort can be a good choice with O(n log n) time.
+
+(D) Ifthe exchanges of the items in the array are very expensive, selection sort will
+incur the least “swaps” or “moves”.
+
+(E) Ifthe input array consists of integers in the range 1...n‘, radix sort with radix n
+with O(k logn) time.
+
+B+ tree is an extension of B tree. The major differences from B tree are (1) all leaf
+nodes are linked together in a doubly-linked list, and (2) data points are stored on
+the leaf nodes only; internal nodes only hold keys and act as routers to the correct
+leaf node; the left child is smaller than the key and the right child is larger or equal
+than that. Please find any/all violations of a B+ tree structure in the following
+diagram. Assume the tree node can at most contain 4 data points (keys).
+
+20
+
+rc i
+(A)} 10 1
+
+(B); 33, 20 | ! 22,27
+
+1,2,3 6,7 89 10,11 13,14 20,21 } | 22,23 | 124,25 27,28; {30,31 | 1 33,34 36,37 40,43 47,49 52,55
+
+=== PAGE p-2.pgm
+題 號 : 3847 國 立 臺灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+科目 : 資料 結構 與 演算 法 題 號 : 347
+節 次 : 1 頁 之 第 2. 頁
+
+3. Please find the following table for the characters and their corresponding occurring
+probabilities. Please design a Huffman encoding tree and select the correct
+descriptions.
+
+A B Cc
+0.15 0.06 0,24
+
+(A) The codeword length for symbol C is 3
+(B) The codeword length for symbol G is 5
+(C) The codeword length for symbol E is 5
+(D) The codeword length for symbol A is 4
+(E) none of above is correct
+
+D E F G
+0.21 0.09 0.21 0.03
+
+4. ( 單 選 ) We now use several algorithms to traverse a binary tree. Assuming there
+are a total number of N nodes, how many of the following statements about the
+worst-case space complexity are TRUE?
+
+e Using DFS to traverse a balanced binary tree takes O(N).
+e Using DFS to traverse a binary tree takes O(N).
+‧ Using BFS to traverse a balanced binary tree takes O(N).
+e Using BFS to traverse a binary tree takes O(N).
+(A) 0 (B) 1 (0 2 (D) 3 {E) 4
+
+5. ( B33®) In a traditional merge sort, two sorted sub-arrays are combined to form a
+single, fully sorted array. This is referred to as a 2-way merge. The problem at hand
+is to extend this concept by merging N sorted arrays of integers, where N and M are
+given integers representing the number of arrays and the number of integers in each
+array, respectively. Please choose the correct worst-case time complexity of this
+N-way merge.
+
+(A) O(N log M) (B) OWNM log M) (C) O(N? log M)
+(D) O(NM log N) (E)none of the above is correct.
+
+6. The following is a binary tree and the alphabet on the node is simply the “name”
+(instead of value) of the node. Please select the correct statements from the following:
+(A) The successor of node Bis E.
+{B) The successor of node A is C.
+(C) The tree is not a AVL tree.
+(D) Ifwe remove node J, the result is an AVL tree.
+(E) Ifwe remove node H, the result is an AVL tree.
+
+HRA
+
+=== PAGE p-3.pgm
+題 號 : 347 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+科目 : 資料 結 構 與 演算 法 Maa: 347
+節 次 : 1 共 2 頁 之 第 BR
+
+7. ( 單 選 ) Given a list of binary trees T = {t,,t,...,t7} where each node is 0 or 1
+shown as below, we would like to insert these trees into a linear-probing hash
+table of length N = 11. The hash function f(t) = g{n(t)) mod N , where h(t) is the
+binary sequence obtained from in-order traversal of tree t and g(-) converts a binary
+sequence to a decimal number. For instance, g("1111111") = 127. Here’s the
+question: how many collisions occur during the insertion process?
+
+(A) 0 (B) 1 (02 (D) 3 “4 、
+
+8.. Postfix advantages: What is/are the advantage(s) of using postfix notation for math
+expressions?
+(A) No need to use parentheses
+(B) No need to consider precedence of operators
+{C) Easier for human to read
+(D) Easier for computers to evaluate
+(E) More concise when compared with prefix notation
+
+LG
+
+=== PAGE p-4.pgm
+題 號 : 347 國 立 臺 灣 大 學 {12 學 年 度 碩士 班 招生 考試 試題
+ae: : 資料 結構 與 演算 法 題 號 : 347
+sk: 1
+
+9. DFS advantages: To find a feasible solution to the eight-queen problem, what is/are
+the reason(s) that we prefer to use DFS (depth-first search) instead of BFS (breadth-
+first search)?
+
+(A) DFS is more memory efficient.
+
+(B) DFS can be implemented using a stack.
+
+(C) DFS usually reaches the terminal states of "good" or "bad" faster.
+(D) DFS is conceptually simpler than BFS.
+
+(E) BFS cannot be implemented using a stack.
+
+10. Heap applications: Which one(s) of the following applications may involve the use
+of heaps to increase time efficiency?
+
+(A). Find the k largest numbers from a given stream of numbers.
+
+(B) Given a stream of numbers coming one after another, calculate the median of
+the currently received set of numbers.
+
+{C) Compute the page rank of a given set of web pages
+
+(D) Detect appropriate "buy" and "sell" requests to create transactions in stock
+market
+
+(E) Identify the next timing for collisions in event-driven simulation for molecular
+dynamics
+
+11. Properties of dynamic programming (DP): Which of the following statements
+is/are correct about DP?
+
+(A) Any DP problem can be visualized as the optimal path finding problem.
+
+(B) Once a DP problem is solved, all the related sub-problems are also solved.
+
+(C) Once a DP problem is solved, it is straightforward to obtain the second-best
+solution.
+
+(D) The optimal solution of a DP problem can be obtained using optimal solutions
+of its sub-problems,
+
+(E) A DP problem has overlapping sub-problems which are reused several times
+when solving the original problem.
+
+12. Properties of shortest path problem: Which of the following statements, is/are
+correct?
+
+(A) Dijkstra's algorithm can be applied to any directed graph with no negative cycle.
+
+(B) The heap data structure is likely to be used in Dijkstra's algorithm.
+
+(C) Floyd-Warshall algorithm can be applied to any directed graph with negative
+weights.
+
+(D) Floyd-Warshall algorithm is based on the concept of dynamic programming.
+
+(E) Every shortest path in a weighted directed graph G will not change if an extra
+weight is added on every edge of G
+
+=== PAGE p-5.pgm
+題 號 : 847 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+a : 資料 結構 與 演算 法 題 號 : 347
+次 : 1
+
+13. Properties of min. spanning tree (MST): Let T’be a MST of a weighted graph G with
+at least 3 vertices. Which of the following statements is/are correct?
+
+(A) Given an edge e in G but not in T, we can form a cycle by putting e to T. Thene .
+has the largest weight among edges in C.
+
+(B) If we partition G into two subsets, and let e be the smallest-weight edge across
+the partition. Then e belongs to some MSTinG. . .
+
+(C) The edge with the smallest weight in G must belong to some MST of G.
+
+(D) The edge with the second smallest weight in G must belong to some MST of G.
+
+(E) The edge with the third smallest weight in G must belong to some MST of G.
+
+14. Prefix, infix, and postfix: Which of the following statements is/are correct?
+(A) We can use a stack to convert an infix to postfix expression.
+(B) We can use a stack to convert a postfix to an infix expression.
+(C) We can derive a binary tree from its infix and prefix notations.
+(D) We can derive a binary tree from its infix and postfix notations.
+(E) We can derive a binary tree from its prefix and postfix notations.
+
+Short Answer Problems (30 points)
+
+15. (21 points) Given k singly linked lists, each of which has n nodes. The numbers in the
+nodes of the i-th list are given by a;1, @;,2, ...,@in .as shown in the figure below. Each
+of the & lists has the numbers sorted in non-decreasing order, Le., aj, S @j2 一 生
+Gin, Where i is the index of the list. Professor Q asks the students to develop an
+algorithm to merge these k lists into one singly linked list sorted in non-decreasing
+order. Three students have come up with different algorithms, which are given below
+in pseudo code.
+
+head
+
+tt [SHELL .. RY
+
+head
+¥ .
+Wst2 [a] 和 pie] >. 才
+
+head
+¥
+listk [el feel 二 十 ..
+
+LAG
+
+=== PAGE p-6.pgm
+題 號 : 347 國 立 臺 灣 大 學 112 是 年 度 碩士 班 招生 考試 試題
+科目 : 資 料 結構 與 演算 法 | 題 號 : 347
+
+fick: 1 共 頁 之 第 G i
+Student A:
+L1. Create an empty singly linked list S to collect the result.
+L2. DO
+L3. Iterate over the numbers in the head nodes of the k lists, and find
+the node with the smallest number, denoted as node M.
+L4. Remove node M from the original list, and insert it into the result.
+list S from the tail.
+L5. UNTIL all original k lists are empty
+L6. Return the result list 5, which contains all nodes from the original k
+
+lists and sorted in non-decreasing order.
+
+Student B:
+L1. Create an empty singly linked list S to collect the result.
+L2. Create an empty min heap H.
+L3. Remove the k head nodes from the k lists and insert them into H. Each
+node in H also contains the index number i of the list where it is from.
+
+L4. DO
+
+L5, Remove the min node M from the heap. Insert this node into S from
+the tail. Take note of the index number stored in M, denoted as m.
+
+L6. if list m is not empty, remove the head node from list m and insert
+it into H.
+
+L7. WHILE His not empty
+L8. Return the result list S, which contains all nodes from the original k
+lists and sorted in non-decreasing order.
+
+Student C:
+
+Call the recursive divide-and-conquer function MergeTwoGroupLists (k sorted linked
+lists), The return value of the function is a list containing all nodes from the original k
+lists and sorted in non-decreasing order.
+
+L1. Function MergeTwoGroupLists (m sorted linked lists)
+
+L2. If m==1 then return the only list from the input.
+
+L3. Divide the input m lists into two groups of lists, with [=| and E |
+lists, respectively.
+
+L4. Recursively call MergeTwoGroupLists for each of these two groups of
+
+lists, merging the first group of the lists into one sorted list, S,, and the
+second group of the lists into one sorted list, S>.
+
+L5. Merge the two sorted lists S, and 52 into one sorted list S.
+
+L6. Return S.
+
+For each of these three algorithms, analyze and give their asymptotic worst-case running
+times with the big-O notation and in terms of k and n.
+
+BAR
+=== PAGE p-7.pgm
+題 號 : 347 國 立 臺 灣 大 學 112 學 年 度 碩士 班 招生 考試 試題
+科目 : 資 料 結構 與 演算 法 MAR: 347
+
+Lower-order terms and constant factors (excluding k and n) should be
+removed in the big-O notation in the answer.
+
+The bound in the answer needs to be tight.
+
+Only the final result will be graded and only fully correct answers will be given
+points. Please clearly mark your final result in the answer sheet.
+
+16. (9 points) The pseudo code function to compute the prefix function in the Knuth-
+Morris-Pratt (KMP) string matching algorithm is given below. Given a pattern string
+P{i..m], the prefix function for this pattern P is the function m: {1,2, ..,m} >
+{0,1, ...,7™ — 1} such that n[q] is the length of the longest prefix of P that is a proper
+suffix of P,, where P, denotes the q-character prefix of the string P. For pattern string
+P=ABACABACABACABAD, how many times is line 7 executed? (Note: only the final
+answer will be graded and only fully correct answer will be given points)
+
+COMPUTE-PREFIX-FUNCTION(P)
+m = P. length
+let x[1..m] be a new array
+x1] =0
+k=0
+for g = 2tom
+while k > 0 and P[k + 1] 4 Pla]
+k = afk
+if P[k + 1] == Piq]
+k=k+1
+aq] =k
+return 7
+

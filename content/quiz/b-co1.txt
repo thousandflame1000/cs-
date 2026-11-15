@@ -1,0 +1,1553 @@
+@q ar1-01 | co-arith#1 | 1 | 計算
+$-6$ 的 8 位元二補數是？
+== 11111010
+---
+$6=00000110$，取反 $11111001$，加 1 得 $11111010$。
+
+@q ar1-02 | co-arith#1 | 2 | 計算
+8 位元二補數 `11110110` 是多少？
+== -10
+---
+最高位是 1，是負數：取反 $00001001$、加 1 得 $00001010=10$，所以是 $-10$。或直接 $-128+64+32+16+4+2=-10$。
+
+@q ar1-03 | co-arith#1 | 2 | 比較
+An 8-bit register can hold $2^8 = 256$ bit patterns, and three signed formats interpret them differently. In sign-magnitude, the leftmost bit is the sign and the other 7 bits give the magnitude; in ones' complement, a negative number is formed by inverting every bit of the positive one; in two's complement, a negative number is formed by inverting every bit and adding 1. For example, $-5$ is `10000101`, `11111010`, and `11111011` in the three formats. A student builds a table of the smallest value, the largest value, and the number of distinct numerical values for each format, treating $+0$ and $-0$ as the same value. A classmate argues that every format must represent 256 values, since there are 256 patterns, and the student wants to check this claim against the finished table. Which of the following statements are correct? Select all that apply.
+[x] Sign-magnitude represents values from minus 127 through 127.
+[x] Ones' complement represents 255 distinct numerical values.
+[x] Two's complement represents 256 distinct numerical values, from $-128$ through 127, with a single zero.
+[ ] Ones' complement represents minus 128.
+[ ] Sign-magnitude has 256 distinct numerical values because it has 256 bit patterns.
+---
+「符號大小 −127 到 127」對：七位大小最多 127。「一補數 255 值」對：127 負值、127 正值和一個數值零。「二補數 256 值」對：−128 到 127，每個圖樣值不同。「一補數含負 128」錯：最小 −127。「符號大小 256 值」錯：正負零圖樣重複代表同一數值，故只有 255 個數值。
+
+@q ar1-04 | co-arith#1 | 2 | 計算
+8 位元有號加法 $100+50$，結果的位元和有沒有溢位？
+== 10010110,有
+?? 結果,溢位
+---
+$150>127$。兩個正數相加得到最高位 1（看起來是負的 $-106$），有號溢位。
+
+@q ar1-05 | co-arith#1 | 2 | 計算
+8 位元有號加法 $(-100)+(-50)$：最高位往外的 carry out 是多少？有沒有溢位？
+== 1,有
+?? carry,溢位
+---
+結果位元 `01101010`（$+106$），兩個負數加出正數：溢位。carry out 是 1，但有號溢位要看「最高位的進位入 ≠ 進位出」，不是看 carry。
+
+@q ar1-06 | co-arith#1 | 3 | 陷阱
+8 位元，$200+100$ 當無號數算、和 $(-56)+100$ 當有號數算，用的是同一組位元。各有沒有溢位？
+== 有,沒有
+?? 無號,有號
+---
+位元一樣：`11001000`＋`01100100`＝`00101100`，carry out 1。無號：300 > 255，溢位（看 carry）。有號：$-56+100=44$，正確，沒溢位。同一個加法器，判斷溢位的規則不同。
+
+@q ar1-07 | co-arith#1 | 2 | 計算
+把 4 位元二補數 `1011` 符號延伸成 8 位元？
+== 11111011
+---
+往左補最高位（1）。`1011`＝$-5$，`11111011` 也是 $-5$。補 0 就變成 $+11$，錯了。
+
+@q ar1-08 | co-arith#1 | 2 | 觀念
+An 8-bit two's-complement addition unit represents signed values from $-128$ to 127, and a student checks when the exact sum of two representable operands still fits, before any bits are discarded. The test pairs are 100 and 50, $-128$ and 127, $-64$ and $-64$, $-100$ and $-100$, and 70 and $-30$. The student also wonders whether a result of 0 after truncation guarantees that no overflow happened, and whether operands of opposite signs can ever overflow. The unit keeps only 8 bits of every sum and reports overflow separately. Which of the following statements are correct? Select all that apply.
+[x] Adding operands of opposite signs cannot overflow the signed range.
+[x] The exact sum of minus 128 and 127 is representable.
+[ ] Adding two negative operands always causes signed overflow.
+[ ] A retained zero result proves that signed overflow did not occur.
+[ ] The exact sum of 100 and 50 is representable in this format.
+---
+「異號不溢位」對：和介於兩個運算元之間。「負 128 加 127 可表示」對：和為 −1。「兩負必溢位」錯：−1＋−1＝−2 就合法。「結果零必安全」錯：−128＋−128＝−256，截為八位元會成零且溢位。「100 加 50 合法」錯：150 超過 127。
+
+@q ar1-09 | co-arith#1 | 3 | 陷阱
+An 8-bit two's-complement arithmetic unit negates a value by inverting its bits and adding 1, keeping only 8 result bits, and it sets a separate overflow flag when the true result does not fit in the signed range. A student tests the unit on several inputs, such as `00000101` (5), which becomes `11111011` ($-5$), and `00000000`, which stays `00000000`. The interesting case is the input `10000000`, the most negative value, whose negation the student wants to predict before running the test, together with the state of the overflow flag. Which of the following statements are correct? Select all that apply.
+[x] The retained result pattern is again `10000000`.
+[x] The retained signed value is minus 128.
+[x] The mathematical negation, $+128$, is outside the representable signed range of $-128$ to 127.
+[ ] The signed-overflow indication must be clear because the result pattern equals the input.
+[ ] The representable signed range includes positive 128.
+---
+「圖樣不變」對：01111111＋1＝10000000。「仍負 128」對：二補數最高位權重為 −128。「數學結果超界」對：真正取負應為正 128，八位元有號最大 127。「同圖樣就沒溢位」錯：圖樣被截斷不能保證數值合法。「含正 128」錯：範圍是 −128 到 127。此處明定硬體行為，不把它當成有號溢位程式的語言保證。
+
+@q ar1-10 | co-arith#1 | 2 | 計算
+一補數 8 位元 `11111010` 是多少？
+== -5
+---
+一補數的負數：全部取反就是絕對值。`00000101`＝5，所以是 $-5$。（二補數的同一串是 $-6$。）
+
+@q ar2-01 | co-arith#2 | 2 | 計算
+每個全加器的進位延遲是 2 個閘延遲。32 位元 ripple carry 加法器，最壞情況進位要經過多少閘延遲？
+== 64
+---
+進位一位一位傳：$32\times2=64$。延遲 $O(n)$。
+
+@q ar2-02 | co-arith#2 | 3 | 觀念
+Let $g_i=a_ib_i$, $p_i=a_i+b_i$, and $c_{i+1}=g_i+p_ic_i$, with Boolean OR denoted by plus. Consider bit positions whose data pairs are 11, 10, or 00. Which statements are correct? Select all that apply.
+[x] Data pair 11 forces the output carry to one regardless of the incoming carry.
+[x] Data pair 10 makes the output carry equal the incoming carry.
+[x] Data pair 00 forces the output carry to zero.
+[ ] The generate signal equals the sum bit for every incoming carry.
+[ ] For data pair 11, OR propagation is zero.
+---
+「11 必進位」對：g＝1，輸入進位不影響結論。「10 傳遞」對：g＝0、p＝1。「00 清掉」對：g＝p＝0。「產生就是和」錯：11 且無輸入進位時，g＝1 但和位為零。「11 的 OR 傳遞為零」錯：OR 為一，XOR 才為零；產生項已足以讓輸出進位為一。
+
+@q ar2-03 | co-arith#2 | 3 | 計算
+For a carry-lookahead adder, define $g_i=a_i b_i$, $p_i=a_i+ b_i$, and $c_{i+1}=g_i+(p_i c_i)$. Products denote Boolean AND; plus signs denote Boolean OR. Set $a_1a_0=10$, $b_1b_0=11$, and $c_0=0$. Which statements are correct? Select all that apply.
+[x] $c_2=g_1+(p_1g_0)+(p_1p_0c_0)$.
+[x] The example has $c_1=0$ and $c_2=1$.
+[x] The two retained sum bits are `01`.
+[ ] $c_2=p_1p_0c_0$ for all possible inputs.
+[ ] The exact unsigned total in this example is three.
+---
+「三項式」對：把 c₁＝g₀∨p₀c₀ 代入下一級。「c₁零、c₂一」對：最低位 0＋1 不進位；最高位 1＋1 會進位。「低兩位 01」對：2＋3＝5＝101₂。「只有全傳遞項」錯：漏掉自己產生與下一位傳遞產生的進位，本例 c₀＝0 卻有 c₂＝1。「總和三」錯：忽略了第一個加數的值二。
+
+@q ar2-04 | co-arith#2 | 3 | 計算
+$a=1011$、$b=0110$（$a_0$ 是最右邊）、$c_0=0$。各位的 $g$、$p$（$g_3g_2g_1g_0$、$p_3p_2p_1p_0$）是？$c_4$ 是多少？
+== 0010,1111,1
+?? g,p,c4
+---
+$g_i=a_ib_i$：只有第 1 位兩個都是 1：`0010`。$p_i=a_i+b_i$：`1111`。$c_1=0$、$c_2=g_1=1$、$c_3=p_2c_2=1$、$c_4=p_3c_3=1$。驗算 $11+6=17$，進位出 1。
+
+@q ar2-05 | co-arith#2 | 3 | 比較
+Under an illustrative gate-delay model, an n-bit ripple design takes 2n delay units, while a hierarchical lookahead design takes $4\log_2 n+2$ units for power-of-two widths. Ignore wiring and compare n equal to 32. Which statements are correct? Select all that apply.
+[x] The ripple delay is 64 units.
+[x] The lookahead delay is 22 units.
+[ ] The lookahead delay is 128 units.
+[ ] The timing formulas prove that the lookahead circuit uses fewer gates.
+[ ] The model proves a constant lookahead delay as n increases without bound.
+---
+「64」對：2×32。「22」對：log₂32＝5，4×5＋2＝22。「128」錯：未依給定對數公式計算。「可推出閘少」錯：延遲公式沒有給面積，前瞻通常需額外邏輯。「延遲固定」錯：對數仍會隨位元數增加，只是比線性成長慢；題設模型的數值不能直接當成每款晶片的實測。
+
+@q ar3-01 | co-arith#3 | 3 | 追蹤
+Start four-bit Booth multiplication of five by minus three with accumulator `0000`, multiplier `1101`, and previous bit zero. Pair 10 subtracts the multiplicand, and the combined registers then arithmetic-right-shift once. Which statements are correct? Select all that apply.
+[x] Before the first shift the accumulator is `1011`.
+[x] After the first shift the accumulator is `1101`.
+[x] After the first shift the multiplier register is `1110`.
+[ ] The new previous bit is zero after the first shift.
+[ ] The accumulator must be `0101` before the first shift.
+---
+「先 1011」對：0−5 的四位元二補數。「再 1101」對：算術右移保留符號一。「乘數 1110」對：原累加器最低位一移入乘數最高位，1101 右移後接成 1110。「前一位零」錯：新的前一位來自原乘數最低位，為一。「先正五」錯：10 規則是減五，01 才加五。
+
+@q ar3-02 | co-arith#3 | 3 | 追蹤
+接上題（$5\times(-3)$，4 位元 Booth），四步中做了幾次加或減？最後 $A{:}Q$ 是？
+== 3,11110001
+?? 加減次數,A:Q
+---
+$(Q_0,Q_{-1})$ 依序是 (1,0) 減、(0,1) 加、(1,0) 減、(1,1) 不做。結果 `1111 0001`＝$-15$（程式模擬確認）。
+
+@q ar3-03 | co-arith#3 | 2 | 計算
+Booth 乘法 $3\times(-4)$（4 位元），結果是？
+== -12
+---
+乘數 `1100`：前兩步 (0,0) 只移位；第三步 (1,0) 減；第四步 (1,1) 移位。`1111 0100`＝$-12$。
+
+@q ar3-04 | co-arith#3 | 3 | 觀念
+Use seven rounds of radix-two Booth recoding with initial previous bit zero and positive multiplier `0111110`. Compare arithmetic actions with ordinary shift-add, which adds once per one-bit. Which statements are correct? Select all that apply.
+[x] The multiplier equals 62.
+[x] Booth can represent it using contributions $2^6-2^1$.
+[x] Booth uses two nonzero arithmetic actions here, whereas ordinary shift-add uses five additions.
+[ ] This example proves that Booth always uses fewer arithmetic actions for every multiplier.
+[ ] Booth eliminates the need to shift according to digit positions.
+---
+「62」對：32＋16＋8＋4＋2。「64−2」對：一串連續的一用兩個邊界取代。「二對五」對：進入一串時減，離開時加，普通方法每個一各加一次。「所有乘數必省」錯：孤立一、零交錯時可能反而較多。「不用移位」錯：貢獻仍有位置權重，必須以移位或等價對齊方式實作。
+
+@q ar3-05 | co-arith#3 | 2 | 計算
+radix-4 Booth 一次看乘數的 3 個位元（重疊 1 位）、處理 2 位。16 位元乘法需要幾個部分積？
+== 8
+---
+一次處理 2 位元，$16/2=8$，比一般的 16 個少一半。
+
+@q ar3-06 | co-arith#3 | 2 | 陷阱
+C 語言（C99 之後）中 $-7/2$ 和 $-7\%2$ 各是？
+== -3,-1
+?? 商,餘數
+---
+商往 0 截斷：$-3$；餘數跟被除數同號：$-7=(-3)\times2+(-1)$。不是數學上的 $-4$ 餘 1。
+
+@q ar3-07 | co-arith#3 | 3 | 計算
+4 位元 Booth 乘法 $7\times(-6)$，結果是多少？（8 位元二補數讀回十進位）
+== -42
+---
+程式模擬 Booth 得 $A{:}Q$＝`11010110`＝$-42$。
+
+@q ar4-01 | co-arith#4 | 2 | 計算
+$-0.75$ 的 IEEE 754 單精度：符號、指數欄（8 位元）、十六進位表示？
+== 1,01111110,BF400000
+?? 符號,指數,十六進位
+---
+$0.75=1.1_2\times2^{-1}$。指數 $-1+127=126=01111110$；尾數 `1000…0`。合起來 `1 01111110 100…0`＝`BF400000`。
+
+@q ar4-02 | co-arith#4 | 2 | 計算
+$5.5$ 的 IEEE 754 單精度十六進位表示？
+== 40B00000
+---
+$5.5=101.1_2=1.011\times2^2$，指數 $129=10000001$，尾數 `0110…`。`0 10000001 0110…0`＝`40B00000`。
+
+@q ar4-03 | co-arith#4 | 3 | 計算
+單精度 `C1440000` 是多少？
+== -12.25
+---
+`1 10000010 1000100…`：符號負、指數 $130-127=3$、尾數 $1.10001_2=1.53125$。$-1.53125\times8=-12.25$。
+
+@q ar4-04 | co-arith#4 | 3 | 觀念
+Interpret IEEE binary32 patterns by their stored exponent e and stored fraction f. Consider e equal to zero, 254, or 255. Which statements are correct? Select all that apply.
+[x] With e zero and f zero, the pattern represents a signed zero.
+[x] With e zero and f nonzero, the pattern represents a subnormal value.
+[x] With e 255 and f zero, the pattern represents a signed infinity.
+[ ] With e 255 and f nonzero, the pattern represents a finite normal value with exponent 128.
+[ ] The largest normal unbiased exponent is 128 because $255-127=128$.
+---
+「零指數零小數」對：符號位仍可區分正零負零。「零指數非零小數」對：次正規數以 0.f×2⁻¹²⁶ 表示。「全一指數零小數」對：無限大。「全一指數非零為有限」錯：是 NaN。「最大正常指數 128」錯：255 保留作特殊值，最大正常欄位 254，減偏移後是 127。
+
+@q ar4-05 | co-arith#4 | 3 | 陷阱
+Let x be the nearest binary32 value to decimal $10^{20}$. Evaluate $(x+(-x))+1$ and $x+((-x)+1)$, rounding each operation to binary32 using nearest, ties to even, with no reassociation. Which statements are correct? Select all that apply.
+[x] The first expression evaluates to one.
+[x] The second expression evaluates to zero.
+[ ] The two expressions must agree because real-number addition is associative.
+[ ] The inner operation $(-x)+1$ is exactly representable as a value different from minus x.
+[ ] Both evaluations overflow binary32 to infinity.
+---
+「第一式一」對：x 與 −x 精確相消後加一。「第二式零」對：在此尺度，相鄰浮點值的間距遠大於一，−x＋1 捨入回 −x，再相消為零。「必相同」錯：每步捨入破壞實數結合律。「內層是另一個精確值」錯：真正的 −x＋1 雖有定義，卻不在此浮點格點上。「無限大」錯：10²⁰ 遠低於最大有限值約 3.4×10³⁸。
+
+@q ar4-06 | co-arith#4 | 2 | 計算
+單精度的偏移量（bias）是多少？倍精度呢？
+== 127,1023
+?? 單精度,倍精度
+---
+單精度指數 8 位元：$2^7-1$；倍精度 11 位元：$2^{10}-1$。
+
+@q ar4-07 | co-arith#4 | 2 | 陷阱
+`0.1` 可以用 IEEE 754 精確表示。對嗎？
+[ ] 對
+[x] 不對
+---
+$0.1$ 的二進位是無限循環 $0.0001100110011\ldots$，只能存近似值（單精度 `3DCCCCCD`）。所以 `0.1+0.2==0.3` 常常是假的。
+
+@q pf1-01 | co-perf#1 | 1 | 計算
+A program executes $10^9$ instructions with an average CPI of 2 on a 2 GHz processor. What is its CPU time in seconds?
+== 1
+---
+$10^9\times2\times0.5\text{ ns}=1$ 秒。
+
+@q pf1-02 | co-perf#1 | 2 | 計算
+The instruction mix is 50% arithmetic and logic (CPI 1), 20% load (CPI 5), 10% store (CPI 3), and 20% branch (CPI 2). What is the average CPI?
+== 2.2
+---
+$0.5+1.0+0.3+0.4=2.2$。
+
+@q pf1-03 | co-perf#1 | 2 | 計算
+Machine A has a 2 GHz clock and CPI 2; machine B has a 3 GHz clock and CPI 2.5. They run the same program with the same instruction count. Which machine is faster, and by what factor?
+== B,1.2
+?? faster machine,factor
+---
+A：$2/2=1$ ns 每指令；B：$2.5/3\approx0.833$ ns。B 快 $1/0.833=1.2$ 倍。
+
+@q pf1-04 | co-perf#1 | 3 | 陷阱
+On a 2 GHz processor, compiler X produces $8\times10^9$ instructions with CPI 1.1, and compiler Y produces $6\times10^9$ instructions with CPI 1.5. Which compiler's code has the higher MIPS rating, and which runs faster?
+== X,X
+?? higher MIPS,faster
+---
+MIPS＝時脈／CPI：X 約 1818、Y 約 1333。時間：X $8\times1.1/2=4.4$ 秒、Y $6\times1.5/2=4.5$ 秒。這裡 X 都贏；但如果 Y 指令更少一點就會反過來——MIPS 不看指令數，會騙人。
+
+@q pf1-05 | co-perf#1 | 2 | 計算
+Raising the clock rate from 2 GHz to 3 GHz increases the CPI from 1.5 to 2.0, because memory cannot keep up. By what factor does performance change?
+== 1.125
+---
+新舊時間比：$\frac{1.5/2}{2.0/3}=\frac{0.75}{0.667}=1.125$，只快了 12.5%。
+
+@q pf1-06 | co-perf#1 | 2 | 觀念
+A program runs on a 2 GHz processor. It executes $4\times10^9$ instructions with an average CPI of 1.5. Recall that CPU time = instruction count × CPI × clock cycle time. The team evaluates three independent changes, each applied alone:
+```
+change  effect
+C1      new compiler: instruction count -20%, but more multiplies raise the CPI to 1.8
+C2      new circuit technology: clock rate 2.0 GHz -> 2.5 GHz, nothing else changes
+C3      better algorithm: instruction count -50%, CPI and clock rate unchanged
+```
+Which of the following statements are correct? Select all that apply.
+[x] Before any change, the program takes 3 s.
+[x] With C1 alone, the program takes 2.88 s.
+[ ] C2 lowers the CPI, because a faster clock lets each instruction finish in fewer cycles.
+[x] With C3 alone, the program takes 1.5 s.
+[x] C3 alone makes the program faster than C2 alone does.
+---
+「原本 3 秒」對：$4\times10^9\times1.5\div(2\times10^9)=3$。
+
+「C1 是 2.88 秒」對：$3.2\times10^9\times1.8\div(2\times10^9)=2.88$。編譯器同時影響指令數和指令比例（所以 CPI 也變），兩者一好一壞，仍略快。
+
+「C2 降低 CPI」錯：電路技術改變的是週期時間；每條指令要幾拍是由內部設計和指令比例決定的。C2 後是 $4\times10^9\times1.5\div(2.5\times10^9)=2.4$ 秒。
+
+「C3 是 1.5 秒」對：演算法影響指令數，$2\times10^9\times1.5\div(2\times10^9)=1.5$。
+
+「C3 比 C2 快」對：$3/1.5=2$ 倍，C2 只有 $3/2.4=1.25$ 倍。
+
+@q pf1-07 | co-perf#1 | 3 | 計算
+The average CPI is 2.2, with 50% arithmetic and logic (CPI 1), 20% load (CPI 5), 10% store (CPI 3), and 20% branch (CPI 2). If the CPI of loads drops to 2, by what factor does the program run faster?
+== 1.375
+---
+新 CPI $0.5+0.4+0.3+0.4=1.6$。$2.2/1.6=1.375$。
+
+@q pf2-01 | co-perf#2 | 2 | 計算
+程式在三台電腦上的執行時間：1、10、100 秒。比總時間該用哪種平均？算術平均是多少？
+== 37
+---
+比時間用算術平均：$(1+10+100)/3=37$。
+
+@q pf2-02 | co-perf#2 | 2 | 計算
+開車去程 60 km/h、回程 40 km/h（距離一樣）。平均速率？
+== 48
+---
+速率要用調和平均：$\frac2{1/60+1/40}=48$。算術平均的 50 是錯的（回程花比較久）。
+
+@q pf2-03 | co-perf#2 | 2 | 觀念
+SPEC reports, for each program, the ratio (reference time) / (measured time). Two programs take 10 s and 100 s on reference machine $R$. Machine $A$ takes 5 s and 200 s, and machine $B$ takes 20 s and 50 s. A second reference machine $R'$ takes 20 s on each program. Which of the following statements are correct? Select all that apply.
+[x] With reference $R$, the geometric means of the ratios of $A$ and $B$ are both 1.
+[x] With reference $R'$, the geometric means of the ratios of $A$ and $B$ are again equal to each other, so the ranking does not change.
+[x] With reference $R'$, the arithmetic means of the ratios are 2.05 for $A$ and 0.7 for $B$.
+[ ] The arithmetic mean of the ratios gives a ranking that does not depend on the choice of reference machine.
+[ ] The geometric mean of the ratios ranks the machines the same way as their total execution times on the two programs.
+---
+「用 $R$ 時幾何平均都是 1」對：$A$ 的比值 2、0.5，$B$ 的比值 0.5、2，$\sqrt{1}=1$。
+
+「換成 $R'$ 幾何平均仍相等」對：$A$ 是 $\sqrt{4\times0.1}$、$B$ 是 $\sqrt{1\times0.4}$，都約 0.63。一般地 $\frac{GM(R/A)}{GM(R/B)}=GM(B/A)$，參考機器消掉了。
+
+「用 $R'$ 時算術平均 2.05 和 0.7」對：$(4+0.1)/2=2.05$、$(1+0.4)/2=0.7$。用 $R$ 時兩者都是 1.25（平手），換 $R'$ 卻變成 $A$ 大勝。
+
+「算術平均跟參考機器無關」錯：上面的數字就是反例。
+
+「幾何平均的排名等於總時間的排名」錯：總時間 $A$ 是 205 秒、$B$ 是 70 秒，$B$ 明顯快，幾何平均卻說平手。幾何平均只保證「跟參考機器無關」，不代表任何實際工作負載的總時間。
+
+@q pf2-04 | co-perf#2 | 3 | 計算
+機器 A 在兩個程式的 SPEC ratio 是 2 和 8；機器 B 是 4 和 4。幾何平均各是？哪台比較好？
+== 4,4,一樣
+?? A,B,誰好
+== 4,4,相同
+---
+$\sqrt{2\cdot8}=4$、$\sqrt{4\cdot4}=4$。用幾何平均兩台一樣；算術平均會說 A 比較好（5 對 4）。
+
+@q pf2-05 | co-perf#2 | 2 | 計算
+三個程式的 MIPS 分別是 100、200、400（每個程式指令數相同）。整體平均 MIPS（應該用調和平均）是多少？
+== 171.4
+== 1200/7
+---
+$\frac3{1/100+1/200+1/400}=\frac3{0.0175}\approx171.4$。指令數相同時，總時間由慢的程式主導。
+
+@q pf3-01 | co-perf#3 | 2 | 計算
+程式 80% 的時間可以平行化，用 4 核心，整體加速多少？
+== 2.5
+---
+$\frac1{0.2+0.8/4}=\frac1{0.4}=2.5$。
+
+@q pf3-02 | co-perf#3 | 2 | 計算
+同上（80% 可平行），核心無限多，加速上限是多少？
+== 5
+---
+$\frac1{1-0.8}=5$。剩下 20% 的序列部分決定了上限。
+
+@q pf3-03 | co-perf#3 | 3 | 計算
+想用 8 核心得到 4 倍加速，程式至少要有多少比例可以平行？
+== 6/7
+== 0.857
+---
+$\frac1{(1-f)+f/8}=4$：$(1-f)+f/8=0.25$，$1-\frac78f=0.25$，$f=\frac67\approx0.857$。
+
+@q pf3-04 | co-perf#3 | 2 | 計算
+某類運算佔執行時間 40%，把負責它的硬體加速 10 倍。整體快幾倍？
+== 1.5625
+== 1.56
+---
+$\frac1{0.6+0.04}=\frac1{0.64}=1.5625$。
+
+@q pf3-05 | co-perf#3 | 3 | 比較
+A research team runs a simulation on a cluster and measures that, on 10 cores, 10% of the running time is spent in a serial setup phase and the remaining 90% in perfectly parallel work. One member uses Amdahl's law, which keeps the problem size fixed as cores are added, and predicts that more cores will help little. Another uses Gustafson's law, which lets the problem size grow with the number of cores so that each core's share of the parallel work stays the same, and predicts nearly linear gains. Which of the following statements comparing Amdahl's law and Gustafson's law are correct? Select all that apply.
+[x] Amdahl's law assumes a fixed problem size, so the speedup is limited by the serial part.
+[x] Gustafson's law assumes the problem size grows with the number of cores, so the speedup can be close to linear.
+[ ] Amdahl's law says that the speedup can grow without limit as cores are added, as long as some part of the work is parallel.
+[ ] Gustafson's law applies only to single-core processors.
+[x] If 10% of the running time on 10 cores is serial, Gustafson's scaled speedup is $0.1+0.9\times10=9.1$.
+---
+「Amdahl：問題大小固定」對：這叫強擴展，加速上限是 $1/(\text{序列比例})$。
+
+「Gustafson：問題跟著變大」對：這叫弱擴展，平行部分佔比變大。
+
+「Amdahl 說可以無限加速」錯：剛好相反。
+
+「Gustafson 只適用單核」錯。
+
+「Gustafson 加速 9.1」對：同樣的時間在單核上要做 $0.1+0.9\times10$ 的工作量。現實中常常是「有更多核就算更大的問題」，所以 Gustafson 比較樂觀。
+
+@q pf3-06 | co-perf#3 | 2 | 情境
+A video encoder spends 95% of its single-core running time in work that parallelizes perfectly, and the remaining 5% must run serially; the problem size is fixed at one 2-hour video. The company can buy servers with 16 or 64 cores, and the 64-core server costs about 3 times as much. Before deciding, the engineers use Amdahl's law, speedup $= 1/((1-f)+f/n)$ with $f = 0.95$ and $n$ cores, to estimate how much faster each server would encode the video than a single core, ignoring memory limits. Which of the following statements are correct? Select all that apply.
+[x] With 16 cores, the speedup is about 9.1.
+[x] With 64 cores, the speedup is about 15.4.
+[x] Going from 16 to 64 cores, 4 times as many, raises the speedup by less than a factor of 2.
+[ ] As the number of cores grows without bound, the speedup approaches 95, since 95% of the work is parallel.
+[ ] With 64 cores, the speedup is 64.
+---
+「16 核約 9.1」對：$\frac1{0.05+0.95/16}\approx9.14$。
+
+「64 核約 15.4」對：$\frac1{0.05+0.95/64}\approx15.4$。
+
+「核心 4 倍，加速不到 2 倍」對：$15.4/9.14\approx1.69$。
+
+「上限 95」錯：上限是 $1/0.05=20$。
+
+「64 倍」錯：序列部分拖住了。
+
+@q pf4-01 | co-perf#4 | 2 | 計算
+動態功耗 $P\propto CV^2f$。電壓降 15%、頻率降 15%，功耗變成原來的幾倍？
+== 0.614
+== 0.61
+---
+$0.85^2\times0.85=0.85^3\approx0.614$。
+
+@q pf4-02 | co-perf#4 | 2 | 觀念
+From the 1980s until about 2005, processor clock rates rose by a factor of about 1000, from a few megahertz to over 3 GHz, but since then they have stayed around 3 to 5 GHz, while the number of cores per chip has grown. A student reads that the dynamic power of a chip is about capacitive load × voltage² × clock rate, and that in the early 2000s the supply voltage had already dropped to about 1 V. The student wants to explain why the clock rate stopped rising and why designers turned to multicore chips. Which of the following statements help explain why processor clock rates stopped rising quickly around 2005? Select all that apply.
+[x] Dynamic power is roughly proportional to capacitive load × voltage² × clock rate.
+[x] The supply voltage could no longer be lowered much, so raising the clock rate raised power sharply.
+[ ] Transistors stopped getting smaller after 2005.
+[x] Chips reached the limit of how much heat can be removed, so designers turned to putting several cores on one chip.
+[ ] A higher clock rate makes every instruction need more cycles, so performance would have dropped.
+---
+「動態功耗 ∝ 電容 × 電壓平方 × 頻率」對：這是功耗牆的公式。
+
+「電壓降不下去」對：以前每一代把電壓降低，抵消頻率上升；電壓太低時漏電變嚴重，降不下去了，頻率再往上功耗就直接上升。
+
+「電晶體不再變小」錯：製程仍持續縮小，多出來的電晶體拿去做多核心和更大的快取。
+
+「散熱到極限，改走多核心」對：這就是「功耗牆」。
+
+「時脈變高每條指令都要更多拍」錯：不是這個原因；停下來是因為功耗和散熱。
+
+@q pf4-03 | co-perf#4 | 3 | 計算
+新一代製程讓電容變成 0.8 倍、電壓變成 0.9 倍。功耗不能增加的前提下，頻率最多能提高幾倍？
+== 1.543
+== 1.54
+---
+$0.8\times0.81\times f'=1$，$f'=\frac1{0.648}\approx1.543$。
+
+@q pf4-04 | co-perf#4 | 2 | 觀念
+A chip company makes dies on 300 mm wafers; the wafer cost is fixed, and manufacturing defects are scattered randomly over the wafer at a fixed density per unit area. The designers compare a die of 100 mm² with a larger die of 200 mm² that adds more cores, and they want the cost per good die for each. The yield, the fraction of dies with no defect, falls as the die area grows, and only good dies can be sold; the wafer price is the same whichever die is made on it. Which of the following statements about the cost of a die are correct? Select all that apply.
+[x] A larger die means fewer dies per wafer, so each die carries a larger share of the wafer cost.
+[x] A larger die is more likely to contain at least one defect, so the yield drops.
+[ ] Yield does not depend on die area; it depends only on how many defects per unit area the factory produces.
+[x] Doubling the die area more than doubles the cost per good die.
+[ ] A wafer costs more to make when the dies on it are larger.
+---
+每顆好晶粒的成本 ＝ 晶圓成本 ÷（每片晶粒數 × 良率）。
+
+「每片能切的變少」對：面積變大，分母的晶粒數大約跟著面積成反比變少（邊緣浪費還更多）。
+
+「較大的晶粒更可能剛好有缺陷，良率下降」對：缺陷隨機散佈時，面積越大越容易中獎。
+
+「良率跟面積無關」錯：良率同時受製程（缺陷密度）和面積影響。
+
+「面積加倍，成本超過兩倍」對：晶粒數減半已經讓成本加倍，良率下降再往上加。
+
+「晶粒大晶圓就比較貴」錯：題目假設晶圓成本固定；成本變高是因為分母變小。
+
+@q cd1-01 | co-datapath#1 | 2 | 比較
+RISC 和 CISC 的差別？
+[x] RISC 指令簡單、長度固定、只有 load/store 碰記憶體；CISC 指令多樣、長度可變、運算指令可以直接碰記憶體
+[ ] RISC 指令比較多
+[ ] CISC 指令長度固定
+[ ] 兩者一樣
+---
+RISC 方便做管線（每條指令步驟整齊）。現代 x86 在內部把 CISC 指令拆成類 RISC 的微指令。
+
+@q cd1-02 | co-datapath#1 | 2 | 計算
+MIPS 的 `add $t0, $s1, $s2`（`$t0`＝8、`$s1`＝17、`$s2`＝18，funct 32）是 R 型。rs、rt、rd、funct 欄各是？
+== 17,18,8,32
+?? rs,rt,rd,funct
+---
+R 型：op(6) rs(5) rt(5) rd(5) shamt(5) funct(6)。來源是 rs、rt，目的地 rd。
+
+@q cd1-03 | co-datapath#1 | 2 | 計算
+`beq` 在位址 0x1000，立即值欄位是 25。跳躍目標位址（十六進位）？
+== 0x1068
+== 1068
+---
+目標＝(PC+4)＋立即值×4＝$0x1004+100=0x1068$。偏移以「字」為單位，而且是相對 PC+4。
+
+@q cd1-04 | co-datapath#1 | 3 | 計算
+`j` 在位址 0x00400010，26 位元的位址欄是 0x0100040。跳躍目標？
+== 0x00400100
+== 400100
+---
+目標＝(PC+4) 的最高 4 位元 ∥ 位址欄 ∥ 00。$0x0100040\times4=0x0400100$，前面補 0x0：`0x00400100`。
+
+@q cd1-05 | co-datapath#1 | 2 | 計算
+In RV32I, a B-type branch such as `beq` stores a 12-bit signed immediate that encodes the branch distance in units of 2 bytes, so the distance is a 13-bit signed even number of bytes, measured from the address of the branch itself. What is the largest forward distance, in bytes, that a single `beq` can jump?
+== 4094
+---
+13 位元有號數的範圍是 $-2^{12}$～$2^{12}-1$，但最低位元固定是 0（以 2 bytes 為單位），所以最大是 $2^{12}-2=4094$ bytes，最小是 $-4096$。跟 MIPS 不同：MIPS 的 16 位元立即值以 4 bytes 為單位、從 $PC+4$ 算，可跳約 ±128 KB；RISC-V 分支只有約 ±4 KB，更遠就要用 `jal`（±1 MB）。
+
+@q cd1-06 | co-datapath#1 | 2 | 觀念
+MIPS 的 I 型格式用在哪些指令？
+[x] 有立即值的運算（addi）、load/store、條件分支（beq、bne）
+[ ] 只有 add、sub
+[ ] 只有 j
+[ ] 只有乘除法
+---
+R 型：暫存器之間的運算；J 型：j、jal。
+
+@q cd2-01 | co-datapath#2 | 2 | 觀念
+單週期資料路徑中，`lw` 的 RegDst、ALUSrc、MemtoReg、RegWrite、MemRead、MemWrite 各是？
+== 0,1,1,1,1,0
+?? RegDst,ALUSrc,MemtoReg,RegWrite,MemRead,MemWrite
+---
+目的暫存器是 rt（RegDst＝0）、ALU 第二運算元用立即值（ALUSrc＝1）、寫回記憶體讀出的值（MemtoReg＝1）、要寫暫存器、要讀記憶體、不寫記憶體。
+
+@q cd2-02 | co-datapath#2 | 2 | 觀念
+`sw` 的 RegWrite、MemWrite 各是？RegDst 和 MemtoReg 呢？
+[x] 0、1；兩個都是 X（不在乎）
+[ ] 1、1；0、1
+[ ] 0、1；0、0
+[ ] 1、0；1、1
+---
+sw 不寫暫存器，所以選哪個暫存器、寫什麼值都無所謂。
+
+@q cd2-03 | co-datapath#2 | 3 | 情境
+ALUSrc 訊號卡在 0（永遠選暫存器）。哪些指令會壞？
+[x] lw、sw、addi（需要立即值當第二運算元）
+[ ] R 型指令
+[ ] beq
+[ ] 全部
+---
+R 型和 beq 本來就用兩個暫存器，不受影響。
+
+@q cd2-04 | co-datapath#2 | 3 | 情境
+RegWrite 卡在 1（永遠寫）。哪些指令會壞？
+[x] sw、beq：它們不該寫暫存器，卻會把某個值寫進去
+[ ] lw
+[ ] R 型
+[ ] 不會有影響
+---
+寫到哪個暫存器、寫什麼值取決於其他訊號，總之會破壞某個暫存器。
+
+@q cd2-05 | co-datapath#2 | 2 | 計算
+單週期：取指 200 ps、讀暫存器 100 ps、ALU 200 ps、記憶體 200 ps、寫回 100 ps。時脈週期至少多長？
+== 800
+---
+最長的是 lw：$200+100+200+200+100=800$ ps。所有指令都要等最慢的那條，這是單週期的缺點。
+
+@q cd2-06 | co-datapath#2 | 2 | 觀念
+`beq` 需要 ALU 做什麼？
+[x] 相減，看結果是不是 0（Zero 訊號）
+[ ] 相加算位址就好
+[ ] 不用 ALU
+[ ] 做 AND
+---
+目標位址由另一個加法器算（PC+4＋偏移×4）。
+
+@q cd3-01 | co-datapath#3 | 2 | 計算
+多週期：lw 5 拍、sw 4、R 型 4、beq 3。指令比例 lw 25%、sw 10%、R 型 50%、beq 15%。平均 CPI？
+== 4.1
+---
+$0.25\times5+0.1\times4+0.5\times4+0.15\times3=4.1$。
+
+@q cd3-02 | co-datapath#3 | 3 | 計算
+同上，多週期時脈 200 ps；單週期時脈 800 ps（CPI 1）。誰快？快幾倍？
+== 單週期,1.025
+?? 誰快,倍數
+---
+多週期每條平均 $4.1\times200=820$ ps；單週期 800 ps。單週期快 $820/800=1.025$ 倍。多週期不一定比較快，要看指令組合和各階段平衡。
+
+@q cd3-03 | co-datapath#3 | 2 | 觀念
+多週期資料路徑比單週期好在哪？
+[x] 每條指令只花它需要的拍數；功能單元（例如 ALU、記憶體）可以在不同拍重複使用
+[ ] CPI 一定比較低
+[ ] 時脈一定比較慢
+[ ] 不需要控制單元
+---
+代價是要加暫存器存中間結果，控制也變成有限狀態機。
+
+@q cd3-04 | co-datapath#3 | 2 | 計算
+多週期 5 個階段延遲分別 200、100、200、200、100 ps（不等長）。時脈週期至少多長？
+== 200
+---
+每拍要容納最慢的階段，200 ps。快的階段也要等 200，所以各階段要盡量平衡。
+
+@q pl1-01 | co-pipeline#1 | 1 | 計算
+5 級管線、沒有任何危障，跑 100 條指令要幾個週期？
+== 104
+---
+第一條要 5 拍才出來，之後每拍出一條：$5+100-1=104$。
+
+@q pl1-02 | co-pipeline#1 | 2 | 計算
+同上，跟不做管線（每條指令 5 個週期，週期長度一樣）比，加速幾倍？
+== 4.81
+---
+$500/104\approx4.81$。指令很多時趨近 5（級數）。
+
+@q pl1-03 | co-pipeline#1 | 2 | 計算
+管線各級延遲 200、150、250、200、100 ps，每級之間的暫存器多 20 ps。時脈週期是？
+== 270
+---
+最慢的 250＋20＝270 ps。管線的週期由最慢的一級決定。
+
+@q pl1-04 | co-pipeline#1 | 2 | 陷阱
+「管線化讓每一條指令執行得更快」對嗎？
+[ ] 對
+[x] 不對
+---
+單一指令的延遲不變，甚至因為級間暫存器和不平衡而變長。管線提高的是產出量（每拍完成一條）。
+
+@q pl1-05 | co-pipeline#1 | 2 | 觀念
+管線的三種危障（hazard）各是什麼？
+[x] 結構：硬體資源不夠同時用；資料：要用的值還沒算好；控制：分支結果還沒出來就要決定下一條
+[ ] 結構：分支；資料：記憶體；控制：暫存器
+[ ] 只有資料危障
+[ ] 三種都是同一件事
+---
+例如只有一個記憶體埠時，取指令和 lw 同時要用就是結構危障。
+
+@q pl1-06 | co-pipeline#1 | 3 | 計算
+5 級管線跑 $n$ 條指令，平均每條要額外停 0.3 拍。$n$ 很大時，跟理想管線比慢了幾倍？
+== 1.3
+---
+理想 CPI 1，現在 1.3。週期數約 $1.3n$，慢 1.3 倍。
+
+@q pl2-01 | co-pipeline#2 | 2 | 觀念
+`add $t0,$t1,$t2` 緊接著 `sub $t3,$t0,$t4`，有 forwarding 時要停幾拍？
+== 0
+---
+add 在 EX 結束就算出 `$t0`，直接從 EX/MEM 暫存器送到 sub 的 EX 輸入，不用等寫回。
+
+@q pl2-02 | co-pipeline#2 | 2 | 觀念
+`lw $t0,0($s1)` 緊接著 `add $t2,$t0,$t1`，有 forwarding 時還要停幾拍？為什麼？
+[x] 1 拍：lw 要到 MEM 結束才拿到資料，add 的 EX 已經開始了
+[ ] 0 拍
+[ ] 2 拍
+[ ] 3 拍
+---
+這是 load-use 危障，forwarding 也救不了，只能停一拍（或調換指令）。
+
+@q pl2-03 | co-pipeline#2 | 2 | 計算
+沒有 forwarding（但同一拍可以先寫後讀暫存器）。`add $t0,...` 緊接著用 `$t0` 的指令，要停幾拍？
+== 2
+---
+add 在第 5 拍（WB）前半寫入，下一條要在它的 ID（讀暫存器）對齊到第 5 拍，原本在第 3 拍，停 2 拍。
+
+@q pl2-04 | co-pipeline#2 | 3 | 情境
+程式：`lw $t1,0($t0)`、`lw $t2,4($t0)`、`add $t3,$t1,$t2`、`sw $t3,12($t0)`、`lw $t4,8($t0)`、`add $t5,$t1,$t4`。有 forwarding。原本要停幾拍？調換順序後最少停幾拍？
+== 2,0
+?? 原本,調換後
+---
+第三條 add 緊接在 lw `$t2` 後（停 1）；最後的 add 緊接在 lw `$t4` 後（停 1），共 2。把 `lw $t4` 提到第三條之前，兩個 load-use 都隔開了，0 拍。
+
+@q pl2-05 | co-pipeline#2 | 2 | 觀念
+load-use 危障的偵測條件（在 ID 階段）是？
+[x] ID/EX 的指令是 load（MemRead＝1），而且它的目的暫存器 rt 等於目前 IF/ID 指令的 rs 或 rt
+[ ] 任何兩條連續指令
+[ ] 目前指令是 store
+[ ] 分支指令
+---
+偵測到就插入一個 bubble：PC 和 IF/ID 不更新，ID/EX 的控制訊號清成 0。
+
+@q pl2-06 | co-pipeline#2 | 3 | 陷阱
+A five-stage MIPS pipeline numbers its stages 1 to 5 (IF, ID, EX, MEM, WB). It has the usual forwarding paths from the EX/MEM and MEM/WB registers into the EX stage, plus one extra path that sends a value loaded by `lw` from the MEM/WB register to the store-data input of a `sw` that is in MEM in the next cycle. Branches compare their two registers in ID, and values can be forwarded into ID from EX/MEM and MEM/WB. For example, a `lw` that enters IF in cycle 1 has its data only at the end of cycle 4. The instructions in each option are adjacent unless the option says otherwise. Which of the following sequences still need at least one stall cycle? Select all that apply.
+[x] `lw $t0,0($s1)` followed by `add $t1,$t0,$t2`
+[ ] `lw $t0,0($s1)` followed by `sw $t0,0($s2)`
+[ ] `add $t0,$t1,$t2` followed by `sub $t3,$t0,$t4`
+[x] `lw $t0,0($s1)` followed by `beq $t0,$t1,L`
+[ ] `lw $t0,0($s1)`, then an unrelated instruction, then `add $t1,$t0,$t2`
+---
+「lw 接 add」要停：add 在 EX 就要用 `$t0`，lw 的資料在 MEM 結束才有，load-use 危障停 1 拍。
+
+「lw 接 sw 存同一個值」不用停：sw 要存的值不需要經過 ALU，只要在 MEM 到位，靠那條 MEM→MEM 的轉送路徑就夠。
+
+「add 接 sub」不用停：EX→EX 轉送。
+
+「lw 接 beq」要停：分支在 ID 就要比較，資料要再晚兩拍才有，停 2 拍。
+
+「中間隔一條」不用停：add 到 EX 時 lw 已經在 WB，可以從 MEM/WB 轉送。
+
+@q pl3-01 | co-pipeline#3 | 2 | 計算
+分支佔 20%，預測錯誤率 30%，每次預測錯要 flush 2 拍。CPI 是多少（理想 1）？
+== 1.12
+---
+$1+0.2\times0.3\times2=1.12$。
+
+@q pl3-02 | co-pipeline#3 | 3 | 計算
+一個迴圈跑 10 次（前 9 次分支成立、最後 1 次不成立），整個迴圈被執行 3 次。1-bit 預測（一開始預測成立）錯幾次？2-bit 飽和計數器（一開始強成立）錯幾次？
+== 5,3
+?? 1-bit,2-bit
+---
+1-bit：第一輪只錯最後一次；之後每輪開頭（上次記成不成立）和結尾各錯一次：$1+2+2=5$。2-bit：結尾錯一次只降到「弱成立」，下輪開頭還是猜對：每輪 1 次，共 3。
+
+@q pl3-03 | co-pipeline#3 | 3 | 陷阱
+分支結果交替「成立、不成立、成立、不成立……」共 12 次。2-bit 計數器從「弱不成立」開始，錯幾次？
+== 12
+---
+弱不成立猜不成立 → 實際成立（錯，升到弱成立）→ 猜成立 → 實際不成立（錯，降回弱不成立）……每次都錯。2-bit 對交替的模式沒有用，要用有歷史的預測器。
+
+@q pl3-04 | co-pipeline#3 | 2 | 觀念
+把分支判斷從 EX 提早到 ID 有什麼好處？代價？
+[x] 預測錯的懲罰從 2 拍降到 1 拍；但 ID 要多一個比較器，而且分支要用的值可能還沒好，需要額外的 forwarding 或 stall
+[ ] 沒有代價
+[ ] 懲罰變成 0
+[ ] 讓時脈變快
+---
+課本的 MIPS 管線就是這樣改的。
+
+@q pl3-05 | co-pipeline#3 | 2 | 觀念
+A five-stage pipeline predicts every branch as not taken and resolves branches in EX, so when a branch reaches EX, the two instructions behind it, in IF and ID, have already been fetched from the fall-through path. A program executes $10^6$ branches, of which 40% are taken, and the designers want to know what the hardware must do when the prediction is wrong and how many cycles are lost overall, compared with an ideal pipeline that never fetches a wrong instruction. Each flushed instruction costs one cycle. Which of the following statements are correct? Select all that apply.
+[x] On a misprediction, the two fetched instructions are flushed and fetching restarts at the target.
+[x] The number of cycles lost by flushing is the branch penalty.
+[ ] Nothing needs to be done on a misprediction.
+[x] When the branch is in fact not taken, no cycles are lost.
+[ ] On a misprediction, the branch instruction itself is executed again.
+---
+「清掉後面的、從目標重取」對：被 flush 的指令變成 nop。
+
+「flush 的拍數就是分支懲罰」對。
+
+「什麼都不用做」錯：後面那些指令不該執行。
+
+「真的不跳就沒損失」對：照順序取的指令剛好是對的。
+
+「分支重新執行」錯：分支本身已經正確執行完，重做的是取指令。
+
+@q pl3-06 | co-pipeline#3 | 2 | 計算
+分支佔 25%，其中 60% 會跳。「預測不跳」、懲罰 1 拍。CPI？
+== 1.15
+---
+預測錯的是會跳的那些：$1+0.25\times0.6\times1=1.15$。
+
+@q pl4-01 | co-pipeline#4 | 2 | 比較
+In MIPS terminology, an exception is an unexpected event caused inside the processor by the running instruction, and an interrupt is an event caused outside the processor, such as by an I/O device. A student classifies 4 events seen during 1 second while a program runs: an `add` that overflows, a disk controller signaling that a 4 KiB transfer has finished, an undefined instruction, and a `syscall` instruction. The student also wants to describe what the processor does in each case, using the EPC and Cause registers, and whether the two kinds of events are handled differently. Which of the following statements are correct? Select all that apply.
+[x] Arithmetic overflow caused by an add instruction is an exception.
+[x] An I/O device signaling that a transfer has finished is an interrupt.
+[ ] An undefined instruction is an interrupt, because it cannot be executed.
+[x] In both cases, the processor saves an instruction address in EPC, records the reason in the Cause register, and jumps to the operating system's handler.
+[ ] A syscall instruction causes an interrupt, because it asks for service from outside the CPU.
+---
+MIPS 的用法：例外來自 CPU 內部、跟目前這條指令有關；中斷來自外部的 I/O 裝置。
+
+「add 溢位是例外」對。
+
+「I/O 完成是中斷」對：和正在執行的指令無關。
+
+「未定義指令是中斷」錯：它是目前這條指令造成的，屬於例外。
+
+「都存 EPC、記原因、跳處理程式」對：處理方式類似。
+
+「syscall 是中斷」錯：syscall 是指令本身要求作業系統服務，屬於例外。
+
+@q pl4-02 | co-pipeline#4 | 2 | 觀念
+管線處理例外時，「精確例外」要求什麼？
+[x] 出錯指令之前的指令都完成、它本身和之後的都沒有改變狀態，好像程式剛好停在這條指令前
+[ ] 例外一定要立刻處理
+[ ] 所有指令都要重做
+[ ] 不能有例外
+---
+這樣作業系統處理完後，可以從出錯那條重新執行。
+
+@q pl4-03 | co-pipeline#4 | 3 | 情境
+In a 5-stage pipeline (IF, ID, EX, MEM, WB), an `add` instruction causes an arithmetic overflow exception in its EX stage in cycle 7. At that moment, two older instructions, a `lw` and an `or`, are in MEM and WB, and two younger instructions, a `sub` and a `beq`, are in ID and IF. The processor implements precise exceptions: when the handler starts, every instruction before the faulting one must have completed, and the faulting instruction and every later one must have had no effect. A student must decide what happens to each of the 5 instructions in the pipeline and where fetching continues. A classmate argues that the `add` may as well finish, since it has already reached EX, and another that the older instructions should be flushed too, so that the pipeline restarts from a clean state. Which of the following statements are correct? Select all that apply.
+[x] The `add` instruction must be prevented from writing its result into its destination register.
+[x] The two younger instructions in ID and IF are flushed.
+[ ] The two older instructions in MEM and WB are flushed as well, so that the pipeline restarts from a clean state.
+[ ] Since the `add` has already reached EX, it is allowed to finish and write its result, and only the younger instructions are flushed.
+[x] After the flush, the next instruction fetched comes from the address of the exception handler.
+---
+「`add` 不能寫回」對：溢位的結果是錯的，而且精確例外要求出事的指令不留下效果；處理程式要能看到原本的暫存器值。
+
+「ID、IF 的兩條 flush」對：它們比 `add` 晚，不能留下效果。
+
+「MEM、WB 的也 flush」錯：它們比 `add` 早，必須讓它們做完；flush 掉的話它們的結果就丟了，也不會再重跑。
+
+「`add` 已到 EX 就讓它寫完」錯：例外發生時 `add` 不能寫回目的暫存器，要讓它看起來像沒執行過一樣。
+
+「下一條從例外處理程式的位址抓」對：硬體把 PC 改成固定的處理程式入口，同時記下 `add` 的位址（或它的 PC＋4，由處理程式調整）。
+
+@q pl4-04 | co-pipeline#4 | 3 | 情境
+In the same cycle of a 5-stage pipeline, instruction $i$ causes a memory access fault in MEM, because its address is not mapped, and instruction $i+1$ is found to be undefined in ID. Instruction $i-1$ is in WB and will complete normally. The processor provides precise exceptions, so the operating system must see the exceptions as if the instructions had run one at a time, in program order, and EPC holds the address of a single faulting instruction. A student must decide which exception is handled first, what EPC records, and which instructions are flushed. A classmate argues that the exception of instruction $i+1$ should be handled first, because it was detected in an earlier stage of the pipeline, and another that instruction $i-1$ should be flushed as well, to be safe. Which of the following statements are correct? Select all that apply.
+[x] The exception of instruction $i$ is handled first.
+[x] EPC records instruction $i$ as the faulting instruction.
+[x] Instruction $i+1$ and all later instructions in the pipeline are flushed.
+[ ] Instruction $i-1$, already in WB, is flushed as well.
+[ ] The exception of instruction $i+1$ is handled first, because it was detected in an earlier stage.
+---
+「先處理第 $i$ 條」對：照程式順序，先處理最前面的。
+
+「EPC 記第 $i$ 條」對：處理完要知道從哪裡繼續。
+
+「第 $i+1$ 條和之後的都清掉」對：第 $i+1$ 條之後重新執行時才會再發生它的例外。
+
+「第 $i-1$ 條也清掉」錯：比它早的要讓它完成。
+
+「先處理第 $i+1$ 條」錯：偵測的級數早，不代表程式順序在前。
+
+@q ca1-01 | co-cache#1 | 2 | 計算
+32 位元位址、16 KB 直接映射 cache、區塊 64 bytes。offset、index、tag 各幾位元？
+== 6,8,18
+?? offset,index,tag
+---
+offset $\lg64=6$；區塊數 $16\text{K}/64=256$，index 8；tag $32-6-8=18$。
+
+@q ca1-02 | co-cache#1 | 2 | 計算
+接上題，位址 0x12345678 的 offset、index（十六進位）？
+== 0x38,0x59
+?? offset,index
+---
+低 6 位元：$0x78\,\&\,0x3F=0x38$；接下來 8 位元：$(0x12345678\gg6)\,\&\,0xFF=0x59$。
+
+@q ca1-03 | co-cache#1 | 3 | 計算
+接上題（16 KB 直接映射、64 B 區塊、18 位元 tag），每個 cache line 再加 1 個 valid 位元。整個 cache 總共多少位元？
+== 135936
+---
+每行 $18+1+64\times8=531$ 位元，256 行：$135936$ 位元（約 16.6 KB，比資料多約 3.7%）。
+
+@q ca1-04 | co-cache#1 | 2 | 計算
+32 KB、4-way 組關聯、區塊 32 bytes、32 位元位址。有幾個 set？tag 幾位元？
+== 256,19
+?? set數,tag
+---
+區塊數 $32\text{K}/32=1024$，每組 4 個：256 組，index 8 位元。offset 5，tag $32-5-8=19$。
+
+@q ca1-05 | co-cache#1 | 3 | 追蹤
+直接映射 cache 有 4 個區塊，存取區塊位址序列 3、11、3、7、11、19、3。命中幾次？
+== 0
+---
+3、11、7、19 除以 4 都餘 3，全部搶同一格：7 次全部 miss。
+
+@q ca1-06 | co-cache#1 | 3 | 追蹤
+同一序列（3、11、3、7、11、19、3），改成 2-way（2 組）和全關聯（4 個區塊），都換掉最久沒用的，各命中幾次？
+== 1,3
+?? 2-way,全關聯
+---
+2-way：四個位址都是奇數，全進第 1 組，只有第 3 次（3）命中。全關聯：3、11、7、19 都放得下，第 3、5、7 次命中。關聯度越高，衝突越少。
+
+@q ca1-07 | co-cache#1 | 2 | 觀念
+時間區域性和空間區域性各是？
+[x] 時間：剛用過的很快會再用；空間：用到某位置，附近的很快也會用到
+[ ] 時間：程式跑越久越慢
+[ ] 空間：記憶體越大越好
+[ ] 兩者一樣
+---
+迴圈裡的變數是時間區域性；循序走訪陣列是空間區域性（所以區塊一次搬一整塊）。
+
+@q ca1-08 | co-cache#1 | 2 | 計算
+64 KB 全關聯 cache、區塊 64 bytes、32 位元位址。index 幾位元？tag 幾位元？
+== 0,26
+?? index,tag
+---
+全關聯只有一組，沒有 index；tag $32-6=26$。每次要同時比對 1024 個 tag。
+
+@q ca2-01 | co-cache#2 | 2 | 比較
+write-through 和 write-back？
+[x] write-through：每次寫都同時寫進記憶體；write-back：只寫 cache，被換出時（dirty 的話）才寫回記憶體
+[ ] write-back 每次寫都寫記憶體
+[ ] write-through 需要 dirty 位元
+[ ] 兩者一樣
+---
+write-through 簡單、記憶體永遠最新，但寫入流量大（通常配寫緩衝區）。
+
+@q ca2-02 | co-cache#2 | 2 | 計算
+對同一個區塊連續寫 10 次，然後它被換出。write-through 和 write-back 各寫記憶體幾次（以區塊為單位計）？
+== 10,1
+?? write-through,write-back
+---
+write-through 每次寫都寫；write-back 只在換出時寫一次。
+
+@q ca2-03 | co-cache#2 | 3 | 觀念
+A write-back cache keeps a dirty bit for each block, and a valid block currently has dirty bit 0, because it was just brought in from memory. The processor then performs this sequence on the block:
+
+| step | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|
+| action | read word 0 | read word 5 | write word 3 with a new value | evict the block |
+
+A student traces the dirty bit through the four steps and counts how many times the block's data must be written back to memory over the whole sequence, and why the reads do not matter. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] The first read sets the dirty bit, because the block is now in use.
+[x] The write with a new value requires marking the block dirty.
+[ ] The dirty bit records whether the block has ever been read.
+[ ] Eviction can simply discard the block, since memory was updated when the word was written.
+[ ] Reading the block twice requires two data write-backs to memory.
+---
+「第一次讀就設 dirty」錯：只讀沒改資料，dirty 仍是 0。「寫新值標髒」對：快取與下層的值已不同。「記讀取紀錄」錯：dirty 記錄的是修改。「換出可直接丟掉」錯：write-back 寫入時只改快取，記憶體還是舊值，換出時必須寫回保存。「兩次讀兩次寫回」錯：讀命中不會寫回。
+
+@q ca2-04 | co-cache#2 | 2 | 觀念
+write-allocate 和 no-write-allocate 的差別？常見搭配？
+[x] 寫沒中時，要不要把區塊先載入 cache；write-back 常配 write-allocate，write-through 常配 no-write-allocate
+[ ] 讀沒中時要不要載入
+[ ] 兩者一樣
+[ ] write-back 常配 no-write-allocate
+---
+write-back 期待之後還會寫同一塊，載入後就能在 cache 裡累積修改。
+
+@q ca2-05 | co-cache#2 | 3 | 計算
+write-back cache，每個區塊被換出時 30% 是 dirty。每次換出平均要寫回幾次記憶體（以區塊計）？1000 次換出呢？
+== 0.3,300
+?? 每次,1000次
+---
+只有被改過（dirty）的才要寫回：平均 $0.3$ 次；1000 次換出約 300 次。write-through 則每次寫入都寫。
+
+@q ca2-06 | co-cache#2 | 3 | 陷阱
+「write-through 的記憶體永遠是最新的，所以多核心之間不需要一致性協定」對嗎？
+[ ] 對
+[x] 不對
+---
+別的核心的 cache 裡可能還留著舊的副本；要讓它們失效（invalidate）或更新，一樣需要一致性協定。
+
+@q ca3-01 | co-cache#3 | 3 | 觀念
+Use the standard 3C classification with an initially empty cache. A compulsory miss is a block's first reference. For later references, compare against a fully associative cache of the same size and the same replacement rule. Which statements are correct? Select all that apply.
+[x] A first reference to a previously unseen block is compulsory.
+[x] A later miss that would hit in the reference cache is a conflict miss.
+[ ] A fully associative cache never has capacity misses.
+[ ] Every cache miss is compulsory if the cache currently lacks the block.
+[ ] Increasing associativity makes a finite cache capable of retaining an unlimited number of blocks.
+---
+「首次強制」對：這是分類定義。「參考命中卻失誤屬衝突」對：位置限制使本來可留的塊留不住。「全關聯沒有容量失誤」錯：全關聯沒有**衝突**失誤，但總位置仍有限，放不下工作集時仍有容量失誤。「不在就強制」錯：可能是用過後被換出。「無限保留」錯：關聯度只決定可放的位置，沒有取消容量限制。
+
+@q ca3-02 | co-cache#3 | 3 | 追蹤
+直接映射 4 個區塊，存取 3、11、3、7、11、19、3，七次 miss 各是哪一種？compulsory、capacity、conflict 各幾次？
+== 4,0,3
+?? compulsory,capacity,conflict
+---
+3、11、7、19 第一次出現：4 次 compulsory。之後的 3、11、3：同樣大小的全關聯 cache 會命中，所以是 conflict。沒有 capacity。
+
+@q ca3-03 | co-cache#3 | 3 | 比較
+For a cold sequential read of 256 contiguous bytes, compare aligned 32-byte and 64-byte blocks. Ignore prefetching. Also consider the usual compulsory, capacity, and conflict miss classification. Which statements are correct? Select all that apply.
+[x] The read touches eight distinct 32-byte blocks.
+[x] The read touches four distinct 64-byte blocks.
+[ ] Increasing associativity alone removes the first access miss to every previously unseen block.
+[x] A larger cache can reduce misses caused by repeatedly used data that exceed the old cache size.
+[x] A miss on a block that was accessed before may be a capacity miss rather than a conflict miss.
+---
+「八塊」與「四塊」對：256÷32＝8，256÷64＝4。「關聯度消除首次失誤」錯：未載入過的塊仍要取資料。「容量大可減少容量失誤」對：能留住較多重用資料。「非首次可能是容量失誤」對：要看同大小的全關聯參考快取會不會命中；連它都失誤就是容量失誤。
+
+@q ca3-04 | co-cache#3 | 2 | 計算
+4-way 組關聯，每組要記錄精確的 LRU 順序，至少要幾個位元？8-way 呢？
+== 5,16
+?? 4-way,8-way
+---
+要分辨 $k!$ 種順序：$\lceil\lg24\rceil=5$、$\lceil\lg40320\rceil=16$。所以高關聯度常用近似 LRU（例如 tree-PLRU 只要 $k-1$ 位元）。
+
+@q ca3-05 | co-cache#3 | 3 | 陷阱
+「區塊越大，失誤率一定越低」對嗎？
+[ ] 對
+[x] 不對
+---
+cache 大小固定時，區塊太大會讓區塊數太少，conflict／capacity 變多；而且 miss penalty 也變大。miss rate 對區塊大小大致是 U 型。
+
+@q ca4-01 | co-cache#4 | 1 | 計算
+命中時間 1 拍、miss rate 5%、miss penalty 100 拍。AMAT？
+== 6
+---
+$1+0.05\times100=6$ 拍。
+
+@q ca4-02 | co-cache#4 | 2 | 計算
+兩層 cache：L1 命中 1 拍、local miss rate 5%；L2 命中 10 拍、local miss rate 20%；記憶體 100 拍。AMAT？L2 的 global miss rate？
+== 2.5,0.01
+?? AMAT,global
+---
+$1+0.05\times(10+0.2\times100)=2.5$。global＝$0.05\times0.2=1\%$（所有存取中，最後要到記憶體的比例）。
+
+@q ca4-03 | co-cache#4 | 3 | 計算
+基本 CPI 2；指令 cache miss rate 2%；load/store 佔 36%、資料 cache miss rate 4%；miss penalty 100 拍。實際 CPI？
+== 5.44
+---
+每條指令：取指 $0.02\times100=2$；資料 $0.36\times0.04\times100=1.44$。CPI＝$2+2+1.44=5.44$。
+
+@q ca4-04 | co-cache#4 | 3 | 比較
+During 1000 processor references, L1 has 100 misses. L2 receives exactly those 100 requests and misses on 40 of them. Which statements are correct? Select all that apply.
+?? 複選
+[ ] L1 has a 10% hit rate.
+[x] L2 has a 40% local miss rate.
+[ ] L2 has a 40% global miss rate.
+[ ] Forty requests are satisfied by L2.
+[ ] L2's local miss rate must be no larger than its global miss rate.
+---
+「L1 命中率 10%」錯：失誤率是 100÷1000＝10%，命中率是 90%。「L2 局部 40%」對：40÷100。「全域 40%」錯：相對全部存取為 40÷1000＝4%。「L2 滿足 40 次」錯：40 是 L2 失誤的次數，L2 滿足的是 100−40＝60 次。「局部不大於全域」錯：此處局部 40% 大於全域 4%，分母不同。
+
+@q ca4-05 | co-cache#4 | 3 | 計算
+基本 CPI 1；每條指令平均 0.3 次資料存取、miss rate 5%、miss penalty 120 拍。時脈加倍、但 penalty 的「時間」不變（變成 240 拍）。新的 CPI？效能變幾倍？
+== 4.6,1.22
+?? 新CPI,效能倍數
+---
+舊 CPI＝$1+0.3\times0.05\times120=2.8$；新 CPI＝$1+0.3\times0.05\times240=4.6$。時間比 $\frac{2.8\times T}{4.6\times T/2}=\frac{2.8}{2.3}\approx1.22$。時脈快一倍，效能只快兩成多——記憶體牆。
+
+@q ca5-01 | co-cache#5 | 2 | 計算
+送位址 1 拍、記憶體存取 15 拍、傳一個字 1 拍。區塊 4 個字、記憶體一次一個字寬。miss penalty？
+== 65
+---
+$1+4\times15+4\times1=65$ 拍。
+
+@q ca5-02 | co-cache#5 | 2 | 計算
+同上，記憶體和匯流排加寬到 4 個字寬，miss penalty？
+== 17
+---
+一次讀 4 字、一次傳完：$1+15+1=17$。快但匯流排和多工器很貴。
+
+@q ca5-03 | co-cache#5 | 2 | 計算
+同上，改成 4 個交錯（interleaved）的記憶體 bank、匯流排仍一個字寬。miss penalty？
+== 20
+---
+4 個 bank 同時存取（15 拍），再一個字一個字傳：$1+15+4\times1=20$。幾乎跟加寬一樣快，成本低很多。
+
+@q ca5-04 | co-cache#5 | 3 | 觀念
+Four independent memory banks share a one-word-wide data bus. Four consecutive word addresses map to different banks. Assume the banks can access these words concurrently and bus transfers occur afterward. Which statements are correct? Select all that apply.
+[x] Bank access intervals can overlap.
+[x] Returning four words over the bus still requires four one-word transfers.
+[ ] Concurrent bank access requires this data bus to carry four words per cycle.
+[x] Interleaving can gain parallel access without widening the data bus.
+[x] Each bank still has its own nonzero access latency.
+---
+「存取可重疊」對：四個獨立 bank 可同時工作。「仍四次傳送」對：共同匯流排一次只能傳一個字。「必一次四字」錯：平行的是內部存取，不代表匯流排也變寬。「不加寬也能平行存取」對。「各 bank 仍有延遲」對：交錯只讓幾個 bank 的延遲重疊，不會讓單一 bank 變快。
+
+@q ca6-01 | co-cache#6 | 3 | 情境
+A row-major array has eight rows of eight four-byte integers. Its base address is aligned to a 32-byte block. Consider changing `for j: for i: s += a[i][j]` into `for i: for j: s += a[i][j]`. Assume integer sums do not overflow. Which statements are correct? Select all that apply.
+?? 複選
+[ ] The transformed inner loop advances by 32 bytes per element.
+[x] One row occupies exactly one cache block.
+[ ] The original inner loop advances by four bytes per element.
+[ ] The transformed loop may compute a different sum, because the additions occur in a different order.
+[ ] Loop interchange increases the number of elements stored in a block.
+---
+「改後間距 32」錯：列優先中變動第二個索引會接著讀下一個整數，間距 4 位元組。「一列一塊」對：8×4＝32。「原本間距四」錯：沿同一欄跨列，間距為 32 位元組。「和可能不同」錯：整數加法可交換、本題又無溢位，遍歷相同元素，和一樣。「改變每塊元素數」錯：區塊大小與資料布局沒變，只改變使用順序。
+
+@q ca6-02 | co-cache#6 | 3 | 觀念
+A one-line direct-mapped primary cache has a one-block fully associative victim buffer. On a primary miss, if the requested block is in the victim buffer, it swaps with the primary line; otherwise the requested block is fetched and the old primary block enters the buffer. Both start empty. Read block sequence 0,1,0,1. Which statements are correct? Select all that apply.
+[x] The primary cache misses on all four reads.
+[x] Only the first two reads require fetching a block from memory.
+[x] The first-ever reference to each block still requires a memory fetch.
+[x] The last two primary misses are satisfied by the victim buffer.
+[x] Without the victim buffer, all four reads would fetch from memory.
+---
+「主快取四次失誤」對：一列無法同時放 0 與 1。「只有前兩次取記憶體」對：第一次各載入一塊，之後主列與 victim 互換。「首次仍要取記憶體」對：起初兩者都沒有，victim buffer 救不了強制失誤。「後兩次 victim 滿足」對。「沒有 victim 四次都取記憶體」對：0、1 互相把對方踢掉。五句都對。
+
+@q ca6-03 | co-cache#6 | 3 | 觀念
+A miss starts at time 0 and completes at 80 ns. An independent read hits in the cache at 10 ns and takes 2 ns to return when served immediately. A non-blocking cache supports this hit while the miss is outstanding. Which statements are correct? Select all that apply.
+[x] The independent read can complete at 12 ns.
+[x] The original miss can still complete at 80 ns.
+[ ] Non-blocking means that every later request must also be a miss.
+[ ] Non-blocking guarantees that the missing block arrives before 12 ns.
+[ ] Supporting hits during an outstanding miss shortens the latency of that miss.
+---
+「12 ns 完成」對：10＋2＝12，題設允許未完成失誤期間處理命中。「原失誤仍 80 ns」對：沒有改變取資料延遲。「後續必失誤」錯：題目就給了一次命中。「缺的塊先到」錯：那塊仍要 80 ns。「縮短失誤延遲」錯：失誤本身仍是 80 ns；省下的是無關的命中不必一起等待的時間。
+
+@q ca6-04 | co-cache#6 | 3 | 觀念
+An eight-word block is fetched after a read miss. Once the requested word arrives, the processor may resume; the remaining words still arrive later. Which statements are correct? Select all that apply.
+?? 複選
+[ ] Critical-word-first fetches the words of the block in increasing address order.
+[x] Early restart can resume execution before the entire block has arrived.
+[ ] Early restart requires the whole block to arrive before the processor resumes.
+[ ] Resuming execution implies that the other words will never be fetched.
+[ ] These techniques reduce processor stall time by transferring fewer bytes per block.
+---
+「依位址遞增取」錯：關鍵字優先是先取**這次要的**那個字，不一定在區塊開頭。「提早重新開始」對：所需的字到達即可繼續。「要等整塊」錯：那就不叫提早重新開始了。「其他字不取」錯：題設仍會補齊整塊。「少傳資料」錯：傳的資料量一樣，改善的是可開始使用的時刻。
+
+@q ca6-05 | co-cache#6 | 3 | 情境
+A tiled computation reuses three 16-by-16 tiles of four-byte entries before moving to other tiles. The cache can hold all three tiles without mapping conflicts. Which statements are correct? Select all that apply.
+[x] The three tiles occupy 3072 data bytes.
+[x] Reusing a resident tile before moving on can improve temporal locality.
+[ ] Tiling changes the physical size of each cache block.
+[x] Retaining several tiles can avoid reloading data between nearby arithmetic operations.
+[x] One tile alone occupies 1024 data bytes.
+---
+「3072 位元組」對：3×16×16×4＝3072。「改善時間區域性」對：資料剛使用後很快再用。「改硬體塊大小」錯：分塊重排運算，不是改快取硬體。「避免重載」對：題設保證放得下且無映射衝突。「一個小塊 1024」對：16×16×4＝1024。
+
+@q il1-01 | co-ilp#1 | 2 | 追蹤
+```
+I1: R1 = R2 + R3
+I2: R4 = R1 * R5
+I3: R1 = R6 - R7
+I4: R8 = R1 + R4
+```
+I1 和 I2、I2 和 I3、I1 和 I3 之間各是什麼相依？
+== RAW,WAR,WAW
+?? I1-I2,I2-I3,I1-I3
+---
+I2 讀 I1 寫的 R1：RAW（真相依）。I3 寫 R1，而 I2 要讀舊的 R1：WAR。I1、I3 都寫 R1：WAW。
+
+@q il1-02 | co-ilp#1 | 2 | 觀念
+哪種相依可以靠「暫存器換名」消除？
+[x] WAR 和 WAW（名稱相依）
+[ ] RAW
+[ ] 全部
+[ ] 都不行
+---
+名稱相依只是剛好用了同一個暫存器名字，換成不同的實體暫存器就沒衝突；RAW 是真的要用前面算出的值。
+
+@q il1-03 | co-ilp#1 | 3 | 追蹤
+上一題的程式，把 I3、I4 的 R1 換名成 R9（I3: R9 = R6 − R7、I4: R8 = R9 + R4）。還剩哪些相依？
+[x] I1→I2（R1，RAW）、I2→I4（R4，RAW）、I3→I4（R9，RAW）
+[ ] 沒有相依了
+[ ] 只剩 WAW
+[ ] 所有相依都還在
+---
+WAR、WAW 都消失，I3 可以跟 I1、I2 平行執行。
+
+@q il1-04 | co-ilp#1 | 2 | 比較
+迴圈展開（loop unrolling）的好處和代價？
+[x] 好處：減少分支和迴圈計數的負擔、讓更多指令可以排程；代價：程式碼變大、需要更多暫存器
+[ ] 只有好處
+[ ] 讓程式變小
+[ ] 減少暫存器使用
+---
+展開太多會讓指令 cache 裝不下。
+
+@q il1-05 | co-ilp#1 | 2 | 計算
+一個迴圈每次迭代有 4 條有用指令和 2 條迴圈負擔指令（遞增、分支）。展開 4 次（合併負擔）後，每 4 個原本的迭代共有幾條指令？
+== 18
+---
+有用指令 $4\times4=16$，負擔只剩一組 2 條：18 條（原本 24 條）。
+
+@q il1-06 | co-ilp#1 | 2 | 觀念
+指令之間的「控制相依」是什麼？
+[x] 某條指令要不要執行，取決於前面分支的結果
+[ ] 兩條指令寫同一個暫存器
+[ ] 兩條指令讀同一個暫存器
+[ ] 指令要用前面的結果
+---
+推測執行就是在打破控制相依（先猜分支結果、執行下去，猜錯再撤銷）。
+
+@q il2-01 | co-ilp#2 | 2 | 觀念
+Scoreboard 的四個階段是？
+[x] Issue、Read operands、Execute、Write result
+[ ] IF、ID、EX、MEM、WB
+[ ] Issue、Execute、Write、Commit
+[ ] Fetch、Decode、Rename、Retire
+---
+Issue 檢查結構危障和 WAW；Read operands 等 RAW；Write result 等 WAR。
+
+@q il2-02 | co-ilp#2 | 3 | 情境
+A scoreboard processor without register renaming issues two instructions:
+```
+add r1, r5, r6     # older: must read the old r5, which is 8
+mul r5, r7, r8     # younger: computes the new r5, which is 20
+```
+The younger instruction finishes its computation first, while the older one has not yet received r6 and has not yet read its operands. The scoreboard must decide when the younger instruction may write its result into r5, and a student wants to name the hazard involved. Which of the following statements are correct? Select all that apply.
+[x] Delaying the younger write preserves the older instruction's required value.
+[x] This is a WAR name dependence.
+[ ] Writing 20 before the older read lets that read obtain the required old eight from r5.
+[ ] The younger instruction's result must be eight because it uses the same destination name.
+[ ] Scoreboard WAR handling requires silently replacing r5 with a new physical destination name in this no-renaming model.
+---
+「延寫保留八」對：等老讀者取值後才能改同一格。「WAR 名稱相依」對：前讀後寫，資料不是從老指令流向新指令。「先寫還讀八」錯：沒有提前保存，會讀到二十。「同名結果必相同」錯：名字是儲存位置，值由運算決定。「暗自換名」錯：違反本模型，記分板靠等待維持舊讀值。
+
+@q il2-03 | co-ilp#2 | 3 | 陷阱
+「Scoreboard 讓指令亂序執行，所以 WAW 危障也可以亂序完成」對嗎？
+[ ] 對
+[x] 不對
+---
+Scoreboard 在 Issue 時就檢查：如果有還沒完成的指令要寫同一個目的暫存器，就不 issue（停住），避免後面的先寫、被前面的蓋掉。
+
+@q il3-01 | co-ilp#3 | 2 | 觀念
+Tomasulo 保留站裡的 $V_j$／$V_k$ 和 $Q_j$／$Q_k$ 各存什麼？
+[x] $V$：運算元的值（已經好了）；$Q$：還沒好時，會產生這個值的保留站編號
+[ ] $V$：保留站編號；$Q$：值
+[ ] 兩者都存值
+[ ] 兩者都存暫存器名字
+---
+同一個運算元只會有 $V$ 或 $Q$ 其中一個有效。
+
+@q il3-02 | co-ilp#3 | 2 | 觀念
+Tomasulo 怎麼消除 WAR 和 WAW？
+[x] issue 時把來源暫存器換成「值」或「保留站編號」（換名），暫存器名字在保留站裡就不重要了
+[ ] 讓指令等
+[ ] 讓指令照順序完成
+[ ] 加更多暫存器
+---
+後面的指令寫同一個暫存器，不會影響前面已經拿到值或編號的指令。
+
+@q il3-03 | co-ilp#3 | 2 | 觀念
+CDB（common data bus）在做什麼？
+[x] 運算完成時把結果和保留站編號廣播出去，所有在等這個編號的保留站和暫存器同時拿到值
+[ ] 傳指令
+[ ] 傳位址
+[ ] 連接記憶體
+---
+一次只有一個結果能上 CDB，它可能成為瓶頸。
+
+@q il3-04 | co-ilp#3 | 3 | 陷阱
+「原始的 Tomasulo 演算法支援精確例外」對嗎？
+[ ] 對
+[x] 不對
+---
+指令亂序完成、直接寫回暫存器，例外發生時後面的指令可能已經改了狀態。加上 ROB（照順序 commit）才能精確。
+
+@q il4-01 | co-ilp#4 | 2 | 觀念
+ROB（reorder buffer）的作用？
+[x] 指令亂序執行，結果先放在 ROB，再照程式順序 commit 到暫存器和記憶體
+[ ] 讓指令照順序執行
+[ ] 存放分支預測
+[ ] 取代 cache
+---
+「亂序執行、照順序完成」讓推測和精確例外都能做到。
+
+@q il4-02 | co-ilp#4 | 3 | 追蹤
+A ROB contains instructions numbered one through six in program order. Instruction two is a mispredicted branch. Instructions three through six belong to its wrong path and have not committed; instruction one is older and valid. Consider recovery that retains valid older work. Which statements are correct? Select all that apply.
+[x] Four wrong-path entries must be invalidated.
+[x] Instruction one need not be discarded solely because the younger branch was wrong.
+[x] A completed result in entry five must not become a committed architectural update.
+[ ] Recovery may commit entry five because completed work is always safe to preserve.
+[ ] Only the newest entry six needs to be invalidated.
+---
+「清四項」對：三、四、五、六皆屬錯路徑。「較老一可留」對：它不受較年輕分支控制。「五不能提交」對：算完仍是錯路徑，必須撤銷。「完成就安全」錯：執行結果與正確路徑資格都要滿足。「只清六」錯：還會留下三個錯路徑項目，不能只刪最後一個。
+
+@q il4-03 | co-ilp#4 | 3 | 觀念
+Use a textbook ROB design with issue, execute, write result, and commit stages. Results are stored in ROB entries before architectural register updates. An older instruction is unfinished while a younger add has produced seven. Which statements are correct? Select all that apply.
+[x] The add can write seven into its ROB entry before it can commit.
+[x] A dependent reservation station may receive seven before the add commits.
+[x] In-order commit prevents the add from retiring ahead of the unfinished older instruction.
+[ ] Writing the ROB entry is identical to updating the committed architectural register.
+[ ] The add must wait for the older instruction to commit before it can execute, even if its own inputs are available.
+---
+「先寫重排項目」對：write result 與 commit 分開。「相依站可先收到」對：結果可轉送給推測中的使用者。「不能搶先提交」對：提交必須依序。「寫項目等於架構已更新」錯：結果尚可被撤銷。「執行也必依序等」錯：只要資料與資源允許便可亂序執行，限制在提交階段。
+
+@q il4-04 | co-ilp#4 | 3 | 情境
+An older unresolved branch precedes a speculative load. The load records a fault in its ROB entry before the branch resolves. The ROB provides precise exceptions and in-order commit. Which statements are correct? Select all that apply.
+[x] The fault can be recorded without immediately reporting an architectural exception.
+[x] If branch recovery discards this wrong-path load, that load's fault must not be reported as an executed program instruction's exception.
+[x] If the load remains on the correct path, its fault can be reported when it reaches the commit head.
+[ ] The load must immediately update its architectural destination with arbitrary data before branch resolution.
+[ ] A recorded fault always forces the older branch to be discarded, even when its prediction is correct.
+---
+「先記不立刻報」對：尚不確定此指令是否屬正確路徑。「錯路徑清掉不報」對：程式語意不應包含未選路徑的例外。「正路徑到頭報」對：較老指令先提交，得到精確切點。「先寫任意值」錯：故障不應被當成成功結果提交。「故障反清老分支」錯：較年輕推測工作不能任意取消較老正確指令。
+
+@q il5-01 | co-ilp#5 | 3 | 比較
+In one VLIW design, the compiler places two independent operations in a long instruction containing two operation slots. A dynamic superscalar design chooses executable operations at runtime. Which statements are correct? Select all that apply.
+[x] In the specified VLIW design, the compiler selects which operations share a bundle.
+[x] In the dynamic design, hardware makes runtime scheduling choices.
+[x] The VLIW design may contain an unused slot when the compiler cannot find a legal second operation.
+[ ] Two operation slots guarantee that every bundle contains two useful independent operations for every program.
+[ ] Dynamic scheduling proves that the compiler has no effect on instruction ordering or exposed parallelism.
+---
+「編譯器打包」對：由靜態排程決定同一長指令的內容。「硬體動態挑」對：依當時資料與資源可用性選擇。「可能空槽」對：找不到合法可並行操作時不能硬塞。「永遠兩有用操作」錯：相依或資源限制會降低利用率。「編譯器全無影響」錯：它仍產生程式指令與安排順序，動態硬體的能力也受輸入工作限制。
+
+@q il5-02 | co-ilp#5 | 3 | 比較
+A simplified GPU execution unit has one position for issuing a common instruction each cycle. A selected warp contains 32 threads, and an arithmetic instruction applies the same operation to all active lanes. The unit cannot issue two common instructions in that one position during the same cycle. Ignore execution overlap, memory traffic, and all arithmetic latency beyond the stated cycle.
+
+At cycle 0, warp R is missing a required input and cannot issue. Warp T has three successive arithmetic instructions ready, with all 32 lanes active for each. Compare a rigid policy that selects R and leaves the position unused when R is not ready with a ready-warp policy that selects T. Assume T remains ready for the next 3 cycles and no other warp becomes ready during that interval. Count useful scalar operations separately from common instruction issues. Changing the selected warp does not produce R's missing input or change either program's required operations. Which statements are correct? Select all that apply.
+[x] The rigid selection of unavailable warp R issues no instruction in cycle zero.
+[x] Selecting T for one arithmetic instruction performs 32 useful lane operations.
+[x] Issuing T's three instructions in three cycles performs 96 useful lane operations.
+[x] Choosing a ready warp does not by itself complete R's missing-input dependence.
+[ ] The one-position unit issues all three of T's common instructions in a single cycle because the warp contains 32 threads.
+---
+「選未就緒R沒有發射」對：缺必要輸入，指定政策又不改挑別組。「T一指令做32次」對：每個啟用lane各一筆。「三拍96次」對：3×32＝96，共同指令仍只有三道。「換組不補R輸入」對：只是利用原先空檔。「32執行緒便一拍發三指令」錯：一個共同發射位置每拍至多一道，資料平行寬度不能取代指令發射寬度。
+
+@q il5-03 | co-ilp#5 | 2 | 觀念
+Flynn 分類中，GPU 的 SIMD 單元和多核心 CPU 各屬於？
+[x] SIMD；MIMD
+[ ] MIMD；SIMD
+[ ] 都是 SISD
+[ ] 都是 MISD
+---
+SIMD：一條指令同時處理多筆資料；MIMD：多個處理器各自執行不同指令流。
+
+@q il5-04 | co-ilp#5 | 3 | 計算
+4 發射的超純量處理器，理想 CPI 是多少？實際平均每拍只發射 1.6 條，CPI 是？
+== 0.25,0.625
+?? 理想,實際
+---
+每拍最多 4 條：CPI 最低 0.25（IPC 4）。實際 IPC 1.6，CPI $=1/1.6=0.625$。
+
+@q vc1-01 | co-vm-coherence#1 | 2 | 觀念
+TLB、頁表、cache 三者命中與否的情況，下列哪一個**不可能**？
+[x] TLB 命中、頁表沒有（頁不在記憶體）
+[ ] TLB 沒中、頁表命中、cache 命中
+[ ] TLB 命中、頁表命中、cache 沒中
+[ ] TLB 沒中、頁表沒有、cache 沒中
+---
+TLB 只存「在記憶體中的頁」的轉換；頁被換出時對應的 TLB 項會被清掉。
+
+@q vc1-02 | co-vm-coherence#1 | 2 | 比較
+A processor uses 32-bit virtual addresses, 4 KiB pages, and a TLB that translates a virtual page number to a physical page number in one cycle. Its L1 data cache has 64-byte blocks and 64 sets. The designers compare three ways to look up the cache. In PIPT, both the set index and the tag come from the physical address. In VIVT, both come from the virtual address. In VIPT, the set index comes from the virtual address and the tag comes from the physical address. Which of the following statements are correct? Select all that apply.
+[x] PIPT lookups use physical-address information for both the set index and the tag.
+[x] VIVT lookups can start before translation, but the design must then deal with aliases.
+[x] VIPT caches can overlap translation and set selection when the set index uses only page-offset bits.
+[x] Here the six-bit set index plus the six-bit block offset fit in the 12-bit page offset.
+[ ] Tagging lines with an address-space ID removes every problem caused by two virtual addresses of one process mapping to the same physical page.
+---
+「PIPT 兩者都用實體位址」對：要先等 TLB 轉出實體位址才能查。
+
+「VIVT 不用等轉換，但要處理別名」對：同一份資料可能用不同虛擬位址存兩份，不同行程的同一虛擬位址也可能是不同資料。
+
+「VIPT 可以重疊」對：頁內位移在轉換前後不變，可以先用它選 set，同時查 TLB，最後再比實體標籤。
+
+「六加六放進十二位」對：64 位元組需六位位移，64 組需六位索引，4 KiB 頁的頁內位移是十二位。
+
+「ASID 解決同一行程的所有別名」錯：ASID 用來區分**不同**位址空間的同一個虛擬位址；同一個行程把一個實體頁對應到兩個虛擬位址，ASID 一樣，分不出來。
+
+@q vc1-03 | co-vm-coherence#1 | 3 | 計算
+頁 4 KB、L1 是 32 KB 的 VIPT cache。要讓 index＋offset 都落在頁內位移（不受轉換影響），至少要幾路組關聯？
+== 8
+---
+每一路的大小不能超過一頁：$32\text{ KB}/\text{ways}\le4\text{ KB}$，ways ≥ 8。
+
+@q vc1-04 | co-vm-coherence#1 | 2 | 計算
+頁 8 KB、VIPT cache 每一路 8 KB、4 路。cache 多大？
+== 32KB
+== 32
+---
+$8\times4=32$ KB。要再大就只能加路數（或用其他方法處理別名）。
+
+@q vc2-01 | co-vm-coherence#2 | 2 | 觀念
+MESI 四個狀態各是？
+[x] Modified：只有我有、被改過；Exclusive：只有我有、沒改過；Shared：可能好幾個人有、沒改過；Invalid：無效
+[ ] 四個狀態都表示被改過
+[ ] Shared 表示被改過
+[ ] Exclusive 表示好幾個人有
+---
+E 的好處：之後要寫時不用通知別人，直接變 M。
+
+@q vc2-02 | co-vm-coherence#2 | 3 | 追蹤
+兩顆 CPU 的 cache 一開始都沒有區塊 X（I）。依序：P1 讀 X、P2 讀 X、P1 寫 X、P2 讀 X。每一步後 P1、P2 的狀態？最後各是？
+== S,S
+?? P1最後,P2最後
+---
+P1 讀（沒人有）→ P1：E。P2 讀 → 兩個都 S。P1 寫 → P1：M，P2 被 invalidate：I。P2 讀 → P1 把資料寫回（或直接提供），兩個都 S。
+
+@q vc2-03 | co-vm-coherence#2 | 2 | 追蹤
+P1 的區塊 X 在 E 狀態，P1 寫入 X。新狀態？需要在匯流排上廣播嗎？
+== M,不需要
+?? 狀態,廣播
+---
+E 代表只有我有，直接改成 M，不用通知別人——這就是多一個 E 狀態的好處。
+
+@q vc2-04 | co-vm-coherence#2 | 2 | 比較
+A company designs two multiprocessors: a 4-core laptop chip and a 256-core server built from 8 sockets. In a snooping protocol, every cache watches a shared bus and sees every coherence request; in a directory protocol, a table records, for each memory block, which caches hold a copy, and requests are sent only to those caches. The architects estimate that on the server, a typical write to shared data involves only 2 or 3 of the 256 caches, and they must choose a protocol for each machine. Which of the following statements about snooping and directory-based cache coherence are correct? Select all that apply.
+[x] Snooping is simple but runs out of bus bandwidth as the number of cores grows.
+[x] A directory notifies only the caches that hold the block, so it scales better.
+[ ] A directory protocol must still broadcast every request to all caches on the chip.
+[ ] Snooping is the usual choice for systems with thousands of cores across many sockets.
+[ ] A directory removes the need to record which caches hold each block.
+---
+snooping 靠廣播，「簡單但核心多了頻寬不夠」；directory 用一張表記錄每個區塊在誰手上，「只通知相關的 cache」，可擴展。directory 不必廣播；記錄誰持有區塊正是 directory 的工作；上千核、多 socket 的系統多用 directory。
+
+@q vc2-05 | co-vm-coherence#2 | 3 | 情境
+Two threads run on different cores of a 4-core machine whose caches use 64-byte blocks. Thread 1 increments `s.a` and thread 2 increments `s.b`, each 100 million times, and the threads share no data:
+```
+struct { long a; long b; } s;   /* 8 bytes each, adjacent */
+void *t1(void *p) { for (long i = 0; i < 100000000; i++) s.a++; return 0; }
+void *t2(void *p) { for (long i = 0; i < 100000000; i++) s.b++; return 0; }
+```
+The program takes 2.4 s, but running the two loops one after the other on a single core takes only 0.5 s. A profiler shows that most loads and stores in the loops miss in the private caches, and it turns out that `s.a` and `s.b` lie in the same cache block. The team wants to understand the slowdown and to fix it without changing what the program computes. Which of the following statements are correct? Select all that apply.
+[x] This is false sharing.
+[x] The two cores keep invalidating each other's copy of the block.
+[x] Coherence works on whole blocks, not on individual variables.
+[x] Padding the data so that `a` and `b` fall in different blocks fixes the problem.
+[ ] Protecting `a` and `b` with one shared lock fixes the problem by serializing the updates.
+---
+「一致性以整個區塊為單位」，不知道兩顆核心只動了不同位置，於是「不斷互相 invalidate」，這是「false sharing」；「加 padding 分到不同區塊」就好。加鎖不會讓兩個變數離開同一個區塊，只會讓更新排隊、更慢。
+
+@q vc2-06 | co-vm-coherence#2 | 2 | 觀念
+A test suite for a machine with several processors checks whether its coherence protocol behaves correctly. In one test, processor P1 writes 1 and then 2 to location `x`, while processors P2 and P3 repeatedly read `x`; the test fails if P2 sees 2 and then 1 while P3 sees 1 and then 2. In another test, P1 writes 7 to `y` and later reads `y` with no other writes in between. A student summarizes the properties that such tests check. Which of the following statements about the properties that a cache coherence protocol must guarantee are correct? Select all that apply.
+[x] Write serialization: all processors see the writes to the same location in the same order.
+[x] A processor that reads a location after writing it, with no writes by others in between, gets the value it wrote.
+[x] A write by one processor eventually becomes visible to reads by other processors.
+[ ] Write serialization means that writes must be faster than reads.
+[ ] Write serialization means that only one processor may write at any time, to any location.
+---
+一致性的三件事：所有處理器看到同一個位置的寫入順序都一樣（寫入序列化）；同一個處理器讀到自己最後寫的值；別人寫入後過一段時間一定讀得到，三個都對。寫入序列化只管「同一個位置」的順序，不限制不同位置同時寫，也和速度無關。
+
+@q vc3-01 | co-vm-coherence#3 | 2 | 觀念
+循序一致性（SC）的定義？
+[x] 所有處理器的操作好像被排成一個全域順序，而且每個處理器自己的操作在這個順序中保持程式順序
+[ ] 每個處理器可以任意重排
+[ ] 只保證同一個位置的順序
+[ ] 讀取一定比寫入先
+---
+最直觀，但限制硬體最佳化（例如 store buffer）。
+
+@q vc3-02 | co-vm-coherence#3 | 3 | 計算
+經典 litmus test：初始 $x=y=0$。P1：`x=1; r1=y;`；P2：`y=1; r2=x;`。在 SC 下 $(r1,r2)=(0,0)$ 可能嗎？在 TSO（x86）下呢？
+== 不可能,可能
+?? SC,TSO
+---
+SC：誰先執行第一行，另一個讀的時候一定看到 1。TSO：兩個寫入都還在各自的 store buffer、讀取先從記憶體讀到 0，所以可能兩個都 0。TSO 放寬了「寫→讀」的順序。
+
+@q vc3-03 | co-vm-coherence#3 | 2 | 觀念
+Consider machine-level instructions on two x86-64 cores using ordinary cacheable write-back memory. Shared variables x and y are separate, naturally aligned eight-byte locations initially containing zero. The compiler does not change either instruction sequence. Core zero stores one to x and then loads y; core one stores one to y and then loads x. Each core has a FIFO store buffer, and a load from a different address may execute while an earlier store remains buffered.
+
+For one possible timing, both stores are issued at cycle 0, both loads execute at cycle two, and neither store reaches shared visibility until cycle twenty or later. A same-address load would instead check its own pending buffered writes, but the two measured loads read the other variable. Cache coherence still maintains an agreed order of writes to each individual location. Distinguish that per-location property from a single total execution order that must preserve every core's program order. Which statements are correct under this TSO model? Select all that apply.
+[x] A core can continue executing while an earlier write remains in its store buffer.
+[x] A later different-address load may complete before that core's earlier store becomes visible to other cores.
+[ ] A same-address load must ignore the core's own buffered newer value and use the old cache value instead.
+[ ] The FIFO store buffer permits a core's later store to become visible before every earlier store from that core.
+[ ] Per-location cache coherence alone forbids the two measured loads from both returning zero.
+---
+「寫在緩衝仍可繼續」對：「異位址後讀可先完成」也對，這是指定TSO的store→load放寬。「同址必忽略自己的新值」錯：可由自身store buffer轉送最新對應值。「後寫可任意超前寫」錯：FIFO仍維持同核心寫入順序。「只靠coherence便禁雙零」錯：兩個load各讀到仍未被另一核心更新的零，不違反單一位址寫入順序，卻不符合要求各核心程式順序的SC總序。
+
+@q vc3-04 | co-vm-coherence#3 | 3 | 計算
+初始 $x=y=0$。P1：`x=1; y=1;`；P2：`r1=y; r2=x;`。在 TSO 下，$(r1,r2)=(1,0)$ 可能嗎？
+== 不可能
+---
+TSO 保持「寫→寫」和「讀→讀」的順序：P2 看到 $y=1$，表示 $x=1$ 已經先寫入了，再讀 $x$ 一定是 1。只有在更寬鬆的模型（例如 ARM）才可能。
+
+@q vc4-01 | co-vm-coherence#4 | 2 | 觀念
+Load-linked/store-conditional (LL/SC) is used on RISC-V, ARM, and MIPS processors to build atomic operations such as an atomic increment:
+```
+retry:  lr.w  t0, (a0)       # load-linked
+        addi  t0, t0, 1
+        sc.w  t1, t0, (a0)   # store-conditional; t1 = 0 on success
+        bnez  t1, retry
+```
+In a test with 8 cores incrementing the same counter $10^6$ times each, about 15% of the SC instructions fail and the code retries. A student wants to know when SC succeeds, whether LL locks anything, what happens if another core writes the same value back in between, and whether a context switch between LL and SC matters. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] SC writes only if nobody wrote the address since the LL; otherwise it fails and the code retries.
+[ ] LL locks the bus until the corresponding SC, so other cores must wait for memory.
+[ ] SC always succeeds if the value at the address still equals the value that LL read.
+[ ] LL and SC must be separated by a context switch for the SC to succeed.
+[ ] LL/SC is mainly used on x86, where it replaces the lock prefix.
+---
+LL 讀值並記住位址，「SC 只在這段期間沒人寫過時才成功」，否則失敗重試。它不鎖匯流排；SC 看的是有沒有被寫過，不是值，所以值一樣也可能失敗；context switch 反而會讓 SC 失敗。MIPS、ARM、RISC-V 用 LL/SC，x86 用 `lock` 前綴。
+
+@q vc4-02 | co-vm-coherence#4 | 2 | 比較
+Two spin locks are compared on a 16-core machine with a write-invalidate coherence protocol. The plain version repeats an atomic test-and-set until it succeeds; the test-and-test-and-set version first spins on an ordinary read and attempts test-and-set only when the lock looks free:
+```
+plain:   while (test_and_set(&lock) == 1) ;
+ttas:    while (1) { while (lock == 1) ; if (test_and_set(&lock) == 0) break; }
+```
+With 15 cores waiting for a lock held by the 16th, the plain version generates about 50 times as much bus traffic as the other one, and the lock holder's critical section runs noticeably slower. A student wants to explain where the traffic comes from, and a classmate suggests that the plain version is slower simply because it executes more instructions per attempt, or that test-and-set is not really atomic. Which of the following statements explain why a test-and-test-and-set spin lock usually performs better than a plain test-and-set spin lock? Select all that apply.
+[x] Each test-and-set is a write, so constant retries keep invalidating the lock's block in other caches.
+[x] With test-and-test-and-set, waiting cores spin with ordinary reads on their cached copies.
+[x] A core attempts test-and-set only after it sees the lock become free.
+[ ] Plain test-and-set is not atomic, so its retries can let two cores enter together.
+[ ] Test-and-test-and-set needs fewer instructions per attempt, and that saving is where all of its gain comes from.
+---
+「每次 test-and-set 都是寫入」，不斷讓鎖的區塊在核心間 invalidate；先用「一般的讀在自己的 cache 裡等」，「看到鎖空了才 test-and-set」，平時不產生匯流排流量。test-and-set 本身是原子的；好處來自減少一致性流量，不是指令數。
+
+@q vc4-03 | co-vm-coherence#4 | 2 | 比較
+A server has 2 sockets, each with 32 cores and its own 256 GB of memory; a core reads memory attached to its own socket in about 90 ns and memory attached to the other socket in about 140 ns. A laptop, in contrast, has 8 cores that all reach a single memory in the same time, about 80 ns, and a student wonders whether a single machine with several processors must always behave like the laptop. A student classifies the two machines as UMA or NUMA and asks how the operating system should place a process's data on the server. Which of the following statements about UMA and NUMA multiprocessors are correct? Select all that apply.
+[x] In UMA, every processor takes the same time to access any memory location.
+[x] In NUMA, accessing local memory is faster than accessing remote memory.
+[x] On NUMA, the OS tries to keep a process's data in memory local to its processor.
+[ ] In NUMA, every memory location is equally fast to access, because memory is shared by all.
+[ ] Every UMA system has only one processor, which is why its access times are equal.
+---
+UMA「存取時間都一樣」；NUMA「本地比遠端快」，所以作業系統會「盡量把資料放在本地記憶體」。記憶體共用不代表一樣快；UMA 也可以有多顆處理器。
+
+@q vc4-04 | co-vm-coherence#4 | 3 | 情境
+A processor provides LL and SC for incrementing a shared integer. For this experiment, the operating system explicitly clears the processor's LL reservation whenever it switches away from a thread. Reloading the thread's general registers does not restore that reservation. An SC with an invalid reservation returns failure and leaves the addressed integer unchanged; the supplied program then restarts at LL. This is the specified implementation policy, rather than a claim about every processor architecture.
+
+| Time in ns | Action |
+|---|---|
+| 100 | The thread executes LL and reads 7 |
+| 120 | The operating system switches away |
+| 140 | The same thread resumes with its saved registers |
+| 160 | It attempts SC with the value eight |
+
+No other thread writes the integer during this interval, and the integer still contains seven immediately before the attempted SC. A debugger reports the original register value correctly after resumption. Decide what the pending SC can do under the stated reservation policy. Which statements are correct? Select all that apply.
+?? 複選
+[x] The pending SC fails without changing the integer.
+[ ] The unchanged integer value is sufficient to make this SC succeed.
+[ ] Reloading the same thread automatically restores its cleared LL reservation.
+[ ] Separating LL and SC by a context switch is an architectural error that forbids retrying.
+[ ] An SC that returns failure first writes eight and then reports the invalid reservation.
+---
+「失敗不改整數」對：題設在切走時清除 reservation，返回不恢復，SC 只能失敗。「值沒變就成功」錯：判斷的是保留記錄，不是重新比較七。「恢復執行緒也恢復保留」錯：一般暫存器與這個硬體記錄已明定分開。「切換是不可重試錯誤」錯：可重新 LL 後再嘗試。「失敗先寫八」錯：題設失敗完全不寫，整數仍是七。
+
+@q ar2-06 | co-arith#2 | 1 | 計算
+全加器輸入 $a=1$、$b=0$、$c_{in}=1$。和 $s$、進位 $c_{out}$ 各是多少？
+== 0,1
+?? s,cout
+---
+$1+0+1=2=10_2$：和 0、進位 1。公式：$s=1\oplus0\oplus1=0$；$c_{out}=ab+(a\oplus b)c_{in}=0+1\cdot1=1$。
+
+@q ar2-07 | co-arith#2 | 3 | 陷阱
+Let $g=ab$ and compare $p=a+b$ with $p'=a\oplus b$ in carry equation $c'=g+pc$. Here plus denotes Boolean OR. Which statements are correct? Select all that apply.
+[x] Either propagation definition gives the correct carry for all eight input triples.
+[x] When both data inputs are one, generate is one and masks the difference between the propagation definitions.
+[x] With XOR propagation, the sum bit is $p'\oplus c$.
+[ ] OR propagation gives the sum bit as $p\oplus c$ for all inputs.
+[ ] XOR propagation works only when the incoming carry is zero.
+---
+「兩定義進位都對」對：逐一代入八種輸入即可驗證。「兩個一由產生項決定」對：此時 OR 與 XOR 不同，但 g＝1 已使進位為一。「XOR 可算和」對：和就是 a⊕b⊕c。「OR 也能直接算和」錯：a＝b＝1、c＝0 時 p⊕c＝1，真正和位為零。「只能無進位」錯：c＝1 時也成立，例如 a＝1、b＝0 會傳出進位。
+
+@q ar2-08 | co-arith#2 | 2 | 計算
+把 carry lookahead 的 $c_4$ 完全展開（只用 $g_0..g_3$、$p_0..p_3$、$c_0$），OR 起來的有幾項？
+== 5
+---
+$c_4=g_3+p_3g_2+p_3p_2g_1+p_3p_2p_1g_0+p_3p_2p_1p_0c_0$，共 5 項：每一項代表「在第 $j$ 位產生、一路被傳上來」，加上「從 $c_0$ 一路傳上來」。一般 $c_i$ 有 $i+1$ 項，最長的 AND 有 $i+1$ 個輸入。
+
+@q ar2-09 | co-arith#2 | 2 | 追蹤
+4 位元 ripple carry 加法器算 $1011+0101$（$c_0=0$）。和 $s_3s_2s_1s_0$ 和最後的進位 $c_4$ 各是？
+== 0000,1
+?? 和,c4
+---
+第 0 位 $1+1=10_2$：和 0、進位 1；第 1 位 $1+0+1$：和 0、進位 1；第 2 位 $0+1+1$：和 0、進位 1；第 3 位 $1+0+1$：和 0、進位 1。$11+5=16=10000_2$，4 位元的和全是 0，進位出 1。這也是進位一路傳到底的例子。
+
+@q ar2-10 | co-arith#2 | 3 | 計算
+4 位元一組的 carry lookahead：$a=1100$、$b=0101$（$a_0$ 是最右邊）。這一組的群組 generate $G$ 和群組 propagate $P$ 各是多少？
+== 1,0
+?? G,P
+---
+$g=a\land b$（逐位）：$0100$；$p=a\lor b$：$1101$。$P=p_3p_2p_1p_0=1\cdot1\cdot0\cdot1=0$（第 1 位擋住，外面來的進位傳不過去）。$G=g_3+p_3g_2+p_3p_2g_1+p_3p_2p_1g_0=0+1\cdot1+0+0=1$（第 2 位自己產生、被第 3 位傳出去）。驗算 $12+5=17$，確實有進位出。
+
+@q ar2-11 | co-arith#2 | 3 | 情境
+An eight-bit adder must compute 37 minus 12 using one addition. It may invert every bit of the second operand and choose the input carry. Retain eight result bits. Which statements are correct? Select all that apply.
+[x] Inverting 12 and setting the input carry to one gives the desired result.
+[x] The retained result is 25.
+[x] Inverting 12 but setting input carry to zero instead produces 24.
+[ ] Leaving 12 unchanged and setting input carry to one computes the same difference.
+[ ] The inverted eight-bit pattern for 12 is `11110100`.
+---
+「反相加一」對：37＋(255−12)＋1 對 256 取模即 37−12。「得 25」對：37−12＝25。「少進位得 24」對：只反相少補一。「不反相也相同」錯：37＋12＋1＝50。「11110100」錯：12＝00001100，逐位反相是 11110011；錯的圖樣把反相與加一混在一起。
+
+@q ar2-12 | co-arith#2 | 3 | 計算
+4 位元二補數加法 $0111+0001$。最高位的進位 $c_4$、次高位送進最高位的進位 $c_3$，以及有沒有溢位（$c_4\oplus c_3$）？
+== 0,1,1
+?? c4,c3,溢位
+---
+$7+1=8$ 超出 4 位元二補數 $-8$～$7$，結果 $1000$ 被當成 $-8$。進位：第 0～2 位都進位，$c_3=1$；第 3 位 $0+0+1=1$ 不再進位，$c_4=0$。$c_4\ne c_3$ 代表溢位。有號數看 $c_4\oplus c_3$，不是只看 $c_4$。
+
+@q ar2-13 | co-arith#2 | 3 | 找錯
+A carry-lookahead design expands carry expressions but implements them with gates of bounded fan-in. In an ideal hierarchy, each level combines four adjacent blocks. For 64 one-bit blocks, ignore local gate constants and count only these consolidation levels. Which statements are correct? Select all that apply.
+[x] Three consolidation levels can reduce 64 blocks to one.
+[x] This hierarchical depth grows proportionally to log n when the consolidation size remains four.
+[ ] Expanding an expression allows a physical gate with any number of inputs at no delay cost under the stated model.
+[ ] Increasing the word width to 256 bits still requires only three such consolidation levels.
+[ ] The 64-bit ripple-carry path has only three serial carry stages under the same one-stage-per-bit convention.
+---
+「三層」對：64→16→4→1。「隨 log n 增加」對：每層縮成四分之一，層數為 log₄n。「任意輸入免費」錯：違反有限扇入前提，代數展開不會消除實體分層。「256 仍三層」錯：256→64→16→4→1，要四層。「漣波三階」錯：逐位傳遞的最壞路徑有 64 個位元階段。本題計的是理想組合層數，不把它直接當成某製程的實際奈秒。
+
+@q ar2-14 | co-arith#2 | 1 | 計算
+8 位元 ripple carry 加法器（最低位也用全加器）要用幾個全加器？
+== 8
+---
+每一位一個全加器，輸入是該位的 $a_i$、$b_i$ 和右邊來的進位。最低位的 $c_0$ 可以接 0（加法）或 1（減法），所以也用全加器。
+
+@q ar2-15 | co-arith#2 | 2 | 證明
+證明：全加器的進位 $c_{out}$（三個輸入裡至少兩個是 1 就進位）等於 $g+p\cdot c_{in}$，其中 $g=ab$、$p=a+b$。
+---
+「至少兩個 1」＝$ab+ac_{in}+bc_{in}=ab+(a+b)c_{in}=g+p\,c_{in}$。也可以分情況：$a=b=1$ 時 $g=1$，一定進位；$a=b=0$ 時 $g=p=0$，不進位；$a\ne b$ 時 $g=0$、$p=1$，進位等於 $c_{in}$。三種都吻合。
+
+@q ar2-16 | co-arith#2 | 3 | 計算
+An eight-bit ripple-carry adder receives `11111111`, `00000000`, and an input carry of one. Assume the data inputs have settled before the carry arrives. Which statements are correct? Select all that apply.
+[x] The incoming carry can propagate through all eight bit positions.
+[x] The retained sum is zero with output carry one.
+[x] Under a constant delay per carry stage, the longest carry path has eight stages.
+[ ] Only the highest bit position propagates the incoming carry.
+[ ] Changing the input carry from one to zero leaves all eight sum bits unchanged.
+---
+「走八位」對：每位資料都是一加零，恰可傳遞進位。「低位零、進位一」對：255＋0＋1＝256。「八階」對：依題設每位一階，從最低位進到最高位再送出。「只有最高位傳遞」錯：每一位都會傳遞。「輸入進位改零和不變」錯：沒有輸入進位時和為 255，八個和位都會改變。這個情境把進位到達時間明定，才能直接討論最長傳遞路徑。
+
+@q ar2-17 | co-arith#2 | 1 | 觀念
+carry lookahead 加法器算出來的和，跟 ripple carry 的不一樣，它只是比較快的近似。
+[ ] 對
+[x] 不對
+---
+兩個算的是同一個加法，結果完全一樣。lookahead 只是把 $c_{i+1}=g_i+p_ic_i$ 這條遞迴展開，用比較多的閘同時算出每一位的進位，換到更短的延遲。
+
+@q ar2-18 | co-arith#2 | 2 | 計算
+$a=0101$、$b=0011$、$c_0=0$。用 lookahead 算 $c_1,c_2,c_3,c_4$。
+== 1,1,1,0
+?? c1,c2,c3,c4
+---
+$g=0001$、$p=0111$（由左到右是第 3～0 位）。$c_1=g_0=1$；$c_2=g_1+p_1c_1=0+1=1$；$c_3=g_2+p_2c_2=0+1=1$；$c_4=g_3+p_3c_3=0+0=0$。驗算 $5+3=8=1000_2$，沒有進位出 ✓。
+
+@q ar2-19 | co-arith#2 | 3 | 計算
+4 位元二補數 $1101+1100$（$-3$ 加 $-4$）。結果的 4 位元、最高位進位 $c_4$、有沒有溢位？
+== 1001,1,0
+?? 結果,c4,溢位
+---
+$1101+1100=11001$，留 4 位 $1001=-7$ ✓。$c_4=1$，但 $c_3$ 也是 1（第 2 位 $1+1$ 進位到第 3 位），$c_4\oplus c_3=0$，沒有溢位。有號加法時 $c_4=1$ 不代表出錯，兩個負數相加本來就常常進位出去。
+
+@q ar2-20 | co-arith#2 | 3 | 計算
+單層 carry lookahead 算 $c_1$～$c_4$，展開式裡「含 $p$ 的 AND 項」（不算單獨的 $g_i$）一共有幾個？
+== 10
+---
+$c_1$：$p_0c_0$（1 個）；$c_2$：$p_1g_0$、$p_1p_0c_0$（2 個）；$c_3$：3 個；$c_4$：4 個。$1+2+3+4=10$。$n$ 位就是 $\frac{n(n+1)}2$ 個，閘的數量隨 $n^2$ 增加，這是單層 lookahead 做不大的原因之一。

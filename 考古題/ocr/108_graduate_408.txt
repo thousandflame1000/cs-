@@ -1,0 +1,149 @@
+=== PAGE p-1.pgm
+a5: 408 AUSeeKSISSFRAtHeesesRnrea
+
+FB: HRB) HARE: 408
+
+Hick: 8 #2 2H 1 #
+RA OMERSRASEE DAMMSRE LS " Hee )-
+
+EE (ERRA GME BH (A): RR HE (B): BMEHE 4 D> BEd 14? RAMSAR TY
+Aj0G > ldo BR IEMMAA 0 PALE °)
+
+. A binary heap may not be a complete binary tree.
+. A complete binary tree can be transformed into a heap in © (n) steps.
+
+. There is a min-heap with seven distinct elements so that the preorder traversal of it gives the elements in sorted
+order.
+
+. Arrays are inefficient for implementing dynamic sorted lists because the insert and delete operations require moving
+a quarter of the elements, on average.
+
+. Computers handle postfix notation more easily than infix notation because infix requires parentheses but postfix
+does not.
+
+. Hash tables that use separate chaining need rehashing to avoid performance degradation due to long chains.
+. Using quatratic probing to resolve hash collision, we add i? to the address upon the i-th collision.
+. Ifa binary tree has 1,000 nodes, it has a minimum height of 10. (The height of a tree with one node is 0.)
+9. If T is a BST and both the left and right subtrees of T are AVL trees, then T must be an AVL tree.
+10. The postfix expression “5 3+ 7 7-1- /” evaluates to 4.
+
+ME (B10 D> BASORARRAD SHE 2D SHG 2D He ERRMRTA 0 TAL»)
+
+11. Which of the following statements are true?
+
+(A). f(n) € O(g(n)) if and only if g(n) € 2(f (n)).
+(B). ©(9(n)) = O(g(n)) NA(g(n))
+(C). o(g(n)) = O(g(n)) - 8g (n))
+(D). w(g(n)) UO (g(n)) = Q(g (nr)
+(E). w (g(n)) NO (g(n)) = 0
+. Which of the following statements are true?
+
+(A). Performing preorder traversal on BST produces a sorted list.
+
+(B). The k-th smallest element in a BST with n elements can be found with O (n) in time.
+
+(C). Every subtree of a BST is another BST.
+
+(D). The minimal AVL tree with height 5 has 20 nodes. (The height of a tree with one node is 0.)
+
+(E). When the structure of an AVL tree changes (e.g., with insertion or deletion), one single rotation is sufficient
+to restore the AVL tree property.
+
+. A graph is a pair (V,E), where V is a set of nodes, called vertices, and £ is a collection of pairs of vertices, called
+edges. There are several ways to represent a graph, among them Adjacency Matrix and Adjacency List.
+
+« Adjacency Matrix: Let A be a matrix of size |V| x |V|. A{u,v] = 1 if there is an edge between vertex u and v,
+and 0, otherwise.
+« Adjacency List: All vertices connected to a vertex v are listed on an adjacency list for vertex v.
+
+Which of the following are correct?
+
+(A). Adjacency List is more suitable for dense graph.
+
+(B). Using Adjacency Matrix, checking edge between vertices u and v takes constant time.
+
+(C). The big advantage of BFS is that it has much lower memory requirement than DFS.
+
+(D). BFS is better in finding shortest paths than DFS.
+
+(E). Using Adjacency List, the time complexity of topological sort on a directed graph is O (|Z| + [V}).
+
+Law
+
+ 
+=== PAGE p-2.pgm
+aR: 408 MURALS RRL EFRRA
+
+FB > Bese w(B) | FOR, : 408
+HR: 8 #2 R28 28
+
+14. An algorithm is said to be insensitive to input if its running time is independent of the initial state of its input. For
+sorting algorithms, that means that the run time depends only on the number of elements to be sorted, not on their
+initial arrangement. Which sorting algorithms are insensitive to input?
+
+(A). Bubble sort.
+(B). Selection sort.
+(C). Merge sort.
+(D). Quick sort.
+(E). Radix sort.
+
+. Which of the following statements are true?
+
+(A). Hash tables are generally used in cases where insertion and deletion operations are more often than searches.
+(B). Open-addressed hash tables cannot be used if the data does not have unique keys.
+
+(C). With linear probing, searches become faster as we remove data from the hash table.
+
+(D). Both linear and quadratic probing can probe all locations in the table.
+
+(E). Double hashing resolves the clustering issue by using key-dependent probe intervals.
+
+. Which of the following statements are true?
+
+(A). An algorithm is O (log7) if it takes a constant time to cut the problem size by a fraction.
+(B). The Horner’s method of evaluating the polynominal
+p(x) = ax” + a2") + aga”? +++ + On 12 + On
+
+by ;
+
+p(x) = (---(((ao) 2 + a1) & + a2) B+ +++ + Om—1) © + On
+runs in © (n?) time.
+
+(C). The running time of the following recursive pseudo-code as a function of n is © (n°).
+
+def function(n):
+if n < 2: return
+else: counter = 0
+for i in range(1,8):
+function(n/2)
+for i in range(1,n*n*n):
+counter += 1
+
+(D). The complexity of the following function is O (nlog n).
+
+def function(n):
+count = 0
+for i in range(n/2,n):
+jad
+while j + n/2 <= n:
+k=1
+while k <= n:
+count +=
+k *= 2
+jw 2
+print (count)
+(E). The complexity of the following function is O (logn).
+
+def Function(n):
+
+i=es=i
+
+while s <n:
+it=1
+stei
+print('*')
+
+SRE AR
+
+ 
+

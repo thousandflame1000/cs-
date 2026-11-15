@@ -10,11 +10,64 @@ const Sync = {
   later(a, b, k) { return String((a || {})[k] || '') >= String((b || {})[k] || '') ? a : b; },
   minDate(a, b) { return a && b ? (a < b ? a : b) : (a || b || null); },
   byId(a, b, key = 'id') { const m = new Map(); [...(a || []), ...(b || [])].forEach(x => { const k = typeof key === 'function' ? key(x) : x && x[key]; if (k != null && !m.has(k)) m.set(k, x); }); return [...m.values()]; },
+  mergePapers(a, b) {
+    const runs = new Map((a?.runs || []).map(run => [run.id, run]));
+    for (const other of b?.runs || []) {
+      const run = runs.get(other.id);
+      if (!run) { runs.set(other.id, other); continue; }
+      for (const [paperId, remote] of Object.entries(other.papers || {})) {
+        const local = run.papers[paperId];
+        if (!local) { run.papers[paperId] = remote; continue; }
+        local.submitted = local.submitted && remote.submitted ? Math.min(local.submitted, remote.submitted) : local.submitted || remote.submitted;
+        local.scoreUpdated = local.scoreUpdated || {};
+        for (const id of new Set([...Object.keys(remote.scores || {}), ...Object.keys(remote.scoreUpdated || {})])) {
+          const missing = local.scores[id] == null && local.scoreUpdated[id] == null;
+          if (missing || (remote.scoreUpdated?.[id] || 0) > (local.scoreUpdated[id] || 0)) {
+            if (remote.scores[id] == null) delete local.scores[id];
+            else local.scores[id] = remote.scores[id];
+            local.scoreUpdated[id] = remote.scoreUpdated?.[id] || 0;
+          }
+        }
+        for (const [id, correction] of Object.entries(remote.corrections || {})) {
+          const previous = local.corrections[id];
+          if (!previous || (correction.updated || 0) > (previous.updated || 0)) local.corrections[id] = correction;
+        }
+      }
+    }
+    return { runs: [...runs.values()].sort((x, y) => String(x.id).localeCompare(String(y.id))) };
+  },
+  mergeDraft(a, b) {
+    if (!b) return a;
+    if (!a) return b;
+    if (a.sessionId === b.sessionId) return b.updated > a.updated ? b : a;
+    return a.session ? a : b.session ? b : b.updated > a.updated ? b : a;
+  },
+  replace(o, keepActive = false) {
+    const activeDraft = keepActive && location.hash === '#practice' ? S.st.practiceDraft : null;
+    const [routeName, paperId, runId] = location.hash.slice(1).split('/');
+    const oldRun = keepActive && routeName === 'papers' ? (runId ? S.st.papers114.runs.find(run => run.id === runId) : S.st.papers114.runs.at(-1)) : null;
+    const activeAttempt = oldRun?.papers[paperId];
+    S.st = Object.assign(defaultState(), o);
+    S.st.settings = Object.assign(defaultState().settings, o.settings || {});
+    if (!Array.isArray(S.st.papers114?.runs)) S.st.papers114 = { runs: [] };
+    if (!S.st.practiceDraft) S.st.practiceDraft = defaultState().practiceDraft;
+    if (activeDraft?.session) S.st.practiceDraft = activeDraft;
+    if (activeAttempt) {
+      const run = S.st.papers114.runs.find(run => run.id === oldRun.id);
+      const merged = run?.papers[paperId];
+      if (merged) { Object.assign(activeAttempt, merged); run.papers[paperId] = activeAttempt; }
+    }
+    Practice.restoreChecked = true;
+    Practice.restore();
+    S.saveNow(); QBANK.build(); Personal.apply();
+  },
 
   /* 把 o（另一台裝置的狀態）合併進 s（本機），回傳新狀態；本機設定保留 */
   merge(s, o) {
     if (!o || o.v !== 1) throw new Error('不是有效的進度檔');
     const r = JSON.parse(JSON.stringify(s));
+    r.papers114 = this.mergePapers(r.papers114, o.papers114);
+    r.practiceDraft = this.mergeDraft(r.practiceDraft, o.practiceDraft);
     // 作答：同一題取最後作答較新的那份（同日取作答次數多的）
     for (const [q, b] of Object.entries(o.answers || {})) {
       const a = r.answers[q];
@@ -33,7 +86,8 @@ const Sync = {
     for (const [d, b] of Object.entries(o.log || {})) {
       const a = r.log[d]; if (!a) { r.log[d] = b; continue; }
       for (const k of ['min', 'q', 'c', 'cards', 'newCards', 'gens', 'stars']) if (b[k] != null) a[k] = Math.max(a[k] || 0, b[k]);
-      for (const k of ['lessons', 'labs', 'feyn', 'mocks', 'weakDone']) if (b[k]) a[k] = [...new Set([...(a[k] || []), ...b[k]])];
+      for (const k of ['lessons', 'labs', 'feyn', 'mocks', 'weakDone', 'kpDone']) if (b[k]) a[k] = [...new Set([...(a[k] || []), ...b[k]])];
+      if (b.kp) { const seen = new Set((a.kp || []).map(x => x.t + '|' + x.k + '|' + x.type)); a.kp = [...(a.kp || []), ...b.kp.filter(x => !seen.has(x.t + '|' + x.k + '|' + x.type))].sort((x, y) => x.t - y.t); }
       if (b.checkin && (!a.checkin || (b.checkin.full && !a.checkin.full))) a.checkin = b.checkin;
       for (const k of ['blurt', 'frozen', 'commit', 'minMode']) if (b[k] && !a[k]) a[k] = b[k];
     }
@@ -58,6 +112,13 @@ const Sync = {
     r.dict = Object.assign({}, r.dict || {}); for (const [k, v] of Object.entries(o.dict || {})) { const a = r.dict[k]; if (!a || (v && (v.date || '') > (a.date || ''))) r.dict[k] = v; }
     for (const [k, v] of Object.entries(o.wrongNotes || {})) if (v && v.length > (r.wrongNotes[k] || '').length) r.wrongNotes[k] = v;
     r.clipSeen = Object.assign({}, o.clipSeen || {}, r.clipSeen || {});
+    // 憑記憶畫圖取日期較新的那次；先認方法的統計取做得多的那台
+    r.draws = Object.assign({}, r.draws || {}); for (const [k, v] of Object.entries(o.draws || {})) { const a = r.draws[k]; if (!a || (v && (v.d || '') > (a.d || ''))) r.draws[k] = v; }
+    if (o.mpick && (!r.mpick || (o.mpick.n || 0) > (r.mpick.n || 0))) r.mpick = o.mpick;
+    if (o.palace && (!r.palace || (o.palace.ts || 0) > (r.palace.ts || 0))) r.palace = o.palace;
+    r.act = Object.assign({}, r.act || {}); for (const [d, row] of Object.entries(o.act || {})) { const a = r.act[d]; r.act[d] = !a ? row : a.map((m, h) => Math.max(m || 0, row[h] || 0)); }
+    r.daily = Object.assign({}, r.daily || {}); for (const [d, v] of Object.entries(o.daily || {})) { const a = r.daily[d]; if (!a || (v && (v.ts || 0) > (a.ts || 0))) r.daily[d] = v; }
+    r.xpSeen = Object.assign({}, o.xpSeen || {}, r.xpSeen || {});
     r.seen = Object.assign({}, o.seen || {}, r.seen || {});
     for (const [d, list] of Object.entries(o.agentTasks || {})) if (!r.agentTasks[d]) r.agentTasks[d] = list; else list.forEach((t, i) => { if (t.done && r.agentTasks[d][i]) r.agentTasks[d][i].done = true; });
     // 獎勵：兌換紀錄聯集，花費取兩邊與紀錄總和的最大值
@@ -72,16 +133,23 @@ const Sync = {
         shop: this.byId(a.shop, b.shop), chests: (a.chests || []).length >= (b.chests || []).length ? a.chests : b.chests,
       });
     }
+    // 知識點（課程主線）：取比較前進的那份——學會＞練＞例＞教，同階段取做得多的（2026-11-14 以前沒合併，手機和電腦的上課進度會互相蓋掉）
+    r.kp = Object.assign({}, r.kp || {});
+    const KST = { teach: 0, ex: 1, prac: 2, done: 3 }, lv = x => !x ? -1 : x.done ? 3 : (KST[x.stage] || 0), amt = x => (x.att || []).length * 1000 + (x.i || 0) * 10 + (x.ex || 0) * 3 + (x.es || 0) + (x.pq || 0);
+    for (const [k, b] of Object.entries(o.kp || {})) { const a = r.kp[k]; if (!a || lv(b) > lv(a) || (lv(b) === lv(a) && amt(b) > amt(a))) r.kp[k] = b; }
     r.onboarded = !!(s.onboarded || o.onboarded);
+    // 筆記：同一則取比較新改的（刪除是墓碑，也算一次修改）
+    r.notes = Object.assign({}, r.notes || {}); for (const [id, b] of Object.entries(o.notes || {})) { const a = r.notes[id]; if (!a || (b.up || 0) > (a.up || 0)) r.notes[id] = b; }
     r.device = s.device; r.mergedFrom = [...new Set([...(s.mergedFrom || []), o.device].filter(Boolean))];
     return r;
   },
 
-  apply(o, label) {
+  apply(o, label, keepActive = false) {
     const before = Object.keys(S.st.answers).length;
-    S.st = Object.assign(defaultState(), this.merge(S.st, o)); S.saveNow(); QBANK.build();
+    const keepsDraft = S.st.practiceDraft?.session && o.practiceDraft?.session && S.st.practiceDraft.sessionId !== o.practiceDraft.sessionId;
+    this.replace(this.merge(S.st, o), keepActive);
     const gained = Object.keys(S.st.answers).length - before;
-    toast(`${label}：已合併${gained > 0 ? `（多了 ${gained} 題紀錄）` : ''}`, 'good');
+    toast(`${label}：已合併${gained > 0 ? `（多了 ${gained} 題紀錄）` : ''}${keepsDraft ? '。保留本機這回草稿，接手檔案草稿請用「用檔案覆蓋」' : ''}`, 'good');
   },
 
   /* ---------- 檔案 ---------- */
@@ -110,15 +178,18 @@ const Sync = {
     } catch (e) { return; }
     if (!o) { if (!txt || !txt.trim().startsWith('{')) return; try { o = JSON.parse(txt); } catch (e) { return; } }
     if (!o || o.v !== 1) return;
-    const fresh = !Object.keys(S.st.answers).length && !Object.keys(S.st.log).length;
-    if (fresh) { S.st = Object.assign(defaultState(), o, { device: null }); this.ensureDevice(); S.saveNow(); QBANK.build(); toast('已從 bridge 還原進度', 'good'); return; }
-    if (o.device && o.device !== S.st.device) this.apply(o, '另一台裝置的進度');
+    // 新瀏覽器：第一個畫面可能已經建了今天的空紀錄（例如直接打開 #practice），那也算沒進度，要整份還原，不能拿空的進度去合併再寫回（2026-11-14 修）
+    const busy = Object.values(S.st.log || {}).some(d => d && ((d.q || 0) > 0 || (d.min || 0) >= 1 || (d.kpDone || []).length || (d.kp || []).length || d.checkin || (d.lessons || []).length));
+    const fresh = !Object.keys(S.st.answers).length && !busy && !Object.keys(S.st.kp || {}).some(k => (S.st.kp[k].att || []).length || S.st.kp[k].done || (S.st.kp[k].i || 1) > 1) && !S.st.papers114.runs.length && !S.st.practiceDraft.session;
+    if (fresh) { this.replace(Object.assign({}, o, { device: null })); this.ensureDevice(); toast('已從 bridge 還原進度', 'good'); return; }
+    if (o.device && o.device !== S.st.device) this.apply(o, '另一台裝置的進度', true);
   },
   /* 指紋：用來判斷「合併後是否比對方多東西」，多了才寫回，避免兩台裝置互相覆寫個沒完 */
   fp(st) {
     const A = Object.values(st.answers || {}), L = Object.values(st.log || {}), R = Object.values(st.srs || {}), Ls = Object.values(st.lessons || {});
     return [A.length, A.reduce((t, a) => t + (a.n || 0), 0), R.length, R.reduce((t, a) => t + (a.reps || 0), 0), L.length, L.reduce((t, d) => t + (d.q || 0) + (d.min || 0) + (d.cards || 0), 0),
-      Ls.filter(x => x.read).length, Ls.reduce((t, x) => t + (this.GATE[x.gate || 'none'] || 0), 0), (st.msgs || []).length, (st.agentQuiz || []).length, (st.rw || {}).spent || 0].join('|');
+      Ls.filter(x => x.read).length, Ls.reduce((t, x) => t + (this.GATE[x.gate || 'none'] || 0), 0), (st.msgs || []).length, (st.agentQuiz || []).length, (st.rw || {}).spent || 0,
+      JSON.stringify(st.papers114 || {}), st.practiceDraft?.updated || 0].join('|');
   },
   seenTs: 0, pulling: false,
   /* 手機和電腦輪流用：發現 bridge 上是另一台裝置的新進度就合併進來（安靜地） */
@@ -127,7 +198,7 @@ const Sync = {
     try {
       const o = await Bridge.foreignState(); if (!o) return;
       const before = this.fp(S.st), merged = this.merge(S.st, o);
-      S.st = Object.assign(defaultState(), merged); S.saveNow(); QBANK.build();
+      this.replace(merged, true);
       if (this.fp(S.st) !== before) { toast('已合併另一台裝置的進度', 'good'); const r = location.hash.slice(1) || 'go'; if (['go', 'stats', 'today', 'rewards', 'cards', 'feed', 'wrong'].includes(r) && !document.querySelector('.modal')) try { route(); } catch (e) { } }
       if (this.fp(S.st) !== this.fp(o)) Bridge.queueSync();
     } catch (e) { /* 下次再試 */ } finally { this.pulling = false; }

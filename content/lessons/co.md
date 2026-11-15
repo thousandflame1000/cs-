@@ -164,13 +164,14 @@ title: 指令集與單週期／多週期資料路徑
 est: 130
 recall:
 - MIPS 的 R、I、J 格式各欄位；beq 與 j 的目標位址怎麼算？可跳多遠？
+- RISC-V 的 R、I、S 格式各欄位怎麼排？跟 MIPS 差在哪（opcode 位置、分支怎麼算、有沒有延遲槽、呼叫慣例）？
 - 單週期資料路徑中 R 型、lw、sw、beq 的控制訊號。
 - 為什麼單週期的時脈由 lw 決定？
 - 某個控制訊號卡在 0（stuck-at-0）時，哪些指令會出錯？
 - 多週期實作中各類指令要幾個週期？
-feynman: 帶著一條 lw $t0, 8($s1) 走一遍單週期資料路徑：依序說出它經過哪些元件、每個元件做什麼、控制訊號 RegDst、ALUSrc、MemtoReg、RegWrite、MemRead、MemWrite、Branch 各設成多少以及為什麼。最後用 COD 的延遲數字（記憶體 200 ps、暫存器檔 100 ps、ALU 200 ps）說明為什麼它決定了整個處理器的時脈週期。
+feynman: 帶著一條 lw `$t0`, 8(`$s1`) 走一遍單週期資料路徑：依序說出它經過哪些元件、每個元件做什麼、控制訊號 RegDst、ALUSrc、MemtoReg、RegWrite、MemRead、MemWrite、Branch 各設成多少以及為什麼。最後用 COD 的延遲數字（記憶體 200 ps、暫存器檔 100 ps、ALU 200 ps）說明為什麼它決定了整個處理器的時脈週期。
 rubric:
-- 取指令（指令記憶體）→ 讀暫存器 $s1（rs）→ ALU 算 $s1 + 符號延伸(8) → 資料記憶體讀取 → 寫回 $t0（rt）
+- 取指令（指令記憶體）→ 讀暫存器 `$s1`（rs）→ ALU 算 `$s1` + 符號延伸(8) → 資料記憶體讀取 → 寫回 `$t0`（rt）
 - RegDst=0（目的暫存器是 rt）、ALUSrc=1（第二運算元是立即值）
 - MemtoReg=1（寫回資料來自記憶體）、RegWrite=1、MemRead=1、MemWrite=0、Branch=0
 - 它用到五個階段：200+100+200+200+100 = 800 ps，是所有指令中最長的路徑
@@ -192,6 +193,22 @@ rubric:
 > - `j`：$\{(PC+4)[31:28],\ address,\ 00\}$，只能跳到同一個 256 MB 區塊內。
 > - RISC-V：分支 $PC+\text{imm}$（imm 以 2 bytes 為單位）、`jal` 有 20 位元立即值。
 > - 定址模式：立即、暫存器、base＋displacement、PC 相對、pseudo-direct。
+
+> [!考點] MIPS ↔ RISC-V 對照
+> - 暫存器：MIPS `$0`～`$31`（`$zero`）；RISC-V `x0`～`x31`，`x0` 恆為 0。ABI 名：`ra`=x1、`sp`=x2、`a0`～`a7` 參數／回傳、`t0`～`t6` 呼叫者保存、`s0`～`s11` 被呼叫者保存。
+> - 格式：MIPS R/I/J，op 在最高 6 位元；RISC-V R/I/S/B/U/J，opcode 在最低 7 位元，再加 funct3、funct7。
+> - 欄位順序（高→低）：R `funct7|rs2|rs1|funct3|rd|opcode`；I `imm[11:0]|rs1|funct3|rd|opcode`；S `imm[11:5]|rs2|rs1|funct3|imm[4:0]|opcode`（立即值拆開，讓 rs1、rs2 位置固定）。
+> - 分支：MIPS $PC+4+imm\times4$、有延遲槽；RISC-V $PC+imm$（imm 以 2 bytes 為單位，B 型 ±4 KB）、**沒有延遲槽**。
+> - 呼叫：MIPS `jal`／`jr $ra`；RISC-V `jal ra, f`／`jalr x0, 0(ra)`（即 `ret`）。
+> - 載入常數：MIPS `lui`＋`ori`；RISC-V `lui`＋`addi`，`addi` 的立即值會符號延伸，低 12 位元 ≥ `0x800` 時 `lui` 要多加 1。
+> - RV64：`ld`／`sd` 存取 8 bytes，`lw`／`sw` 存取 4 bytes。
+
+> [!陷阱] RISC-V 常見敘述
+> - 「RISC-V 的 opcode 在指令的最高位元」✗（在最低 7 位元）。
+> - 「RISC-V 的 beq 目標是 PC+4 加位移」✗（從分支自己的 PC 算）。
+> - 「RISC-V 有分支延遲槽」✗（沒有）。
+> - 「RISC-V 的 sw 立即值被拆成兩段」✓（imm[11:5] 和 imm[4:0]）。
+> - 「寫入 x0 的結果會被丟掉」✓（x0 恆為 0）。
 
 ## 2. 單週期資料路徑
 

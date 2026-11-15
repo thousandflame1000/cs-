@@ -1,0 +1,3339 @@
+
+@q pr1-25 | os-process#1 | 3 | 追蹤
+A single CPU runs processes $P_1,P_2,P_3$. At time 0 all three are ready and the scheduler runs $P_1$. At time 3, $P_1$ requests a disk read and the scheduler runs $P_2$. At time 5, $P_2$'s time slice expires and the scheduler runs $P_3$. At time 6, $P_1$'s disk read completes; the scheduler does not switch processes when an I/O completes. Which of the following statements about time 7 are correct? Select all that apply.
+[x] $P_1$ is ready.
+[ ] $P_1$ is waiting, because it was not given the CPU after its disk read completed.
+[x] $P_2$ is ready.
+[ ] $P_2$ is waiting, because its time slice expired.
+[x] $P_3$ is running.
+---
+「$P_1$ ready」對：讀檔完成只把 $P_1$ 從 waiting 移到 ready；題目說完成時不換行程，所以 $P_3$ 繼續跑。
+
+「$P_1$ 還在 waiting」錯：waiting 是「在等事件」，事件已經發生了；沒拿到 CPU 的就是 ready。
+
+「$P_2$ ready」對：時間片用完被換下，隨時可以再跑，回到 ready。
+
+「$P_2$ waiting」錯：它沒有在等任何事件。
+
+「$P_3$ running」對：單核 CPU 同一時間只有一個 running。
+
+
+@q pr1-26 | os-process#1 | 1 | 計算
+4 核心的 CPU，系統有 30 個行程，其中 6 個在等 I/O，每個核心都正在跑一個行程，其他行程都準備好了。ready 佇列裡有幾個？
+== 20
+---
+4 核心同時最多 4 個 running；waiting 6 個；剩下 $30-4-6=20$ 個都是 ready。單核時 running 只有 1 個，多核時有幾個核就最多幾個。
+
+
+@q pr1-27 | os-process#1 | 2 | 觀念
+每個行程的 PCB 通常放在哪裡？
+[x] 核心的記憶體裡，使用者程式不能直接讀寫
+[ ] 行程自己的堆疊上，跟區域變數放一起
+[ ] 磁碟上，要 context switch 時才讀進來
+[ ] CPU 的暫存器裡
+---
+PCB 記錄行程的狀態、暫存器、優先權、開了哪些檔案等，作業系統靠它管理行程；如果使用者程式能改，就能偷改自己的優先權或權限。context switch 時要立刻讀到它，所以放在記憶體不放磁碟；暫存器太少，放不下所有行程的資料。
+
+
+@q sy2-25 | os-sync#2 | 3 | 找錯
+A student writes Peterson's solution for processes $P_0$ and $P_1$ but sets `turn` to itself instead of to the other process. Process $P_i$ (with $j = 1 - i$) runs:
+`flag[i] = true; turn = i; while (flag[j] && turn == j) ;  /* critical section */  flag[i] = false;`
+Initially both flags are false. Which of the following statements are correct? Select all that apply.
+[x] Mutual exclusion can be violated: if $P_0$ runs its first three statements and enters its critical section, and then $P_1$ runs its first three statements, $P_1$ also enters.
+[ ] The code is still correct; the change only makes it less fair.
+[x] If the statements run in the order `flag[0] = true`, `flag[1] = true`, `turn = 0`, `turn = 1`, then $P_1$ enters its critical section while $P_0$ waits.
+[ ] Both processes can be stuck in their `while` loops forever.
+[x] In the correct algorithm (`turn = j`), when both processes want to enter, the one that writes `turn` last is the one that waits.
+---
+「互斥會被破壞」對：$P_0$ 進去後 `flag[0]`＝true、`turn`＝0。$P_1$ 設 `turn = 1`，檢查 `flag[0] && turn == 0`，`turn` 剛被自己改成 1，條件不成立，直接進去，兩人同時在臨界區。
+
+「還是正確」錯：如上。
+
+「依序 flag、flag、turn=0、turn=1 時 $P_1$ 進去、$P_0$ 等」對：最後 `turn`＝1。$P_0$ 檢查 `flag[1] && turn == 1` 為真，等；$P_1$ 檢查 `flag[0] && turn == 0` 為假，進去。也就是錯誤版本是「最後寫的人進去」，剛好跟原版相反。
+
+「兩人可能一起卡在 while」錯：$P_0$ 等的條件需要 `turn`＝1，$P_1$ 等的條件需要 `turn`＝0，`turn` 不可能同時是兩個值，所以至少一人能進去。
+
+「原版最後寫 `turn` 的人等」對：寫 `turn = j` 是「讓給對方」，最後讓的那個人讓成功，自己等。
+
+
+@q sy2-26 | os-sync#2 | 2 | 情境
+Two processes $P_0$ and $P_1$ use Peterson's solution on a single-core CPU. While $P_0$ is in its critical section, its time slice expires and $P_1$ is scheduled. $P_1$ also wants to enter its critical section. Which of the following statements are correct? Select all that apply.
+[x] $P_1$ spends its whole time slice spinning in the `while` loop.
+[x] $P_0$ can leave its critical section only after it is scheduled again.
+[ ] The operating system notices that $P_1$ is waiting for $P_0$ and blocks $P_1$ automatically.
+[ ] $P_1$ enters its critical section, because $P_0$ is not running on the CPU.
+[x] On a single core, a lock that puts a waiting process to sleep instead of spinning avoids wasting $P_1$'s time slice.
+---
+「整個時間片都在空轉」對：Peterson 是忙碌等待，`flag[0]` 是 true、`turn` 是 0，條件一直成立。
+
+「$P_0$ 要等下次被排到才能出來」對：單核時 $P_0$ 不跑，就不可能執行離開臨界區的那一行。
+
+「作業系統自動讓 $P_1$ 睡」錯：作業系統不知道那個 while 迴圈在等誰，只看到 $P_1$ 在執行。
+
+「$P_0$ 不在 CPU 上所以 $P_1$ 能進」錯：互斥看的是共享變數，不是誰在 CPU 上；$P_0$ 的旗子還舉著。
+
+「會讓出 CPU 的鎖比較好」對：等不到就睡（例如號誌），把 CPU 讓給 $P_0$ 盡快做完。所以單核上很少用自旋。
+
+
+@q sy2-27 | os-sync#2 | 2 | 陷阱
+用 Peterson 演算法時，P0 進了臨界區之後因為 bug 卡在無窮迴圈裡、永遠不出來。P1 想進臨界區會怎樣？這算 Peterson 違反了哪一個條件嗎？
+[x] P1 永遠等下去；但不算違反，因為三個條件都假設臨界區會在有限時間內做完
+[ ] P1 等一段時間後會自動進去，這是 bounded waiting 保證的
+[ ] P1 會進去，因為 turn 會輪到它
+[ ] P1 永遠等下去，代表 Peterson 違反了互斥
+---
+bounded waiting 和 progress 都是在「每個行程在臨界區只待有限時間」的前提下講的。P0 不出來，flag[0] 一直是 true、turn 也停在 0，P1 的 while 永遠成立。這是 P0 的 bug，不是演算法的錯；而且互斥從頭到尾都成立。
+
+
+@q vm1-24 | os-vm#1 | 3 | 陷阱
+Someone says: "Every page fault must read a page from disk." Which of the following statements are correct?
+[x] The page may already be in memory, for example a shared library page loaded by another process.
+[x] A blank page touched for the first time only needs a zero-filled frame.
+[x] Faults that need no I/O are called minor faults.
+[x] Faults that must read the disk are called major faults.
+[x] Only major faults cost milliseconds.
+---
+page fault 只代表這個行程的頁表這一項現在不能用：頁可能「早就在記憶體裡」，只要把頁表指過去；第一次碰到的空白頁只要「配一個填 0 的 frame」。不需要 I/O 的叫「minor fault」，要讀磁碟的叫「major fault」，「只有後者是幾 ms 的代價」。五句都對。
+
+
+@q vm1-25 | os-vm#1 | 3 | 計算
+一條指令本身剛好跨兩頁；它從一個跨兩頁的運算元 A 讀資料，寫到另一個跨兩頁的運算元 B。所有相關的頁一開始都不在記憶體、frame 夠用。執行這一條指令最多會發生幾次 page fault？
+== 6
+---
+指令 2 頁、A 2 頁、B 2 頁，互不相同時共 6 頁，每頁第一次碰到各缺一次。這也決定了「每個行程至少要分到幾個 frame」：少於 6 個時，載入後面的頁會把前面的換掉，這條指令永遠做不完。
+
+
+@q vm3-24 | os-vm#3 | 2 | 情境
+Which of the following programs is likely to have a very large working set?
+?? 複選
+[x] A program that reads and writes random positions of a 2 GB table
+[ ] A program that scans a 2 GB array once from start to end, reading each element once
+[ ] A program that computes one million times on a 4 KB array
+[ ] A function that calls itself 20 levels deep, using only a few variables per level
+[ ] A program that repeatedly reads the same 100 KB configuration table
+---
+工作集是「最近一段時間碰到的頁」。「隨機存取 2 GB」最近碰到的頁幾乎都不一樣，工作集很大。依序掃描雖然碰到很多頁，任何一小段時間只用到眼前一兩頁；小陣列、淺遞迴、反覆讀同一張小表都只佔少數幾頁。
+
+
+@q vm3-25 | os-vm#3 | 3 | 計算
+系統在 thrashing：每個行程每跑 1 ms 就缺頁一次；換頁的磁碟一次只能處理一個缺頁，每次 8 ms。不管同時有多少個行程，CPU 使用率最多是幾 %？
+== 12.5
+---
+每 8 ms 磁碟最多送回一頁，也就只有一個行程能拿到頁、再跑 1 ms。所以每 8 ms 裡 CPU 最多忙 1 ms，$1/8=12.5\%$。行程再多也只是在磁碟前面排隊，這就是「加行程反而更慢」的原因。
+
+
+@q dl2-25 | os-deadlock#2 | 1 | 比較
+下面四種做法，哪一個屬於「死結避免」？
+[x] 每次配置資源前先模擬，確定給了之後所有行程仍有辦法依某個順序做完才給
+[ ] 規定所有資源都要依編號由小到大申請
+[ ] 定期在等待圖上找環，找到就終止其中一個行程
+[ ] 什麼都不做，系統卡住就請使用者重開機
+---
+依序是避免、預防（破除循環等待）、偵測＋復原、忽略（鴕鳥）。避免和預防的差別：預防是事先立規矩，讓四個條件之一永遠不成立；避免是不立規矩，每次申請時才看會不會走進危險區。
+
+
+@q dl4-25 | os-deadlock#4 | 2 | 情境
+資料庫用 wait-die 規則：時間戳記越小越老。老交易要等年輕交易手上的鎖時就等；年輕交易要等老交易手上的鎖時，自己放棄（rollback）重來。T1（時間戳記 5）和 T2（時間戳記 10）。T2 申請 T1 拿著的鎖時會怎樣？
+[x] T2 是年輕的，自己 rollback 重來
+[ ] T2 等 T1 放掉鎖
+[ ] T1 被強迫 rollback，把鎖讓給 T2
+[ ] 兩個都 rollback
+---
+wait-die 只允許「老等年輕」，所以等待邊永遠從小時間戳記指向大的，不可能繞成環。被強迫 rollback 的是「年輕的申請者」；wound-wait 剛好反過來，是老的申請者把年輕的持有者 rollback。
+
+
+@q dl4-26 | os-deadlock#4 | 3 | 陷阱
+wait-die 或 wound-wait 中，被 rollback 的交易重新開始時，要沿用**原本**的時間戳記，不能換一個新的。為什麼？
+[x] 沿用舊的，它會越來越「老」，終究不會再被犧牲；換新的可能每次都是最年輕的，一直被 rollback 而飢餓
+[ ] 換新的會讓等待邊形成環，造成死結
+[ ] 時間戳記存在唯讀的地方，換不了
+[ ] 沒有差別，只是習慣
+---
+兩種規則都是「年輕的吃虧」。其他交易做完離開後，沿用舊戳記的交易遲早成為最老的那個，就不會再被 rollback。若每次重來都拿新戳記，它永遠是最年輕的，可能無限次被犧牲。換戳記不會造成死結，因為規則本身已保證等待只朝一個方向。
+
+
+@q me1-24 | os-memory#1 | 3 | 情境
+A loader binds addresses at load time: when it loads an image at base 10000, it patches every logical reference in the code, so the logical reference 500 becomes the absolute address 10500 in the loaded instruction. Later, the running image is saved to storage, together with all of its patched instructions, and then restored at base 20000 because the old region is in use. The system has no execution-time translation, and the restore routine copies the bytes without patching them again. The program then reads the variable through the patched instruction. Which of the following statements are correct? Select all that apply.
+[x] The intended corresponding data are now at address 20500.
+[x] The retained reference still designates address 10500.
+[ ] The new loading location alone makes hardware add another 10000 to every access.
+[ ] Without execution-time translation, bringing the image back at a different base can never be made correct.
+[ ] Load-time patching permits an unchanged absolute reference to follow arbitrary later moves automatically.
+---
+「20500」對：20000＋500。「仍 10500」對：保留的絕對位址沒改。「硬體自動再加」錯：題設沒有執行時轉換。「沒有執行時轉換就不可能修好」錯：把影像放回原址，或在還原時重新修補已存的位址，都能讓參照與位置一致。「任意搬動自動跟上」錯：載入時改一次，不等於每次存取都重新轉換。
+
+
+@q me1-25 | os-memory#1 | 1 | 計算
+50 個行程都用到同一個 2 MB 的函式庫。靜態連結時每個行程各帶一份；用共享的動態函式庫時，記憶體裡只放一份程式碼。大約省下多少 MB？
+== 98
+---
+靜態連結 $50\times2=100$ MB，共享只要 2 MB（各行程自己的資料區另計），省 98 MB。代價是要能在執行時找到並載入函式庫，版本不合也會出問題。
+
+
+@q me1-26 | os-memory#1 | 3 | 陷阱
+Use these definitions: dynamic loading brings a routine's code into memory only when it is first needed, and dynamic linking resolves a program's references to separately supplied code, such as a shared library, only when they are first used. A program of 300 KiB calls a 20 KiB routine from a shared library that 5 other programs also use; at start-up, the routine is not yet in memory, and the call instruction does not yet know the routine's entry address. On the first call, the system brings the routine in from storage and then fills in the entry address used by the call. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Bringing the 20 KiB routine into memory is a linking action, since it makes the routine usable.
+[ ] Resolving the call to the routine's actual entry address is a loading action.
+[ ] Merely resolving a call proves that another 20 KiB code copy must always be created.
+[x] Code already present in memory may still have unresolved references that need binding.
+[ ] Loading and linking are identical actions under the definitions given.
+---
+「帶入記憶體是連結」錯：依題目定義，把程式碼帶入記憶體是**載入**。「決定呼叫目標是載入」錯：處理參照與目標的對應是**連結**。「必再複製 20 KiB」錯：連結不等於新增一份內容，已有程式碼可能直接使用。「內容在但參照未解」對：兩項工作可在不同時機完成。「兩者相同」錯：不能把延後載入與延後綁定混成同一概念。
+
+
+@q me2-25 | os-memory#2 | 2 | 追蹤
+記憶體由低到高依序是：P1 用 100 KB、空 50 KB、P2 用 80 KB、空 40 KB、P3 用 60 KB。P2 結束、釋放記憶體，作業系統會把相鄰的空洞合併。之後最大的空洞多大（KB）？
+== 170
+---
+P2 的 80 KB 前後都是空洞，三塊連在一起：$50+80+40=170$。不合併的話會變成三個小空洞，就算總量夠也放不下 150 KB 的請求。
+
+
+@q me2-26 | os-memory#2 | 3 | 比較
+A memory allocator keeps an unsorted list of free holes with sizes 80, 100, 20, and 200 KiB, in that order, and a request for 60 KiB must be placed entirely inside one hole. First-fit stops at the first hole that is large enough, while best-fit must choose a smallest hole that is large enough; there is no auxiliary index sorted by size. A student counts how many holes each policy must inspect for this list, and asks what best-fit could do if it happened to find a hole of exactly 60 KiB in some other list. Which of the following statements are correct? Select all that apply.
+[x] First-fit can stop after inspecting the first hole.
+[x] A full scan establishes that the 80 KiB hole is best-fit for this list.
+[x] Best-fit cannot choose the 20 KiB hole, even though it is the smallest hole overall.
+[x] In a different list, finding a hole of exactly 60 KiB can establish an optimal fit without inspecting remaining holes.
+[x] Best-fit leaves 20 KiB in its selected 80 KiB hole.
+---
+「first-fit 看第一個就停」對：80 放得下 60。「全掃可確定 80 最佳」對：其餘夠大的洞為 100 與 200。「不能選 20」對：它雖最小，卻放不下。「恰好大小可提前停」對：任何合格洞都不可能比請求還小，找到剛好者已無更佳剩餘量。「剩 20」對：80−60＝20。五句都對。
+
+
+@q me2-27 | os-memory#2 | 3 | 反例
+A contiguous allocator keeps 2 free holes in address order, of 150 and 100 KiB. Requests arrive as 50, 100, and 100 KiB; the chosen hole is split, memory is never compacted, and the simulation stops at the first request that cannot be placed. A student simulates first-fit and best-fit, writing down the remaining holes after every request, and a classmate claims that best-fit always succeeds whenever first-fit succeeds, because it wastes less space, and the student wants to test that claim on this small example by hand. Which of the following statements are correct? Select all that apply.
+[x] First-fit satisfies all three requests.
+[x] Best-fit fails on the third request.
+[ ] Immediately before its failure, best-fit has 150 KiB free in total.
+[ ] Best-fit always succeeds whenever first-fit succeeds.
+[ ] First-fit initially places the 50 KiB request in the 100 KiB hole.
+---
+「first-fit 全過」對：先把 150 切成 100，再用這個 100，最後用原來第二個 100。「best-fit 第三筆失敗」對：50 先用 100 剩 50，下一筆用 150 剩 50，最後沒一個洞放得下 100。「失敗前共 150」錯：剩兩個 50，共 100，卻無法直接合併。「best-fit 永遠不差」錯：本例就是反例。「first-fit 先用 100」錯：地址順序第一個夠大的洞是 150。
+
+
+@q me1-27 | os-memory#1 | 3 | 情境
+兩個行程跑同一個編輯器，程式碼 1 MB、執行時不會被改，資料各自不同。硬體只有一組 base／limit 時，兩個行程能不能共用同一份程式碼？如果改成「程式碼一組、資料一組」兩組 base／limit 呢？
+[x] 一組時不行、兩組時可以
+[ ] 兩種都可以
+[ ] 一組時可以、兩組時反而不行
+[ ] 兩種都不行，程式碼一定要各放一份
+---
+一組 base／limit 時，每個行程的位址空間是一整塊連續的實體記憶體，程式碼和資料綁在一起，兩個行程的區塊不能重疊，只好各放一份程式碼。分成兩組後，兩個行程的「程式碼 base」可以指向同一塊實體記憶體，資料 base 各指各的；這正是分段的雛形。
+
+
+
+@q dl1-25 | os-deadlock#1 | 2 | 計算
+5 個行程共用同一種資源（例如磁帶機），每個行程同時最多需要 3 台。系統至少要有幾台，才保證不管怎麼申請都不會死結？
+== 11
+---
+最壞情況是每個行程都拿到 2 台、還差 1 台，共用掉 $5\times2=10$ 台而大家都在等。只要再多 1 台，某個行程就能湊滿 3 台做完、釋放資源，其他人接著做完。所以至少 $5\times(3-1)+1=11$ 台。
+
+
+@q dl1-26 | os-deadlock#1 | 3 | 計算
+系統有 6 台同一種資源，每個行程同時最多需要 2 台。最多可以同時有幾個行程，還保證絕對不會死結？
+== 5
+---
+$n$ 個行程最壞各拿 1 台、各等 1 台，需要 $n+1\le6$ 台才保證有人能湊滿，所以 $n\le5$。第 6 個行程加進來後，6 個人各拿 1 台就可能全部卡住。
+
+
+@q sy3-25 | os-sync#3 | 3 | 計算
+4 條執行緒同時用「讀出 old → `compare_and_swap(&x, old, old+1)`，失敗就重讀再試」對 `x` 加 1。最壞情況下，4 條執行緒加起來總共呼叫幾次 CAS？
+== 10
+---
+最壞時每一輪大家都讀到同一個值，只有一條 CAS 成功、其他都失敗重來：第一輪 4 次、第二輪 3 次、第三輪 2 次、最後 1 次，共 $4+3+2+1=10$。$n$ 條時是 $\frac{n(n+1)}2$，競爭激烈時 CAS 迴圈會浪費很多次；`fetch_and_add` 一次就保證成功。
+
+
+@q sc1-26 | os-sched#1 | 2 | 計算
+輪流執行、每次最多跑 2 個單位（新到的行程排在被換下的行程前面）。A（到達 0、執行 5）、B（1、3）、C（2、1）。平均回應時間（第一次拿到 CPU 的時間－到達時間）是多少？
+== 1
+---
+時間軸：A 0–2、B 2–4、C 4–5、A 5–7、B 7–8、A 8–9。回應時間 A 0、B $2-1=1$、C $4-2=2$，平均 1。周轉時間平均卻是 $\frac{9+7+3}3\approx6.3$；輪流執行讓每個人很快「被理」，但不一定很快做完。
+
+
+@q me4-26 | os-memory#4 | 2 | 計算
+新的 x86-64 支援 57 位元虛擬位址。頁 4 KB，每一層頁表 512 項。需要幾層頁表？
+== 5
+---
+頁內位移 12 位，剩 $57-12=45$ 位當頁號；每層 512 項用掉 9 位，$45/9=5$ 層。48 位元時是 $36/9=4$ 層。多一層表，TLB 沒中時就多一次記憶體存取。
+
+
+@q vm4-25 | os-vm#4 | 2 | 計算
+TLB 有 64 項，其中 32 項放 4 KB 的頁、32 項放 2 MB 的大頁。TLB 一共能涵蓋多少 MB 的記憶體？
+== 64.125
+---
+$32\times4\text{ KB}=128\text{ KB}=0.125\text{ MB}$，$32\times2\text{ MB}=64\text{ MB}$，合計 64.125 MB。大頁讓同樣的 TLB 涵蓋的範圍大很多，所以資料庫、虛擬機常用大頁。
+
+
+@q pr3-25 | os-process#3 | 2 | 陷阱
+A video-encoding program runs 8 worker threads, and the user can press "Cancel" at any time. A thread can be canceled asynchronously, which terminates it at once, or with deferred cancellation, in which it ends itself only at a cancellation point such as `pthread_testcancel()`, which the worker calls once per frame. Each worker sometimes holds a lock while it updates a shared status table of 100 entries, about 30 times per second. The developers must decide which kind of cancellation to use, and what each kind could leave behind if a worker is stopped in the middle of an update. Which of the following statements are correct? Select all that apply.
+[x] Asynchronous cancellation may kill a thread while it holds a lock, so the lock is never released.
+[x] Asynchronous cancellation may leave shared data only partly updated.
+[x] With deferred cancellation, the thread ends only at points such as pthread_testcancel, where it is safe to stop.
+[ ] Asynchronous cancellation of one thread terminates the whole process.
+[ ] With deferred cancellation, the thread can never be ended.
+---
+「拿著鎖被殺，鎖永遠不放」對：其他執行緒會永遠等。
+
+「資料只改一半」對：立刻終止不給執行緒收拾的機會。
+
+「延遲取消只在安全點結束」對：所以 pthread 預設是延遲取消。
+
+「整個行程終止」錯：只終止那條執行緒。
+
+「延遲取消永遠結束不了」錯：執行到取消點就會結束；只有從不經過取消點的程式才會一直不結束。
+
+
+
+@q sc4-26 | os-sched#4 | 2 | 情境
+A phone has 4 little cores and 4 big cores. In the measured model, one background job needs 4 ms and 2 energy units on a little core, or 2 ms and 6 units on a big core. A foreground job has a 3-ms deadline, and migration adds 1 ms of setup. Assume the same execution figures apply to that job. Compare energy, deadlines and migration overhead rather than treating all 8 cores as interchangeable. Which statements are correct? Select all that apply.
+[x] Light background work should run on the little cores.
+[x] Heavy or latency-sensitive foreground work should run on the big cores, moving between clusters when needed.
+[x] Moving a task has a cost, since its cache must warm up again, so moves should not be too frequent.
+[ ] All work should be spread evenly over all 8 cores, so that every core has the same load.
+[ ] Only the big cores should be used, keeping the little cores in reserve for emergencies.
+---
+小核每單位工作耗電低，大核快但耗電高：「輕的放小核」「重的或要快反應的放大核」，「搬移有成本」不能太頻繁。平均分配會讓重工作卡在小核、輕工作在大核浪費電；只用大核耗電。
+
+
+
+@q pr2-27 | os-process#2 | 2 | 情境
+有人在 shell 執行 `:(){ :|:& };:`（一個不斷 fork 自己的函式，俗稱 fork 炸彈），系統很快就卡死。作業系統層面最直接的防範是？
+[x] 限制每個使用者能建立的行程數（例如 `ulimit -u`、cgroups 的 pids 限制）
+[ ] 加大記憶體
+[ ] 換更快的 CPU
+[ ] 關掉 shell 的自動完成功能
+---
+行程數以 2 的次方成長，PCB、行程表、記憶體很快被吃光，正常程式連新的行程都開不起來。限制行程數讓它在上限停下來，其他使用者不受影響。加硬體只能延後幾秒。
+
+
+@q pr5-25 | os-process#5 | 2 | 觀念
+A program can catch or ignore ordinary signals such as SIGINT, but not SIGKILL. Which of the following statements are correct? Select all that apply.
+[x] The operating system must always be able to terminate a runaway process; if SIGKILL could be caught or ignored, some processes could never be killed.
+[x] SIGKILL (like SIGSTOP) is handled by the kernel directly, without running any code of the process.
+[ ] SIGKILL cannot be caught because signal number 9 is too large for a handler.
+[x] Because the process gets no chance to clean up, it is usually better to send SIGTERM first.
+[ ] Only the root user can send SIGKILL.
+---
+「OS 一定要能殺掉失控的行程」對：訊號處理函式是行程自己的程式碼，失控或惡意的程式可以把它寫成什麼都不做。
+
+「核心直接處理」對：不經過行程，所以一定有效。
+
+「9 號太大」錯：跟號碼大小無關。
+
+「先送 SIGTERM」對：讓程式有機會存檔、刪暫存檔。
+
+「只有 root 能送」錯：使用者可以送給自己的行程。
+
+
+@q st4-25 | os-storage#4 | 3 | 情境
+A filesystem has a fixed inode pool, all currently in use, while 40% of its data blocks remain free. Each new ordinary file requires a fresh inode. There are no permissions or quota restrictions. Which statements are correct? Select all that apply.
+[x] Creating a new ordinary file can fail despite the free data blocks.
+[x] Free data-block percentage alone does not prove that an inode is available.
+[x] Fully removing a closed file's last reference can make an inode available for reuse.
+[ ] Forty percent free data blocks guarantees success for every new-file creation request.
+[ ] Each additional hard link to an existing ordinary file inherently requires a second inode for that same file object.
+---
+「可建立失敗」對：本題缺的是 inode，不是資料塊。「資料塊比例不保證 inode」對：兩種資源分開管理。「舊檔最後參照釋放可供重用」對：題設檔案已關閉且無其他參照。「40% 保證成功」錯：忽略 inode 耗盡。「硬連結必多一 inode」錯：硬連結讓另一個目錄項指向同一個 inode，雖仍需目錄空間，但不為同一物件複製 inode。
+
+
+@q pr1-28 | os-process#1 | 2 | 情境
+4 核心的 Linux 伺服器，`uptime` 顯示 load average 是 8（大約等於「平均有幾個行程在跑或等著跑」）。這代表？
+[x] 平均有 8 個行程想用 CPU，但只有 4 顆核心，大約一半時間在 ready 排隊，CPU 不夠用
+[ ] CPU 使用率是 800%
+[ ] 有 8 個行程在等磁碟
+[ ] 系統很閒，因為 8 比 100 小
+---
+load 是 running＋ready（Linux 還加上不能中斷的磁碟等待）的平均個數。跟核心數比才有意義：load 4 在 4 核心上剛好滿載，8 代表排隊的跟正在跑的一樣多。
+
+
+@q pr1-29 | os-process#1 | 2 | 陷阱
+On a single-core Linux machine, `ps` prints the following, where R means "running or runnable", S means sleeping (waiting for an event), and Z means the process has exited but its parent has not yet collected its exit status:
+```
+  PID  STAT  COMMAND
+  101  R     compile
+  102  R     render
+  103  S     backup     (waiting for a disk read)
+  104  Z     worker     (has exited; its parent has not read its status)
+  105  S     shell      (waiting for keyboard input)
+```
+Compare these states with the five-state process model (new, ready, running, waiting, terminated). Which of the following statements are correct? Select all that apply.
+[x] One of processes 101 and 102 may be executing while the other is ready.
+[ ] Processes 101 and 102 are both executing on the CPU at this moment.
+[x] Process 103 corresponds to the waiting state of the five-state model.
+[ ] Process 104 can still be given the CPU again until its parent reads its exit status.
+[ ] When a key is pressed, process 105 moves directly from waiting to running.
+---
+「101、102 一個在跑、一個在就緒佇列」對：Linux 把「可以跑」的都放在 R，對到五狀態模型，R＝running＋ready。
+
+「兩個同時在 CPU 上」錯：單核心同一時刻只有一個真的在執行。
+
+「103 對應 waiting」對：在等 I/O 的行程顯示 S，不在就緒佇列裡。
+
+「104 還能再被排程」錯：Z（zombie）已經結束，只剩一點紀錄（例如結束狀態）等父行程讀走，對應 terminated，不會再拿到 CPU。
+
+「按鍵後 105 直接 running」錯：事件發生後先回到 ready，由排程器決定什麼時候跑。
+
+
+@q pr3-26 | os-process#3 | 2 | 陷阱
+In CPython, a pure computation that sums $10^8$ numbers takes about 8 s with 1 thread and about 8 s with 4 threads on a 4-core machine, although top shows the process using only about 100% of one core. The same program split into 4 processes, each with its own interpreter, takes about 2 s. A web crawler written with 4 threads, in contrast, runs about 3 times faster than with 1 thread, because it spends most of its time waiting for network replies. A student wants to explain all three measurements. Which of the following statements are correct? Select all that apply.
+[x] The interpreter has a global interpreter lock (GIL), so only one thread executes Python code at a time.
+[ ] The operating system gives each process only one core.
+[x] Threads that mostly do I/O can still benefit, because the GIL is released during I/O.
+[x] Using several processes, each with its own interpreter, lets CPU-bound work run in parallel.
+[ ] Threads of one process cannot share memory.
+---
+「GIL 讓同一時間只有一條執行緒跑」對：CPU 密集的多執行緒程式實際上輪流跑。
+
+「每個行程只給一顆核心」錯：作業系統可以把同一個行程的執行緒排到不同核心，是直譯器自己限制的。
+
+「I/O 時會放開 GIL」對：I/O 密集的程式用執行緒仍有幫助。
+
+「改用多個行程」對：各有自己的直譯器和 GIL；或用會放開 GIL 的函式庫。
+
+「執行緒不能共用記憶體」錯：同一個行程的執行緒本來就共用位址空間。
+
+
+@q st5-25 | os-storage#5 | 3 | 比較
+An immutable old file version references data blocks 10 and 11. A new copy-on-write version replaces only block 11's contents, storing the replacement in block 20; it references blocks 10 and 20. A retained snapshot keeps the old version alive. No other version exists. Which statements are correct? Select all that apply.
+[x] The two versions together reference three distinct data blocks.
+[x] Block 11 remains needed by the retained snapshot.
+[ ] Publishing the new version immediately makes block 11 safe to reclaim while the snapshot still exists.
+[x] Removing the snapshot's final reference can make block 11 eligible for reclamation if no other references remain.
+[ ] Copy-on-write requires storing four distinct data blocks for these two versions even though block 10 is unchanged.
+---
+「三塊」對：聯集是 10、11、20。「11 仍需要」對：舊版本還參照它。「新版本發布就釋放 11」錯：會破壞仍保留的舊版本。「最後舊參照移除後可回收」對：要確認沒有其他使用者。「必四塊」錯：未變的 10 可由兩個不可變版本共用，不需只因版本數增加就強制再複製一份。
+
+
+@q pr5-26 | os-process#5 | 3 | 情境
+A parent talks to its child through two ordinary pipes, each with a 64 KB buffer. The parent first writes all 200 KB of its data into the parent-to-child pipe and only then starts reading the child-to-parent pipe. The child repeatedly reads a 4 KB piece of input and immediately writes its result into the child-to-parent pipe. Every read or write waits until it can proceed. Which of the following statements are correct? Select all that apply.
+[x] The two processes can get stuck forever: the child waits while writing to the full child-to-parent pipe and stops reading, and then the parent waits while writing to the full parent-to-child pipe.
+[x] Writing to a full pipe makes the writer wait until a reader removes some data.
+[ ] The pipe buffers grow automatically, so the program always finishes.
+[x] Letting the parent read from the child-to-parent pipe while it is still writing, for example with `poll` or a separate thread, avoids this problem.
+[ ] Data written beyond the 64 KB buffer is silently discarded.
+---
+「可能互等卡死」對：父行程還沒開始讀，子行程寫回的結果很快把 64 KB 塞滿，子行程卡在寫入，不再讀；父行程繼續寫，把「父→子」也塞滿後卡在寫入。兩邊都在等對方讀，形成循環等待。
+
+「寫滿的 pipe 會阻塞」對：這是預設的阻塞模式。
+
+「緩衝區會自動變大」錯：pipe 的緩衝區大小固定。
+
+「邊寫邊讀」對：用 `poll`／`select`、非阻塞 I/O 或另開執行緒，讓父行程在寫的同時也能把回傳的資料讀走。
+
+「超過的資料被丟掉」錯：不會遺失，寫入者只是被擋住等待。
+
+
+
+@q st3-25 | os-storage#3 | 3 | 情境
+A database creates a new sparse file and performs two writes of 1 byte each: one at position 0 and one at position 10 GiB, where positions are measured in bytes from 0 and 1 GiB is $2^{30}$ bytes. Data blocks are 4 KiB, and the file system allocates only blocks that contain written data; any unwritten region, called a hole, reads as zeros. Metadata, compression, and preallocation can be ignored. A backup tool that copies the file byte by byte later reports a size very different from the disk space the file uses. Which of the following statements are correct? Select all that apply.
+[x] The final logical file size is 10737418241 bytes.
+[x] The two allocated data blocks occupy 8192 bytes in total.
+[x] Reading an unwritten position inside the hole returns zero under the stated semantics.
+[ ] The logical size is exactly 10 GiB, with no additional final position included.
+[ ] Every data block between the two writes must be physically allocated in this sparse layout.
+---
+「10737418241 位元組」對：10 GiB＝10737418240，最後在該位置又寫一位元組，長度為位置加一。「8192」對：兩次寫入落在兩個不同的 4096 位元組塊。「洞讀為零」對：題設稀疏語意如此，不需把整洞實際填零。「恰好十 GiB」錯：少算最後一位元組。「中間全配置」錯：題設明定只有真的寫過的資料塊要配置。
+
+
+@q vm1-26 | os-vm#1 | 3 | 情境
+By default, Linux lets processes allocate more memory in total than physical memory plus swap (memory overcommit). Which of the following statements are correct?
+[x] Reserving memory only records an address range; a frame comes at the first write.
+[x] Many programs allocate large regions but use only part of them.
+[x] If processes fill all that memory at once, the OOM killer ends some of them.
+[x] Overcommit trades some risk for better memory utilization.
+[ ] It works because the operating system compresses all memory automatically.
+---
+需求分頁讓「配置時只記下範圍、寫入時才給 frame」，而「很多預留的空間從沒用到」；大家真的同時寫滿時記憶體就不夠，Linux 會用「OOM killer」終止行程，這是「用風險換利用率」。它不是靠壓縮全部記憶體。
+
+
+
+@q sc3-26 | os-sched#3 | 2 | 計算
+Independent preemptible tasks on one processor have (period,execution) pairs (3,1), (5,1), (15,3), all released at time 0 with deadlines equal to periods. Ignore overhead and resource-related delays. Rate-monotonic priorities follow period length, while EDF follows absolute deadlines. Compute the total utilization, compare it with the sufficient RM bound for 3 tasks, and determine a common repeating interval. A sufficient bound is applied to the whole set, not separately to each task. Which statements are correct? Select all that apply.
+[x] The total utilization is about 0.733.
+[x] RM is guaranteed to meet all deadlines, since $0.733<3(2^{1/3}-1)\approx0.780$.
+[x] EDF would also meet all deadlines.
+[x] The periods 3 and 5 both divide 15.
+[ ] The total utilization exceeds the RM bound for 3 tasks.
+---
+$\frac13+\frac15+\frac3{15}\approx0.733$，「低於 $n=3$ 的上限 0.780」，充分條件成立，RM 一定可行；$U\le1$ 時「EDF 也可行」。3、5 都整除 15，超週期就是 15。
+
+
+@q sc3-27 | os-sched#3 | 3 | 陷阱
+三個工作 (2,1)、(4,1)、(8,2)，$U=1$，遠超過 RM 的上限 0.780。用 RM 實際排第一個 8 單位時間，會不會有工作錯過截止時間？
+[x] 不會：週期 2、4、8 一個是另一個的倍數，這時 RM 在 $U\le1$ 都排得完
+[ ] 會，$U$ 超過上限就一定排不完
+[ ] 會，週期 8 的工作錯過截止
+[ ] 會，週期 2 的工作錯過截止
+---
+模擬：週期 2 的工作在 $[0,1),[2,3),[4,5),[6,7)$；週期 4 的在 $[1,2),[5,6)$；週期 8 的在 $[3,4)$ 和 $[7,8)$，剛好在 8 完成。$n(2^{1/n}-1)$ 是「保證」的充分條件，超過不代表一定失敗；週期互相整除時，RM 可以用到 100%。
+
+
+@q sc3-28 | os-sched#3 | 3 | 計算
+RM，三個工作 (5,1)、(8,2)、(20,4)，時間 0 同時釋放。最低優先的工作（週期 20）第一份的完成時間，用 $R=C_3+\lceil R/5\rceil\cdot1+\lceil R/8\rceil\cdot2$ 從 $R=4$ 反覆代入直到不變，是多少？
+== 8
+---
+$R=4$：$4+1+2=7$。$R=7$：$4+\lceil7/5\rceil+2\lceil7/8\rceil=4+2+2=8$。$R=8$：$4+2+2=8$，不變。完成於 8，小於截止 20，排得完。式子的意思是：自己的 4，加上這段時間內高優先工作搶走的時間。
+
+
+@q sc3-29 | os-sched#3 | 2 | 計算
+EDF，三個工作 (4,1)、(6,2)、(12,$x$)。$x$ 最大是多少，仍保證排得完？
+== 5
+---
+EDF 排得完的充要條件是 $U\le1$：$\frac14+\frac26+\frac x{12}=\frac{3+4+x}{12}\le1$，$x\le5$。
+
+
+@q sc3-30 | os-sched#3 | 2 | 追蹤
+RM，兩個工作 (3,1)、(5,2)，時間 0 同時釋放。週期 5 那個工作的第一份在什麼時間完成？
+== 3
+---
+週期 3 優先權高：先跑 $[0,1)$。接著週期 5 的跑 $[1,3)$，在 3 完成，剛好在週期 3 的第二份釋放時。之後週期 5 的第二份（時間 5 釋放）在 8 完成、第三份在 12 完成，都沒有錯過。
+
+
+
+@q dl3-26 | os-deadlock#3 | 2 | 反例
+Someone says: "If Available can satisfy the Need of **some** process, the system is in a safe state." Which of the following statements are correct?
+?? 複選
+[x] The claim is wrong, because a complete safe sequence is required.
+[ ] The claim is right, because that process can finish and return its resources.
+[ ] A state is safe only if Available covers every process's Need at the same time.
+[ ] A state is safe only if the processes can finish in increasing order of process number.
+[ ] Safety depends only on each process's Max, not on Available or Allocation.
+---
+第一步能走不代表能走到底：某行程歸還的資源可能還是不夠任何其他行程，安全要「有一整條安全序列」。安全只需要存在一條序列，不需要同時滿足所有人，也不限定編號順序；試算從 Available 出發、靠 Allocation 歸還，都會用到。
+
+
+@q dl3-27 | os-deadlock#3 | 3 | 證明
+說明為什麼系統處在「安全狀態」時，一定不會發生死結（假設行程拿到 Max 後會在有限時間內做完並歸還）。
+---
+安全狀態代表存在一條序列 $P_1,\dots,P_n$：$P_1$ 的 Need 現在就能滿足；$P_1$ 做完歸還後，$P_2$ 的 Need 能滿足……依此類推。作業系統只要（最壞情況下）照這個順序分配，每個行程都能拿到它最多需要的資源而完成，不會有一群行程互相等待。Banker 只批准讓系統維持安全的申請，所以一直保持在這種狀態。
+
+
+@q me3-27 | os-memory#3 | 3 | 反例
+A process uses exactly 5000 consecutive bytes beginning at an address aligned to a page boundary. Every byte from offset 0 through offset 4999 belongs to the allocation. The allocator reserves the minimum whole number of pages covering those bytes, and none of the unused bytes in its last page contains another allocation. Ignore the page tables and all other metadata in this comparison.
+
+Compare 1 implementation using 4096-byte pages with another using 8192-byte pages. The same requested bytes must remain accessible in either case, and no compression or partial-page frame is available. Both starting addresses satisfy their respective alignment requirements. A report argues that doubling page size must halve allocated memory because the number of pages can decrease. Another report measures actual reserved bytes and subtracts the requested contents. Analyze this exact example rather than assuming that a smaller number of page entries is identical to a smaller data-memory reservation. Which statements are correct? Select all that apply.
+[x] The process needs two 4 KiB pages.
+[x] The process needs one 8 KiB page.
+[x] Both choices reserve 8192 bytes in this example.
+[ ] Doubling page size always halves the process's allocated data-memory bytes.
+[x] The 8 KiB choice leaves 3192 unused bytes in its page.
+---
+「兩張 4 KiB」對：5000 超過 4096，但不超過 8192。「一張 8 KiB」對。「都配置 8192」對：頁數變少不表示本例的配置位元組變少。「總空間必減半」錯：這裡相同。「剩 3192」對：8192−5000＝3192；兩張 4 KiB 時同樣剩 3192。
+
+
+@q me3-28 | os-memory#3 | 2 | 證明
+說明為什麼分頁沒有外部碎片。
+---
+實體記憶體被切成同樣大小的 frame，任何一個空的 frame 都能放任何一頁，行程的頁也不必放在連續的 frame。所以只要空 frame 的總數夠，就一定放得下，不會發生「空間加起來夠、但沒有一塊連續的夠大」的情況。代價是最後一頁的內部碎片和頁表的空間。
+
+
+@q sc1-27 | os-sched#1 | 2 | 反例
+Three processes $P_1, P_2, P_3$ arrive at time 0 in this order, and each needs to run for 10 time units on the CPU without any I/O. Ignore context-switch overhead. Schedule X runs them one after another, each to completion, in arrival order. Schedule Y lets them take turns in the order $P_1, P_2, P_3, P_1, P_2, \ldots$, giving each one 1 time unit per turn. Someone claims: "The schedule with the smaller average waiting time also has the smaller average response time," where response time is measured from arrival until the process first gets the CPU. Which of the following statements are correct? Select all that apply.
+[x] Under schedule X, the average waiting time is 10.
+[x] Under schedule Y, the average waiting time is 19.
+[x] Under schedule Y, the average response time is 1.
+[ ] Under schedule Y, $P_3$ finishes at time 28.
+[ ] For these three processes the claim is correct.
+---
+「X 平均等待 10」對：一個做完再做下一個，等待 0、10、20，平均 10；回應時間也是 0、10、20，平均 10。
+
+「Y 平均等待 19」對：輪流做時每個都要到最後幾輪才做完，完成時間 $P_1$ 28、$P_2$ 29、$P_3$ 30，等待＝完成－10＝18、19、20，平均 19。
+
+「Y 平均回應 1」對：三個第一次拿到 CPU 的時間是 0、1、2，平均 1。
+
+「$P_3$ 在 28 完成」錯：28 是 $P_1$；最後一輪順序還是 $P_1,P_2,P_3$，$P_3$ 在 30 完成。
+
+「說法正確」錯：X 等待較少（10 對 19），回應卻較差（10 對 1）。不同指標偏好不同排程（之後會學到 X 就是 FCFS、Y 就是時間片 1 的 RR）。
+
+
+@q sc1-28 | os-sched#1 | 1 | 證明
+行程只用 CPU、不做 I/O。說明「周轉時間＝等待時間＋執行時間」。
+---
+周轉時間是從到達到完成的總時間。這段時間裡，行程不是在 CPU 上執行，就是在就緒佇列裡等（沒有 I/O 的話沒有其他狀態）。在 CPU 上的總時間就是它的執行時間，其餘就是等待時間，兩者相加剛好是周轉時間。
+
+
+
+@q pr1-30 | os-process#1 | 1 | 反例
+有人說：「行程離開 running 狀態，一定是因為它執行完了。」哪一個是反例？
+[x] 它發出讀檔請求，進入 waiting；或時間片用完，被放回 ready
+[ ] 它呼叫 exit
+[ ] 它執行最後一行程式
+[ ] 它的 main 回傳
+---
+離開 running 有三條路：結束（terminated）、等 I/O 或事件（waiting）、被搶走 CPU（回到 ready）。後兩種行程都還活著，之後會再回來執行。
+
+
+@q pr2-28 | os-process#2 | 2 | 證明
+程式依序執行 `fork(); fork(); fork();`（不檢查回傳值）。說明最後一共有幾個行程（含原本的），並說明 $n$ 次的一般情形。
+---
+每次 `fork()` 讓「當時存在的每一個行程」都各自複製一份，行程數翻倍。原本 1 個，三次後 $1\to2\to4\to8$。$n$ 次就是 $2^n$ 個（新建了 $2^n-1$ 個）。關鍵是子行程從 fork 的下一行開始執行，所以它也會執行後面剩下的 fork。
+
+
+@q pr2-29 | os-process#2 | 2 | 反例
+Someone claims: "After `exec` runs the new program, execution comes back to the line after the `exec` call." To check, a student runs
+```
+printf("before\n");
+execlp("ls", "ls", "-l", NULL);
+printf("after\n");
+```
+in a process with ID 3000, and sees `before` and the file list printed by `ls`, but never the word `after`. The student also wonders how a shell can keep running after it starts a program such as `ls` in this way, and what happens when the program name is misspelled. Which of the following statements are correct? Select all that apply.
+[x] When `exec` succeeds, it replaces the memory image of the calling process with the new program, so it never returns.
+[x] The code written after a call to `exec` runs only if `exec` fails, for example when the file is not found.
+[ ] `exec` creates a new process in which the new program runs.
+[x] A shell typically calls `fork`, calls `exec` in the child, and makes the parent `wait` for the child.
+[ ] After a successful `exec`, the process gets a new process ID.
+---
+「成功就取代整個記憶體、不會回來」對：原本的程式碼已經不在了，沒有地方可以「回來」。
+
+「後面的程式只在失敗時執行」對：通常用來印錯誤訊息再 `exit`。
+
+「`exec` 建立新行程」錯：它換掉的是**同一個**行程的內容；建立新行程的是 `fork`。
+
+「shell 先 `fork`、子行程 `exec`、父行程 `wait`」對：這樣 shell 自己才會留下來。
+
+「PID 會變」錯：同一個行程，PID 不變。
+
+
+@q pr3-27 | os-process#3 | 2 | 反例
+有人說：「同一個行程裡的每個執行緒，各自有一份自己的全域變數。」為什麼不對？
+[x] 執行緒共用同一個位址空間：全域變數、heap、開啟的檔案都共用；各自擁有的只有暫存器、程式計數器和堆疊
+[ ] 他是對的
+[ ] 執行緒連堆疊都共用
+[ ] 執行緒之間完全不共用任何東西
+---
+共用讓執行緒之間溝通很便宜（直接讀寫同一個變數），也讓它們一不小心就互相干擾，所以需要同步機制。函式裡的區域變數在各自的堆疊上，不共用。
+
+
+@q pr4-25 | os-process#4 | 2 | 反例
+Someone claims: "A user program that knows the address of the disk controller can command the disk directly." Which of the following statements are correct? Select all that apply.
+[x] Instructions that operate I/O devices are privileged; if a user-mode program executes one, the CPU refuses and transfers control to the operating system.
+[x] To use the disk, a user program must make a system call, and the kernel checks its permissions before doing the I/O on its behalf.
+[ ] The claim is correct, because the hardware does not distinguish user programs from the operating system.
+[x] The current mode (user or kernel) is kept by the hardware, and the CPU switches to kernel mode only through traps and interrupts.
+[ ] A user program can switch the CPU to kernel mode by itself just before doing I/O.
+---
+「I/O 指令是特權指令」對：使用者模式執行時硬體會引發例外，交給作業系統處理（通常終止程式）。
+
+「要透過系統呼叫、由核心檢查後代做」對：這樣作業系統才能保護檔案系統與其他行程的資料。
+
+「硬體不分使用者和作業系統」錯：雙模式就是靠硬體的模式位元區分。
+
+「模式由硬體記錄、只有 trap／中斷才切到核心模式」對：進入核心的入口是固定的，程式無法自己選。
+
+「程式自己切到核心模式」錯：改模式本身就是特權動作，否則保護形同虛設。
+
+
+@q pr5-27 | os-process#5 | 3 | 證明
+有界緩衝區用陣列 `buf[n]` 和兩個編號：`in`（下一個要放的位置）、`out`（下一個要拿的位置），用 `in == out` 表示空、`(in + 1) % n == out` 表示滿。說明這種寫法最多只能同時放 $n-1$ 個東西。
+---
+如果放滿 $n$ 個，`in` 會繞一圈回到等於 `out`，跟「空」的狀態長得一模一樣，無法分辨。所以規定少放一格：只剩一格空時就算滿。想用滿 $n$ 格，就要另外記一個「目前有幾個」的計數器（但它又是共享變數，要注意同步）。
+
+
+@q pr5-28 | os-process#5 | 2 | 反例
+有人說：「共享記憶體比訊息傳遞快，所以行程間溝通永遠應該用共享記憶體。」什麼情況是反例？
+[x] 兩個行程在不同的電腦上（沒有共同的記憶體），或資料量很小、不想自己處理同步時
+[ ] 兩個行程在同一台電腦
+[ ] 要傳很大量的資料時
+[ ] 沒有反例
+---
+共享記憶體建立後不必每次經過核心，大量資料最快；但同步要自己做，也只能在同一台機器。訊息傳遞每次都要系統呼叫，卻天生帶有同步，而且能跨機器。
+
+
+@q sc2-28 | os-sched#2 | 3 | 證明
+所有行程同時到達、不可搶先。說明「每次挑執行時間最短的」（SJF）讓平均等待時間最小。
+---
+交換論證：假設某個排程裡，相鄰兩個行程 $A$ 在前、$B$ 在後，但 $A$ 比 $B$ 長（$a>b$）。交換它們：其他行程的等待不變；原本 $A$ 等 $W$、$B$ 等 $W+a$，交換後 $B$ 等 $W$、$A$ 等 $W+b$，總和從 $2W+a$ 變成 $2W+b$，變小了。所以任何「長的排在短的前面」的排程都能被改善，最佳排程一定是由短到長，也就是 SJF。
+
+
+@q sc2-29 | os-sched#2 | 3 | 反例
+有人說：「RR 的時間片越大，平均周轉時間就越小（因為切換少）。」用兩個時間 0 到的行程，A 需要 10、B 需要 1（A 排在前面），不計切換成本。時間片 1 和時間片 10 的平均周轉時間各是？
+== 6.5,10.5
+?? 時間片1,時間片10
+---
+時間片 1：A 跑 0–1，B 跑 1–2 結束（周轉 2），A 跑 2–11（周轉 11），平均 6.5。時間片 10：A 跑 0–10（周轉 10），B 跑 10–11（周轉 11），平均 10.5。時間片大反而讓短的 B 被長的 A 擋住。
+
+
+@q sc4-27 | os-sched#4 | 2 | 反例
+Someone says: "Moving a thread from a very busy CPU to an idle CPU always makes it run faster." Which of the following statements are correct?
+[x] Its data in the old CPU's cache must be reloaded, which may cost more than waiting a little.
+[x] Load balancers move a thread only when the imbalance is severe enough.
+[ ] The claim is right, since an idle CPU can start the thread at once.
+[ ] The idle CPU itself runs at a lower clock speed, which is why moving can hurt.
+[ ] Processor affinity means that a thread may never leave the CPU it first ran on.
+---
+搬過去 cache 變冷，「資料要重新載入」，可能比等一下還慢，所以「只在不平衡夠嚴重時才搬」。閒的 CPU 本身不會比較慢；親和性是「傾向」留在同一顆 CPU，不是禁止搬。
+
+
+@q sy1-27 | os-sync#1 | 2 | 反例
+Two threads share `count`, initially 5. Each thread executes `count++` twice, with no synchronization. Each `count++` is carried out as: load `count` into a register, add 1, store the register back. Which final values of `count` are possible? Select all that apply.
+[ ] 6
+[x] 7
+[x] 8
+[x] 9
+[ ] 10
+---
+一行 `count++` 在機器上是「讀、加、寫」三步，兩個執行緒交錯時，其中的更新會被覆蓋。
+
+9：兩個執行緒不交錯，四次加法都算到。
+
+8：一次更新被覆蓋，例如兩個都讀到 5、都寫回 6，之後各自再加一次：一個讀 6 寫 7，另一個再讀 7 寫 8。
+
+7：甲讀到 5 先停住；乙做完第一次（6）。甲寫回 6 蓋掉乙的結果，乙讀到 6 又停住；甲做完第二次（7），乙最後寫回 7，蓋掉甲的。兩個執行緒各少算一次，只加了 2。
+
+6 不可能：每個執行緒的第二次 `++` 一定讀到至少自己上次寫回的 6，最後一個寫入的值至少是 7。
+
+10 不可能：總共只做 4 次加 1，最多 9。
+
+
+@q sy2-28 | os-sync#2 | 3 | 反例
+有人說：「Peterson 演算法只用 `flag[i] = true; while (flag[j]);`（不要 `turn`）也一樣正確。」為什麼不對？
+[x] 兩個行程同時把自己的 flag 設成 true，接著兩個都看到對方的 flag 是 true，永遠互相等下去
+[ ] 兩個行程會同時進入臨界區
+[ ] 他是對的
+[ ] 行程會不停地進出臨界區
+---
+只用 flag 能保證互斥，但會卡死（違反「進行」條件）。`turn` 的作用是打破平手：兩邊都想進時，讓最後寫 `turn` 的那一方禮讓。
+
+
+@q sy3-26 | os-sync#3 | 2 | 反例
+A spinlock is built with test_and_set. Which of the following statements are correct? Select all that apply.
+[x] On a single core, a thread spinning on a lock held by another thread wastes its whole time slice, because the holder cannot run until the spinner is switched out.
+[ ] On a single core, spinning is efficient because the lock will be released within a few cycles.
+[x] On a multicore system, spinning can be cheaper than putting the thread to sleep when the critical section is very short.
+[x] test_and_set atomically sets the lock word to true and returns its old value.
+[ ] On a single core where a running thread is never forced off the CPU, a spinning thread will eventually see the lock released.
+---
+「單核上空轉整個時間片」對：持有鎖的執行緒要等空轉的那個被換下才能跑，空轉期間鎖不可能被釋放。
+
+「單核上很快就會釋放」錯：見上。
+
+「多核上臨界區很短時比睡覺划算」對：持有者在另一顆核心上跑，可能幾十拍就釋放；睡下再叫醒要兩次切換。
+
+「test_and_set 不可分割地設 true、回傳舊值」對：舊值是 false 代表搶到了。
+
+「單核不可搶先時最後會等到」錯：沒有搶先，空轉的執行緒永遠不會讓出 CPU，持有者永遠跑不到，直接卡死。
+
+
+@q sy5-25 | os-sync#5 | 2 | 反例
+Someone claims: "A monitor condition variable's x.signal() is remembered just like a semaphore's signal." Which of the following statements are correct? Select all that apply.
+[x] If no thread is waiting on $x$, x.signal() does nothing and leaves no record.
+[x] A semaphore's signal increments its value, so a later wait does not block.
+[ ] x.signal() always wakes some thread.
+[x] So a thread should check the condition before waiting, typically as while (!condition) x.wait();.
+[ ] x.signal() wakes every thread waiting on $x$.
+---
+「沒人在等就什麼都不做」對：不會留下紀錄。
+
+「號誌的 signal 會被記住」對：計數加 1。
+
+「一定叫醒一個」錯：沒人在等就沒得叫。
+
+「等待前先檢查條件」對：不能假設 signal 一定在 wait 之後發生。
+
+「叫醒所有人」錯：那是 broadcast。
+
+
+@q sy6-25 | os-sync#6 | 1 | 反例
+有人說：「一個程式沒有死結，所以每個執行緒最後都一定能拿到它要的資源。」為什麼不對？
+[x] 可能有飢餓：系統一直在運作，但某個執行緒每次都被別人搶先，永遠輪不到
+[ ] 沒有死結就一定公平
+[ ] 他是對的
+[ ] 沒有死結的程式不會用到資源
+---
+死結是「大家都卡住」；飢餓是「別人都在動，只有它一直等」。例如優先權排程裡的低優先權行程，或讀者一直不斷的讀者寫者問題裡的寫者。
+
+
+@q dl1-27 | os-deadlock#1 | 3 | 反例
+Someone says: "If all four necessary conditions hold (there is a cycle of processes, each waiting for the next), the system is already deadlocked." Which of the following statements are correct?
+[x] With several instances of a resource, such a cycle need not be a deadlock.
+[x] The four conditions are necessary but not sufficient.
+[ ] The four conditions are sufficient, so the claim has no counterexample at all.
+[ ] With single-instance resources, a cycle of only two processes may still not be a deadlock.
+[ ] With several instances of every resource type, a cycle can never be a deadlock.
+---
+資源有多份時，環外的行程做完歸還後環就解開了，所以「多實例時不一定死結」，四個條件是「必要不充分」。每類資源只有一份時，有環 ⇔ 死結，兩個行程的環也是死結；多實例時環也可能真的卡死，要用偵測演算法判斷。
+
+
+@q dl4-27 | os-deadlock#4 | 2 | 反例
+Someone says: "When there is a deadlock, terminating any one stuck process always resolves it." Which of the following statements are correct?
+[x] Two unrelated deadlock cycles form a counterexample.
+[x] Even with one cycle, the resources freed by one termination may not suffice.
+[x] Detection should be run again after each termination.
+[x] Terminating processes one at a time loses less work but costs more detection runs.
+[x] Terminating a process that waits on a cycle without being on it may free nothing useful.
+---
+「兩個互不相干的環」，終止一環的行程，另一環還卡著；即使只有一個環，「釋放的資源可能不夠」；所以「終止後要重跑偵測」，「一次一個」損失少但偵測次數多。在環外等環上資源的行程，終止它釋放不出環需要的東西。五句都對。
+
+
+@q me1-28 | os-memory#1 | 3 | 反例
+Absolute code built for physical base 4096 contains a data reference to address 4608, which is 512 bytes after the start of the image:
+```
+4100:  load  r3, [4608]     ; data 512 bytes into the image
+```
+The image is copied unchanged to base 8192 to make room for another program, and the system has neither loader fixups nor execution-time translation. Someone claims that unchanged absolute code can run at any base, because the data move together with the code, and that the program will therefore read the right variable. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] The corresponding relocated data would be at address 12800.
+[ ] The unchanged code now contains reference value 8704.
+[ ] Moving the image makes the embedded address increase by 4096 automatically.
+[x] This is a counterexample to the claim that unchanged absolute code can run at any base without relocation support.
+[ ] A physical address fixed at compile time necessarily follows the process's later location, because the whole image is copied.
+---
+「資料在 12800」錯：那是把舊的絕對位址整個加上新起點；資料相對起點的位移是 4608−4096＝512，新址是 8192＋512＝8704。「程式碼裡變成 8704」錯：位元組沒有被修補，仍是 4608。「自動加 4096」錯：題設排除了所需機制。「足以反駁任意搬動」對：資料搬了、參照沒改就可能存取錯處。「必跟著搬」錯：複製影像只搬位元組，不會修改其中的位址，這正是固定絕對地址的限制。
+
+
+@q me4-27 | os-memory#4 | 3 | 反例
+A process has a 32-bit virtual byte-address space, uses 4096-byte pages, and stores page-table entries in 4 bytes. A complete flat table has 1 entry for every virtual page. The alternative 2-level layout splits the virtual page number into a ten-bit outer index and a ten-bit inner index. Every allocated table reserves all the entry positions selected by its own index.
+
+In this particular experiment, every possible inner table is present, even if an implementation would ordinarily allocate inner tables only when needed. The outer table is still used to locate those inner tables. Metadata and table alignment overheads are excluded. Compare the flat table's entries with the combined inner-table entries before adding the outer table. A student generalizes the storage advantage of sparse 2-level layouts to this fully allocated case and proposes removing the outer table entirely. Determine which parts of the organization still have to exist when no outer entry is unused. Which statements are correct? Select all that apply.
+[x] The flat table occupies 4 MiB.
+[x] The two-level design's inner tables together also occupy 4 MiB.
+[ ] When every inner table is present, the two-level design needs no outer table.
+[ ] Multiple levels necessarily save table memory even when every inner table is present.
+[ ] Each inner table needs only one four-byte entry in this fully allocated design.
+---
+「平表 4 MiB」對：2^(32−12)×4＝2^22 位元組。「內表合計 4 MiB」對：1024 張，每張 1024×4＝4096 位元組。「不需外表」錯：還是要一張 4 KiB 的外表（1024×4）來找內表。「任何情況都省」錯：本例總量反而比平表多一張外表。「每內表一項」錯：十位索引表示每張有 1024 項。
+
+
+@q me5-25 | os-memory#5 | 1 | 反例
+A memory allocator supports only variable-sized contiguous segments. 1 free region has size 120 KiB and another has size 80 KiB. A live segment lies between them and may not be moved or overwritten. No additional free region is available, and the allocator may not reserve a new area outside its pool. The 2 hole sizes are measured after any legal coalescing has already been performed.
+
+A new program requests 1 segment of 180 contiguous KiB. Starting earlier or later inside a hole changes the starting address but not that hole's available length. The program is not requesting separate smaller segments, and the allocator does not translate pieces of 1 segment through a page table. A status display adds both holes and reports enough total free bytes. Decide whether that total is sufficient to place this 1 request, and distinguish external fragmentation from the mere fact that segment lengths are not fixed. Which statements are correct? Select all that apply.
+[x] Total unused memory is 200 KiB.
+[ ] The new segment fits in the 120 KiB hole if it starts at the beginning of that hole.
+[x] This is an example of external fragmentation under segmentation.
+[ ] Variable-sized segments guarantee that no allocation suffers from fragmentation.
+[ ] The two holes form a single 200 KiB contiguous region without moving the intervening segment.
+---
+「200」對：120＋80。「從洞的開頭放就放得下」錯：放在哪裡都一樣，最大連續洞只有 120，不到 180。「外部碎片」對：總量夠卻無足夠連續區間。「變動段長就無碎片」錯：釋放不同大小的段仍會留下大小不一的洞。「直接視為連續」錯：兩洞中間還有活著的段。
+
+
+@q vm1-27 | os-vm#1 | 2 | 反例
+Someone claims: "Demand paging is always faster than loading the whole program at startup." Which of the following statements are correct?
+[x] A program that touches almost all of its pages right after starting is a counterexample.
+[x] Loading in advance the pages that are expected to be needed soon addresses this case.
+[ ] A program that uses only a few of its pages is a counterexample.
+[ ] There is no counterexample, since demand paging never loads a page that is not needed.
+[ ] A counterexample requires a program that is larger than the whole physical memory.
+---
+「一啟動就碰到幾乎所有頁」時，一頁一頁觸發缺頁，零散的讀取比一次循序讀完還貴，是反例；所以有「預先載入」的做法（prepaging）。只用少數頁的程式正是需求分頁占優勢的情況；不載入沒用的頁不代表一定比較快；程式小也一樣可以是反例。
+
+
+@q vm2-26 | os-vm#2 | 3 | 證明
+說明為什麼 OPT（換掉未來最久才會用到的頁）不會有 Belady 異常：frame 從 $k$ 個加到 $k+1$ 個，缺頁次數不會增加。
+---
+OPT 在 $k$ 個 frame 時，任何時刻留在記憶體裡的，就是「未來最快會用到的 $k$ 頁」（在已經出現過的頁裡）；$k+1$ 個 frame 時留的是最快會用到的 $k+1$ 頁，一定包含前者。所以 $k$ 個 frame 時命中的存取，在 $k+1$ 個 frame 時也命中（這種「小的永遠是大的子集」的性質叫堆疊演算法），缺頁不會變多。LRU 留的是「最近用過的 $k$ 頁」，同樣有這個包含關係。
+
+
+@q vm2-27 | os-vm#2 | 3 | 反例
+有人說：「LRU 在任何參考串上都不會比 FIFO 多缺頁。」3 個 frame、參考串 1 2 1 3 4 2，FIFO 和 LRU 各缺頁幾次？
+== 4,5
+?? FIFO,LRU
+---
+FIFO：1、2 缺頁，1 命中，3 缺頁，4 缺頁換掉最早進來的 1，2 命中：4 次。LRU：1、2 缺頁，1 命中（現在 2 最久沒用），3 缺頁，4 缺頁換掉最久沒用的 2，2 缺頁：5 次。LRU 平均通常比較好，但不是在每個參考串上都贏。
+
+
+@q vm3-26 | os-vm#3 | 2 | 反例
+Someone says: "When CPU utilization is low, admit more processes, and CPU utilization will certainly rise." Which of the following statements are correct?
+[x] If the CPU idles because processes wait on page faults, adding more makes it worse.
+[x] When memory is short, the right response is to reduce the number of processes running at once.
+[x] The page-fault rate or working-set sizes are better signals than CPU utilization alone.
+[ ] If all processes are waiting for keyboard input, admitting more can never raise CPU utilization.
+[ ] Admitting more processes always raises utilization, since more processes mean more work.
+---
+已經 thrashing 時再加行程，每個分到的 frame 更少，缺頁更多，「CPU 反而更閒」；記憶體不夠時要「減少同時執行的行程」，判斷要「看缺頁率或工作集」。大家都在等鍵盤時，加入要計算的行程當然能讓 CPU 忙起來。
+
+
+@q vm4-26 | os-vm#4 | 2 | 反例
+Someone says: "Loading pages that are likely to be needed before they are requested always reduces the total cost." Which of the following statements are correct?
+?? 複選
+[x] If most of the pages loaded in advance are never used, disk I/O and frames are wasted.
+[ ] Loading in advance always reduces the total cost, since page faults are so expensive.
+[ ] Loading in advance never pays off, since some loaded pages always go unused.
+[ ] Reloading a swapped-out process's old working set together rarely pays off.
+[ ] The claim holds whenever the pages are small enough, since small loads are nearly free.
+---
+預先載入的頁「大多沒用到」時，白花磁碟 I/O，還占用 frame、擠掉有用的頁，是反例。划算與否看被用到的比例夠不夠高：換回行程時把原本的工作集一起載回通常很划算，所以不是永遠不划算；頁大小不是關鍵。
+
+
+@q st1-27 | os-storage#1 | 3 | 反例
+有人說：「SSTF 的總磁頭移動量一定不會比 FCFS 多。」磁頭在 124，請求依序是 166、97、53、24，兩種各移動多少？
+== 184,242
+?? FCFS,SSTF
+---
+FCFS：$124\to166\to97\to53\to24$，$42+69+44+29=184$。SSTF：最近的是 97（27），接著 53（44）、24（29），最後回頭去 166（142），共 242。SSTF 每步貪心選最近的，可能把一個遠的請求拖到最後才繞回去，總量反而更大。
+
+
+@q st2-25 | os-storage#2 | 1 | 反例
+有人說：「用了 RAID 1（兩顆硬碟互相鏡像），就不需要另外備份了。」什麼情況是反例？
+[x] 不小心刪掉檔案或中了勒索病毒：這個「改變」會同步寫到兩顆硬碟，一起不見
+[ ] 其中一顆硬碟壞掉
+[ ] 讀取量很大
+[ ] 沒有反例
+---
+RAID 防的是「硬碟故障」，不是「資料被錯誤地改掉」。備份保留的是過去某個時間點的版本，兩者解決不同的問題。
+
+
+@q st3-26 | os-storage#3 | 2 | 反例
+A file is stored with simple linked allocation: each data block holds the file's data plus a pointer to the next block, and the file's record holds the address of the first block. No blocks or pointers are cached, and there is no auxiliary index. A program wants to read the 1000th block, where the first block is number 1, and each block read takes about 5 ms. The developers want to know how far the program must follow the chain and how long it will take before the target data arrive. Which of the following statements are correct? Select all that apply.
+[x] The traversal follows 999 next pointers.
+[x] Reading the blocks along this traversal, including the target, takes 1000 data-block reads.
+[ ] Only 999 data-block reads are needed when the target's contents are included.
+[x] The target can be read, but reaching it may require substantial traversal.
+[ ] The given linked layout guarantees a constant number of disk reads for any target position.
+---
+「999 次指標」對：從第一塊走到第一千塊，需要跨 999 個鏈結。「讀 1000 塊」對：取得每個下一塊位置要先讀目前塊，最後還要讀目標資料。「只讀 999」錯：少算第一塊或目標塊。「可讀但代價高」對：不是完全不能隨機讀，而是尋找中間位置很慢。「固定次數」錯：鏈結走訪成本隨位置增加。
+
+
+@q st4-26 | os-storage#4 | 3 | 反例
+On an ordinary local POSIX filesystem, names `alpha` and `beta` are the only two hard links to one regular file. No process has it open, and there are no other references. The program unlinks `alpha` successfully. Which statements are correct? Select all that apply.
+[x] The file's hard-link count decreases from two to one.
+[x] Opening `beta` can still access the same file contents.
+[ ] Unlinking `alpha` automatically removes directory entry `beta` as well.
+[x] Creating `beta` as a hard link did not require a second independent copy of the file data.
+[ ] The hard-link count becomes three after removing `alpha`.
+---
+「二變一」對：移除一個名字就少一個硬連結。「beta 仍可讀」對：它還指向同一個 inode。「一起刪 beta」錯：兩個目錄項是分開的名字。「不複製內容」對：硬連結共用同一個檔案物件。「變三」錯：移除是減一，不是加一；還有一個名字時不會只因刪掉另一名就失去內容。
+
+
+@q st5-26 | os-storage#5 | 3 | 反例
+A transaction changes two user-data blocks and two metadata blocks. In model Meta, the journal records only metadata; in model Full, it records both data and metadata. Count one log block per changed block and ignore headers. Neither model preserves updates that never reach persistent storage. Which statements are correct? Select all that apply.
+[x] Model Meta records two content blocks in its journal for this transaction.
+[x] Model Full records four content blocks in its journal for this transaction.
+[x] Even model Full can lose a new update that exists only in volatile memory at a crash.
+[ ] Model Meta necessarily records the contents of both changed user-data blocks in its journal.
+[ ] Merely choosing model Full makes every future uncommitted in-memory write persistent immediately.
+---
+「metadata 模式兩塊」對：只記兩個 metadata。「完整模式四塊」對：資料兩塊加 metadata 兩塊。「完整模式仍會掉尚未永久保存的更新」對：日誌必須真的寫入才有內容可復原。「metadata 模式也一定記資料」錯：和題設定義相反。「選模式就立刻持久」錯：模式不會消除緩衝、寫入與提交的時點差異。
+
+
+@q pr1-31 | os-process#1 | 3 | 陷阱
+A monitoring program samples a single-core machine every 10 ms for 60 s, that is, 6000 times. The machine has 5 processes, none of which has terminated, and each sample records how many are running, ready, and waiting. Some processes often wait for the disk or the network, and sometimes all of them do; at other times all five are ready to compute. On a dual-core machine, up to 2 processes could be running at once. Which of the following counts (running, ready, waiting) can occur on the single-core machine? Select all that apply.
+[x] (1, 4, 0)
+[x] (0, 0, 5)
+[ ] (2, 3, 0)
+[x] (1, 0, 4)
+[x] (1, 1, 3)
+---
+限制：單核心同一時刻最多 1 個 running；ready 和 waiting 的數量沒有限制。
+
+「(1,4,0)」可以：一個在跑，其他都在排隊等 CPU。
+
+「(0,0,5)」可以：全部都在等 I/O，CPU 閒置。
+
+「(2,3,0)」不行：單核心不可能有兩個 running；雙核心才可能。
+
+「(1,0,4)」可以：一個在跑，其他都在等 I/O。
+
+「(1,1,3)」可以：等待的比就緒的多完全正常。
+
+
+
+@q sy6-26 | os-sync#6 | 3 | 證明
+優先權反轉：低優先權的 L 拿著鎖，高優先權的 H 等這把鎖，中優先權的 M 一直搶走 L 的 CPU。說明「優先權繼承」（L 暫時繼承 H 的優先權）為什麼能把 H 的等待時間限制住。
+---
+沒有繼承時，H 要等 L 放鎖，而 L 又要等所有 M 跑完才能跑，H 的等待被跟鎖完全無關的 M 拖得任意長。有繼承後，L 在持有 H 需要的鎖期間優先權和 H 一樣高，M 搶不走 CPU，L 會盡快跑完臨界區、放鎖、恢復原本的優先權。H 最多只要等 L 跑完一段臨界區的時間，這是可以事先估計的上限。
+
+
+@q me4-28 | os-memory#4 | 2 | 證明
+說明反轉頁表（每個實體 frame 一個項目）的大小只跟實體記憶體大小有關，跟行程數和虛擬位址空間大小都無關。
+---
+一般頁表是每個行程一張、每個虛擬頁一項，大小 ∝ 虛擬空間 × 行程數。反轉頁表全系統只有一張，每一項記錄「這個 frame 目前放的是哪個行程的哪一頁」，項目數＝frame 數＝實體記憶體 ÷ 頁大小。代價是查表時不能直接用頁號當索引，要搜尋或搭配雜湊。
+
+
+@q vm1-28 | os-vm#1 | 2 | 證明
+記憶體存取時間 $t$，處理一次缺頁要 $T$（$T\gg t$），缺頁機率 $p$。說明有效存取時間是 $(1-p)t+pT$，並說明 $p$ 為什麼必須非常小。
+---
+每次存取，機率 $1-p$ 時頁在記憶體裡，花 $t$；機率 $p$ 時缺頁，花 $T$（包含處理完後真正的存取）。期望值就是兩者加權。$t=100$ ns、$T=8$ ms 時，$p=0.001$ 就讓有效時間約 8.1 μs，慢了 80 倍；要只慢 10%，$p$ 得小於約百萬分之一點三。
+
+
+@q vm3-27 | os-vm#3 | 2 | 證明
+每個行程的工作集大小 $WSS_i$（最近一段時間用到的頁數），系統共 $m$ 個 frame。說明為什麼 $\sum WSS_i>m$ 時會發生 thrashing。
+---
+工作集是行程「最近一直在用」的頁。要讓每個行程都順利執行，它的工作集最好都在記憶體裡。總需求超過 frame 數時，至少有一個行程拿不到完整的工作集，它很快就會用到不在記憶體的頁、缺頁，把別人的頁擠出去，別人又跟著缺頁……大家都在等磁碟。解法是暫停一些行程，讓剩下的行程的工作集放得下。
+
+
+@q vm4-27 | os-vm#4 | 1 | 證明
+TLB 有 64 個項目、頁大小 4 KB。說明「TLB 涵蓋範圍」是多少，以及為什麼大頁能減少 TLB 失誤。
+---
+每個 TLB 項目對應一頁，64 項同時涵蓋 $64\times4\text{ KB}=256$ KB 的記憶體。程式常用的資料超過這個範圍就會不斷 TLB 失誤。改用 2 MB 的大頁，同樣 64 項可以涵蓋 128 MB，存取大陣列時 TLB 失誤大幅減少。
+
+
+@q st1-28 | os-storage#1 | 2 | 證明
+說明為什麼 SCAN（電梯）排程不會讓任何請求飢餓：一個請求最多等磁頭來回掃過兩趟。
+---
+磁頭在兩端之間來回移動。一個請求出現時，磁頭不管在哪裡、往哪個方向，最多先把目前這一趟走完（到盡頭），再往回走一趟，途中一定經過這個磁柱。所以等待時間有上限（約兩趟的時間），跟後來出現多少請求無關。SSTF 則可能一直被附近新出現的請求吸住。
+
+
+
+@q sc4-28 | os-sched#4 | 2 | 證明
+Linux CFS 每次挑「虛擬執行時間」（vruntime，實際跑的時間除以權重）最小的行程來跑。說明為什麼長期來看，每個行程分到的執行時間會和它的權重成正比。
+---
+跑得越多的行程，vruntime 長得越快，就越晚被挑到；落後的行程 vruntime 小，會被優先選中，直到追上。所以所有可執行行程的 vruntime 會保持差不多。vruntime 相等代表「實際時間 ÷ 權重」相等，也就是實際時間和權重成正比。權重高（優先權高）的行程，vruntime 長得慢，分到的實際時間就多。
+
+
+@q dl4-28 | os-deadlock#4 | 2 | 證明
+用「搶占資源」解除死結時，被搶走資源的行程通常要「回到之前的某個狀態」重新執行。說明為什麼不能讓它從被打斷的地方直接繼續。
+---
+行程拿著資源時可能已經用它做了一半的事（例如寫了一半的檔案、印了一半的頁），資源被拿走後，這些半完成的狀態可能不一致。只有回到「拿到這個資源之前」的檢查點，之後重新申請、重新做，結果才會正確。所以搶占需要定期存檢查點，最簡單的做法就是整個行程重來。
+
+
+
+@q dl1-28 | os-deadlock#1 | 2 | 找錯
+同學說：「只要破壞『互斥』這個條件，就能預防所有死結，所以作業系統應該讓所有資源都能共用。」錯在哪？
+[x] 很多資源本質上就不能共用（例如印表機正在印、寫入中的檔案、鎖），硬要共用會讓結果錯亂
+[ ] 他是對的
+[ ] 互斥不是死結的必要條件
+[ ] 破壞互斥會讓死結更多
+---
+四個必要條件中，互斥通常最無法破壞。實務上多從「循環等待」（資源編號、照順序申請）或「持有並等待」下手。
+
+
+@q dl2-26 | os-deadlock#2 | 1 | 找錯
+畫資源配置圖時，行程 P 已經拿到資源 R，同學畫了一條 $P\to R$ 的邊。錯在哪？
+[x] 方向反了：已配置（持有）是 $R\to P$，「申請中、還在等」才是 $P\to R$
+[ ] 他是對的
+[ ] 已配置不用畫邊
+[ ] 應該畫雙向的邊
+---
+邊的方向表示「等待」的關係：$P\to R$ 是 P 在等 R，$R\to P$ 是 R 被 P 拿著。方向畫錯，找環就會找錯。
+
+
+@q dl3-28 | os-deadlock#3 | 2 | 找錯
+同學實作 Banker：「行程申請的量 ≤ Available，就直接給。」錯在哪？
+[x] 還要假裝給了以後跑一次安全演算法；只有給完後系統仍然安全才給，否則讓它等
+[ ] 他是對的
+[ ] 申請量要 ≤ Max 就好
+[ ] 申請量 ≤ Available 時要拒絕
+---
+「現在給得起」不代表「給了以後大家都還能做完」。Banker 的重點正是預先檢查安全性，避免走進不安全狀態。另外也要檢查申請量不超過該行程宣告的 Need。
+
+
+@q me2-28 | os-memory#2 | 1 | 找錯
+空洞依序 100、500、200 KB，要放 300 KB 的行程。同學用 first-fit 選了 100 KB 那個，說「它是第一個」。錯在哪？
+[x] first-fit 是「第一個**放得下**的」：100 不夠，要選 500
+[ ] 他是對的
+[ ] 應該選 200
+[ ] first-fit 選最大的
+---
+first-fit 從頭找，跳過太小的，停在第一個夠大的空洞。放進 500 後剩 200 KB 的空洞。
+
+
+@q me3-29 | os-memory#3 | 3 | 找錯
+頁大小 4 KB，邏輯位址 20000。同學把 4 KB 當成 4000，算出頁號 5、位移 0。正確是？
+== 4,3616
+?? 頁號,位移
+---
+4 KB＝4096。$20000=4\times4096+3616$，頁號 4、位移 3616。頁大小是 2 的次方，頁號和位移就是位址的高位和低位，硬體不需要真的做除法。
+
+
+@q me4-29 | os-memory#4 | 3 | 找錯
+A 32-bit virtual byte address has a ten-bit outer-table index, a ten-bit inner-table index and a 12-bit page offset, in that high-to-low order. Analyze address 0xABCDEF12. Hexadecimal digits represent 4 bits each, while neither ten-bit index is constrained to begin and end on byte boundaries. The table indices select entries; the offset selects a byte within the resulting page.
+
+For verification, a student may shift the address right by twenty-2 bits to obtain the outer index. The inner index is obtained by shifting right 12 bits and then keeping ten bits, while the page offset keeps 12 low bits of the original address. Another student simply labels the first hexadecimal byte 0xAB as the outer index and the next byte 0xCD as the inner index. Ignore the contents of the selected entries, cached translations and access permissions, since none changes how the original address bits are partitioned. Which statements are correct? Select all that apply.
+?? 複選
+[ ] Its outer index is 0xAB, that is, 171.
+[ ] Its inner index is 0xCD, that is, 205.
+[x] Its page offset is 0xF12.
+[ ] Its outer index is obtained from the lowest ten address bits.
+[ ] The lowest twelve bits choose the outer-table entry.
+---
+二進位是 1010101111 0011011110 111100010010。
+
+「外層 0xAB」錯：0xAB 是最高八位；外層要最高十位，即位址右移 22 位，得 687。「內層 0xCD」錯：十位欄位不會剛好對齊十六進位的位元組；先右移十二位，再保留最低十位，得 222。「位移 0xF12」對：保留最低十二位，剛好是三個十六進位數字。「最低十位取外層」錯：外層要最高十位。「最低十二位選外表」錯：那段只表示頁內位置，不是查表索引。
+
+
+@q me5-26 | os-memory#5 | 3 | 找錯
+Segment number 2 has physical base 3000 and byte-length limit 1000. Its valid offsets run from 0 through 999 inclusive. Installed physical memory is large enough that address 4200 exists, but this process's segment descriptor does not grant access to every installed byte. Ignore permission differences and concentrate on the segment bound.
+
+A student computes base plus requested offset for 3 trials: offset 1200, offset 999 and offset 1000. The first sum is 4200, and the student treats the correctness of this addition as proof that the access is permitted. The specified hardware instead checks whether the offset is nonnegative and strictly less than the segment length before performing the memory access. An invalid attempt does not become valid just because its calculated physical address is inside the machine's RAM. Separate arithmetic correctness from the allocation and protection rule, paying attention to both the last accepted offset and the first excluded 1. Which statements are correct? Select all that apply.
+[x] The addition $3000+1200=4200$ is arithmetically correct.
+[x] The attempted access must nevertheless be rejected for exceeding the segment length.
+[x] Offset 999 is valid and translates to 3999.
+[ ] Any arithmetically correct base-plus-offset sum necessarily describes a permitted access.
+[x] Offset 1000 is invalid even though it equals the segment length.
+---
+「算術 4200」對：加法沒錯。「仍需拒絕」對：1200 不在 0 到 999 範圍。「999 到 3999」對：3000＋999。「加法對就可存取」錯：還有邊界與權限檢查。「1000 無效」對：長度為 1000 時最大合法位移是 999。
+
+
+@q pr1-32 | os-process#1 | 1 | 找錯
+同學說：「行程等的 I/O 完成了，就直接從 waiting 進 running。」錯在哪？
+[x] 要先回到 ready，排隊等排程器把 CPU 分給它；CPU 這時可能正被別的行程用
+[ ] 他是對的
+[ ] 要先回到 new
+[ ] 要先 terminated
+---
+waiting → ready → running。只有排程器能把行程放上 CPU，I/O 完成只代表它「可以跑了」。
+
+
+@q pr2-30 | os-process#2 | 2 | 找錯
+Consider the program
+```
+int x = 1;
+if (fork() == 0) { x = 5; exit(0); }
+wait(NULL);
+printf("%d", x);
+```
+A student says it prints 5, because the child changed `x` to 5 and the parent waits until the child has finished. The student's system implements `fork` lazily: parent and child share the same physical pages until one of them writes to a page, and at that moment the writer gets a private copy of that page. The student argues that, since the pages are shared at first, the parent must see the child's write. Which of the following statements are correct? Select all that apply.
+[x] The program prints 1.
+[x] After `fork()`, the child changes its own copy of `x`, not the parent's.
+[ ] The program prints 5, because `wait(NULL)` makes the parent see the child's changes.
+[x] Even if the system postpones the actual copying of memory until one side writes, each process still behaves as if it had its own copy.
+[ ] After `fork()`, the parent and the child share all global variables.
+---
+「印 1」對、「子行程改的是自己那份」對：`fork` 之後父子各有一份獨立的記憶體。
+
+「`wait` 讓父行程看到子行程的修改」錯：`wait` 只是等子行程結束、收它的結束狀態，不會同步記憶體。
+
+「延後複製也一樣是兩份」對：寫時複製只是實作上的最佳化，語意上仍是兩份。
+
+「父子共用全域變數」錯：要讓父行程拿到結果，得用結束狀態、pipe 或共享記憶體。（執行緒才共用全域變數。）
+
+
+@q pr3-28 | os-process#3 | 3 | 找錯
+同學說：「用使用者層級的執行緒（多對一，核心只看到一個行程），一個執行緒呼叫會阻塞的 read，其他執行緒照樣可以跑。」錯在哪？
+[x] 核心只知道有一個行程，read 阻塞時整個行程被放進 waiting，裡面所有執行緒都停了
+[ ] 他是對的
+[ ] 使用者層級執行緒不能呼叫 read
+[ ] 只有呼叫 read 的那個會停，其他繼續
+---
+這是多對一模型的主要缺點，也是現代系統多用一對一（每個執行緒都是核心執行緒）的原因之一。
+
+
+@q sc1-29 | os-sched#1 | 1 | 找錯
+A teaching assistant grades a homework question about one process in a simple system. The process arrives at time 2, completes at time 10, and needs 5 time units of running in total; it does no I/O, so whenever it is not running it sits in the ready queue. Turnaround time is the time from arrival to completion, and waiting time is the total time spent in the ready queue. A student answers that the waiting time is 8, and the assistant must decide whether the answer is right and what the correct value is. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] The waiting time is turnaround minus run time, $8-5=3$.
+[ ] The student is right: the waiting time is $10-2=8$.
+[ ] The waiting time is $10-5=5$, the completion time minus the run time.
+[ ] The waiting time is 10, the completion time.
+[ ] The waiting time cannot be found without the full schedule.
+---
+周轉＝完成－到達＝8，學生算的是周轉；「等待＝周轉－執行＝3」。完成減執行漏了扣到達時間；有到達、完成、執行三個數就夠算，不需要整張排程。
+
+
+@q sc2-30 | os-sched#2 | 2 | 找錯
+Under **non-preemptive** SJF, these processes are scheduled:
+
+| process | arrival | burst |
+|---|---|---|
+| $P_1$ | 0 | 8 |
+| $P_2$ | 1 | 2 |
+
+$P_1$ is already running when $P_2$ arrives at time 1. A student lets $P_2$ take the CPU immediately, draws $P_2$ from 1 to 3 and $P_1$ from 3 to 10, and reports an average waiting time of 1. The grader asks which algorithm the student actually simulated, and what the correct timeline and waiting times are under the stated rule. Which of the following statements are correct? Select all that apply.
+[x] Under non-preemptive SJF, $P_1$ runs to completion and $P_2$ starts at time 8.
+[x] Taking the CPU immediately on arrival describes SRTF.
+[x] SJF compares burst lengths only when the CPU becomes free.
+[x] $P_2$'s waiting time under non-preemptive SJF is 7.
+[ ] $P_2$ must wait until all processes have arrived before any lengths are compared.
+---
+不可搶先代表「$P_1$ 一旦開始就跑完」，$P_2$ 時間 8 才開始，「等待 $8-1=7$」。「到達就搶」的是 SRTF；SJF「只在 CPU 空出來時比較」。不必等所有行程到齊。
+
+
+@q sc3-31 | os-sched#3 | 1 | 找錯
+Two independent periodic tasks require 2 execution units every 10 time units and 1 execution unit every 5 time units. Both use the same processor, and all times share the same unit. One proposed utilization calculation reverses each fraction; another divides the sum of executions by the sum of periods. Compare these calculations with the amount of processor time actually demanded over a 10-unit interval containing complete periods. Which statements are correct? Select all that apply.
+?? 複選
+[x] The correct utilization is $\frac2{10}+\frac15=0.4$.
+[ ] The utilization is $\frac{2+1}{10+5}=0.2$.
+[ ] The utilization is $2+1=3$ time units per period.
+[ ] The student's value becomes correct once divided by the number of tasks, giving 5.
+[ ] A utilization of 10 is acceptable, since each task's period exceeds its execution time.
+---
+使用率是每個工作在一個週期裡用掉的 CPU 比例相加，「$\frac2{10}+\frac15=0.4$」，學生分子分母弄反了。總和相除不是各自比例的和；執行時間相加沒有意義；使用率超過 1 一定排不完，10 這種值本身就是警訊。
+
+
+@q st1-29 | os-storage#1 | 3 | 找錯
+A disk has cylinders 0 through 199. Its head is at cylinder 50, moving upward, and requests are pending at cylinders 20, 80, and 180; no new requests arrive, and the head stops after the last request is served. A student compares two policies: LOOK reverses as soon as no requests remain in the current direction, while SCAN first travels to the physical end, 199, before reversing. The student writes down a trace for each policy, together with the total number of cylinders the head crosses, and asks a classmate to check it. Which of the following statements are correct? Select all that apply.
+[x] LOOK reverses at cylinder 180.
+[x] LOOK travels 290 cylinders in total.
+[x] SCAN travels 328 cylinders in total under these rules.
+[ ] LOOK must visit cylinder 199 before servicing cylinder 20.
+[ ] Visiting 199 instead of reversing at 180 adds only nineteen cylinders to the complete trip.
+---
+「180 轉向」對：向上最後一個請求就是 180。「290」對：50→80→180→20，距離 30＋100＋160。「328」對：50→80→180→199→20，距離 30＋100＋19＋179。「LOOK 必到 199」錯：那是題設的 SCAN 路徑。「只多 19」錯：去邊界多 19，回程也多 19，合計多 38。
+
+
+@q st2-26 | os-storage#2 | 2 | 找錯
+4 顆 1 TB 的硬碟組成 RAID 5。同學說可用容量是 4 TB。錯在哪？
+[x] RAID 5 要用相當於 1 顆硬碟的空間存同位元，可用 3 TB
+[ ] 他是對的
+[ ] 可用 2 TB
+[ ] 可用 1 TB
+---
+同位元分散在 4 顆上，但總量等於一顆。RAID 0 才是 4 TB（沒有任何保護）；RAID 1 鏡像只有一半；RAID 6 兩份同位元，剩 2 TB。
+
+
+@q st4-27 | os-storage#4 | 2 | 找錯
+同學說：「符號連結（soft link）跟硬連結一樣，裡面存的是目標檔案的 inode 編號。」錯在哪？
+[x] 符號連結存的是目標的**路徑字串**；所以它能跨檔案系統、能指向目錄，但目標被刪或改名後就失效
+[ ] 他是對的
+[ ] 符號連結存的是檔案內容的複本
+[ ] 符號連結存的是磁碟區塊編號
+---
+硬連結直接是同一個 inode 的另一個名字，不會「失效」，但不能跨檔案系統。兩種連結的取捨就來自「存路徑」和「存 inode」的差別。
+
+
+@q st5-27 | os-storage#5 | 2 | 找錯
+同學描述日誌檔案系統：「先直接修改磁碟上的資料結構，改完再把這次的修改記到日誌裡。」錯在哪？
+[x] 順序反了：要**先**把修改寫進日誌並 commit，**再**改原本的位置；當機時才能用日誌重做或丟棄
+[ ] 他是對的
+[ ] 根本不需要日誌
+[ ] 日誌只記錄檔名
+---
+如果先改原處、還沒寫日誌就當機，就回到「改到一半、沒人知道改了什麼」的狀態，跟沒有日誌一樣。這叫 write-ahead logging。
+
+
+@q vm1-29 | os-vm#1 | 1 | 找錯
+With fault probability $p$, memory access time $t$ and fault service time $T$, a student writes the effective access time as $p\cdot t+(1-p)\cdot T$. Which of the following statements are correct?
+[x] The probabilities are swapped: the correct formula is $(1-p)\cdot t+p\cdot T$.
+[x] Since $p$ is usually tiny, the student's formula is almost $T$, as if every access faulted.
+[ ] The student's formula is correct, since it weights both cases by their probabilities.
+[ ] The effective access time is $t+T$, since every access needs both a lookup and a fault.
+[ ] The effective access time is $p\cdot T$, since accesses without page faults cost nothing at all.
+---
+沒缺頁的機率是 $1-p$、成本 $t$，缺頁的機率是 $p$、成本 $T$，學生「把機率對調了」；$p$ 很小時他的式子「幾乎等於 $T$」，好像每次都缺頁。$t+T$ 是每次都缺頁；不缺頁時也要花 $t$。
+
+
+@q vm2-28 | os-vm#2 | 2 | 找錯
+A student implements LRU as follows: "On an access to a page already in memory, do nothing; when a page must be replaced, replace the one loaded earliest." Which of the following statements are correct?
+[x] This is actually FIFO.
+[x] LRU must update the time of last use on every access, including hits.
+[x] For the reference string 1, 2, 1, 3 with 2 frames, LRU replaces page 2 while FIFO replaces page 1.
+[x] Updating cheaply on every hit needs hardware help or a simpler scheme.
+[ ] The student's implementation is a correct LRU, since loading a page also counts as using it.
+---
+命中時不更新、換最早載入的，「就是 FIFO」；LRU「每次存取（含命中）都要更新」。1、2 載入後再用 1：LRU 記得 1 剛用過，「換 2」；FIFO 換最早進來的 1。每次命中都更新太貴，所以「要硬體支援或用近似」。只在載入時記錄時間，等於記的是載入順序。
+
+
+@q vm3-28 | os-vm#3 | 2 | 找錯
+A student says: "The larger the working-set window $\Delta$, the fewer pages the working set contains." Which of the following statements are correct?
+[x] The claim is wrong: a larger window gives the same number of distinct pages or more.
+[x] If $\Delta$ is too small, pages still in use are left out, causing repeated faults.
+[x] If $\Delta$ is too large, old localities are included and the memory demand is overestimated.
+[ ] $\Delta$ has no effect on the size of the working set, only on how often it is measured.
+[ ] The claim is correct, since a larger window averages over more references and smooths them out.
+---
+工作集是最近 $\Delta$ 次存取裡出現過的不同頁，「範圍越大頁數只會一樣或更多」。「太小」漏掉正在用的頁、不斷缺頁；「太大」把很久以前的也算進來、高估需求。$\Delta$ 直接決定工作集的大小。
+
+
+@q vm4-28 | os-vm#4 | 1 | 找錯
+TLB 有 64 項、頁大小 4 KB。同學算 TLB 涵蓋範圍＝$\frac{64}{4\text{ KB}}$。錯在哪？
+[x] 每一項對應一整頁，要相乘：$64\times4\text{ KB}=256\text{ KB}$
+[ ] 他是對的
+[ ] 應該是 64 KB
+[ ] 應該是 4 KB
+---
+涵蓋範圍是「不 TLB 失誤就能存取的記憶體總量」。單位檢查：項目數 × 每項的大小。
+
+
+
+@q me3-30 | os-memory#3 | 2 | 情境
+同時開了 10 個文字編輯器視窗（10 個行程，跑同一個程式）。作業系統怎麼讓它們不用各放一份程式碼？
+[x] 程式碼是唯讀的，10 個行程的頁表把程式碼頁指向同一組實體 frame；各自的資料頁則分開
+[ ] 只讓一個行程執行，其他等待
+[ ] 把程式碼放在磁碟，每次執行再讀
+[ ] 合併成一個行程
+---
+分頁讓「虛擬頁 → 實體 frame」可以多對一。共享函式庫也是這樣：記憶體裡只有一份，每個行程都以為自己有一份。
+
+
+@q me4-30 | os-memory#4 | 3 | 情境
+A model system uses 48-bit virtual byte addresses, 4096-byte pages and 8-byte page-table entries. Its 4-level organization divides the virtual page number into 4 equal 9-bit indices. An allocated table reserves every entry position its index can select, and lower-level tables are created only when a mapped virtual page needs them. The root table remains part of the organization.
+
+For a sparse example, the process maps 2 adjacent pages near virtual address 0, so their translations can share the same path of upper tables and the same final table. Compare this with reserving a complete flat table for every virtual page in the 48-bit space. Ignore allocation headers, cached table entries and any TLB hit. An uncached lookup still must follow the table levels that exist; reducing total storage by leaving unused branches absent does not turn the lookup into direct single-entry indexing. Evaluate table-entry count, entry size, sparsity and lookup depth separately. Which statements are correct? Select all that apply.
+[x] A complete flat table would have $2^{36}$ entries.
+[x] A complete flat table would occupy 512 GiB.
+[ ] Each 512-entry table in the four-level design occupies only 512 bytes.
+[ ] Four levels inherently reduce an uncached table walk to one table-entry read.
+[ ] A sparse address space requires allocating every possible lower-level table in this design.
+---
+「2^36 項」對：48−12＝36 位虛頁號。「512 GiB」對：2^36×8＝2^39 位元組。「一張 512 位元組」錯：每項八位元組，512×8＝4096，一張剛好一頁。「未快取只讀一次」錯：四層走訪需逐層查表，另有資料存取。「稀疏仍全配置」錯：題設可省略未使用的下層表，這才是空間優勢來源。
+
+
+@q sc1-30 | os-sched#1 | 2 | 情境
+A laptop runs a text editor while a video converter and a nightly report generator run in the background. When you type, you want each character to appear on the screen within about 50 ms of the key press, although handling a key press takes the editor only about 1 ms of work on the processor. The video converter, in contrast, keeps the processor busy for 20 minutes at a time, and the report only has to be ready by 8 a.m. The operating system's scheduler must serve all three programs. Which of the following statements are correct? Select all that apply.
+[x] For such an interactive program, response time matters most.
+[x] Batch work, such as an overnight report, cares more about throughput and total completion time.
+[x] A general-purpose scheduler should let interactive processes get the CPU quickly.
+[x] Handling each key press needs only a little CPU work.
+[x] Long CPU-bound jobs should not delay the echo of a key press.
+---
+互動式工作「最在意回應時間」，「批次工作在意產出量和總完成時間」。每次按鍵「只需要一點點 CPU」，所以排程器「應該讓它很快拿到 CPU」，「不讓長的 CPU 工作擋住回顯」。五句都對。
+
+
+@q sc2-31 | os-sched#2 | 1 | 情境
+A supermarket with 6 checkout lanes opens an express lane for customers with 10 items or fewer, so that people buying little need not wait behind full carts; on a busy evening, a full cart takes about 8 minutes to check out and a basket of 5 items about 1 minute. A student in an operating-systems course notices that the store is solving a scheduling problem, and compares the express lane, and the single first-come line it replaced, with CPU-scheduling algorithms, asking what each policy does to the average waiting time. Which of the following statements are correct? Select all that apply.
+[x] The idea resembles shortest-job-first.
+[x] Letting short jobs finish first lowers the average waiting time.
+[x] With a single first-come line, one full cart makes everyone behind it wait a long time (the convoy effect).
+[ ] The idea resembles round robin, since every customer eventually gets a turn.
+[ ] The idea gives the highest priority to the customer with the fullest cart.
+---
+讓需要時間短的先完成，「平均等待下降」，就是「短工作優先」；大家排同一列時，「一個大推車讓後面的人都等很久」，是護航效應。快速櫃台沒有輪流；推最多的反而不能走快速櫃台。
+
+
+@q st4-28 | os-storage#4 | 3 | 情境
+A Linux regular file occupies 100 MiB. It has one hard link and two independent open file descriptors. That last name is successfully unlinked while both descriptors remain open. Ignore snapshots and all other references. Which statements are correct? Select all that apply.
+[x] Its hard-link count becomes zero.
+[x] Existing open descriptors can continue referring to the unnamed file.
+[ ] The unlink must immediately reclaim all 100 MiB despite those open descriptors.
+[x] Closing both descriptors removes the stated open references that prevent final reclamation.
+[ ] Closing just one of the two independent descriptors leaves zero open descriptors.
+---
+「連結數零」對：唯一名字已移除。「已開啟者仍可用」對：開啟參照沒有因名字消失而自動關閉。「立刻全部回收」錯：仍有開啟參照。「全關後解除此限制」對：在題設沒有其他參照時，檔案才具備最後回收的條件。「關一個剩零」錯：兩個獨立描述元減一後還有一個。
+
+
+@q vm2-29 | os-vm#2 | 1 | 情境
+手機瀏覽器開了很多分頁、記憶體快不夠時，會把某些分頁「丟掉」，切回去時再重新載入。最合理的挑法是？
+[x] 挑最久沒被看過的分頁（類似 LRU）
+[ ] 挑最新開的分頁
+[ ] 挑你現在正在看的分頁
+[ ] 隨便挑一個
+---
+最近用過的很可能馬上又會用到（時間區域性），最久沒用的最不可惜。這和頁替換的想法完全一樣，只是單位從「頁」換成「分頁」。
+
+
+
+@q sc2-32 | os-sched#2 | 2 | 追蹤
+RR 時間片 3（新到的行程排在被換下的行程前面）。A（到達 0、執行 5）、B（1、3）、C（2、4）。三個行程依序在什麼時間完成？
+== 11,6,12
+?? A,B,C
+---
+A 跑 0–3（這期間 B、C 到達，佇列 B、C、A）；B 跑 3–6 完成；C 跑 6–9（剩 1，排到 A 後面）；A 跑 9–11 完成；C 跑 11–12 完成。
+
+
+@q sc2-33 | os-sched#2 | 3 | 陷阱
+SRTF：A（到達 0、執行 6）、B（到達 2、執行 4）。B 到達時 A 剩 4，和 B 一樣。照「剩餘時間相同時不搶先」的規則，兩者各在什麼時間完成？
+== 6,10
+?? A,B
+---
+時間 2 時兩者剩餘都是 4，B 沒有**更短**，所以 A 繼續跑到 6，B 跑 6–10。如果規則是「相同也搶先」，答案就變成 B 在 6、A 在 10。排程題遇到平手要先看規則。
+
+
+@q sc1-31 | os-sched#1 | 2 | 計算
+一段時間 20 毫秒內，系統完成了 4 個行程。吞吐量是每毫秒幾個？
+== 0.2
+== 1/5
+---
+吞吐量＝完成的工作數 ÷ 時間＝$\frac4{20}=0.2$ 個／毫秒（每 5 毫秒完成一個）。它衡量的是系統整體的產出，不看個別行程等多久。
+
+
+@q vm2-30 | os-vm#2 | 3 | 追蹤
+Clock (second-chance) page replacement is used with 3 frames, initially empty, and the hand at frame 0. A newly loaded page gets reference bit 1 and the hand moves to the next frame; on a page fault with no free frame, the hand clears every reference bit 1 it meets and advances, and replaces the first page whose bit is 0. The reference string is 1 2 3 2 4 1 5. Which of the following statements are correct? Select all that apply.
+[x] Clock causes 6 page faults.
+[x] After the last reference, the frames hold pages 4, 1, 5 (frames 0, 1, 2).
+[ ] When page 4 is referenced, Clock replaces page 2.
+[ ] FIFO replacement with 3 frames causes fewer page faults than Clock on this string.
+[x] The optimal replacement algorithm with 3 frames causes 5 page faults on this string.
+---
+「6 次缺頁」對：1、2、3 缺頁填滿，參考位元都是 1，指針回到第 0 格。2 命中。4：繞一圈把三個都清成 0，回到第 0 格換掉 1。1：第 1 格位元是 0，換掉 2。5：第 2 格位元是 0，換掉 3。共 6 次。
+
+「最後是 4、1、5」對：見上。
+
+「4 進來換掉 2」錯：換掉的是 1。2 雖然剛被參考過，但它的位元和其他頁一樣在第一圈被清成 0，指針從第 0 格開始，先碰到 1。
+
+「FIFO 比較少」錯：FIFO 也是 6 次（4 換 1、1 換 2、5 換 3），這個參考串上兩者一樣。
+
+「最佳演算法 5 次」對：4 進來時換掉之後不再用的 3（或 2），1 就命中，只剩 5 再缺一次。
+
+
+@q st1-30 | os-storage#1 | 3 | 計算
+磁柱 0–199，磁頭在 53、往**小**的方向移動。請求：98、183、37、122、14、124、65、67。用 C-LOOK（往小的方向服務到最小的請求後，直接跳到最大的請求、繼續往小走；跳的距離也算），總移動量是多少？
+== 326
+---
+順序：37、14，跳到 183，再 124、122、98、67、65。距離 $16+23+169+59+2+24+31+2=326$。方向不同，同一組請求的順序和總量都不一樣。
+
+
+@q dl3-29 | os-deadlock#3 | 3 | 計算
+兩種資源，Available＝(1,1)。P0：Allocation (1,0)、Need (1,1)；P1：Allocation (0,1)、Need (1,1)；P2：Allocation (1,1)、Need (2,1)。一共有幾種安全序列？
+== 3
+---
+一開始只有 P0 或 P1 能做完。P0 先：Available 變 (2,1)，接著 P1 或 P2 都行 → P0,P1,P2 和 P0,P2,P1。P1 先：Available 變 (1,2)，P2 需要 (2,1) 不夠，只能 P0，之後 (2,2) 給 P2 → P1,P0,P2。共 3 種。
+
+
+@q sy4-25 | os-sync#4 | 2 | 追蹤
+號誌 S 初值 2。依序：P1 wait(S)、P2 wait(S)、P3 wait(S)、P1 signal(S)、P4 wait(S)。最後有幾個行程被擋住在等 S？
+== 1
+---
+P1、P2 各拿走一個（S 變 0）；P3 等。P1 signal 叫醒 P3，P3 拿到。P4 來時沒有剩，被擋住。所以最後只有 P4 在等，P2、P3 在臨界區裡。號誌的初值就是「同時可以進去幾個」。
+
+
+@q pr2-32 | os-process#2 | 3 | 追蹤
+程式只有一行 `fork() || fork();`。包含原本的行程，一共有幾個行程？
+== 3
+---
+父行程的第一個 fork 回傳正數（真），`||` 遇到真就不再算右邊。子行程得到 0（假），所以它會做第二個 fork，又多一個。總共 3 個。短路求值決定了哪些行程會走到後面的 fork。
+
+
+@q me3-31 | os-memory#3 | 3 | 計算
+A 32-bit virtual byte-address space uses pages of 8192 bytes. A complete single-level page table reserves 1 4-byte entry for every virtual page, whether or not that page is currently mapped. The word complete describes the range covered by the table, not the number of physical frames installed. Ignore any TLB or other cached translation and all table metadata.
+
+A student uses the page-size bit count as the number of page-number bits, while another assumes that an entire page table must fit inside 1 page. To test both interpretations, first divide a virtual address into page number and byte offset. Then determine the number of possible page numbers and multiply by the entry size. If the resulting table spans several pages, that is allowed in this single-level representation; a table entry and a page holding many entries are different units. Do not replace the stipulated full table by a sparse structure during the calculation. Which statements are correct? Select all that apply.
+[x] The page offset uses thirteen bits.
+[x] The complete table contains $2^{19}$ entries.
+[x] The table occupies 2 MiB.
+[x] The table is far larger than a single 8 KiB page.
+[x] The virtual page number uses nineteen bits.
+---
+「十三位位移」對：8 KiB＝2^13。「2^19 項」對、「虛頁號十九位」對：32−13＝19。「2 MiB」對：2^19×4＝2^21 位元組。「遠大於一頁」對：頁大小與整張頁表大小是兩回事，這張表要 256 頁才放得下。五句都對。
+
+
+
+@q sy1-28 | os-sync#1 | 3 | 計算
+count 從 0 開始。T1 做兩次 `count++`、T2 做兩次 `count--`，每次都分成「讀進暫存器」「改完寫回」兩步，可以任意交錯，沒有同步。最後 count 的最大可能值和最小可能值？
+== 2,-2
+?? 最大值,最小值
+---
+正確答案應該是 0。可是如果 T2 每次讀到的值都在 T1 寫回之前，T2 的寫回就被 T1 蓋掉：例如 T2 兩次讀、寫都夾在 T1 的「讀」和「寫」之間，T1 最後寫回 2，T2 的效果全部消失，最大可能是 2；對稱地最小可能是 −2。窮舉所有交錯，−2 到 2 都會出現。
+
+
+@q sy1-29 | os-sync#1 | 1 | 觀念
+In which of the following situations can a race condition occur? Select all that apply.
+[ ] Two threads each add 1 to their own local variable 1000 times.
+[x] Two threads each add 1 to the same shared counter 1000 times.
+[x] One thread updates a shared structure with two fields while another thread reads it.
+[x] Two processes each check that a file does not exist and then create it.
+[ ] Two threads only read the same shared value, which nobody ever changes.
+---
+競爭條件要有「共享的資料」加上「至少一方在寫」，結果才會取決於執行順序。
+
+「各自的區域變數」不會：在各自的堆疊上，不共享。
+
+「同一個計數器」會：讀、加、寫會交錯。
+
+「改兩欄位時另一個在讀」會：可能讀到一半新、一半舊。
+
+「檢查不存在再建立」會：兩個都檢查完才建立，檔案被建兩次或互相覆蓋。
+
+「只讀不寫」不會。
+
+
+@q sy5-26 | os-sync#5 | 3 | 追蹤
+Mesa 語意的監視器，容量 1 的緩衝區，消費者寫 `while (count == 0) notEmpty.wait();`。依序發生：C1 進來，發現空了 → wait；P 進來放 1 個、`notEmpty.signal()`、離開；C1 被叫醒但還沒搶到鎖時，C2 先進監視器把那 1 個拿走、離開；然後 C1 拿到鎖。到這一刻為止（含接下來的檢查），C1 一共呼叫了幾次 `wait()`？
+== 2
+---
+第一次：空了，wait。被叫醒後 C2 先搶到、把東西拿走。C1 回到 while 再檢查，count 又是 0，於是第二次 wait。這就是 Mesa 要用 while 的原因：被叫醒只代表「條件曾經成立過」，不代表輪到你時還成立。
+
+
+@q pr4-26 | os-process#4 | 3 | 陷阱
+A C program calls `printf` 10 times, each time printing 10 characters without a newline, and its output is redirected to a file. The C library first collects output in a buffer in the program's own memory and passes it to the kernel only when 4 KB have accumulated or when the program exits. Which of the following statements are correct? Select all that apply.
+[x] This output causes about one `write` system call, issued when the program exits.
+[x] `printf` is a library function, not a system call.
+[ ] Each call to `printf` is a separate system call, so there are 10 of them.
+[x] When the output goes to a terminal instead, the library usually passes the buffer to the kernel at each newline.
+[ ] No system call is needed, because `printf` does not need the operating system.
+---
+「約一次 `write`」對：100 個字元遠不到 4 KB，程式結束時一次送出。
+
+「`printf` 是函式庫函式」對：它在使用者空間格式化、累積，需要時才呼叫 `write`。
+
+「每次 `printf` 都是系統呼叫」錯：累積起來一次送，就是為了省下模式切換的成本。
+
+「輸出到終端機時遇換行就送」對：互動時使用者要馬上看到。
+
+「不需要任何系統呼叫」錯：真正寫到檔案一定要經過核心。
+
+
+@q dl2-27 | os-deadlock#2 | 2 | 情境
+A database finds 4 jobs waiting for one another in a cycle and must pick a victim to abort, releasing its locks. Which of the following are common considerations when picking the victim?
+[x] Pick the job that has done the least work.
+[x] Avoid picking the same job again and again.
+[ ] Pick the job that started earliest, since it must be the one that caused the cycle of waiting.
+[ ] Pick the job with the smallest ID number, since IDs reflect how important each job is.
+[ ] Abort all four jobs at once, since aborting only one can never break a cycle of four.
+---
+挑犧牲者看代價：「做得最少的」重做最划算，同時「不要一再挑同一個」，否則它會飢餓。誰最早開始和誰「造成」卡死沒有關係，環上每一個都一樣有份；編號和重要性無關；中止環上任何一個就能打破這個環。
+
+
+@q sy4-26 | os-sync#4 | 2 | 追蹤
+號誌 S 初值 1、T 初值 0。P1 重複兩次：`wait(S); 印 A; signal(T);`。P2 重複兩次：`wait(T); 印 B; signal(S);`。兩個行程同時開始跑，輸出是？
+== ABAB
+---
+一開始只有 S 可以過，P1 先印 A、放行 T；P2 印 B、放行 S；P1 再印 A……兩個號誌像一根接力棒在兩個行程之間傳，順序只可能是 ABAB。
+
+
+@q sy4-27 | os-sync#4 | 3 | 情境
+有限緩衝區有**多個**生產者和多個消費者。有人覺得 empty、full 兩個號誌已經能擋住「放進滿的」和「從空的拿」，就把 mutex 拿掉。會出什麼問題？
+[x] 兩個生產者可能同時通過 wait(empty)，讀到同一個 in 位置，把資料寫進同一格（一筆被蓋掉）
+[ ] 生產者會把資料放進已經滿的緩衝區
+[ ] 消費者會從空的緩衝區拿東西
+[ ] 不會有問題，因為 empty 和 full 已經夠了
+---
+empty、full 只管「數量」：空格夠兩個人放，兩個生產者就都能通過。但「寫進 buffer[in]、in 加 1」這兩步本身是共享資料的讀改寫，沒有 mutex 就是競爭條件。只有一個生產者、一個消費者時，兩邊各自只動自己的 in／out，才有機會不用 mutex。
+
+
+
+@q me5-27 | os-memory#5 | 2 | 計算
+段表（base, limit）：第 0 段 (219, 600)、第 1 段 (2300, 14)、第 2 段 (90, 100)、第 3 段 (1327, 580)、第 4 段 (1952, 96)。邏輯位址 (0,430)、(1,10)、(2,500)、(3,400)、(4,112) 中，有幾個越界？
+== 2
+---
+位移要小於 limit：(0,430)→649、(1,10)→2310、(3,400)→1727 合法；(2,500) 的 500≥100、(4,112) 的 112≥96 都越界，會 trap 給作業系統。
+
+
+@q me5-28 | os-memory#5 | 2 | 觀念
+A system uses segmentation with the following segment table (all numbers in bytes): segment 0 has base 1400 and limit 1000; segment 1 has base 6300 and limit 400; segment 2 has base 4300 and limit 400; segment 3 has base 3200 and limit 1100. A logical address is written as (segment, offset). Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] The logical address (2, 53) maps to the physical address 6353.
+[ ] The logical address (3, 852) maps to the physical address 2252.
+[ ] The logical address (0, 1222) maps to the physical address 2622, since the base of segment 0 is 1400.
+[ ] The logical address (1, 400) maps to the physical address 6700.
+[x] Each segment is one contiguous block, but different segments need not be adjacent.
+---
+轉換規則：先檢查 offset < limit，通過才算 base＋offset，否則觸發例外（trap）。
+
+「(2, 53) → 6353」錯：用到段 1 的 base。段 2 的 base 是 4300，$53<400$，得 4353。
+
+「(3, 852) → 2252」錯：用到段 0 的 base。段 3 的 base 是 3200，$852<1100$，得 4052。
+
+「(0, 1222) → 2622」錯：$1222\ge1000$，超出段 0 的長度，會 trap，不會產生實體位址。直接加 base 是常見的漏步驟。
+
+「(1, 400) → 6700」錯：合法的 offset 是 0～399，400 剛好等於 limit，也要 trap。
+
+「段內連續、段間不必相鄰」對：每段只用一組 base、limit 描述，所以段內必須連續；各段有自己的 base，可以放在任何地方。也因為每段都要一整塊，才會有外部碎片。
+
+
+@q st2-27 | os-storage#2 | 2 | 計算
+4 顆硬碟的 RAID 5，某條 stripe 的內容：第 1 顆 1100、第 2 顆 1010、第 3 顆壞了、第 4 顆（同位元）0101。第 3 顆原本的內容是？
+== 0011
+---
+同位元＝所有資料區塊的 XOR，所以任何一塊＝其他所有塊的 XOR：$1100\oplus1010\oplus0101=0011$。檢查：$1100\oplus1010\oplus0011=0101$，跟同位元一致。
+
+
+@q st2-28 | os-storage#2 | 3 | 比較
+Four equal disks are numbered 0 through 3. RAID 1+0 stripes mirrored pairs {0,1} and {2,3}. RAID 0+1 mirrors striped pairs {0,1} and {2,3}; in this model any failed disk makes its entire striped pair unavailable, and combining surviving disks from different striped pairs is not supported. Two disks fail before any repair. Which statements are correct? Select all that apply.
+[x] There are six unordered pairs of failed disks.
+[x] RAID 1+0 remains operational for four of those pairs.
+[x] RAID 0+1 remains operational for two of those pairs under the stated availability rule.
+[ ] RAID 1+0 tolerates every pair of disk failures.
+[ ] Both organizations provide four disks' worth of usable data space.
+---
+「六組」對：四顆選二顆，4×3÷2＝6。「1+0 四組」對：只要每組鏡像各剩一顆；壞同組兩顆的兩種情況會失敗。「0+1 兩組」對：兩顆都壞在同一條帶組時，另一組還完整；分壞兩組則依題設都不可用。「任意兩顆都行」錯：同一鏡像對全壞就不行。「四顆空間」錯：兩種都有一半用於鏡像，只有兩顆的可用資料量。這裡判定陣列是否能依既定模型繼續服務，不宣稱所有失敗情況都絕對無法人工救援。
+
+
+@q st2-29 | os-storage#2 | 3 | 情境
+A lab buys eight equal 20 TB disks for a new storage array and considers four conventional layouts: RAID 0, RAID 5, RAID 6, and RAID 1+0 built from four mirrored pairs. Metadata and spare disks are ignored. The lab requires that the array survive any two complete disk failures before the first one is repaired, because rebuilding a 20 TB disk can take more than a day. Among the layouts that meet this requirement, the lab wants the one with the most usable space for its 100 TB of data. Which of the following statements are correct? Select all that apply.
+[x] RAID 6 provides 120 TB of usable data space.
+[x] RAID 6's two-parity protection meets the stated two-disk-failure model.
+[x] Four mirrored pairs in RAID 1+0 provide 80 TB of usable data space.
+[ ] RAID 5 provides 120 TB of usable data space with these eight disks.
+[ ] RAID 1+0 necessarily survives any two failed disks even if both are in the same mirrored pair.
+---
+「RAID 6 為 120 TB」對：(8−2)×20。「能承受題設兩顆」對：依一般雙同位元陣列的整顆磁碟故障模型判斷，不延伸成任何毀損都能救。「1+0 為 80 TB」對：四組鏡像各留一顆資料量。「RAID 5 為 120」錯：它用一顆等量同位元，為 (8−1)×20＝140 TB。「同鏡像兩顆壞也行」錯：那組資料沒有剩餘副本，不能符合任意兩顆都可容忍的要求。
+
+
+@q st3-27 | os-storage#3 | 3 | 計算
+A file system uses 8 KiB blocks and 8-byte block pointers, and each inode has a double-indirect pointer: it names a block of pointers, each of which names another block of pointers to data blocks.
+```
+inode -> double-indirect block -> single-indirect block -> data block
+```
+The inode is cached, but neither indirect block nor the target data block is cached, and each block read is one disk I/O. Ignore every other metadata read, and assume an ordinary two-step indirect lookup. A developer wants to know how much file data this part of the inode can address, and how many disk reads it takes to read one data block through it, compared with reading a block through a direct pointer. A colleague claims that the two lookup steps already include the data, so only two reads are needed, and that the double-indirect part covers just 8 MiB. Which of the following statements are correct? Select all that apply.
+[x] Each indirect block holds 1024 pointers.
+[x] The double-indirect part can address 8 GiB of file data.
+[x] Reading one data block through that path requires three disk-block reads in this model.
+[ ] The double-indirect part addresses only 8 MiB of file data.
+[ ] The two indirect lookup steps already include reading the requested data, so only two disk reads are required.
+---
+「1024」對：8192÷8。「8 GiB」對：1024² 個資料塊，每塊 8192 位元組，共 2^33。「三次」對：讀第一層間接塊、第二層間接塊，最後讀資料塊。「8 MiB」錯：那只有一層間接的資料量。「兩次已含資料」錯：間接塊存的是指標，還不是需要的資料內容。
+
+
+@q st3-28 | os-storage#3 | 3 | 陷阱
+An older file system gives each inode 12 direct pointers, one single-indirect pointer, and one double-indirect pointer, but no triple-indirect pointer. Blocks are 4096 bytes and pointers are 4 bytes, and only file-data blocks are counted, with logical block indices starting at 0. A program tries to extend a file to logical block 1050000, and the file system returns an error. The developer computes the addressable range part by part, starting with the 12 direct blocks, to see whether the error is expected, how many blocks come from the double-indirect part alone, and what the largest valid logical block index is, before filing a bug report. A teammate suggests that the system could simply follow a triple-indirect path for such large indices, and the developer must explain why that is not possible here. Which of the following statements are correct? Select all that apply.
+[x] An indirect block holds 1024 pointers.
+[x] The inode can address 1049612 file-data blocks.
+[x] Logical block 1050000 is outside this inode's addressable range.
+[ ] The final valid logical block index is 1049612.
+[ ] Any request for logical block 1050000 can be satisfied simply by reading a nonexistent triple-indirect path.
+---
+「1024 指標」對：4096÷4。「1049612 資料塊」對：12＋1024＋1024²。「1050000 超出」對：最大合法序號為 1049611。「最後 1049612」錯：序號從零開始，總數要減一。「走三層即可」錯：題設根本沒有三層間接指標，不能先假定路徑存在再算讀取次數。
+
+
+
+@q me2-29 | os-memory#2 | 3 | 追蹤
+A contiguous allocator keeps its free holes in address order, with these sizes:
+
+| hole | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|
+| size (KiB) | 100 | 500 | 200 | 300 | 600 |
+
+Requests arrive in the order 212, 417, 112, and 426 KiB. Each request is placed entirely inside one hole, the chosen hole is split, no other allocation is ever moved, and the simulation stops at the first request that cannot be placed. A student simulates first-fit, best-fit, and worst-fit, writing the hole sizes after every request in a table, and compares which policies place all four requests. A classmate expects worst-fit to do best, because it leaves the largest remainders for later requests, and another expects first-fit and best-fit to fail at the same request. The student wants to check both predictions and to record where each request is placed by every policy. Which of the following statements are correct? Select all that apply.
+[x] Best-fit satisfies all four requests.
+[x] First-fit fails on the final 426 KiB request.
+[ ] Worst-fit satisfies all four requests.
+[ ] Best-fit initially places the 212 KiB request in the 500 KiB hole.
+[ ] First-fit has a 426 KiB hole remaining after its first three allocations.
+---
+「best-fit 全過」對：依序用 300、500、200、600 的洞。「first-fit 最後失敗」對：前三筆後洞為 100、176、200、300、183，最大 300。「worst-fit 全過」錯：前三筆後洞為 100、83、200、300、276，最大也是 300，最後一筆失敗。「best-fit 首用 500」錯：最小夠大的是 300。「first-fit 剩 426 洞」錯：雖然總空間可能夠，沒有單一洞夠大。
+
+
+@q me2-30 | os-memory#2 | 2 | 計算
+接上題，best-fit 放完四個請求後，五個空洞各剩多少 KB？剩下的空閒加起來是多少？
+== 533
+---
+各剩 100、83、88、88、174，總和 533 KB（原本 1700 減去 1167）。總量不少，但最大的一塊只有 174 KB，再來一個 200 KB 的請求就放不下：這就是外部碎片。
+
+
+
+@q sy1-30 | os-sync#1 | 2 | 證明
+count 從 0 開始，兩條執行緒各做一次 `count++`，每次是「讀出 count」和「寫回讀到的值＋1」兩步，可以任意交錯。說明最後 count 只可能是 1 或 2。
+---
+每次寫入的值＝那條執行緒讀到的值＋1。讀到的值只可能是 0（初值）或對方寫的值。第一個被寫入的值一定是 0＋1＝1；要寫出 2，必須讀到對方已經寫的 1，那時對方已經寫完、不會再寫。所以所有寫入的值只有 1 或 2，最後的值是最後一次寫入，不可能是 0（至少寫了一次）也不可能大於 2。
+
+
+@q vm2-31 | os-vm#2 | 3 | 證明
+說明為什麼 LRU 頁替換不會有 Belady 異常：frame 從 $k$ 個加到 $k+1$ 個，缺頁次數不會增加。
+---
+LRU 在任何時刻，記憶體裡放的就是「最近用過的 $k$ 個不同頁」。最近用過的 $k$ 個一定包含在最近用過的 $k+1$ 個裡，所以在同一個參考序列的任何時刻，$k$ 個 frame 的內容 ⊆ $k+1$ 個 frame 的內容（堆疊性質）。$k$ 個 frame 時找得到的頁，$k+1$ 個時也一定找得到，缺頁只會少不會多。FIFO 沒有這個包含關係，才可能出現異常。
+
+
+@q me3-32 | os-memory#3 | 2 | 證明
+頁大小 $P$。假設行程的大小除以 $P$ 的剩餘部分是在 $[0,P)$ 之間均勻分布。說明分頁平均每個行程浪費約 $P/2$ 的內部碎片，並說明頁太大、太小各有什麼代價。
+---
+行程佔 $\lceil s/P\rceil$ 頁，只有最後一頁可能沒用滿；沒用到的部分是 $P$ 減去剩餘，剩餘在 $[0,P)$ 均勻分布時平均 $P/2$。頁越大內部碎片越多；頁越小頁表越大、TLB 能涵蓋的範圍越小、磁碟傳輸次數越多。所以頁大小是折衷。
+
+
+@q pr5-29 | os-process#5 | 2 | 證明
+兩個行程要交換大量資料。說明為什麼共享記憶體一旦建立好，通常比每次都用 send／receive 的訊息傳遞快，但需要自己處理同步。
+---
+共享記憶體只有建立（和拆除）時要系統呼叫；之後讀寫那塊區域就是一般的記憶體存取，不經過核心、也不複製。訊息傳遞每次 send、receive 都是系統呼叫，資料通常要從傳送端複製到核心、再複製到接收端。代價是：核心不再替你排先後，兩個行程同時讀寫同一塊資料就是競爭條件，要自己用號誌或鎖保護。
+
+
+@q sc4-29 | os-sched#4 | 2 | 證明
+多核心系統中，說明為什麼排程器傾向讓一個行程繼續在上次跑的那顆核心上跑（處理器親和性），即使另一顆核心比較閒。
+---
+行程在核心 0 跑過一段時間後，它常用的資料和指令留在核心 0 的 cache 裡。若搬到核心 1，核心 1 的 cache 裡沒有這些資料，要重新從記憶體一筆一筆抓，前一段時間會跑得慢；核心 0 cache 裡那些資料也白費了，甚至要被作廢。只有在負載差太多時，搬過去的好處才大過這個代價，所以負載平衡和親和性要折衷。
+
+
+@q vm3-29 | os-vm#3 | 3 | 證明
+說明 thrashing 的惡性循環：為什麼在所有行程的工作集總和超過實體記憶體時，CPU 使用率會下降，而「CPU 很閒就多放幾個行程進來」的策略會讓情況更糟。
+---
+工作集放不下時，每個行程很快就缺頁，大部分時間都在等頁從磁碟搬進來，CPU 沒事做，使用率下降。如果排程器看到使用率低就提高多工程度，新行程又分走 frame，每個行程能用的 frame 更少，缺頁更頻繁，使用率更低——正回饋。解法是反過來控制：依工作集或缺頁頻率決定能同時放幾個行程，必要時把整個行程換出去。
+
+
+
+@q dl1-29 | os-deadlock#1 | 2 | 證明
+規定行程開始執行前必須一次申請它需要的**所有**資源，拿不到全部就一個都不拿、先等著。說明這樣為什麼不會死結，以及它的代價。
+---
+行程要嘛什麼都沒拿在等，要嘛已經拿齊、不會再等別的資源。所以不會出現「拿著一些資源又在等別的」，「持有並等待」這個必要條件被打破，死結不可能發生。代價是資源使用率低（很早就拿著、很晚才用），而且需要大量資源的行程可能一直湊不齊而飢餓。
+
+
+@q dl4-29 | os-deadlock#4 | 2 | 證明
+偵測到死結後，系統終止了一個卡住的行程。說明為什麼這不一定能讓所有卡住的行程都動起來。
+---
+等待圖裡可能有好幾個互不相干的環。終止的行程只會打斷它所在的那些環；另一個環上的行程和它沒有任何關係，仍然互相等待。所以終止後要重新跑偵測，直到沒有環為止；而每次挑誰終止也要考慮代價（已執行多久、拿了多少資源）。
+
+
+@q me1-29 | os-memory#1 | 3 | 證明
+執行時位址繫結：程式產生的是邏輯位址，每次存取都要加上 base 才是實體位址。說明為什麼這個加法必須由硬體（重定位暫存器、MMU）做，而不能由作業系統用軟體在每次存取前做。
+---
+每一條讀寫記憶體的指令都要做這個轉換，數量和程式執行的指令數同等級。如果每次都要進入作業系統、用軟體算完再存取，每次存取多出幾十到上百條指令，程式會慢上數十倍。硬體在存取路徑上直接做一次加法（和越界比較），幾乎不花時間；作業系統只要在換行程時改 base 和 limit 暫存器。
+
+
+@q pr1-33 | os-process#1 | 1 | 證明
+說明為什麼單核心電腦上，同一時刻最多只有一個行程處於 running 狀態，但 ready 和 waiting 的行程可以有很多個。
+---
+running 代表「正在 CPU 上執行指令」，一顆單核心 CPU 一次只執行一條指令序列，所以最多一個。ready 只是「準備好了、在排隊等 CPU」，waiting 是「在等 I/O 或某個事件」，這兩種都不佔用 CPU，只是佇列裡的一筆紀錄，數量只受記憶體限制。
+
+
+@q pr3-29 | os-process#3 | 2 | 證明
+多對一的執行緒模型：一個行程的許多使用者層級執行緒，全部由核心裡的**一個**執行單位來跑。說明為什麼其中一條執行緒請核心讀磁碟、核心讓它等 I/O 完成時，整個行程的所有執行緒都會停下來。
+---
+核心只看得到那一個執行單位，不知道使用者空間裡還有其他執行緒。那條執行緒進入系統呼叫後，核心把這個執行單位設成 waiting，直到 I/O 完成；使用者層級的執行緒排程器也在這個執行單位上跑，跟著一起停住，其他執行緒就算準備好了也沒人能讓它們上 CPU。一對一模型中每條執行緒各有核心執行單位，才沒有這個問題。
+
+
+@q sy5-27 | os-sync#5 | 3 | 證明
+說明為什麼在 Hoare 語意的監視器裡，等待條件可以用 `if (!條件) x.wait();`，不一定要用 while。
+---
+Hoare 語意規定 signal 之後，被叫醒的行程**立刻**接手監視器，發出 signal 的行程先讓出去等。發 signal 的人只在條件成立時才 signal，而從 signal 到被叫醒的行程開始執行之間，沒有任何其他行程能進入監視器改變狀態，所以醒來時條件一定還成立，檢查一次就夠。Mesa 語意下被叫醒的只是移到入口排隊，中間可能有人先進來把條件改掉，才需要 while。
+
+
+
+@q pr2-33 | os-process#2 | 2 | 反例
+Someone claims: "A child created by `fork()` starts executing again from the first line of `main`." Consider the following program, whose output goes to a terminal, so each `printf` that ends with a newline is written out immediately:
+```c
+int main() { printf("x\n"); fork(); fork(); printf("y\n"); }
+```
+The program runs as process 2000, and every `fork()` call succeeds. A student counts the lines on the screen to test the claim, and a classmate draws a tree of the processes that are created, labeling each with its process ID. Which of the following statements are correct? Select all that apply.
+[x] The program prints `x` once and `y` four times.
+[x] Including the original process, four processes run `printf("y\n")`.
+[ ] Since each child restarts from the beginning of `main`, `x` is printed four times.
+[x] `fork()` returns 0 in the child and returns the child's process ID in the parent.
+[ ] The program prints 8 lines in total.
+---
+子行程複製父行程當下的狀態，包括「下一行要執行哪裡」，所以從 `fork()` 回傳的地方接著跑。
+
+「x 一次、y 四次」對、「四個行程印 y」對：第一個 `fork()` 之後有 2 個行程，兩個都執行第二個 `fork()`，變成 4 個；`x` 在任何 `fork()` 之前，只印一次。
+
+「從頭開始所以 x 印四次」錯：這就是題目的錯誤說法。
+
+「子行程拿到 0、父行程拿到子行程的 PID」對：程式靠這個回傳值分辨自己是哪一個。
+
+「8 行」錯：$1+4=5$ 行。（輸出導到檔案時，`x` 可能還在緩衝區裡被複製而印好幾次，那是另一回事。）
+
+
+@q sc2-34 | os-sched#2 | 2 | 反例
+Three processes arrive at time 0 in the order $P_1, P_2, P_3$, with these CPU bursts:
+
+| process | $P_1$ | $P_2$ | $P_3$ |
+|---|---|---|---|
+| burst | 8 | 1 | 1 |
+
+Someone claims: "SJF minimizes the average waiting time, so every process waits less under SJF than under FCFS." To check the claim, a student draws the FCFS and SJF timelines, computes each process's waiting time and turnaround time under both, and compares them process by process. The student also wonders what would happen to $P_1$ under SJF if short processes kept arriving every few time units. A classmate adds that the average turnaround time under SJF should be $14/3$, and the student wants to check that value as well, since the course's homework asks for both averages to be reported exactly as fractions, without rounding. Which of the following statements are correct? Select all that apply.
+[x] Under FCFS, the average waiting time is $17/3$.
+[x] Under SJF, the average waiting time is $1$.
+[ ] Under SJF, every one of the three processes waits less than it does under FCFS.
+[ ] Under SJF, the average turnaround time is $14/3$.
+[x] If short processes kept arriving, $P_1$ could wait indefinitely under SJF.
+---
+「FCFS 平均等待 $17/3$」對：順序 $P_1,P_2,P_3$，等待 0、8、9，總和 17。
+
+「SJF 平均等待 1」對：順序 $P_2,P_3,P_1$，等待 0、1、2。
+
+「每個都等得比較少」錯：$P_1$ 在 FCFS 等 0，在 SJF 要等 2。平均變好不代表每一個都變好。
+
+「SJF 平均周轉 $14/3$」錯：完成時間 $P_2$ 1、$P_3$ 2、$P_1$ 10，周轉＝完成－到達，總和 13，平均 $13/3$。（也可以用「周轉＝等待＋執行」：$(0+1)+(1+1)+(2+8)=13$。）
+
+「短工作一直來，$P_1$ 可能一直等」對：這就是 SJF 的飢餓問題，長工作一直被往後排。
+
+
+@q st1-31 | os-storage#1 | 2 | 反例
+有人說：「SCAN（電梯法）總是比 SSTF 移動得少。」磁軌 0–199，磁頭在 50、正往大的方向移動，請求只有 45 和 55。SSTF 和 SCAN 各移動多少？
+== 15,303
+?? SSTF,SCAN
+---
+SSTF：$50\to55\to45$，$5+10=15$（先去 45 也是 15）。SCAN 要一路掃到 199 才回頭：$5+(199-55)+(199-45)=5+144+154=303$。SCAN 的好處是公平、不會讓遠端的請求飢餓，不是總移動量一定最小；改用 LOOK（不走到盡頭）就只要 15。
+
+
+@q sy4-28 | os-sync#4 | 2 | 反例
+In a semaphore implementation, wait first decrements the value and puts the caller into a waiting queue if the result is negative; signal increments it and wakes one waiter if any. Which of the following statements are correct? Select all that apply.
+[x] With initial value 1, after three processes call wait in turn, the value is $-2$, and two of them are waiting.
+[x] In this implementation, whenever the value is negative, its absolute value is the number of waiting processes.
+[ ] In every semaphore implementation, the value can never be negative.
+[x] In the busy-waiting version, where wait spins while the value is $\le0$ and then decrements, the value never goes below 0.
+[ ] If the value is $-2$, one signal makes it 0.
+---
+「三次 wait 後是 $-2$」對：1 → 0 → $-1$ → $-2$，後兩個在佇列裡等。
+
+「負值的絕對值是在等的數量」對：課本上「會睡覺」的實作。
+
+「永遠不會是負的」錯：見上。
+
+「忙碌等待版本不會小於 0」對：值是 0 時就在迴圈等，不會再減。兩種寫法對外的行為一樣，只是內部記錄方式不同。
+
+「$-2$ signal 一次變 0」錯：變 $-1$，並叫醒一個。
+
+
+
+@q me1-30 | os-memory#1 | 3 | 比較
+Three programs refer to a variable that lies 256 bytes after the start of their image, and each image is moved from base 4096 to base 8192 without rewriting any code:
+
+| program | how the reference is stored |
+|---|---|
+| R | absolute address 4352, fixed at compile time |
+| L | absolute address 4352, patched once by the loader when the image was first loaded at 4096 |
+| T | logical address 256; the hardware adds the current base on every access |
+
+After the move, the operating system updates any base register that the hardware uses for the moved process. A student must predict which programs still find the variable at its new physical address, 8448, and explain when each program's final physical address is computed. The three programs are otherwise identical, and each reads the variable once per second; a colleague claims that load-time patching is good enough as long as nothing moves after loading. Which of the following statements are correct? Select all that apply.
+[x] Updating the third program's base allows its unchanged logical address to refer to 8448.
+[x] The two unchanged absolute references can still designate the old address 4352.
+[x] Load-time patching alone does not make the saved absolute reference follow later moves.
+[x] Execution-time translation defers the final physical-address calculation until an access occurs.
+[x] The third program keeps using logical address 256 after the move.
+---
+「8448」對：8192＋256。「舊絕對地址 4352」對：4096＋256 已固定在程式內，搬動沒有修補它。「載入修補不會跟著搬」對：一次修補不是持續轉換。「執行時才算實體」對。「仍用邏輯 256」對：由新 base 決定實體位置。五句都對。
+
+
+@q me3-33 | os-memory#3 | 3 | 比較
+A process has a 32-bit virtual byte-address space, with 4096-byte pages and frames. The machine installs 1 GiB of physical memory. Its ordinary complete single-level page table reserves 1 8-byte entry for every virtual page. Do not substitute an inverted table: the entry index here is the virtual page number, while a valid entry's contents can identify a physical frame.
+
+Compare 3 quantities before calculating storage: virtual pages in the address space, physical frames in installed memory, and bytes per page-table entry. 1 report multiplies the physical frame count by 8 and calls that the complete process table size. Another uses the number of virtual page-number bits as the page offset width. The process may have invalid entries for pages it does not currently map, but those positions are still reserved in the specified complete table. Ignore metadata, alignment overhead and cached translations. Which statements are correct? Select all that apply.
+[x] The virtual space contains $2^{20}$ pages.
+[x] Physical memory contains $2^{18}$ frames.
+[ ] The complete page table occupies 2 MiB.
+[ ] The table needs only $2^{18}$ entries because there are that many physical frames.
+[ ] The page offset requires twenty bits.
+---
+「虛頁 2^20」對：2^32÷2^12。「框 2^18」對：2^30÷2^12。「表 2 MiB」錯：每項八位元組，2^20×8＝2^23 位元組，是 8 MiB；2 MiB 是錯用了實體框數。「依實體框數決定虛頁表項」錯：單層虛頁表要涵蓋虛擬空間。「位移二十位」錯：4 KiB＝2^12，位移十二位，二十位是虛頁號。
+
+
+@q pr1-34 | os-process#1 | 2 | 比較
+Use the five-state process model (new, ready, running, waiting, terminated) on a single-core machine with 10 ms time slices. Process $P_1$ has been running for 10 ms when its time slice expires at time 20 ms. Later, at time 23 ms, process $P_2$ is running and issues a disk read that takes 5 ms; the data arrive at time 28 ms, while process $P_3$ is using the CPU. Which of the following statements are correct? Select all that apply.
+[x] At time 20 ms, $P_1$ moves from running to ready.
+[x] At time 23 ms, $P_2$ moves from running to waiting.
+[ ] At time 20 ms, $P_1$ moves from running to waiting, because it now has to wait for the CPU.
+[ ] At time 28 ms, $P_2$ moves from waiting directly to running, taking the CPU from $P_3$.
+[ ] $P_2$ moves to ready as soon as another process is given the CPU at time 23 ms.
+---
+ready 是「隨時可以跑，只差 CPU」；waiting 是「就算給 CPU 也沒用，在等某個事件」。
+
+「20 ms 時 $P_1$ 到 ready」對：被搶走 CPU，但一被排到就能繼續。
+
+「23 ms 時 $P_2$ 到 waiting」對：它在等磁碟。
+
+「$P_1$ 到 waiting」錯：等 CPU 不算 waiting；這正是 ready 的定義。
+
+「28 ms 時 $P_2$ 直接 running」錯：磁碟完成的中斷把它放回就緒佇列；$P_3$ 正在用 CPU，之後由排程器決定 $P_2$ 什麼時候跑。
+
+「別人拿到 CPU 時 $P_2$ 就到 ready」錯：$P_2$ 等的是磁碟，跟誰在用 CPU 無關，要到 28 ms 資料到了才回 ready。
+
+
+@q sy1-31 | os-sync#1 | 2 | 比較
+「競爭條件」和「兩條執行緒各拿一把鎖、又互相等對方那把，永遠停住」這兩種錯誤的差別？
+[x] 競爭條件是結果取決於執行順序而可能出錯（通常因為沒同步）；後者是大家互相等、永遠停住（常因為同步用錯）
+[ ] 兩者是同一件事
+[ ] 後者是競爭條件的一種
+[ ] 競爭條件只會發生在單核心，後者只會發生在多核心
+---
+競爭條件：程式繼續跑，但答案錯（例如計數少算）。互相等待（死結）：程式不再前進。加鎖可以解決競爭條件，但鎖的順序不對又會造成死結，所以兩個問題常常一起出現。
+
+
+@q vm1-30 | os-vm#1 | 2 | 比較
+A program accesses a virtual address whose page-table entry is marked invalid. The page might be on disk, or the address might never have been allocated to the program. Which of the following statements are correct?
+?? 複選
+[x] The OS checks the process's record of its memory regions to tell them apart.
+[ ] In both cases, the page is loaded from disk and the instruction is restarted.
+[ ] The hardware tells the cases apart, so the operating system need not check anything.
+[ ] In both cases, the process is terminated.
+[ ] The operating system tells them apart by whether the access is a read or a write.
+---
+trap 進核心後，作業系統「比對行程合法的記憶體區段記錄」：在範圍內就是一般缺頁，載入後重新執行；不在範圍內才終止行程。硬體只知道這一項現在不能用，分辨不出來；讀或寫不是判斷依據。
+
+
+@q pr1-35 | os-process#1 | 3 | 追蹤
+On a single-core machine where a ready process with higher priority immediately takes the CPU from the running one, $P_1$ is running, $P_2$ is ready, and $P_3$ is waiting for the disk. The disk then signals the CPU that $P_3$'s data has arrived, and $P_3$ has the highest priority. Which of the following statements are correct after the operating system handles this signal and the scheduler decides? Select all that apply.
+[x] $P_3$ is running, and $P_1$ and $P_2$ are ready.
+[x] Handling the signal first moves $P_3$ from waiting to ready.
+[ ] $P_3$ moves from waiting directly to running without ever being ready.
+[x] If a running process could not be forced off the CPU instead, $P_1$ would keep running and $P_3$ would be ready.
+[ ] When $P_1$ is preempted, it moves to the waiting state.
+---
+「$P_3$ running、$P_1$ $P_2$ ready」對：搶先式而且 $P_3$ 優先權最高，排程器把 $P_1$ 換下來（running → ready），讓 $P_3$ 上 CPU。$P_2$ 一直在 ready。
+
+「中斷處理先把 $P_3$ 移到 ready」對：等的事件發生，就回到就緒狀態；能不能跑由排程器決定。
+
+「直接從 waiting 到 running」錯：狀態圖上沒有這條邊，一定先經過 ready。
+
+「非搶先式時 $P_1$ 繼續跑」對：$P_3$ 只能在 ready 等 $P_1$ 自己讓出 CPU。
+
+「被搶走的 $P_1$ 進 waiting」錯：它隨時可以再跑，只差 CPU，所以是 ready。
+
+
+
+@q dl1-30 | os-deadlock#1 | 1 | 反例
+Someone says: "As soon as a process waits for a resource held by another process, the system is deadlocked." Which of the following situations are counterexamples?
+[x] P1 waits for the printer held by P2, and P2 will release it after printing without waiting for anything.
+[x] P1 waits for a disk read that the device will complete.
+[ ] P1 waits for P2 and P2 waits for P1, and neither releases anything.
+[ ] P1, P2 and P3 wait for one another in a cycle.
+[ ] Every process waits for a resource that nobody will ever release.
+---
+死結要的是「循環等待」：大家等的人也在等，永遠沒人放。前兩個只是暫時塞住，被等的那一方最後會完成並釋放，是反例。互相等待、三個繞成一圈、等一個沒人會放的資源都真的卡死，不是反例。
+
+
+@q me3-34 | os-memory#3 | 2 | 反例
+有人說：「改用分頁之後，每個行程用掉的記憶體一定比用連續配置少。」為什麼不一定？
+[x] 分頁還要多存頁表，最後一頁也有內部碎片；它解決的是外部碎片，不是讓行程變小
+[ ] 分頁一定讓行程用的記憶體變少
+[ ] 分頁會讓行程用的記憶體變成兩倍
+[ ] 分頁之後行程不需要頁表
+---
+一個 10 KB 的行程，頁 4 KB：要 3 頁（12 KB），浪費 2 KB，另外還要頁表的空間。分頁的好處是不需要一整塊連續空間，空閒的 frame 都能用，整體利用率提高。
+
+
+@q me4-31 | os-memory#4 | 3 | 反例
+An inverted page-table experiment has exactly 512 entries ordered by physical frame number. Each entry occupies 16 bytes and contains a process identifier with a virtual page number. For this implementation there is no extra index, tree or other search structure. A requested translation is not found in the TLB, so the software examines the frame-ordered entries sequentially starting at the first 1.
+
+In 1 successful test, the requested pair appears only in entry 511 when numbering begins at 0. A second request uses a small virtual page number but belongs to a different process, so the numeric page value alone does not identify a physical frame's row. Consider both the basic table storage and the maximum number of inspections needed for the stated successful search. Saving storage by indexing entries by frames does not itself specify a fast method for finding a particular process/page pair. Assume the table does not change during either search. Which statements are correct? Select all that apply.
+?? 複選
+[ ] A successful search for a pair stored only in the final entry can require inspecting 1024 entries.
+[ ] The table occupies 512 bytes.
+[ ] The virtual page number directly gives the correct table index in this organization.
+[x] Saving table space does not by itself guarantee faster translation lookup.
+[ ] Every lookup must finish after examining exactly one entry.
+---
+「要看 1024 項」錯：表只有 512 項，目標在最後就看完 512 項。「表 512 位元組」錯：512×16＝8192。「虛頁直接索引」錯：表依實體框排列，不是依各行程的虛頁號排列。「省空間不保證快」對：查詢方式也影響成本。「每次一項」錯：目標在最後一項就是反例；實務可加其他查找結構，但那不在此模型內。
+
+
+@q pr3-30 | os-process#3 | 2 | 反例
+有人說：「把程式改成多執行緒，在單核心電腦上也一定會變快。」哪一種程式是反例？
+[x] 純計算、從不等 I/O 的程式：只有一顆 CPU，拆成多條執行緒只是輪流跑，還多了切換和同步的成本
+[ ] 一邊等網路、一邊處理使用者輸入的程式
+[ ] 要同時讀很多個檔案的程式
+[ ] 有圖形介面、要保持畫面有反應的程式
+---
+單核心上，多執行緒的好處來自「一條在等 I/O 時，另一條可以用 CPU」或讓介面保持反應。如果每條都一直在算，總工作量不變，切換執行緒和加鎖反而讓總時間變長。
+
+
+@q pr4-27 | os-process#4 | 2 | 反例
+Someone claims: "Whenever a process makes a system call, it enters the waiting state." Which of the following statements are correct? Select all that apply.
+[x] A call such as `getpid()` returns immediately, so the process never leaves the running state.
+[x] Calling `read()` for file data that is not yet in memory makes the process wait until the disk transfer finishes.
+[ ] The claim is correct, because every system call needs the kernel.
+[x] A system call switches the CPU to kernel mode, which is a different thing from entering the waiting state.
+[ ] A process that is waiting for keyboard input stays in the running state while it waits.
+---
+「`getpid()` 馬上回傳」對：核心查一下就回來，行程從頭到尾都可以繼續執行。這就是反例。
+
+「讀還沒在記憶體的檔案會等」對：要等磁碟，行程進入 waiting，CPU 先給別人。
+
+「每個都要核心所以說法對」錯：要核心做事不等於要等。
+
+「切到核心模式不等於進入 waiting」對：模式（使用者／核心）和行程狀態（running／waiting…）是兩件事。
+
+「等鍵盤時還是 running」錯：在等外部事件，是 waiting。
+
+
+@q pr5-30 | os-process#5 | 2 | 反例
+Someone claims: "After an ordinary pipe is created with `pipe(fd)`, two processes can both send data to each other through that one pipe." Which of the following statements are correct? Select all that apply.
+[x] An ordinary pipe is unidirectional: `fd[0]` is the read end and `fd[1]` is the write end.
+[x] Two-way communication between a parent and its child needs two ordinary pipes, one for each direction.
+[ ] After `fork()`, the parent and the child can both read and write the same pipe, and each will receive exactly the data written by the other.
+[x] When the pipe is empty and every write end has been closed, a `read` on the read end returns 0, signaling end of file.
+[ ] An ordinary pipe can connect any two unrelated processes in the system.
+---
+「單向、`fd[0]` 讀、`fd[1]` 寫」對：資料從寫端流向讀端。
+
+「雙向要兩個 pipe」對：一個方向一個，各關掉用不到的那一端。
+
+「父子都讀寫同一個 pipe 就能互傳」錯：資料只有一條管道，自己寫進去的可能被自己讀回來，誰讀到什麼取決於時機，說法錯在這裡。
+
+「寫端全關、讀完後 read 回傳 0」對：這是讀端知道「不會再有資料」的方式；所以沒用到的寫端一定要關，否則讀端會一直等。
+
+「任意兩個不相關的行程」錯：一般 pipe 沒有名字，只能透過 `fork()` 繼承檔案描述子，所以只能用在有共同祖先的行程之間；不相關的行程要用具名管道（FIFO）。
+
+
+@q sc1-32 | os-sched#1 | 2 | 反例
+An operating-systems course measures three scheduling policies on the same 1-hour trace of 200 jobs, half interactive and half long-running, and reports:
+
+| policy | processor utilization | average waiting time (s) | worst response time of an interactive job (s) |
+|---|---|---|---|
+| X | 100% | 4.0 | 9.5 |
+| Y | 100% | 6.5 | 0.2 |
+| Z | 85% | 5.0 | 0.4 |
+
+Response time here is the time from a key press or request until the job first gets to run. A student tries to state general rules about scheduling criteria from these measurements, and a classmate checks each rule against the table. Which of the following statements about CPU-scheduling criteria are correct? Select all that apply.
+[x] 100% CPU utilization can coexist with poor response time for interactive programs.
+[x] A policy that minimizes average waiting time may give some interactive programs a poor response time.
+[ ] Throughput is the time from a job's arrival to its completion.
+[x] For a job that does no I/O, turnaround time equals the time it spends in the ready queue plus the time it spends running on the CPU.
+[ ] Higher CPU utilization always means shorter average turnaround time.
+---
+「使用率 100% 但回應很差」對：一個很長的計算一直佔著 CPU，互動的程式等好幾秒才有反應。
+
+「最小化平均等待時間可能犧牲回應時間」對：例如非搶先的 SJF 讓一個剛開始的長工作跑完，中途來的互動程式只能等。目標之間可能衝突。
+
+「吞吐量是從抵達到完成的時間」錯：那是周轉時間；吞吐量是單位時間完成的工作數。
+
+「沒有 I/O 時，周轉時間＝等待＋執行」對：從抵達到完成，不是在跑就是在 ready 佇列等。
+
+「使用率越高周轉越短」錯：使用率只說 CPU 有沒有在忙，不管忙的順序；順序不好時平均周轉時間可以很差。
+
+
+@q st3-29 | os-storage#3 | 3 | 反例
+A twenty-block volume uses contiguous file allocation. Four live files occupy blocks 0–3,5–7,10–13,15–18, inclusive. All other blocks are free. The file at 5–7 is deleted, and no live file may move. Which statements are correct? Select all that apply.
+[x] There are eight free blocks after deletion.
+[x] The largest consecutive free run is blocks 4 through 9, containing six blocks.
+[x] A new file needing seven contiguous blocks cannot fit without changing the layout.
+[ ] Keeping every individual file contiguous guarantees that no gaps occur between files.
+[ ] Eight free blocks guarantee an available seven-block contiguous region in this layout.
+---
+「八塊」對：刪除前空閒 4、8、9、14、19 共五塊，再加 5、6、7 三塊。「4 到 9 共六」對：這段空洞合併為六塊，另有 14 與 19。「七塊放不下」對：最大連續段只有六。「檔案內連續就沒有間隙」錯：不同檔案之間仍會有空洞。「總量八保證連續七」錯：這是外部碎片的反例。
+
+
+@q sy3-27 | os-sync#3 | 2 | 反例
+有人說：「用 compare_and_swap 寫鎖，就不會有忙碌等待的問題。」為什麼不對？
+[x] 拿不到鎖時一樣要在迴圈裡一直重試 CAS，還是忙碌等待；只是換了一種原子指令
+[ ] CAS 失敗時硬體會自動讓執行緒睡覺
+[ ] CAS 只能用一次
+[ ] CAS 不是原子的
+---
+`while (!CAS(&lock, 0, 1));` 和 `while (test_and_set(&lock));` 本質一樣，都是自旋。要避免忙碌等待，得在拿不到時把執行緒放進等待佇列、交給核心（例如 futex、號誌）。CAS 比較強的地方是能做無鎖資料結構和計數器。
+
+
+@q sy6-27 | os-sync#6 | 2 | 反例
+有人說：「優先權繼承能解決死結。」用「P1 拿著鎖 A 等鎖 B、P2 拿著鎖 B 等鎖 A」檢查：
+[x] 不管把誰的優先權調高，兩個都還在等對方手上的鎖，永遠動不了
+[ ] 調高 P1 的優先權，P1 就能拿到 B
+[ ] 調高 P2 的優先權，死結就解除
+[ ] 這個情況不是死結
+---
+優先權繼承解決的是**優先權反轉**：低優先權的持有者被中優先權搶走 CPU，導致高優先權的等很久。它讓持有者能被排到 CPU、早點放鎖；但在死結裡，持有者自己也在等，給它 CPU 也沒用。
+
+
+@q vm3-30 | os-vm#3 | 2 | 反例
+有人說：「工作集視窗 $\Delta$ 設得越大越好，越不會缺頁。」為什麼不對？
+[x] $\Delta$ 太大會把很久沒用的頁也算進工作集，每個行程佔太多 frame，能同時執行的行程變少、記憶體浪費
+[ ] $\Delta$ 越大，缺頁一定越多
+[ ] $\Delta$ 的大小不會影響任何事
+[ ] $\Delta$ 太大會讓頁變小
+---
+$\Delta$ 太小抓不到整個局部性，會一直缺頁；太大會包含好幾個已經結束的局部性。作業系統依工作集總和決定能放幾個行程，$\Delta$ 太大就會低估可以同時跑的數量。
+
+
+
+@q pr1-36 | os-process#1 | 2 | 找錯
+A student draws the five-state process diagram (new, ready, running, waiting, terminated) with exactly these arrows:
+```
+new      -> running      (the process is created)
+running  -> ready        (its time slice runs out)
+running  -> waiting      (it requests I/O)
+waiting  -> running      (the I/O completes)
+running  -> terminated   (it exits)
+ready    -> running      (the scheduler picks it)
+```
+Which of the following statements are correct? Select all that apply.
+[x] A new process should first be admitted to the ready state; only the scheduler moves a process from ready to running.
+[ ] The arrow from new directly to running is correct, because a new process should start at once.
+[ ] The arrow labeled "its time slice runs out" should go from running to waiting, since the process must now wait for the CPU.
+[x] The arrow labeled "the I/O completes" should go from waiting to ready.
+[ ] The arrow from waiting directly to running is correct, because the process can use the CPU as soon as its data arrive.
+---
+「新行程先到 ready」對：建立完成後放進就緒佇列；誰上 CPU 一律由排程器從 ready 裡挑。
+
+「new 直接到 running 是對的」錯：那樣就繞過了排程器。
+
+「時間片用完應該到 waiting」錯：它隨時能繼續，只差 CPU，所以是 ready；學生這一條畫對了。
+
+「I/O 完成應該到 ready」對：CPU 上可能正有別人在跑，要先回到 ready 排隊。
+
+「waiting 直接到 running 是對的」錯：同上。
+
+
+@q st3-30 | os-storage#3 | 3 | 找錯
+A FAT-based file starts at cluster 5. The in-memory allocation table gives next entries 5 to 9, 9 to 12, and 12 to end-of-file. Logical cluster indices start at zero. Which statements are correct? Select all that apply.
+[x] Logical cluster 2 is stored in physical cluster 12.
+[x] Following two next entries reaches that cluster from cluster 5.
+[x] The next-cluster information is stored in the allocation table rather than in reserved tail bytes of every data cluster.
+[ ] The table entries prove that the data clusters occupy consecutive physical cluster numbers.
+[ ] Reaching logical cluster 2 requires following three next entries after the known first cluster.
+---
+「第 2 個在 12」對：索引 0 是 5，索引 1 是 9，索引 2 是 12。「兩次跳轉」對：5→9、9→12。「下一個存在 FAT」對：這是它和把指標嵌在資料塊內的普通鏈結配置的差別。「實體連號」錯：5、9、12 並不連續。「三次」錯：從已知的第 0 個位置出發，只需兩次，不要把目標資料的讀取與鏈結跳轉混算。
+
+
+@q dl3-30 | os-deadlock#3 | 2 | 情境
+A cloud platform has 100 virtual machines for rent. Each customer declares at signing the maximum number it will use at once and may then request machines in batches. The platform wants to guarantee that every customer eventually gets its declared maximum. Which of the following statements are correct?
+[x] On each request, pretend to grant it and check that some order lets every customer reach its maximum.
+[x] This is the banker's algorithm, with Max the declared limit and Need = Max − Allocation.
+[x] Granting whenever machines are free can leave every customer holding part of its need, with none able to finish.
+[x] A customer that declares a maximum above 100 must be refused at signing.
+[ ] Checking only that each declared maximum is at most 100 lets the platform grant any request freely.
+---
+每次申請「假設先給」，再檢查是否存在讓大家依序完成的順序，就是「Banker 演算法」。「有空機器就給」可能讓每位客戶都拿到一部分、卻沒人湊得齊；宣告超過總數 100 的客戶永遠不可能被滿足，簽約時就要拒絕。每個上限都不超過 100 不代表任意分配都安全。
+
+
+@q sc3-32 | os-sched#3 | 2 | 情境
+A preemptive single-processor media player decodes a frame every 33 ms using 10 ms, and handles audio every 10 ms using 2 ms. Treat the tasks as independent periodic work with deadlines equal to periods; ignore overhead and resource-related delays. A new audio job may preempt unfinished video work. Determine RM priority and total utilization before comparing with the two-task sufficient bound. A longer execution requirement does not itself establish higher RM priority. Which statements are correct? Select all that apply.
+?? 複選
+[x] Audio, which has the shorter period, gets the higher priority.
+[ ] Video gets the higher priority, because its execution time is longer.
+[ ] The total utilization is about 0.9, above the RM bound for 2 tasks.
+[ ] RM cannot guarantee the deadlines, since the utilization of about 0.50 exceeds $\ln2$.
+[ ] Audio may miss its deadline whenever a video frame is being decoded.
+---
+RM「週期越短越優先」，音訊（10 ms）高於畫面（33 ms），執行時間長短無關。$U=\frac{10}{33}+\frac2{10}\approx0.50$，低於兩個工作的上限 0.828，也低於 $\ln2\approx0.693$，一定排得完；音訊優先權較高，會搶先畫面解碼，不會因此錯過。
+
+
+
+@q pr2-34 | os-process#2 | 2 | 證明
+`int x = 1; if (fork() == 0) x = 10; else { wait(NULL); printf("%d", x); }`。說明父行程印出的是 1，而不是 10。
+---
+`fork` 之後子行程得到父行程記憶體的一份**副本**（實作上用 copy-on-write，但效果等同各自一份）。子行程改的是自己那份 `x`；父行程等子行程結束後印自己的 `x`，仍然是 1。要讓兩個行程看到同一個變數，得用共享記憶體或執行緒。
+
+
+@q pr4-28 | os-process#4 | 2 | 證明
+說明為什麼「修改中斷處理位址表（中斷發生時要跳去哪裡）」一定要是特權操作。
+---
+中斷和 trap 發生時，CPU 會切到核心模式，再跳到這張表指定的位址執行。如果使用者程式能改這張表，就能把它指向自己的程式碼，下一次中斷時這段程式就以核心模式執行，等於拿到整台機器的控制權，所有保護都失效。所以只有核心能設定它。
+
+
+@q sc2-35 | os-sched#2 | 2 | 證明
+說明 RR 的時間片 $q$ 很大（大於所有行程的 CPU 需求）時就變成 FCFS；$q$ 趨近 0（忽略切換成本）時，$n$ 個行程好像各拿到一顆 $\frac1n$ 速度的 CPU。
+---
+$q$ 大於每個需求時，每個行程拿到 CPU 後都能一次做完，順序就是排隊順序：FCFS。$q$ 很小時，每一小段時間內 $n$ 個行程都輪流跑一點，每個平均拿到 $\frac1n$ 的 CPU 時間，看起來像同時在跑、每個慢 $n$ 倍（processor sharing）。實際上切換有成本，$q$ 不能太小。
+
+
+@q vm4-29 | os-vm#4 | 2 | 證明
+行程呼叫 `read()` 要磁碟把資料用 DMA 直接寫進它的某個頁，然後行程等 I/O。說明為什麼這段期間那一頁必須被鎖住、不能被頁替換換出。
+---
+DMA 是磁碟控制器直接寫實體記憶體，它記得的是 frame 位址，不會經過頁表。如果這時那頁被換出、frame 被分給別的行程，DMA 寫進來的資料就會蓋掉別人的頁，原本的行程之後也讀不到資料。所以要設 lock 位元（I/O interlock），或改成先讀進核心的緩衝區再複製。
+
+
+
+@q me4-32 | os-memory#4 | 3 | 情境
+A model system installs 64 GiB of physical memory and divides it into 4096-byte frames. A basic inverted page table reserves 1 16-byte entry for each physical frame. The table's size does not include auxiliary structures for shared mappings or search acceleration. Compare this fixed frame-indexed organization with ordinary complete per-process flat tables, rather than assuming that their entry counts use the same index.
+
+There are 1000 processes in the comparison. Each has a 32-bit virtual byte-address space with 4096-byte pages and 8-byte entries in its complete flat table. The table positions exist even when their mappings are invalid. Ignore metadata and use binary KiB, MiB and GiB units. In a later experiment the number of processes doubles while installed physical memory stays fixed. Determine the basic inverted-table count, its byte storage, the combined storage of the original 1000 flat tables, and which input controls each count. Which statements are correct? Select all that apply.
+[x] There are $2^{24}$ physical frames.
+[x] The inverted table occupies 256 MiB.
+[x] The 1000 complete flat tables together occupy 8000 MiB.
+[ ] Doubling the process count necessarily doubles the number of entries in this fixed-size inverted table.
+[x] The inverted table's entry count depends on physical memory, not on the 32-bit virtual address size.
+---
+「2^24 框」對：2^36÷2^12。「256 MiB」對：2^24×16＝2^28 位元組。「8000 MiB」對：每張平表 2^20×8＝8 MiB，乘 1000。「行程數加倍就表項加倍」錯：基本反轉表是一實體框一項，實體記憶體未變。「表項數看實體記憶體」對：2^20 是每個行程的虛頁數，不是此機器的實體框數。
+
+
+@q sc2-36 | os-sched#2 | 2 | 情境
+A web server receives one report request that needs 10 seconds on the CPU and, at the same time, many ordinary page requests that need about 10 ms on the CPU each; the report request arrived first. The administrators compare FCFS with round robin using a 10 ms quantum, where each context switch costs about 5 µs. With FCFS, users complain that pages sometimes take more than 10 seconds to load; with round robin, the report takes somewhat longer. The administrators want to explain both effects and to know whether the report could be delayed forever under round robin if page requests keep arriving. They also want to estimate how much time the extra context switches cost over the whole report, compared with its 10 seconds of work, before they change the server's settings for all 4 of its cores. Which of the following statements are correct? Select all that apply.
+[x] Under FCFS, ordinary requests queued behind the report wait more than 10 seconds.
+[x] Under round robin, short requests finish within a quantum or two of getting the CPU.
+[x] Under round robin, the report's completion time increases somewhat.
+[x] Round robin adds context-switch overhead.
+[ ] Under round robin, the report never finishes, since short requests keep arriving.
+---
+FCFS 的護航效應：「長工作擋住後面所有短工作」。RR 讓每個請求定期拿到 CPU，「短請求一兩個時間片就結束」；長工作要和大家輪流，「完成時間略增」，切換也「多了開銷」。RR 每輪都會輪到它，一定會完成。
+
+
+
+@q vm2-32 | os-vm#2 | 2 | 追蹤
+3 個 frame（一開始都空），參考串 4 1 2 3 6 3 1 3 2 3 4 2。FIFO、LRU、OPT 各缺頁幾次？
+== 9,8,7
+?? FIFO,LRU,OPT
+---
+標 * 的是缺頁（前 3 次載入也算）。FIFO：4* 1* 2* 3* 6* 3 1* 3 2* 3* 4* 2，共 9 次。LRU：4* 1* 2* 3* 6* 3 1* 3 2* 3 4* 2，共 8 次。OPT：4* 1* 2* 3* 6* 3 1 3 2* 3 4* 2，共 7 次。OPT 每次換掉「下次用到最晚（或再也不用）」的頁，是任何演算法的下限；LRU 用過去近似未來。
+
+
+@q vm2-33 | os-vm#2 | 3 | 追蹤
+4 個 frame（一開始都空），參考串 5 1 6 2 3 6 5 1 2 5 4 6 3。FIFO、LRU、OPT 各缺頁幾次？
+== 10,11,7
+?? FIFO,LRU,OPT
+---
+標 * 的是缺頁（前 4 次載入也算）。FIFO：5* 1* 6* 2* 3* 6 5* 1* 2 5 4* 6* 3*，共 10 次。LRU：5* 1* 6* 2* 3* 6 5* 1* 2* 5 4* 6* 3*，共 11 次。OPT：5* 1* 6* 2* 3* 6 5 1 2* 5 4* 6 3，共 7 次。OPT 每次換掉「下次用到最晚（或再也不用）」的頁，是任何演算法的下限；LRU 用過去近似未來。
+
+
+@q vm2-34 | os-vm#2 | 2 | 追蹤
+3 個 frame（一開始都空），參考串 3 2 1 3 1 3 5 3 2 3 1 2。FIFO、LRU、OPT 各缺頁幾次？
+== 7,6,5
+?? FIFO,LRU,OPT
+---
+標 * 的是缺頁（前 3 次載入也算）。FIFO：3* 2* 1* 3 1 3 5* 3* 2* 3 1* 2，共 7 次。LRU：3* 2* 1* 3 1 3 5* 3 2* 3 1* 2，共 6 次。OPT：3* 2* 1* 3 1 3 5* 3 2 3 1* 2，共 5 次。OPT 每次換掉「下次用到最晚（或再也不用）」的頁，是任何演算法的下限；LRU 用過去近似未來。
+
+
+@q vm2-35 | os-vm#2 | 3 | 追蹤
+3 個 frame（一開始都空），參考串 4 3 2 5 3 1 5 2 3 2 1 4 5。FIFO、LRU、OPT 各缺頁幾次？
+== 9,10,8
+?? FIFO,LRU,OPT
+---
+標 * 的是缺頁（前 3 次載入也算）。FIFO：4* 3* 2* 5* 3 1* 5 2 3* 2* 1 4* 5*，共 9 次。LRU：4* 3* 2* 5* 3 1* 5 2* 3* 2 1* 4* 5*，共 10 次。OPT：4* 3* 2* 5* 3 1* 5 2 3* 2 1 4* 5*，共 8 次。OPT 每次換掉「下次用到最晚（或再也不用）」的頁，是任何演算法的下限；LRU 用過去近似未來。
+
+
+@q st1-32 | os-storage#1 | 3 | 追蹤
+磁軌 0–199，磁頭在 96、正往磁軌號碼大的方向移動。請求佇列（依到達順序）：9、135、83、51、60、126、161。SSTF、SCAN（一路走到盡頭才回頭）、LOOK（走到最遠的請求就回頭）的磁頭總移動量各是多少？
+== 239,293,217
+?? SSTF,SCAN,LOOK
+---
+SSTF 每次挑最近的：96 → 83 → 60 → 51 → 9 → 126 → 135 → 161，共 239。SCAN：96 → 126 → 135 → 161 → 199 → 83 → 60 → 51 → 9，共 293。LOOK 順序相同但不走到盡頭：96 → 126 → 135 → 161 → 83 → 60 → 51 → 9，共 217。SSTF 總移動量常比較小，但可能讓遠處的請求一直等；SCAN／LOOK 比較公平。
+
+
+@q st1-33 | os-storage#1 | 3 | 追蹤
+磁軌 0–199，磁頭在 151、正往磁軌號碼大的方向移動。請求佇列（依到達順序）：83、121、32、108、119、190、183。SSTF、SCAN（一路走到盡頭才回頭）、LOOK（走到最遠的請求就回頭）的磁頭總移動量各是多少？
+== 277,215,197
+?? SSTF,SCAN,LOOK
+---
+SSTF 每次挑最近的：151 → 121 → 119 → 108 → 83 → 32 → 183 → 190，共 277。SCAN：151 → 183 → 190 → 199 → 121 → 119 → 108 → 83 → 32，共 215。LOOK 順序相同但不走到盡頭：151 → 183 → 190 → 121 → 119 → 108 → 83 → 32，共 197。SSTF 總移動量常比較小，但可能讓遠處的請求一直等；SCAN／LOOK 比較公平。
+
+
+@q st1-34 | os-storage#1 | 2 | 追蹤
+磁軌 0–199，磁頭在 106、正往磁軌號碼大的方向移動。請求佇列（依到達順序）：192、65、114、120、126、69。SSTF、SCAN（一路走到盡頭才回頭）、LOOK（走到最遠的請求就回頭）的磁頭總移動量各是多少？
+== 208,227,213
+?? SSTF,SCAN,LOOK
+---
+SSTF 每次挑最近的：106 → 114 → 120 → 126 → 69 → 65 → 192，共 208。SCAN：106 → 114 → 120 → 126 → 192 → 199 → 69 → 65，共 227。LOOK 順序相同但不走到盡頭：106 → 114 → 120 → 126 → 192 → 69 → 65，共 213。SSTF 總移動量常比較小，但可能讓遠處的請求一直等；SCAN／LOOK 比較公平。
+
+
+@q st1-35 | os-storage#1 | 2 | 追蹤
+磁軌 0–199，磁頭在 62、正往磁軌號碼大的方向移動。請求佇列（依到達順序）：51、31、91、32、56、176。SSTF、SCAN（一路走到盡頭才回頭）、LOOK（走到最遠的請求就回頭）的磁頭總移動量各是多少？
+== 176,305,259
+?? SSTF,SCAN,LOOK
+---
+SSTF 每次挑最近的：62 → 56 → 51 → 32 → 31 → 91 → 176，共 176。SCAN：62 → 91 → 176 → 199 → 56 → 51 → 32 → 31，共 305。LOOK 順序相同但不走到盡頭：62 → 91 → 176 → 56 → 51 → 32 → 31，共 259。SSTF 總移動量常比較小，但可能讓遠處的請求一直等；SCAN／LOOK 比較公平。
+
+
+@q sc2-37 | os-sched#2 | 3 | 追蹤
+P1（到達 0、需要 6）、P2（到達 1、需要 6）、P3（到達 5、需要 4）、P4（到達 6、需要 6）。分別用 SRTF（剩餘時間一樣時先到的優先）和 RR（時間片 2；同一時刻新到的行程排在剛被換下的行程前面），平均等待時間各是多少？
+== 5,9
+?? SRTF,RR
+---
+SRTF 甘特圖：P1(0–6)、P3(6–10)、P2(10–16)、P4(16–22)；各等待 P1 0、P2 9、P3 1、P4 10，平均 5。RR：P1(0–2)、P2(2–4)、P1(4–6)、P2(6–8)、P3(8–10)、P4(10–12)、P1(12–14)、P2(14–16)、P3(16–18)、P4(18–22)；各等待 P1 8、P2 9、P3 9、P4 10，平均 9。等待時間＝完成時間－到達時間－執行時間。
+
+
+@q sc2-38 | os-sched#2 | 3 | 追蹤
+P1（到達 0、需要 5）、P2（到達 3、需要 8）、P3（到達 4、需要 6）、P4（到達 5、需要 8）。分別用 SRTF（剩餘時間一樣時先到的優先）和 RR（時間片 2；同一時刻新到的行程排在剛被換下的行程前面），平均等待時間各是多少？
+== 5.75,10.75
+== 23/4,43/4
+?? SRTF,RR
+---
+SRTF 甘特圖：P1(0–5)、P3(5–11)、P2(11–19)、P4(19–27)；各等待 P1 0、P2 8、P3 1、P4 14，平均 5.75。RR：P1(0–4)、P2(4–6)、P3(6–8)、P1(8–9)、P4(9–11)、P2(11–13)、P3(13–15)、P4(15–17)、P2(17–19)、P3(19–21)、P4(21–23)、P2(23–25)、P4(25–27)；各等待 P1 4、P2 14、P3 11、P4 14，平均 10.75。等待時間＝完成時間－到達時間－執行時間。
+
+
+@q sc2-39 | os-sched#2 | 3 | 追蹤
+P1（到達 0、需要 6）、P2（到達 2、需要 8）、P3（到達 4、需要 2）、P4（到達 6、需要 7）。分別用 SRTF（剩餘時間一樣時先到的優先）和 RR（時間片 2；同一時刻新到的行程排在剛被換下的行程前面），平均等待時間各是多少？
+== 4.25,7.5
+== 17/4,15/2
+?? SRTF,RR
+---
+SRTF 甘特圖：P1(0–6)、P3(6–8)、P4(8–15)、P2(15–23)；各等待 P1 0、P2 13、P3 2、P4 2，平均 4.25。RR：P1(0–2)、P2(2–4)、P1(4–6)、P3(6–8)、P2(8–10)、P4(10–12)、P1(12–14)、P2(14–16)、P4(16–18)、P2(18–20)、P4(20–23)；各等待 P1 8、P2 10、P3 2、P4 10，平均 7.5。等待時間＝完成時間－到達時間－執行時間。
+
+
+
+@q dl3-31 | os-deadlock#3 | 3 | 追蹤
+3 種資源。P0：Allocation (1,7,5)、Max (2,7,5)；P1：Allocation (5,2,2)、Max (5,2,2)；P2：Allocation (5,2,5)、Max (7,2,7)；P3：Allocation (3,2,6)、Max (5,3,7)。Available (0,0,0)。用 Banker 的安全性檢查，每次從 P0 開始找「Need 都不超過 Work」的第一個行程。得到的安全序列是？（例如 P1 P0 P2 P3）
+== P1 P0 P2 P3
+== P1,P0,P2,P3
+== P1P0P2P3
+---
+Need＝Max－Allocation：P0 (1,0,0)；P1 (0,0,0)；P2 (2,0,2)；P3 (2,1,1)。Work 從 (0,0,0) 開始，每找到一個能做完的行程，就把它的 Allocation 加回 Work。依序 P1 → P0 → P2 → P3，全部都能完成，所以是安全狀態。
+
+
+@q dl3-32 | os-deadlock#3 | 3 | 追蹤
+3 種資源。P0：Allocation (3,4,1)、Max (4,5,1)；P1：Allocation (1,0,2)、Max (5,7,5)；P2：Allocation (3,2,7)、Max (4,5,7)；P3：Allocation (1,2,2)、Max (3,2,6)。Available (2,2,3)。用 Banker 的安全性檢查，每次從 P0 開始找「Need 都不超過 Work」的第一個行程。得到的安全序列是？（例如 P1 P0 P2 P3）
+== P0 P2 P1 P3
+== P0,P2,P1,P3
+== P0P2P1P3
+---
+Need＝Max－Allocation：P0 (1,1,0)；P1 (4,7,3)；P2 (1,3,0)；P3 (2,0,4)。Work 從 (2,2,3) 開始，每找到一個能做完的行程，就把它的 Allocation 加回 Work。依序 P0 → P2 → P1 → P3，全部都能完成，所以是安全狀態。
+
+
+@q vm2-36 | os-vm#2 | 2 | 追蹤
+3 個 frame（一開始都空），參考串 5 4 3 4 5 2 4 3 1 2 4 3。FIFO、LRU、OPT 各缺頁幾次？
+== 7,9,6
+?? FIFO,LRU,OPT
+---
+標 * 的是缺頁（前 3 次載入也算）。FIFO：5* 4* 3* 4 5 2* 4 3 1* 2 4* 3*，共 7 次。LRU：5* 4* 3* 4 5 2* 4 3* 1* 2* 4* 3*，共 9 次。OPT：5* 4* 3* 4 5 2* 4 3 1* 2 4 3*，共 6 次。OPT 每次換掉「下次用到最晚（或再也不用）」的頁，是任何演算法的下限；LRU 用過去近似未來。
+
+
+@q vm2-37 | os-vm#2 | 3 | 追蹤
+3 個 frame（一開始都空），參考串 1 4 3 2 4 1 2 3 4 1 5 3 1。FIFO、LRU、OPT 各缺頁幾次？
+== 9,10,6
+?? FIFO,LRU,OPT
+---
+標 * 的是缺頁（前 3 次載入也算）。FIFO：1* 4* 3* 2* 4 1* 2 3 4* 1 5* 3* 1*，共 9 次。LRU：1* 4* 3* 2* 4 1* 2 3* 4* 1* 5* 3* 1，共 10 次。OPT：1* 4* 3* 2* 4 1 2 3* 4 1 5* 3 1，共 6 次。OPT 每次換掉「下次用到最晚（或再也不用）」的頁，是任何演算法的下限；LRU 用過去近似未來。
+
+
+@q st1-36 | os-storage#1 | 2 | 追蹤
+磁軌 0–199，磁頭在 81、正往磁軌號碼大的方向移動。請求佇列（依到達順序）：67、39、193、51、22、131。SSTF、SCAN（一路走到盡頭才回頭）、LOOK（走到最遠的請求就回頭）的磁頭總移動量各是多少？
+== 230,295,283
+?? SSTF,SCAN,LOOK
+---
+SSTF 每次挑最近的：81 → 67 → 51 → 39 → 22 → 131 → 193，共 230。SCAN：81 → 131 → 193 → 199 → 67 → 51 → 39 → 22，共 295。LOOK 順序相同但不走到盡頭：81 → 131 → 193 → 67 → 51 → 39 → 22，共 283。SSTF 總移動量常比較小，但可能讓遠處的請求一直等；SCAN／LOOK 比較公平。
+
+
+@q st1-37 | os-storage#1 | 2 | 追蹤
+磁軌 0–199，磁頭在 116、正往磁軌號碼大的方向移動。請求佇列（依到達順序）：129、6、177、134、93、117。SSTF、SCAN（一路走到盡頭才回頭）、LOOK（走到最遠的請求就回頭）的磁頭總移動量各是多少？
+== 314,276,232
+?? SSTF,SCAN,LOOK
+---
+SSTF 每次挑最近的：116 → 117 → 129 → 134 → 93 → 177 → 6，共 314。SCAN：116 → 117 → 129 → 134 → 177 → 199 → 93 → 6，共 276。LOOK 順序相同但不走到盡頭：116 → 117 → 129 → 134 → 177 → 93 → 6，共 232。SSTF 總移動量常比較小，但可能讓遠處的請求一直等；SCAN／LOOK 比較公平。
+
+
+@q sc2-40 | os-sched#2 | 3 | 追蹤
+P1（到達 0、需要 5）、P2（到達 3、需要 8）、P3（到達 4、需要 2）、P4（到達 5、需要 3）。分別用 SRTF（剩餘時間一樣時先到的優先）和 RR（時間片 2；同一時刻新到的行程排在剛被換下的行程前面），平均等待時間各是多少？
+== 2.5,4.75
+== 5/2,19/4
+?? SRTF,RR
+---
+SRTF 甘特圖：P1(0–5)、P3(5–7)、P4(7–10)、P2(10–18)；各等待 P1 0、P2 7、P3 1、P4 2，平均 2.5。RR：P1(0–4)、P2(4–6)、P3(6–8)、P1(8–9)、P4(9–11)、P2(11–13)、P4(13–14)、P2(14–18)；各等待 P1 4、P2 7、P3 2、P4 6，平均 4.75。等待時間＝完成時間－到達時間－執行時間。
+
+
+@q sc2-41 | os-sched#2 | 3 | 追蹤
+P1（到達 0、需要 4）、P2（到達 1、需要 4）、P3（到達 3、需要 7）、P4（到達 4、需要 4）。分別用 SRTF（剩餘時間一樣時先到的優先）和 RR（時間片 2；同一時刻新到的行程排在剛被換下的行程前面），平均等待時間各是多少？
+== 4,6.5
+== 4,13/2
+?? SRTF,RR
+---
+SRTF 甘特圖：P1(0–4)、P2(4–8)、P4(8–12)、P3(12–19)；各等待 P1 0、P2 3、P3 9、P4 4，平均 4。RR：P1(0–2)、P2(2–4)、P1(4–6)、P3(6–8)、P4(8–10)、P2(10–12)、P3(12–14)、P4(14–16)、P3(16–19)；各等待 P1 2、P2 7、P3 9、P4 8，平均 6.5。等待時間＝完成時間－到達時間－執行時間。
+
+
+
+@q me3-35 | os-memory#3 | 2 | 計算
+頁大小 1024 bytes。頁表：頁 0→frame 6、頁 1→frame 7、頁 2→frame 13、頁 3→frame 20。邏輯位址 2333（十進位）轉換成實體位址是多少？
+== 13597
+---
+頁號＝$\lfloor2333/1024\rfloor=2$，位移＝$2333-2\times1024=285$。頁 2 在 frame 13，實體位址＝$13\times1024+285=13597$。頁大小是 2 的次方，所以硬體只要把位址的高位換掉，位移那幾位原封不動。
+
+
+@q me3-36 | os-memory#3 | 2 | 計算
+頁大小 1024 bytes。頁表：頁 0→frame 15、頁 1→frame 30、頁 2→frame 12、頁 3→frame 6。邏輯位址 1592（十進位）轉換成實體位址是多少？
+== 31288
+---
+頁號＝$\lfloor1592/1024\rfloor=1$，位移＝$1592-1\times1024=568$。頁 1 在 frame 30，實體位址＝$30\times1024+568=31288$。頁大小是 2 的次方，所以硬體只要把位址的高位換掉，位移那幾位原封不動。
+
+
+
+@q dl3-33 | os-deadlock#3 | 3 | 追蹤
+3 種資源。P0：Allocation (0,3,1)、Max (4,3,4)；P1：Allocation (3,0,1)、Max (4,5,5)；P2：Allocation (4,6,5)、Max (5,6,5)；P3：Allocation (1,3,1)、Max (7,3,2)。Available (2,1,2)。用 Banker 的安全性檢查，每次從 P0 開始找「Need 都不超過 Work」的第一個行程。得到的安全序列是？（例如 P1 P0 P2 P3）
+== P2 P0 P1 P3
+== P2,P0,P1,P3
+== P2P0P1P3
+---
+Need＝Max－Allocation：P0 (4,0,3)；P1 (1,5,4)；P2 (1,0,0)；P3 (6,0,1)。Work 從 (2,1,2) 開始，每找到一個能做完的行程，就把它的 Allocation 加回 Work。依序 P2 → P0 → P1 → P3，全部都能完成，所以是安全狀態。
+
+
+@q dl3-34 | os-deadlock#3 | 3 | 追蹤
+3 種資源。P0：Allocation (0,3,4)、Max (1,6,4)；P1：Allocation (1,3,2)、Max (2,7,3)；P2：Allocation (2,0,2)、Max (6,2,3)；P3：Allocation (4,4,2)、Max (4,6,2)。Available (2,2,2)。用 Banker 的安全性檢查，每次從 P0 開始找「Need 都不超過 Work」的第一個行程。得到的安全序列是？（例如 P1 P0 P2 P3）
+== P3 P0 P1 P2
+== P3,P0,P1,P2
+== P3P0P1P2
+---
+Need＝Max－Allocation：P0 (1,3,0)；P1 (1,4,1)；P2 (4,2,1)；P3 (0,2,0)。Work 從 (2,2,2) 開始，每找到一個能做完的行程，就把它的 Allocation 加回 Work。依序 P3 → P0 → P1 → P2，全部都能完成，所以是安全狀態。
+
+
+
+@q sc3-33 | os-sched#3 | 3 | 追蹤
+A preemptive processor receives independent periodic tasks with (period,execution) pairs (4,2) and (12,6). Both release at time 0, deadlines equal periods, and overhead is zero. Use RM to trace the interval from 0 through 12, including arrivals at 4 and 8. Count how much execution remains for the longer-period task after each preemption. Compare the actual schedule with the sufficient two-task utilization test, which need not characterize every feasible set. Which statements are correct? Select all that apply.
+[x] The total utilization is 1.
+[x] The utilization exceeds the RM bound $2(\sqrt2-1)\approx0.828$ for 2 tasks.
+[x] Simulating one hyperperiod (12 time units) shows that every deadline is met.
+[ ] Simulation shows that the task with period 12 misses its deadline at time 12.
+[ ] The utilization exceeds 1, so no schedule of these tasks can work.
+---
+$U=\frac24+\frac6{12}=1$，「超過 0.828」，不能直接下結論，要「模擬到超週期 12」：週期 4 的每次先跑 2，週期 12 的用剩下的空檔剛好 6 單位，在期限內完成（程式確認）。$U$ 剛好是 1，沒有超過。
+
+
+@q sc3-34 | os-sched#3 | 3 | 追蹤
+週期性工作 (週期 4, 執行 2)、(週期 5, 執行 1)、(週期 12, 執行 1)，時間 0 同時釋放，期限等於週期。總使用率是多少？用 rate-monotonic 能不能讓每個工作都在期限內完成？
+[x] $U=47/60\approx0.783$，超過 RM 的保證上限 0.780，但模擬一個超週期（60）後發現排得完
+[ ] $U=47/60\approx0.783$，超過 RM 的保證上限 0.780，模擬後發現有工作錯過期限
+[ ] $U>1$，任何排法都不行
+[ ] $U$ 低於保證上限，一定排得完
+---
+$U=\sum C_i/T_i=2/4+1/5+1/12\approx0.783$。$n=3$ 時 RM 的充分條件是 $U\le3(2^{1/3}-1)\approx0.780$，這裡超過了，不能直接下結論，要模擬到超週期 60（所有週期的最小公倍數）：週期短的優先。結果每個工作都在期限內完成，所以能。
+
+
+@q me2-31 | os-memory#2 | 3 | 追蹤
+記憶體空洞依序 630、200、540、250、120（KB），依序來了 90、260、180、410 KB 的請求。first-fit、best-fit、worst-fit 各能放進幾個請求？
+== 4,4,3
+?? first-fit,best-fit,worst-fit
+---
+first-fit：90→第1個空洞、260→第1個空洞、180→第1個空洞、410→第3個空洞。best-fit：90→第5個空洞、260→第3個空洞、180→第2個空洞、410→第1個空洞。worst-fit：90→第1個空洞、260→第1個空洞、180→第3個空洞、410→放不下。每放一個請求，那個空洞就縮小成剩下的大小，之後的請求看的是縮小後的空洞。
+
+
+@q me2-32 | os-memory#2 | 3 | 追蹤
+記憶體空洞依序 190、530、420、220、120（KB），依序來了 100、370、470、160 KB 的請求。first-fit、best-fit、worst-fit 各能放進幾個請求？
+== 3,4,3
+?? first-fit,best-fit,worst-fit
+---
+first-fit：100→第1個空洞、370→第2個空洞、470→放不下、160→第2個空洞。best-fit：100→第5個空洞、370→第3個空洞、470→第2個空洞、160→第1個空洞。worst-fit：100→第2個空洞、370→第2個空洞、470→放不下、160→第3個空洞。每放一個請求，那個空洞就縮小成剩下的大小，之後的請求看的是縮小後的空洞。
+
+
+
+@q sc3-35 | os-sched#3 | 3 | 追蹤
+週期性工作 (週期 4, 執行 1)、(週期 6, 執行 1)、(週期 10, 執行 4)，時間 0 同時釋放，期限等於週期。總使用率是多少？用 rate-monotonic 能不能讓每個工作都在期限內完成？
+[x] $U=49/60\approx0.817$，超過 RM 的保證上限 0.780，但模擬一個超週期（60）後發現排得完
+[ ] $U=49/60\approx0.817$，超過 RM 的保證上限 0.780，模擬後發現有工作錯過期限
+[ ] $U>1$，任何排法都不行
+[ ] $U$ 低於保證上限，一定排得完
+---
+$U=\sum C_i/T_i=1/4+1/6+4/10\approx0.817$。$n=3$ 時 RM 的充分條件是 $U\le3(2^{1/3}-1)\approx0.780$，這裡超過了，不能直接下結論，要模擬到超週期 60（所有週期的最小公倍數）：週期短的優先。結果每個工作都在期限內完成，所以能。
+
+
+@q sc3-36 | os-sched#3 | 3 | 追蹤
+週期性工作 (週期 4, 執行 2)、(週期 10, 執行 5)，時間 0 同時釋放，期限等於週期。總使用率是多少？用 rate-monotonic 能不能讓每個工作都在期限內完成？
+[ ] $U=1/1\approx1.000$，超過 RM 的保證上限 0.828，但模擬一個超週期（20）後發現排得完
+[x] $U=1/1\approx1.000$，超過 RM 的保證上限 0.828，模擬後發現有工作錯過期限
+[ ] $U>1$，任何排法都不行
+[ ] $U$ 低於保證上限，一定排得完
+---
+$U=\sum C_i/T_i=2/4+5/10\approx1.000$。$n=2$ 時 RM 的充分條件是 $U\le2(2^{1/2}-1)\approx0.828$，這裡超過了，不能直接下結論，要模擬到超週期 20（所有週期的最小公倍數）：週期短的優先。結果有工作在期限到時還沒做完，所以不能（EDF 在 $U\le1$ 時一定排得完）。
+
+
+@q me2-33 | os-memory#2 | 3 | 追蹤
+記憶體空洞依序 260、320、150、290、590（KB），依序來了 240、120、460、270 KB 的請求。first-fit、best-fit、worst-fit 各能放進幾個請求？
+== 4,4,3
+?? first-fit,best-fit,worst-fit
+---
+first-fit：240→第1個空洞、120→第2個空洞、460→第5個空洞、270→第4個空洞。best-fit：240→第1個空洞、120→第3個空洞、460→第5個空洞、270→第4個空洞。worst-fit：240→第5個空洞、120→第5個空洞、460→放不下、270→第2個空洞。每放一個請求，那個空洞就縮小成剩下的大小，之後的請求看的是縮小後的空洞。
+
+
+@q me2-34 | os-memory#2 | 3 | 追蹤
+記憶體空洞依序 500、160、450、410、270（KB），依序來了 330、450、160、290 KB 的請求。first-fit、best-fit、worst-fit 各能放進幾個請求？
+== 4,4,3
+?? first-fit,best-fit,worst-fit
+---
+first-fit：330→第1個空洞、450→第3個空洞、160→第1個空洞、290→第4個空洞。best-fit：330→第4個空洞、450→第3個空洞、160→第2個空洞、290→第1個空洞。worst-fit：330→第1個空洞、450→第3個空洞、160→第4個空洞、290→放不下。每放一個請求，那個空洞就縮小成剩下的大小，之後的請求看的是縮小後的空洞。
+
+
+
+@q me4-33 | os-memory#4 | 3 | 計算
+39 位元虛擬位址、頁大小 16 KB、每個頁表項 8 bytes。單層頁表每個行程要多大？如果每一層頁表剛好放進一頁，需要幾層？
+== 256 MB,3
+?? 單層頁表大小,層數
+---
+offset 14 位，頁號 25 位。單層：$2^{25}$ 項 × 8 bytes＝256 MB。一頁能放 $16384/8=2048=2^{11}$ 項，每層吃掉 11 位頁號，$\lceil25/11\rceil=3$ 層。層數越多，TLB miss 時要讀的頁表也越多。
+
+
+@q me4-34 | os-memory#4 | 3 | 計算
+39 位元虛擬位址、頁大小 16 KB、每個頁表項 4 bytes。單層頁表每個行程要多大？如果每一層頁表剛好放進一頁，需要幾層？
+== 128 MB,3
+?? 單層頁表大小,層數
+---
+offset 14 位，頁號 25 位。單層：$2^{25}$ 項 × 4 bytes＝128 MB。一頁能放 $16384/4=4096=2^{12}$ 項，每層吃掉 12 位頁號，$\lceil25/12\rceil=3$ 層。層數越多，TLB miss 時要讀的頁表也越多。
+
+
+@q st2-30 | os-storage#2 | 2 | 計算
+12 顆 12 TB 的硬碟。RAID 0、RAID 1+0（兩兩鏡像再條帶）、RAID 5、RAID 6 的可用容量各是多少 TB？
+== 144,72,132,120
+?? RAID 0,RAID 1+0,RAID 5,RAID 6
+---
+RAID 0 全部拿來放資料：$12\times12$。RAID 1+0 每份資料存兩份：一半。RAID 5 用一顆的容量放同位元：$11\times12$。RAID 6 用兩顆：$10\times12$。能保證承受的故障：0 顆、1 顆（同一對壞兩顆就不行）、1 顆、2 顆。
+
+
+@q st2-31 | os-storage#2 | 2 | 計算
+10 顆 12 TB 的硬碟。RAID 0、RAID 1+0（兩兩鏡像再條帶）、RAID 5、RAID 6 的可用容量各是多少 TB？
+== 120,60,108,96
+?? RAID 0,RAID 1+0,RAID 5,RAID 6
+---
+RAID 0 全部拿來放資料：$10\times12$。RAID 1+0 每份資料存兩份：一半。RAID 5 用一顆的容量放同位元：$9\times12$。RAID 6 用兩顆：$8\times12$。能保證承受的故障：0 顆、1 顆（同一對壞兩顆就不行）、1 顆、2 顆。
+
+
+@q st3-31 | os-storage#3 | 3 | 計算
+inode 有 15 個直接指標、1 個單層間接、1 個雙層間接、1 個三層間接；區塊 1 KB、指標 8 bytes。檔案最多有幾個資料區塊？
+== 2113679
+---
+每個間接區塊放 $1024/8=128$ 個指標。直接 15、單層 128、雙層 $128^2=16384$、三層 $128^3=2097152$，共 2113679 塊，約 2.016 GB。
+
+
+@q st3-32 | os-storage#3 | 2 | 計算
+inode 有 15 個直接指標、1 個單層間接、1 個雙層間接；區塊 1 KB、指標 8 bytes。檔案最多有幾個資料區塊？
+== 16527
+---
+每個間接區塊放 $1024/8=128$ 個指標。直接 15、單層 128、雙層 $128^2=16384$，共 16527 塊，約 16.14 MB。
+
+
+
+@q me4-35 | os-memory#4 | 3 | 計算
+48 位元虛擬位址、頁大小 8 KB、每個頁表項 8 bytes。單層頁表每個行程要多大？如果每一層頁表剛好放進一頁，需要幾層？
+== 256 GB,4
+?? 單層頁表大小,層數
+---
+offset 13 位，頁號 35 位。單層：$2^{35}$ 項 × 8 bytes＝256 GB。一頁能放 $8192/8=1024=2^{10}$ 項，每層吃掉 10 位頁號，$\lceil35/10\rceil=4$ 層。層數越多，TLB miss 時要讀的頁表也越多。
+
+
+@q st2-32 | os-storage#2 | 2 | 計算
+10 顆 8 TB 的硬碟。RAID 0、RAID 1+0（兩兩鏡像再條帶）、RAID 5、RAID 6 的可用容量各是多少 TB？
+== 80,40,72,64
+?? RAID 0,RAID 1+0,RAID 5,RAID 6
+---
+RAID 0 全部拿來放資料：$10\times8$。RAID 1+0 每份資料存兩份：一半。RAID 5 用一顆的容量放同位元：$9\times8$。RAID 6 用兩顆：$8\times8$。能保證承受的故障：0 顆、1 顆（同一對壞兩顆就不行）、1 顆、2 顆。
+
+
+@q st3-33 | os-storage#3 | 3 | 計算
+inode 有 10 個直接指標、1 個單層間接、1 個雙層間接、1 個三層間接；區塊 1 KB、指標 8 bytes。檔案最多有幾個資料區塊？
+== 2113674
+---
+每個間接區塊放 $1024/8=128$ 個指標。直接 10、單層 128、雙層 $128^2=16384$、三層 $128^3=2097152$，共 2113674 塊，約 2.016 GB。
+
+
+@q sc3-37 | os-sched#3 | 3 | 追蹤
+Under preemptive RM, independent tasks have (period,execution) pairs (6,2) and (10,5), first releases at time 0, implicit deadlines and zero overhead. Trace the repeating interval of length equal to the least common multiple of both periods. The two-task RM utilization bound is sufficient rather than necessary, so exceeding it requires further analysis. Track unfinished work across releases instead of declaring success or failure from a rounded utilization alone. Which statements are correct? Select all that apply.
+[x] The total utilization is about 0.833.
+[x] Simulating one hyperperiod shows that every deadline is met.
+[ ] The utilization is below the RM bound, so the condition alone guarantees success.
+[ ] Since the utilization exceeds the RM bound, some job must miss its deadline.
+[ ] The hyperperiod is 16 time units, the sum of the two periods.
+---
+$U=\frac26+\frac5{10}\approx0.833$，略超過 0.828，充分條件不成立，但也不代表排不完；超週期是最小公倍數 30，不是相加；「模擬 30 個時間單位全部趕上」（程式確認）。
+
+
+@q me2-35 | os-memory#2 | 3 | 追蹤
+記憶體空洞依序 520、210、590、390、350（KB），依序來了 120、400、170、420 KB 的請求。first-fit、best-fit、worst-fit 各能放進幾個請求？
+== 4,4,3
+?? first-fit,best-fit,worst-fit
+---
+first-fit：120→第1個空洞、400→第1個空洞、170→第2個空洞、420→第3個空洞。best-fit：120→第2個空洞、400→第1個空洞、170→第5個空洞、420→第3個空洞。worst-fit：120→第3個空洞、400→第1個空洞、170→第3個空洞、420→放不下。每放一個請求，那個空洞就縮小成剩下的大小，之後的請求看的是縮小後的空洞。
+
+
+
+@q me4-36 | os-memory#4 | 3 | 計算
+32 位元虛擬位址、頁大小 8 KB、每個頁表項 4 bytes。單層頁表每個行程要多大？如果每一層頁表剛好放進一頁，需要幾層？
+== 2 MB,2
+?? 單層頁表大小,層數
+---
+offset 13 位，頁號 19 位。單層：$2^{19}$ 項 × 4 bytes＝2 MB。一頁能放 $8192/4=2048=2^{11}$ 項，每層吃掉 11 位頁號，$\lceil19/11\rceil=2$ 層。層數越多，TLB miss 時要讀的頁表也越多。
+
+
+
+@q sy2-29 | os-sync#2 | 3 | 找錯
+同學把 Peterson 演算法的進入區寫成 `flag[i] = true; turn = i; while (flag[j] && turn == j);`（把 `turn = j` 寫成 `turn = i`）。哪一個執行順序會讓兩個行程同時進入臨界區？
+[x] P0 設好旗子和 turn＝0，檢查時 flag[1] 是 false，進入；接著 P1 設 flag[1]、turn＝1，檢查 `turn == 0` 不成立，也進入
+[ ] 不會發生，互斥仍然成立
+[ ] 兩個都會永遠卡在 while
+[ ] 只有一個行程時才會出錯
+---
+原本的 `turn = j` 是「禮讓對方」：兩個同時想進時，最後設 turn 的那個讓出去。改成 `turn = i` 後，每個人都把 turn 設成自己，檢查的條件 `turn == j` 對後來的那個人永遠不成立，它不會等。互斥就被破壞了。
+
+
+
+@q vm3-31 | os-vm#3 | 2 | 計算
+頁的參考串（時間 1 到 16）：3 3 4 1 7 1 1 5 1 5 1 2 1 7 3 4。工作集視窗 $\Delta=5$。在時間 6（含第 6 次參考）時，工作集是哪些頁？有幾頁？
+== 1 3 4 7,4
+?? 工作集（由小到大、空格隔開）,頁數
+---
+看最近 5 次參考，也就是第 2 到第 6 次：3 4 1 7 1。去掉重複得 {1, 3, 4, 7}，共 4 頁。所有行程工作集大小的總和超過 frame 數，就會 thrashing。
+
+
+@q vm3-32 | os-vm#3 | 2 | 計算
+頁的參考串（時間 1 到 16）：3 5 4 5 1 7 4 7 1 7 3 3 2 5 6 5。工作集視窗 $\Delta=4$。在時間 5（含第 5 次參考）時，工作集是哪些頁？有幾頁？
+== 1 4 5,3
+?? 工作集（由小到大、空格隔開）,頁數
+---
+看最近 4 次參考，也就是第 2 到第 5 次：5 4 5 1。去掉重複得 {1, 4, 5}，共 3 頁。所有行程工作集大小的總和超過 frame 數，就會 thrashing。
+
+
+
+@q vm3-33 | os-vm#3 | 2 | 計算
+頁的參考串（時間 1 到 16）：7 6 3 1 7 3 3 1 1 1 4 6 7 5 2 2。工作集視窗 $\Delta=5$。在時間 7（含第 7 次參考）時，工作集是哪些頁？有幾頁？
+== 1 3 7,3
+?? 工作集（由小到大、空格隔開）,頁數
+---
+看最近 5 次參考，也就是第 3 到第 7 次：3 1 7 3 3。去掉重複得 {1, 3, 7}，共 3 頁。所有行程工作集大小的總和超過 frame 數，就會 thrashing。
+
+
+@q vm3-34 | os-vm#3 | 2 | 計算
+頁的參考串（時間 1 到 16）：6 7 2 2 1 3 5 3 6 6 5 2 3 5 1 2。工作集視窗 $\Delta=6$。在時間 10（含第 10 次參考）時，工作集是哪些頁？有幾頁？
+== 1 3 5 6,4
+?? 工作集（由小到大、空格隔開）,頁數
+---
+看最近 6 次參考，也就是第 5 到第 10 次：1 3 5 3 6 6。去掉重複得 {1, 3, 5, 6}，共 4 頁。所有行程工作集大小的總和超過 frame 數，就會 thrashing。
+
+
+
+@q dl3-35 | os-deadlock#3 | 3 | 追蹤
+3 種資源。P0：Allocation (2,4,3)、Max (4,4,4)；P1：Allocation (1,0,0)、Max (4,5,1)；P2：Allocation (2,2,0)、Max (2,2,1)；P3：Allocation (2,1,2)、Max (2,5,2)。Available (1,1,1)。用 Banker 的安全性檢查，每次從 P0 開始找「Need 都不超過 Work」的第一個行程。得到的安全序列是？（例如 P1 P0 P2 P3）
+== P2 P0 P1 P3
+== P2,P0,P1,P3
+== P2P0P1P3
+---
+Need＝Max－Allocation：P0 (2,0,1)；P1 (3,5,1)；P2 (0,0,1)；P3 (0,4,0)。Work 從 (1,1,1) 開始，每找到一個能做完的行程，就把它的 Allocation 加回 Work。依序 P2 → P0 → P1 → P3，全部都能完成，所以是安全狀態。
+
+
+@q me3-37 | os-memory#3 | 3 | 計算
+頁大小 4096 bytes。頁表：頁 0→frame 15、頁 1→frame 22、頁 2→frame 17、頁 3→frame 31。邏輯位址 13512（十進位）轉換成實體位址是多少？
+== 128200
+---
+頁號＝$\lfloor13512/4096\rfloor=3$，位移＝$13512-3\times4096=1224$。頁 3 在 frame 31，實體位址＝$31\times4096+1224=128200$。頁大小是 2 的次方，所以硬體只要把位址的高位換掉，位移那幾位原封不動。
+
+
+@q st2-33 | os-storage#2 | 2 | 計算
+4 顆 2 TB 的硬碟。RAID 0、RAID 1+0（兩兩鏡像再條帶）、RAID 5、RAID 6 的可用容量各是多少 TB？
+== 8,4,6,4
+?? RAID 0,RAID 1+0,RAID 5,RAID 6
+---
+RAID 0 全部拿來放資料：$4\times2$。RAID 1+0 每份資料存兩份：一半。RAID 5 用一顆的容量放同位元：$3\times2$。RAID 6 用兩顆：$2\times2$。能保證承受的故障：0 顆、1 顆（同一對壞兩顆就不行）、1 顆、2 顆。
+
+
+@q st3-34 | os-storage#3 | 3 | 計算
+inode 有 10 個直接指標、1 個單層間接、1 個雙層間接、1 個三層間接；區塊 2 KB、指標 8 bytes。檔案最多有幾個資料區塊？
+== 16843018
+---
+每個間接區塊放 $2048/8=256$ 個指標。直接 10、單層 256、雙層 $256^2=65536$、三層 $256^3=16777216$，共 16843018 塊，約 32.13 GB。
+
+
+@q vm3-35 | os-vm#3 | 2 | 計算
+頁的參考串（時間 1 到 16）：2 7 5 6 5 6 6 3 4 4 3 7 6 1 1 1。工作集視窗 $\Delta=4$。在時間 13（含第 13 次參考）時，工作集是哪些頁？有幾頁？
+== 3 4 6 7,4
+?? 工作集（由小到大、空格隔開）,頁數
+---
+看最近 4 次參考，也就是第 10 到第 13 次：4 3 7 6。去掉重複得 {3, 4, 6, 7}，共 4 頁。所有行程工作集大小的總和超過 frame 數，就會 thrashing。
+
+
+
+@q sy4-29 | os-sync#4 | 2 | 追蹤
+號誌 S 初值 3（wait 先減 1，結果小於 0 就去等；signal 先加 1，結果 $\le0$ 就叫醒一個在等的）。不同的行程依序做：signal、signal、wait、wait、signal、wait、wait。最後 S 的值是多少？有幾個行程正在等？
+== 2,0
+?? S 的值,等待中的行程數
+---
+S 依序變成 4, 5, 4, 3, 4, 3, 2。這種實作中 S 為負時，$|S|$ 就是等待佇列的長度：最後 S＝2，所以有 0 個在等。
+
+
+@q sy4-30 | os-sync#4 | 2 | 追蹤
+號誌 S 初值 1（wait 先減 1，結果小於 0 就去等；signal 先加 1，結果 $\le0$ 就叫醒一個在等的）。不同的行程依序做：signal、signal、signal、wait、wait、wait、signal。最後 S 的值是多少？有幾個行程正在等？
+== 2,0
+?? S 的值,等待中的行程數
+---
+S 依序變成 2, 3, 4, 3, 2, 1, 2。這種實作中 S 為負時，$|S|$ 就是等待佇列的長度：最後 S＝2，所以有 0 個在等。
+
+
+@q dl2-28 | os-deadlock#2 | 3 | 計算
+每種資源只有 1 個。P1 拿著 R2、R3、P3 拿著 R1、R4；P1 要 R1、P2 要 R1、P3 要 R2、P4 要 R3。有沒有死結？卡在死結裡的行程有幾個？
+== 有,2
+?? 有沒有死結,行程數
+---
+畫成等待圖（$P\to Q$：$P$ 要的資源在 $Q$ 手上）：P1→P3、P2→P3、P3→P1、P4→P1。單一實例時，有環 ⇔ 死結。環上的 P1、P3 互相等待，形成死結。
+
+
+@q dl2-29 | os-deadlock#2 | 3 | 計算
+每種資源只有 1 個。P1 拿著 R3、P3 拿著 R1、P4 拿著 R2、R4；P1 要 R4、P2 要 R2、P3 要 R2、P4 要 R1。有沒有死結？卡在死結裡的行程有幾個？
+== 有,2
+?? 有沒有死結,行程數
+---
+畫成等待圖（$P\to Q$：$P$ 要的資源在 $Q$ 手上）：P1→P4、P2→P4、P3→P4、P4→P3。單一實例時，有環 ⇔ 死結。環上的 P3、P4 互相等待，形成死結。
+
+
+
+@q me5-29 | os-memory#5 | 3 | 計算
+分段加分頁：16 位元邏輯位址中，最高 2 位是段號、接著 4 位是頁號、最後 10 位是位移（頁大小 1 KB）。第 1 段的頁表中，頁 3 放在 frame 9。邏輯位址 0x4C2A 的實體位址（十進位）是多少？
+== 9258
+---
+0x4C2A＝`01 0011 0000101010`：段號 01＝1、頁號 0011＝3、位移 `0000101010`＝42。查第 1 段的頁表，頁 3 在 frame 9，實體位址＝$9\times1024+42=9258$。分段給程式邏輯上的切分與保護，每段再分頁就沒有外部碎片。
+
+
+@q me3-38 | os-memory#3 | 3 | 計算
+32 位元位址、頁大小 4 KB。邏輯位址 0x00403ABC 的頁號和位移（十六進位）各是？若頁表說這一頁放在 frame 0x1F，實體位址是？
+== 403,ABC,1FABC
+== 0x403,0xABC,0x1FABC
+?? 頁號,位移,實體位址
+---
+4 KB＝$2^{12}$，最低 12 位（3 個十六進位數字）是位移 0xABC，其餘是頁號 0x00403＝0x403。實體位址＝frame 號接上位移：0x1F 後面接 ABC，得 0x1FABC。頁大小是 2 的次方時，轉換只是把高位換掉，不需要做除法。
+
+
+
+@q sy4-31 | os-sync#4 | 2 | 追蹤
+號誌 S 初值 2（wait 先減 1，結果小於 0 就去等；signal 先加 1，結果 $\le0$ 就叫醒一個在等的）。不同的行程依序做：wait、signal、signal、wait、wait、wait、signal。最後 S 的值是多少？有幾個行程正在等？
+== 1,0
+?? S 的值,等待中的行程數
+---
+S 依序變成 1, 2, 3, 2, 1, 0, 1。這種實作中 S 為負時，$|S|$ 就是等待佇列的長度：最後 S＝1，所以有 0 個在等。
+
+
+@q sy4-32 | os-sync#4 | 2 | 追蹤
+號誌 S 初值 3（wait 先減 1，結果小於 0 就去等；signal 先加 1，結果 $\le0$ 就叫醒一個在等的）。不同的行程依序做：wait、signal、wait、signal、signal、wait、signal。最後 S 的值是多少？有幾個行程正在等？
+== 4,0
+?? S 的值,等待中的行程數
+---
+S 依序變成 2, 3, 2, 3, 4, 3, 4。這種實作中 S 為負時，$|S|$ 就是等待佇列的長度：最後 S＝4，所以有 0 個在等。
+
+
+@q dl2-30 | os-deadlock#2 | 3 | 計算
+每種資源只有 1 個。P2 拿著 R3、P3 拿著 R1、P4 拿著 R2；P1 要 R3、P2 要 R2、P3 要 R4、P4 要 R4。有沒有死結？卡在死結裡的行程有幾個？
+== 沒有,0
+?? 有沒有死結,行程數
+---
+畫成等待圖（$P\to Q$：$P$ 要的資源在 $Q$ 手上）：P1→P2、P2→P4。單一實例時，有環 ⇔ 死結。沒有環，所以沒有死結：等待的行程最後都會拿到。
+
+
+@q dl2-31 | os-deadlock#2 | 3 | 計算
+每種資源只有 1 個。P1 拿著 R4、P2 拿著 R1、R3、P3 拿著 R2；P1 要 R2、P2 要 R4、P4 要 R3。有沒有死結？卡在死結裡的行程有幾個？
+== 沒有,0
+?? 有沒有死結,行程數
+---
+畫成等待圖（$P\to Q$：$P$ 要的資源在 $Q$ 手上）：P1→P3、P2→P1、P4→P2。單一實例時，有環 ⇔ 死結。沒有環，所以沒有死結：等待的行程最後都會拿到。
+
+
+
+@q me3-39 | os-memory#3 | 3 | 計算
+頁大小 4096 bytes。頁表：頁 0→frame 25、頁 1→frame 0、頁 2→frame 22、頁 3→frame 27。邏輯位址 11932（十進位）轉換成實體位址是多少？
+== 93852
+---
+頁號＝$\lfloor11932/4096\rfloor=2$，位移＝$11932-2\times4096=3740$。頁 2 在 frame 22，實體位址＝$22\times4096+3740=93852$。頁大小是 2 的次方，所以硬體只要把位址的高位換掉，位移那幾位原封不動。
+
+
+
+@q st4-29 | os-storage#4 | 3 | 追蹤
+在同一個目錄依序執行：建立檔案 `f`、`ln -s f s`、`ln f g`、`rm f`、`rm g`。最後原本那個檔案的 inode 連結數是多少？`cat s` 讀得到內容嗎？
+== 0,讀不到
+== 0,不能
+?? 連結數,cat s
+---
+硬連結（`ln`）是同一個 inode 多一個名字，連結數 +1；`rm` 一個硬連結名字讓連結數 −1，降到 0 且沒人開著時才真的釋放資料。符號連結（`ln -s`）只存「路徑字串」f，不算連結數。最後還指向原 inode 的名字：沒有，連結數 0。`s` 存的路徑 `f` 已經被刪掉，所以 `cat s` 會失敗（懸空的符號連結）。
+
+
+@q st4-30 | os-storage#4 | 3 | 追蹤
+在同一個目錄依序執行：建立檔案 `f`、`ln f g`、`ln -s g s`、`rm f`、`ln g h`。最後原本那個檔案的 inode 連結數是多少？`cat s` 讀得到內容嗎？
+== 2,讀得到
+== 2,能
+?? 連結數,cat s
+---
+硬連結（`ln`）是同一個 inode 多一個名字，連結數 +1；`rm` 一個硬連結名字讓連結數 −1，降到 0 且沒人開著時才真的釋放資料。符號連結（`ln -s`）只存「路徑字串」g，不算連結數。最後還指向原 inode 的名字：g、h，連結數 2。`s` 存的路徑 `g` 還在，所以 `cat s` 讀得到——即使原本的名字 f 不在了，只要路徑名字還在就行。
+
+
+@q st4-31 | os-storage#4 | 3 | 追蹤
+在同一個目錄依序執行：建立檔案 `f`、`ln f g`、`ln -s f s`、`ln g h`、`ln h k`。最後原本那個檔案的 inode 連結數是多少？`cat s` 讀得到內容嗎？
+== 4,讀得到
+== 4,能
+?? 連結數,cat s
+---
+硬連結（`ln`）是同一個 inode 多一個名字，連結數 +1；`rm` 一個硬連結名字讓連結數 −1，降到 0 且沒人開著時才真的釋放資料。符號連結（`ln -s`）只存「路徑字串」f，不算連結數。最後還指向原 inode 的名字：f、g、h、k，連結數 4。`s` 存的路徑 `f` 還在，所以 `cat s` 讀得到。
+
+
+@q dl4-30 | os-deadlock#4 | 3 | 計算
+等待圖（$P_i\to P_j$ 表示 $P_i$ 在等 $P_j$ 手上的資源）的邊：P1→P4、P2→P4、P3→P2、P3→P5、P5→P3、P5→P6、P6→P5（一個行程可能同時在等好幾個資源）。若用「終止行程」來解除死結，最少要終止幾個行程？要終止哪些？（行程名稱由小到大、用空格隔開）
+== 1,P5
+?? 個數,哪些
+---
+等待圖有環就有死結。要讓圖上不再有任何環，最少得拿掉 1 個點，而且唯一的選法是 P5（終止後它手上的資源釋放，等它的行程就能繼續）。這個行程在所有的環上，殺它一個就夠。實務上還要看各行程的優先權、已跑多久、拿了多少資源來挑犧牲者。
+
+
+@q dl4-31 | os-deadlock#4 | 3 | 計算
+等待圖（$P_i\to P_j$ 表示 $P_i$ 在等 $P_j$ 手上的資源）的邊：P2→P3、P2→P4、P2→P6、P3→P5、P3→P6、P5→P2、P6→P3（一個行程可能同時在等好幾個資源）。若用「終止行程」來解除死結，最少要終止幾個行程？要終止哪些？（行程名稱由小到大、用空格隔開）
+== 1,P3
+?? 個數,哪些
+---
+等待圖有環就有死結。要讓圖上不再有任何環，最少得拿掉 1 個點，而且唯一的選法是 P3（終止後它手上的資源釋放，等它的行程就能繼續）。這個行程在所有的環上，殺它一個就夠。實務上還要看各行程的優先權、已跑多久、拿了多少資源來挑犧牲者。
+
+
+@q dl4-32 | os-deadlock#4 | 3 | 計算
+等待圖（$P_i\to P_j$ 表示 $P_i$ 在等 $P_j$ 手上的資源）的邊：P1→P2、P2→P3、P3→P4、P4→P1、P4→P5、P5→P4（一個行程可能同時在等好幾個資源）。若用「終止行程」來解除死結，最少要終止幾個行程？要終止哪些？（行程名稱由小到大、用空格隔開）
+== 1,P4
+?? 個數,哪些
+---
+等待圖有環就有死結。要讓圖上不再有任何環，最少得拿掉 1 個點，而且唯一的選法是 P4（終止後它手上的資源釋放，等它的行程就能繼續）。這個行程在所有的環上，殺它一個就夠。實務上還要看各行程的優先權、已跑多久、拿了多少資源來挑犧牲者。
+
+
+@q dl4-33 | os-deadlock#4 | 3 | 計算
+等待圖（$P_i\to P_j$ 表示 $P_i$ 在等 $P_j$ 手上的資源）的邊：P1→P3、P1→P4、P3→P1、P4→P1、P4→P3、P5→P2（一個行程可能同時在等好幾個資源）。若用「終止行程」來解除死結，最少要終止幾個行程？要終止哪些？（行程名稱由小到大、用空格隔開）
+== 1,P1
+?? 個數,哪些
+---
+等待圖有環就有死結。要讓圖上不再有任何環，最少得拿掉 1 個點，而且唯一的選法是 P1（終止後它手上的資源釋放，等它的行程就能繼續）。這個行程在所有的環上，殺它一個就夠。實務上還要看各行程的優先權、已跑多久、拿了多少資源來挑犧牲者。
+
+
+
+@q sc4-30 | os-sched#4 | 3 | 追蹤
+CFS 的簡化模型：每次挑 vruntime 最小的行程跑 10 ms（一樣小時照字母順序），跑完它的 vruntime 增加 $10\times1024$ 除以權重。A、B、C 的權重 4096、1024、512，一開始 vruntime 是 0、5、0。前 8 個時間片依序給誰？
+== ACAABAAA
+---
+增量：A 每次加 5/2、B 每次加 10、C 每次加 20。照「每次挑最小」模擬：A C A A B A A A；最後 vruntime 是 A 15、B 15、C 20。權重越大，vruntime 長得越慢，所以分到越多時間片；長期下來各行程拿到的 CPU 時間和權重成正比。
+
+
+@q sc4-31 | os-sched#4 | 3 | 追蹤
+CFS 的簡化模型：每次挑 vruntime 最小的行程跑 10 ms（一樣小時照字母順序），跑完它的 vruntime 增加 $10\times1024$ 除以權重。A、B、C 的權重 2048、4096、512，一開始 vruntime 是 15、20、0。前 8 個時間片依序給誰？
+== CAABCBAB
+---
+增量：A 每次加 5、B 每次加 5/2、C 每次加 20。照「每次挑最小」模擬：C A A B C B A B；最後 vruntime 是 A 30、B 55/2、C 40。權重越大，vruntime 長得越慢，所以分到越多時間片；長期下來各行程拿到的 CPU 時間和權重成正比。
+
+
+@q sc4-32 | os-sched#4 | 3 | 追蹤
+CFS 的簡化模型：每次挑 vruntime 最小的行程跑 10 ms（一樣小時照字母順序），跑完它的 vruntime 增加 $10\times1024$ 除以權重。A、B、C 的權重 4096、1024、512，一開始 vruntime 是 20、5、0。前 8 個時間片依序給誰？
+== CBBACAAB
+---
+增量：A 每次加 5/2、B 每次加 10、C 每次加 20。照「每次挑最小」模擬：C B B A C A A B；最後 vruntime 是 A 55/2、B 35、C 40。權重越大，vruntime 長得越慢，所以分到越多時間片；長期下來各行程拿到的 CPU 時間和權重成正比。
+
+
+@q sc4-33 | os-sched#4 | 3 | 追蹤
+CFS 的簡化模型：每次挑 vruntime 最小的行程跑 10 ms（一樣小時照字母順序），跑完它的 vruntime 增加 $10\times1024$ 除以權重。A、B、C 的權重 512、2048、4096，一開始 vruntime 是 5、15、10。前 8 個時間片依序給誰？
+== ACCBCCBC
+---
+增量：A 每次加 20、B 每次加 5、C 每次加 5/2。照「每次挑最小」模擬：A C C B C C B C；最後 vruntime 是 A 25、B 25、C 45/2。權重越大，vruntime 長得越慢，所以分到越多時間片；長期下來各行程拿到的 CPU 時間和權重成正比。
+
+
+
+@q st4-32 | os-storage#4 | 3 | 追蹤
+在同一個目錄依序執行：建立檔案 `f`、`ln f g`、`ln -s f s`、`rm f`、`ln g h`。最後原本那個檔案的 inode 連結數是多少？`cat s` 讀得到內容嗎？
+== 2,讀不到
+== 2,不能
+?? 連結數,cat s
+---
+硬連結（`ln`）是同一個 inode 多一個名字，連結數 +1；`rm` 一個硬連結名字讓連結數 −1，降到 0 且沒人開著時才真的釋放資料。符號連結（`ln -s`）只存「路徑字串」f，不算連結數。最後還指向原 inode 的名字：g、h，連結數 2。`s` 存的路徑 `f` 已經被刪掉，所以 `cat s` 會失敗（懸空的符號連結）。
+
+
+@q dl4-34 | os-deadlock#4 | 3 | 計算
+等待圖（$P_i\to P_j$ 表示 $P_i$ 在等 $P_j$ 手上的資源）的邊：P1→P5、P2→P6、P3→P2、P5→P2、P5→P6、P6→P1、P6→P2（一個行程可能同時在等好幾個資源）。若用「終止行程」來解除死結，最少要終止幾個行程？要終止哪些？（行程名稱由小到大、用空格隔開）
+== 1,P6
+?? 個數,哪些
+---
+等待圖有環就有死結。要讓圖上不再有任何環，最少得拿掉 1 個點，而且唯一的選法是 P6（終止後它手上的資源釋放，等它的行程就能繼續）。這個行程在所有的環上，殺它一個就夠。實務上還要看各行程的優先權、已跑多久、拿了多少資源來挑犧牲者。
+
+
+@q sc4-34 | os-sched#4 | 3 | 追蹤
+CFS 的簡化模型：每次挑 vruntime 最小的行程跑 10 ms（一樣小時照字母順序），跑完它的 vruntime 增加 $10\times1024$ 除以權重。A、B、C 的權重 2048、512、1024，一開始 vruntime 是 5、15、5。前 8 個時間片依序給誰？
+== ACAABCAA
+---
+增量：A 每次加 5、B 每次加 20、C 每次加 10。照「每次挑最小」模擬：A C A A B C A A；最後 vruntime 是 A 30、B 35、C 25。權重越大，vruntime 長得越慢，所以分到越多時間片；長期下來各行程拿到的 CPU 時間和權重成正比。
+
+
+
+@q sy1-32 | os-sync#1 | 2 | 追蹤
+共享變數 x 初值 8。T1 執行 `x = x + 4`、T2 執行 `x = x + 3`，各自拆成三步：讀 x 到自己的暫存器、在暫存器裡算、寫回 x。實際交錯順序：T1讀、T2讀、T1算、T1寫、T2算、T2寫。最後 x 是多少？
+== 11
+---
+T1 讀到 8；T2 讀到 8；T1 算出 12；T1 寫入 → x＝12；T2 算出 11；T2 寫入 → x＝11。如果兩個執行緒不交錯，結果應該是 15（先 T1 後 T2）或 15（先 T2 後 T1）；這次得到 11，是「後寫的人蓋掉先寫的人」造成的競爭條件。把讀－算－寫包在臨界區裡（例如加鎖），就只會出現序列化的結果。
+
+
+@q sy1-33 | os-sync#1 | 2 | 追蹤
+共享變數 x 初值 3。T1 執行 `x = x + 4`、T2 執行 `x = x + 3`，各自拆成三步：讀 x 到自己的暫存器、在暫存器裡算、寫回 x。實際交錯順序：T2讀、T1讀、T2算、T2寫、T1算、T1寫。最後 x 是多少？
+== 7
+---
+T2 讀到 3；T1 讀到 3；T2 算出 6；T2 寫入 → x＝6；T1 算出 7；T1 寫入 → x＝7。如果兩個執行緒不交錯，結果應該是 10（先 T1 後 T2）或 10（先 T2 後 T1）；這次得到 7，是「後寫的人蓋掉先寫的人」造成的競爭條件。把讀－算－寫包在臨界區裡（例如加鎖），就只會出現序列化的結果。
+
+
+@q sy1-34 | os-sync#1 | 2 | 追蹤
+共享變數 x 初值 8。T1 執行 `x = x + 3`、T2 執行 `x = x * 3`，各自拆成三步：讀 x 到自己的暫存器、在暫存器裡算、寫回 x。實際交錯順序：T1讀、T2讀、T2算、T2寫、T1算、T1寫。最後 x 是多少？
+== 11
+---
+T1 讀到 8；T2 讀到 8；T2 算出 24；T2 寫入 → x＝24；T1 算出 11；T1 寫入 → x＝11。如果兩個執行緒不交錯，結果應該是 33（先 T1 後 T2）或 27（先 T2 後 T1）；這次得到 11，是「後寫的人蓋掉先寫的人」造成的競爭條件。把讀－算－寫包在臨界區裡（例如加鎖），就只會出現序列化的結果。
+
+
+@q sy1-35 | os-sync#1 | 2 | 追蹤
+共享變數 x 初值 9。T1 執行 `x = x + 5`、T2 執行 `x = x + 3`，各自拆成三步：讀 x 到自己的暫存器、在暫存器裡算、寫回 x。實際交錯順序：T2讀、T1讀、T1算、T1寫、T2算、T2寫。最後 x 是多少？
+== 12
+---
+T2 讀到 9；T1 讀到 9；T1 算出 14；T1 寫入 → x＝14；T2 算出 12；T2 寫入 → x＝12。如果兩個執行緒不交錯，結果應該是 17（先 T1 後 T2）或 17（先 T2 後 T1）；這次得到 12，是「後寫的人蓋掉先寫的人」造成的競爭條件。把讀－算－寫包在臨界區裡（例如加鎖），就只會出現序列化的結果。
+
+
+
+@q sc2-42 | os-sched#2 | 2 | 計算
+非搶占式 SJF（同樣長時先到的優先）：P1（到達 0、需要 5）、P2（到達 1、需要 4）、P3（到達 3、需要 7）、P4（到達 6、需要 2）、P5（到達 7、需要 6）。平均周轉時間和平均等待時間各是多少？（可用分數）
+== 49/5,5
+?? 平均周轉,平均等待
+---
+甘特圖：P1(0–5) P2(5–9) P4(9–11) P5(11–17) P3(17–24)。周轉＝完成−到達：P1 5、P2 8、P3 21、P4 5、P5 10，平均 49/5。等待＝周轉−執行：P1 0、P2 4、P3 14、P4 3、P5 4，平均 5。非搶占式一旦開始就做到完，短工作晚到時只能等目前的做完。
+
+
+@q sc2-43 | os-sched#2 | 2 | 計算
+非搶占式 SJF（同樣長時先到的優先）：P1（到達 0、需要 1）、P2（到達 2、需要 6）、P3（到達 3、需要 7）、P4（到達 5、需要 7）、P5（到達 6、需要 5）。平均周轉時間和平均等待時間各是多少？（可用分數）
+== 53/5,27/5
+?? 平均周轉,平均等待
+---
+甘特圖：P1(0–1) P2(2–8) P5(8–13) P3(13–20) P4(20–27)。周轉＝完成−到達：P1 1、P2 6、P3 17、P4 22、P5 7，平均 53/5。等待＝周轉−執行：P1 0、P2 0、P3 10、P4 15、P5 2，平均 27/5。非搶占式一旦開始就做到完，短工作晚到時只能等目前的做完。
+
+
+@q sc2-44 | os-sched#2 | 2 | 計算
+非搶占式 SJF（同樣長時先到的優先）：P1（到達 0、需要 8）、P2（到達 1、需要 5）、P3（到達 2、需要 5）、P4（到達 4、需要 2）。平均周轉時間和平均等待時間各是多少？（可用分數）
+== 23/2,13/2
+?? 平均周轉,平均等待
+---
+甘特圖：P1(0–8) P4(8–10) P2(10–15) P3(15–20)。周轉＝完成−到達：P1 8、P2 14、P3 18、P4 6，平均 23/2。等待＝周轉−執行：P1 0、P2 9、P3 13、P4 4，平均 13/2。非搶占式一旦開始就做到完，短工作晚到時只能等目前的做完。
+
+
+@q sc2-45 | os-sched#2 | 2 | 計算
+非搶占式 SJF（同樣長時先到的優先）：P1（到達 0、需要 5）、P2（到達 1、需要 2）、P3（到達 2、需要 6）、P4（到達 4、需要 1）。平均周轉時間和平均等待時間各是多少？（可用分數）
+== 13/2,3
+?? 平均周轉,平均等待
+---
+甘特圖：P1(0–5) P4(5–6) P2(6–8) P3(8–14)。周轉＝完成−到達：P1 5、P2 7、P3 12、P4 2，平均 13/2。等待＝周轉−執行：P1 0、P2 5、P3 6、P4 1，平均 3。非搶占式一旦開始就做到完，短工作晚到時只能等目前的做完。
+
+
+
+@q st4-33 | os-storage#4 | 3 | 追蹤
+在同一個目錄依序執行：建立檔案 `f`、`ln f g`、`ln -s g s`、`ln g h`、`rm g`。最後原本那個檔案的 inode 連結數是多少？`cat s` 讀得到內容嗎？
+== 2,讀不到
+== 2,不能
+?? 連結數,cat s
+---
+硬連結（`ln`）是同一個 inode 多一個名字，連結數 +1；`rm` 一個硬連結名字讓連結數 −1，降到 0 且沒人開著時才真的釋放資料。符號連結（`ln -s`）只存「路徑字串」g，不算連結數。最後還指向原 inode 的名字：f、h，連結數 2。`s` 存的路徑 `g` 已經被刪掉，所以 `cat s` 會失敗（懸空的符號連結）。
+
+
+@q sy1-36 | os-sync#1 | 2 | 追蹤
+共享變數 x 初值 9。T1 執行 `x = x + 2`、T2 執行 `x = x * 2`，各自拆成三步：讀 x 到自己的暫存器、在暫存器裡算、寫回 x。實際交錯順序：T2讀、T1讀、T2算、T1算、T2寫、T1寫。最後 x 是多少？
+== 11
+---
+T2 讀到 9；T1 讀到 9；T2 算出 18；T1 算出 11；T2 寫入 → x＝18；T1 寫入 → x＝11。如果兩個執行緒不交錯，結果應該是 22（先 T1 後 T2）或 20（先 T2 後 T1）；這次得到 11，是「後寫的人蓋掉先寫的人」造成的競爭條件。把讀－算－寫包在臨界區裡（例如加鎖），就只會出現序列化的結果。
+
+
+
+@q vm2-38 | os-vm#2 | 3 | 計算
+參考串 1 5 4 2 1 5 3 1 5 4 2 3，用 FIFO 頁替換。frame 有 3 個時會發生幾次 page fault？4 個時呢？
+== 9,10
+?? 3 frames,4 frames
+---
+照 FIFO 模擬：3 個 frame 9 次、4 個 frame 10 次——frame 變多，fault 反而變多，這就是 Belady 異常。FIFO 不是堆疊演算法（$k$ 個 frame 時留在記憶體的頁，不一定是 $k+1$ 個 frame 時那組的子集）；LRU、OPT 不會有這個現象。
+
+
+@q vm2-39 | os-vm#2 | 3 | 計算
+參考串 5 4 3 1 5 4 2 5 4 3 1 2，用 FIFO 頁替換。frame 有 3 個時會發生幾次 page fault？4 個時呢？
+== 9,10
+?? 3 frames,4 frames
+---
+照 FIFO 模擬：3 個 frame 9 次、4 個 frame 10 次——frame 變多，fault 反而變多，這就是 Belady 異常。FIFO 不是堆疊演算法（$k$ 個 frame 時留在記憶體的頁，不一定是 $k+1$ 個 frame 時那組的子集）；LRU、OPT 不會有這個現象。
+
+
+@q vm2-40 | os-vm#2 | 3 | 計算
+參考串 5 2 3 1 5 2 4 5 2 3 1 4，用 FIFO 頁替換。frame 有 3 個時會發生幾次 page fault？4 個時呢？
+== 9,10
+?? 3 frames,4 frames
+---
+照 FIFO 模擬：3 個 frame 9 次、4 個 frame 10 次——frame 變多，fault 反而變多，這就是 Belady 異常。FIFO 不是堆疊演算法（$k$ 個 frame 時留在記憶體的頁，不一定是 $k+1$ 個 frame 時那組的子集）；LRU、OPT 不會有這個現象。
+
+
+
+@q sy6-28 | os-sync#6 | 3 | 追蹤
+單核心、優先權搶占式排程（H＞M＞L）。L 在時間 0 到達：先算 1 單位，拿鎖，臨界區 5 單位，放鎖，再算 1 單位。H 在時間 2 到達：算 1 單位後要拿同一把鎖，臨界區 1 單位就結束。M 在時間 4 到達：不用鎖，算 4 單位。H 在什麼時間完成？如果用優先權繼承（拿著鎖的 L 暫時升到 H 的優先權）呢？
+== 12,8
+?? 沒有繼承,優先權繼承
+---
+每一單位時間誰在跑：沒有繼承 L L H L M M M M L L L H L；有繼承 L L H L L L L H M M M M L。沒有繼承時，H 卡在等 L 的鎖，而 M 的優先權比 L 高，把 L 擠掉——H 實際上在等 M，這就是優先權反轉。繼承讓 L 用 H 的優先權跑完臨界區，M 插不進來，H 提早到 8 完成。
+
+
+@q sy6-29 | os-sync#6 | 3 | 追蹤
+單核心、優先權搶占式排程（H＞M＞L）。L 在時間 0 到達：先算 1 單位，拿鎖，臨界區 4 單位，放鎖，再算 1 單位。H 在時間 3 到達：算 1 單位後要拿同一把鎖，臨界區 1 單位就結束。M 在時間 4 到達：不用鎖，算 3 單位。H 在什麼時間完成？如果用優先權繼承（拿著鎖的 L 暫時升到 H 的優先權）呢？
+== 10,7
+?? 沒有繼承,優先權繼承
+---
+每一單位時間誰在跑：沒有繼承 L L L H M M M L L H L；有繼承 L L L H L L H M M M L。沒有繼承時，H 卡在等 L 的鎖，而 M 的優先權比 L 高，把 L 擠掉——H 實際上在等 M，這就是優先權反轉。繼承讓 L 用 H 的優先權跑完臨界區，M 插不進來，H 提早到 7 完成。
+
+
+@q sy6-30 | os-sync#6 | 3 | 追蹤
+單核心、優先權搶占式排程（H＞M＞L）。L 在時間 0 到達：先算 1 單位，拿鎖，臨界區 5 單位，放鎖，再算 1 單位。H 在時間 3 到達：算 1 單位後要拿同一把鎖，臨界區 1 單位就結束。M 在時間 5 到達：不用鎖，算 5 單位。H 在什麼時間完成？如果用優先權繼承（拿著鎖的 L 暫時升到 H 的優先權）呢？
+== 13,8
+?? 沒有繼承,優先權繼承
+---
+每一單位時間誰在跑：沒有繼承 L L L H L M M M M M L L H L；有繼承 L L L H L L L H M M M M M L。沒有繼承時，H 卡在等 L 的鎖，而 M 的優先權比 L 高，把 L 擠掉——H 實際上在等 M，這就是優先權反轉。繼承讓 L 用 H 的優先權跑完臨界區，M 插不進來，H 提早到 8 完成。
+
+
+@q sy6-31 | os-sync#6 | 3 | 追蹤
+單核心、優先權搶占式排程（H＞M＞L）。L 在時間 0 到達：先算 1 單位，拿鎖，臨界區 5 單位，放鎖，再算 1 單位。H 在時間 5 到達：算 1 單位後要拿同一把鎖，臨界區 1 單位就結束。M 在時間 6 到達：不用鎖，算 3 單位。H 在什麼時間完成？如果用優先權繼承（拿著鎖的 L 暫時升到 H 的優先權）呢？
+== 11,8
+?? 沒有繼承,優先權繼承
+---
+每一單位時間誰在跑：沒有繼承 L L L L L H M M M L H L；有繼承 L L L L L H L H M M M L。沒有繼承時，H 卡在等 L 的鎖，而 M 的優先權比 L 高，把 L 擠掉——H 實際上在等 M，這就是優先權反轉。繼承讓 L 用 H 的優先權跑完臨界區，M 插不進來，H 提早到 8 完成。
+
+
+@q vm4-30 | os-vm#4 | 2 | 計算
+共有 64 個 frame，三個行程的大小依序是 127、60、20 頁。用比例配置（$a_i=\lfloor s_i/S\times m\rfloor$）各分到幾個 frame？
+== 39,18,6
+---
+$S=207$。$a_1=\lfloor127/207\times64\rfloor=39$、$a_2=\lfloor60/207\times64\rfloor=18$、$a_3=\lfloor20/207\times64\rfloor=6$，剩下 1 個可以當作空閒池。比平均分配合理：大的行程拿多一點；也可以再依優先權加權。
+
+
+@q vm4-31 | os-vm#4 | 2 | 計算
+共有 96 個 frame，三個行程的大小依序是 150、127、60 頁。用比例配置（$a_i=\lfloor s_i/S\times m\rfloor$）各分到幾個 frame？
+== 42,36,17
+---
+$S=337$。$a_1=\lfloor150/337\times96\rfloor=42$、$a_2=\lfloor127/337\times96\rfloor=36$、$a_3=\lfloor60/337\times96\rfloor=17$，剩下 1 個可以當作空閒池。比平均分配合理：大的行程拿多一點；也可以再依優先權加權。
+
+
+@q vm4-32 | os-vm#4 | 2 | 計算
+共有 96 個 frame，三個行程的大小依序是 60、20、150 頁。用比例配置（$a_i=\lfloor s_i/S\times m\rfloor$）各分到幾個 frame？
+== 25,8,62
+---
+$S=230$。$a_1=\lfloor60/230\times96\rfloor=25$、$a_2=\lfloor20/230\times96\rfloor=8$、$a_3=\lfloor150/230\times96\rfloor=62$，剩下 1 個可以當作空閒池。比平均分配合理：大的行程拿多一點；也可以再依優先權加權。
+
+
+
+@q sy6-32 | os-sync#6 | 3 | 追蹤
+單核心、優先權搶占式排程（H＞M＞L）。L 在時間 0 到達：先算 1 單位，拿鎖，臨界區 4 單位，放鎖，再算 1 單位。H 在時間 4 到達：算 1 單位後要拿同一把鎖，臨界區 1 單位就結束。M 在時間 5 到達：不用鎖，算 3 單位。H 在什麼時間完成？如果用優先權繼承（拿著鎖的 L 暫時升到 H 的優先權）呢？
+== 10,7
+?? 沒有繼承,優先權繼承
+---
+每一單位時間誰在跑：沒有繼承 L L L L H M M M L H L；有繼承 L L L L H L H M M M L。沒有繼承時，H 卡在等 L 的鎖，而 M 的優先權比 L 高，把 L 擠掉——H 實際上在等 M，這就是優先權反轉。繼承讓 L 用 H 的優先權跑完臨界區，M 插不進來，H 提早到 7 完成。
+
+
+@q vm2-41 | os-vm#2 | 3 | 計算
+參考串 4 1 2 3 4 1 5 4 1 2 3 5，用 FIFO 頁替換。frame 有 3 個時會發生幾次 page fault？4 個時呢？
+== 9,10
+?? 3 frames,4 frames
+---
+照 FIFO 模擬：3 個 frame 9 次、4 個 frame 10 次——frame 變多，fault 反而變多，這就是 Belady 異常。FIFO 不是堆疊演算法（$k$ 個 frame 時留在記憶體的頁，不一定是 $k+1$ 個 frame 時那組的子集）；LRU、OPT 不會有這個現象。
+
+
+
+@q vm1-31 | os-vm#1 | 3 | 計算
+記憶體存取 150 ns。page fault 時：要換出的頁有 30% 機率是髒的；換入一頁要 10 ms，髒頁還要再花 10 ms 寫回。要讓有效存取時間不超過 150 ns 的 140%，page fault 機率 $p$ 最多約是「每幾次存取一次」？（四捨五入到整數）
+== 216664
+== 220000
+---
+平均處理一次 fault：$10\times(1+0.3)=13$ ms $=13000000$ ns。$(1-p)150+p\cdot13000000\le150\times1.4$ ⇒ $p\le\frac{60}{12999850}$，約每 216664 次存取才能有一次 fault。髒頁越多，代價越高——所以替換時偏好挑乾淨的頁。
+
+
+@q vm1-32 | os-vm#1 | 3 | 計算
+記憶體存取 150 ns。page fault 時：要換出的頁有 50% 機率是髒的；換入一頁要 8 ms，髒頁還要再花 8 ms 寫回。要讓有效存取時間不超過 150 ns 的 120%，page fault 機率 $p$ 最多約是「每幾次存取一次」？（四捨五入到整數）
+== 399995
+== 400000
+---
+平均處理一次 fault：$8\times(1+0.5)=12$ ms $=12000000$ ns。$(1-p)150+p\cdot12000000\le150\times1.2$ ⇒ $p\le\frac{30}{11999850}$，約每 399995 次存取才能有一次 fault。髒頁越多，代價越高——所以替換時偏好挑乾淨的頁。
+
+
+@q vm1-33 | os-vm#1 | 3 | 計算
+記憶體存取 150 ns。page fault 時：要換出的頁有 30% 機率是髒的；換入一頁要 10 ms，髒頁還要再花 10 ms 寫回。要讓有效存取時間不超過 150 ns 的 110%，page fault 機率 $p$ 最多約是「每幾次存取一次」？（四捨五入到整數）
+== 866657
+== 870000
+---
+平均處理一次 fault：$10\times(1+0.3)=13$ ms $=13000000$ ns。$(1-p)150+p\cdot13000000\le150\times1.1$ ⇒ $p\le\frac{15}{12999850}$，約每 866657 次存取才能有一次 fault。髒頁越多，代價越高——所以替換時偏好挑乾淨的頁。
+
+
+
+@q vm1-34 | os-vm#1 | 3 | 計算
+記憶體存取 200 ns。page fault 時：要換出的頁有 50% 機率是髒的；換入一頁要 6 ms，髒頁還要再花 6 ms 寫回。要讓有效存取時間不超過 200 ns 的 120%，page fault 機率 $p$ 最多約是「每幾次存取一次」？（四捨五入到整數）
+== 224995
+== 220000
+---
+平均處理一次 fault：$6\times(1+0.5)=9$ ms $=9000000$ ns。$(1-p)200+p\cdot9000000\le200\times1.2$ ⇒ $p\le\frac{40}{8999800}$，約每 224995 次存取才能有一次 fault。髒頁越多，代價越高——所以替換時偏好挑乾淨的頁。
+
+
+
+@q sc2-46 | os-sched#2 | 2 | 計算
+非搶占式 SJF（同樣長時先到的優先）：P1（到達 0、需要 3）、P2（到達 2、需要 3）、P3（到達 4、需要 1）、P4（到達 6、需要 7）、P5（到達 7、需要 5）。平均周轉時間和平均等待時間各是多少？（可用分數）
+== 28/5,9/5
+?? 平均周轉,平均等待
+---
+甘特圖：P1(0–3) P2(3–6) P3(6–7) P5(7–12) P4(12–19)。周轉＝完成−到達：P1 3、P2 4、P3 3、P4 13、P5 5，平均 28/5。等待＝周轉−執行：P1 0、P2 1、P3 2、P4 6、P5 0，平均 9/5。非搶占式一旦開始就做到完，短工作晚到時只能等目前的做完。
+
+
+@q vm2-42 | os-vm#2 | 3 | 計算
+參考串 3 1 4 2 3 1 5 3 1 4 2 5，用 FIFO 頁替換。frame 有 3 個時會發生幾次 page fault？4 個時呢？
+== 9,10
+?? 3 frames,4 frames
+---
+照 FIFO 模擬：3 個 frame 9 次、4 個 frame 10 次——frame 變多，fault 反而變多，這就是 Belady 異常。FIFO 不是堆疊演算法（$k$ 個 frame 時留在記憶體的頁，不一定是 $k+1$ 個 frame 時那組的子集）；LRU、OPT 不會有這個現象。
+
+
+@q vm1-35 | os-vm#1 | 3 | 計算
+記憶體存取 200 ns。page fault 時：要換出的頁有 30% 機率是髒的；換入一頁要 8 ms，髒頁還要再花 8 ms 寫回。要讓有效存取時間不超過 200 ns 的 120%，page fault 機率 $p$ 最多約是「每幾次存取一次」？（四捨五入到整數）
+== 259995
+== 260000
+---
+平均處理一次 fault：$8\times(1+0.3)=10.4$ ms $=10400000$ ns。$(1-p)200+p\cdot10400000\le200\times1.2$ ⇒ $p\le\frac{40}{10399800}$，約每 259995 次存取才能有一次 fault。髒頁越多，代價越高——所以替換時偏好挑乾淨的頁。
+
+
+
+@q me1-31 | os-memory#1 | 3 | 比較
+A running process is moved from physical base 4000 to base 1000 to make room for another process; it is 2000 bytes long, and its limit stays 2000. Its instructions keep logical addresses, and the hardware adds the current base to each logical address after checking it against the limit:
+```
+if (d >= limit) error();
+physical = base + d;
+```
+Before the move, logical address 250 referred to physical address 4250, and it remains valid after the move. No instruction of the process is rewritten during the move. Which of the following statements are correct? Select all that apply.
+[x] Updating the base to 1000 makes logical address 250 refer to physical address 1250.
+[x] The stored logical address 250 need not change.
+[ ] Continuing to use base 4000 correctly selects the moved data at 1250.
+[ ] Execution-time relocation still requires recompiling the code after every such move.
+[ ] A length-limit check alone performs the required subtraction of 3000 from the physical base.
+---
+「1250」對：1000＋250。「位移不變」對：程式保留相對位置，由硬體套用目前起點。「舊 base 正確」錯：4000＋250＝4250，指到原位置。「仍要重新編譯」錯：執行時重定位只要更新 base，邏輯參照就會跟著新位置，不用重編。「limit 執行減法」錯：limit 負責保護範圍，不改 base。
+
+
+@q me1-32 | os-memory#1 | 3 | 情境
+執行時期繫結。程式裡有個指標變數，存的值是 300。行程原本的 base 是 1000，搬移後 base 改成 5000。搬移後，這個指標變數裡存的值是多少？它實際指到的實體位址是多少？
+== 300,5300
+?? 變數裡的值,實體位址
+---
+程式裡所有位址（包括存在變數裡的指標）都是邏輯位址，搬移時不用改：還是 300。存取時硬體加上新的 base：$5000+300=5300$（搬移前是 1300）。這正是執行時期繫結能隨時搬移的原因——如果是載入時期繫結，指標裡存的是 1300，搬家後就指錯了。
+
+
+@q pr1-37 | os-process#1 | 3 | 情境
+行程 P 在「等待」狀態（等讀檔）。讀檔完成的那一刻，CPU 正在跑一個優先權比 P 低的行程 Q（非搶占式排程）。P 接下來進入哪個狀態？什麼時候才會真的執行？
+[x] 進「就緒」；要等 Q 讓出 CPU（做完、等 I/O 或自願放棄）後被排程器選中
+[ ] 直接進「執行」，Q 被踢回就緒
+[ ] 留在「等待」，直到 Q 做完
+[ ] 進「結束」
+---
+事件完成一律只把行程從等待移到就緒；要不要立刻搶走 CPU 是排程策略決定的。非搶占式：Q 不會被中途拿走 CPU，P 在就緒佇列裡等。若是搶占式、而且 P 優先權較高，才會在這時候換 P 上去。
+
+
+
+@q me1-33 | os-memory#1 | 2 | 計算
+執行時期繫結：relocation（base）暫存器 24000、limit 暫存器 4096。程式的邏輯位址 1721, 4531, 4400 轉換成實體位址依序是？越界的寫 trap。
+== 25721,trap,trap
+---
+先檢查邏輯位址 $<$ limit（4096），合法才加上 base：1721<4096，24000+1721=25721；4531≥4096，越界 trap；4400≥4096，越界 trap。程式本身只看到從 0 開始的邏輯位址，被搬到別處只要改 base，不用改程式。
+
+
+@q me1-34 | os-memory#1 | 2 | 計算
+執行時期繫結：relocation（base）暫存器 12000、limit 暫存器 500。程式的邏輯位址 354, 620, 159 轉換成實體位址依序是？越界的寫 trap。
+== 12354,trap,12159
+---
+先檢查邏輯位址 $<$ limit（500），合法才加上 base：354<500，12000+354=12354；620≥500，越界 trap；159<500，12000+159=12159。程式本身只看到從 0 開始的邏輯位址，被搬到別處只要改 base，不用改程式。
+
+
+@q me1-35 | os-memory#1 | 2 | 計算
+執行時期繫結：relocation（base）暫存器 3000、limit 暫存器 1200。程式的邏輯位址 1523, 1411, 469 轉換成實體位址依序是？越界的寫 trap。
+== trap,trap,3469
+---
+先檢查邏輯位址 $<$ limit（1200），合法才加上 base：1523≥1200，越界 trap；1411≥1200，越界 trap；469<1200，3000+469=3469。程式本身只看到從 0 開始的邏輯位址，被搬到別處只要改 base，不用改程式。
+
+
+@q pr1-38 | os-process#1 | 2 | 追蹤
+單核心。行程 A、B、C 一開始都在「就緒」。依序發生：排程器選 A 執行、A 執行完畢、排程器選 C 執行、C 的時間片用完、排程器選 C 執行、C 的時間片用完、排程器選 B 執行、B 的時間片用完。最後 A、B、C 各在哪個狀態？（就緒／執行／等待／結束）
+== 結束,就緒,就緒
+?? A,B,C
+---
+規則：只有「就緒」的能被排程器選去「執行」；執行中的行程發出 I/O 要求就進「等待」，時間片用完回「就緒」，做完進「結束」；等待的事件完成後回到「就緒」（不是直接回到執行）。照順序套用，最後 A 結束、B 就緒、C 就緒。
+
+
+@q pr1-39 | os-process#1 | 2 | 追蹤
+單核心。行程 A、B、C 一開始都在「就緒」。依序發生：排程器選 C 執行、C 的時間片用完、排程器選 A 執行、A 要求讀檔、排程器選 B 執行、B 執行完畢、A 的讀檔完成、排程器選 C 執行、C 要求讀檔、C 的讀檔完成。最後 A、B、C 各在哪個狀態？（就緒／執行／等待／結束）
+== 就緒,結束,就緒
+?? A,B,C
+---
+規則：只有「就緒」的能被排程器選去「執行」；執行中的行程發出 I/O 要求就進「等待」，時間片用完回「就緒」，做完進「結束」；等待的事件完成後回到「就緒」（不是直接回到執行）。照順序套用，最後 A 就緒、B 結束、C 就緒。
+
+
+@q pr1-40 | os-process#1 | 2 | 追蹤
+單核心。行程 A、B、C 一開始都在「就緒」。依序發生：排程器選 A 執行、A 的時間片用完、排程器選 A 執行、A 的時間片用完、排程器選 C 執行、C 執行完畢、排程器選 B 執行、B 要求讀檔、B 的讀檔完成。最後 A、B、C 各在哪個狀態？（就緒／執行／等待／結束）
+== 就緒,就緒,結束
+?? A,B,C
+---
+規則：只有「就緒」的能被排程器選去「執行」；執行中的行程發出 I/O 要求就進「等待」，時間片用完回「就緒」，做完進「結束」；等待的事件完成後回到「就緒」（不是直接回到執行）。照順序套用，最後 A 就緒、B 就緒、C 結束。
+
+
+
+@q sc3-38 | os-sched#3 | 3 | 計算
+週期性工作（執行時間, 週期）：(1, 4)、(1, 5)、(6, 20)。總使用率 $U$ 是多少？是否通過 Rate-monotonic 的充分條件 $U\le n(2^{1/n}-1)$？EDF 能不能排得下？
+== 3/4,通過,能
+?? U,RM 充分條件,EDF
+---
+$U=1/4+1/5+6/20=3/4\approx0.750$。$n=3$ 的界是 $3(2^{1/3}-1)\approx0.780$，$U$ 在界內，RM 一定排得下。EDF 只要 $U\le1$ 就一定能排，所以能。
+
+
+@q sc3-39 | os-sched#3 | 3 | 計算
+週期性工作（執行時間, 週期）：(1, 15)、(3, 20)、(2, 8)。總使用率 $U$ 是多少？是否通過 Rate-monotonic 的充分條件 $U\le n(2^{1/n}-1)$？EDF 能不能排得下？
+== 7/15,通過,能
+?? U,RM 充分條件,EDF
+---
+$U=1/15+3/20+2/8=7/15\approx0.467$。$n=3$ 的界是 $3(2^{1/3}-1)\approx0.780$，$U$ 在界內，RM 一定排得下。EDF 只要 $U\le1$ 就一定能排，所以能。
+
+
+@q sc3-40 | os-sched#3 | 3 | 計算
+週期性工作（執行時間, 週期）：(2, 6)、(4, 15)。總使用率 $U$ 是多少？是否通過 Rate-monotonic 的充分條件 $U\le n(2^{1/n}-1)$？EDF 能不能排得下？
+== 3/5,通過,能
+?? U,RM 充分條件,EDF
+---
+$U=2/6+4/15=3/5\approx0.600$。$n=2$ 的界是 $2(2^{1/2}-1)\approx0.828$，$U$ 在界內，RM 一定排得下。EDF 只要 $U\le1$ 就一定能排，所以能。
+
+
+@q sc3-41 | os-sched#3 | 3 | 計算
+週期性工作（執行時間, 週期）：(2, 6)、(3, 20)、(4, 12)。總使用率 $U$ 是多少？是否通過 Rate-monotonic 的充分條件 $U\le n(2^{1/n}-1)$？EDF 能不能排得下？
+== 49/60,不通過,能
+?? U,RM 充分條件,EDF
+---
+$U=2/6+3/20+4/12=49/60\approx0.817$。$n=3$ 的界是 $3(2^{1/3}-1)\approx0.780$，$U$ 超過這個界——但這只是充分條件，RM 仍可能排得下，要實際模擬才知道。EDF 只要 $U\le1$ 就一定能排，所以能。
+
+
+
+@q pr4-29 | os-process#4 | 3 | 計算
+讀一個 4 MB（$1\text{ MB}=2^{20}$ bytes）的檔案。每次 `read` 系統呼叫光是切到核心模式再回來就要 0.5 µs（不含真正搬資料的時間）。每次讀 1 bytes 和每次讀 8192 bytes，這部分額外開銷各是多少毫秒？（四捨五入到小數第二位）
+== 2097.15,0.26
+?? 每次 1 B,每次 8192 B
+---
+呼叫次數：$4\times2^{20}/1=4194304$ 次、$4\times2^{20}/8192=512$ 次。乘上每次 0.5 µs：約 2097.15 ms vs 0.26 ms，差 8192 倍。系統呼叫要切換模式、檢查參數，固定成本不小；所以標準函式庫（例如 `fread`）會先在使用者空間開緩衝區，一次讀一大塊再慢慢給程式用。
+
+
+@q pr4-30 | os-process#4 | 3 | 計算
+讀一個 1 MB（$1\text{ MB}=2^{20}$ bytes）的檔案。每次 `read` 系統呼叫光是切到核心模式再回來就要 1 µs（不含真正搬資料的時間）。每次讀 64 bytes 和每次讀 65536 bytes，這部分額外開銷各是多少毫秒？（四捨五入到小數第二位）
+== 16.38,0.02
+?? 每次 64 B,每次 65536 B
+---
+呼叫次數：$1\times2^{20}/64=16384$ 次、$1\times2^{20}/65536=16$ 次。乘上每次 1 µs：約 16.38 ms vs 0.02 ms，差 1024 倍。系統呼叫要切換模式、檢查參數，固定成本不小；所以標準函式庫（例如 `fread`）會先在使用者空間開緩衝區，一次讀一大塊再慢慢給程式用。
+
+
+@q pr4-31 | os-process#4 | 3 | 計算
+讀一個 16 MB（$1\text{ MB}=2^{20}$ bytes）的檔案。每次 `read` 系統呼叫光是切到核心模式再回來就要 0.5 µs（不含真正搬資料的時間）。每次讀 64 bytes 和每次讀 65536 bytes，這部分額外開銷各是多少毫秒？（四捨五入到小數第二位）
+== 131.07,0.13
+?? 每次 64 B,每次 65536 B
+---
+呼叫次數：$16\times2^{20}/64=262144$ 次、$16\times2^{20}/65536=256$ 次。乘上每次 0.5 µs：約 131.07 ms vs 0.13 ms，差 1024 倍。系統呼叫要切換模式、檢查參數，固定成本不小；所以標準函式庫（例如 `fread`）會先在使用者空間開緩衝區，一次讀一大塊再慢慢給程式用。
+
+
+@q pr4-32 | os-process#4 | 3 | 計算
+讀一個 1 MB（$1\text{ MB}=2^{20}$ bytes）的檔案。每次 `read` 系統呼叫光是切到核心模式再回來就要 0.5 µs（不含真正搬資料的時間）。每次讀 64 bytes 和每次讀 8192 bytes，這部分額外開銷各是多少毫秒？（四捨五入到小數第二位）
+== 8.19,0.06
+?? 每次 64 B,每次 8192 B
+---
+呼叫次數：$1\times2^{20}/64=16384$ 次、$1\times2^{20}/8192=128$ 次。乘上每次 0.5 µs：約 8.19 ms vs 0.06 ms，差 128 倍。系統呼叫要切換模式、檢查參數，固定成本不小；所以標準函式庫（例如 `fread`）會先在使用者空間開緩衝區，一次讀一大塊再慢慢給程式用。
+
+
+@q sc3-42 | os-sched#3 | 3 | 計算
+週期性工作（執行時間, 週期）：(4, 12)、(2, 8)。總使用率 $U$ 是多少？是否通過 Rate-monotonic 的充分條件 $U\le n(2^{1/n}-1)$？EDF 能不能排得下？
+== 7/12,通過,能
+?? U,RM 充分條件,EDF
+---
+$U=4/12+2/8=7/12\approx0.583$。$n=2$ 的界是 $2(2^{1/2}-1)\approx0.828$，$U$ 在界內，RM 一定排得下。EDF 只要 $U\le1$ 就一定能排，所以能。
+
+
+
+@q sc2-47 | os-sched#2 | 3 | 計算
+搶占式優先權排程（數字小＝優先權高）：P1（到達 0、需要 4、優先權 4）、P2（到達 1、需要 7、優先權 2）、P3（到達 6、需要 7、優先權 3）、P4（到達 7、需要 6、優先權 1）。平均等待時間是多少？（可用分數）
+== 17/2
+---
+甘特圖：P1(0–1) P2(1–7) P4(7–13) P2(13–14) P3(14–21) P1(21–24)。等待＝完成−到達−執行：P1 20、P2 6、P3 8、P4 0，平均 17/2。優先權低的行程可能一直被插隊（飢餓），實務上用 aging 慢慢提高它的優先權。
+
+
+@q sc2-48 | os-sched#2 | 3 | 計算
+搶占式優先權排程（數字小＝優先權高）：P1（到達 0、需要 7、優先權 2）、P2（到達 2、需要 6、優先權 3）、P3（到達 3、需要 7、優先權 1）、P4（到達 4、需要 6、優先權 4）。平均等待時間是多少？（可用分數）
+== 35/4
+---
+甘特圖：P1(0–3) P3(3–10) P1(10–14) P2(14–20) P4(20–26)。等待＝完成−到達−執行：P1 7、P2 12、P3 0、P4 16，平均 35/4。優先權低的行程可能一直被插隊（飢餓），實務上用 aging 慢慢提高它的優先權。
+
+
+@q sc2-49 | os-sched#2 | 3 | 計算
+搶占式優先權排程（數字小＝優先權高）：P1（到達 0、需要 4、優先權 4）、P2（到達 3、需要 5、優先權 1）、P3（到達 4、需要 5、優先權 3）、P4（到達 7、需要 4、優先權 2）。平均等待時間是多少？（可用分數）
+== 23/4
+---
+甘特圖：P1(0–3) P2(3–8) P4(8–12) P3(12–17) P1(17–18)。等待＝完成−到達−執行：P1 14、P2 0、P3 8、P4 1，平均 23/4。優先權低的行程可能一直被插隊（飢餓），實務上用 aging 慢慢提高它的優先權。
+
+
+@q st1-38 | os-storage#1 | 3 | 計算
+磁軌 0～199，磁頭在 51、正往大的方向移動。請求：194, 70, 170, 111, 71, 28, 30。C-SCAN（走到 199、跳回 0 再往上）和 C-LOOK（走到最大的請求、跳回最小的請求再往上）的總移動距離各是多少？（跳回去那一趟也算距離）
+== 377,311
+?? C-SCAN,C-LOOK
+---
+往上服務 70, 71, 111, 170, 194；C-SCAN 走到 199（148）、跳回 0（199）、再服務 28, 30（30），共 377。C-LOOK 只走到 194（143）、跳到 28（166）、再走到 30（2），共 311。兩者都只單方向服務，讓每個請求的等待時間比較平均；LOOK 系列不走到盡頭，省下空跑。
+
+
+@q st1-39 | os-storage#1 | 3 | 計算
+磁軌 0～199，磁頭在 60、正往大的方向移動。請求：181, 7, 153, 78, 80, 152, 39。C-SCAN（走到 199、跳回 0 再往上）和 C-LOOK（走到最大的請求、跳回最小的請求再往上）的總移動距離各是多少？（跳回去那一趟也算距離）
+== 377,327
+?? C-SCAN,C-LOOK
+---
+往上服務 78, 80, 152, 153, 181；C-SCAN 走到 199（139）、跳回 0（199）、再服務 7, 39（39），共 377。C-LOOK 只走到 181（121）、跳到 7（174）、再走到 39（32），共 327。兩者都只單方向服務，讓每個請求的等待時間比較平均；LOOK 系列不走到盡頭，省下空跑。
+
+
+@q st1-40 | os-storage#1 | 3 | 計算
+磁軌 0～199，磁頭在 88、正往大的方向移動。請求：91, 139, 117, 109, 87, 10, 57。C-SCAN（走到 199、跳回 0 再往上）和 C-LOOK（走到最大的請求、跳回最小的請求再往上）的總移動距離各是多少？（跳回去那一趟也算距離）
+== 397,257
+?? C-SCAN,C-LOOK
+---
+往上服務 91, 109, 117, 139；C-SCAN 走到 199（111）、跳回 0（199）、再服務 10, 57, 87（87），共 397。C-LOOK 只走到 139（51）、跳到 10（129）、再走到 87（77），共 257。兩者都只單方向服務，讓每個請求的等待時間比較平均；LOOK 系列不走到盡頭，省下空跑。
+
+
+@q vm2-43 | os-vm#2 | 3 | 追蹤
+3 個 frame，用 clock（second chance）頁替換：載入或用到某頁時把它的 use bit 設成 1；要換頁時指針從目前位置繞，遇到 use＝1 就清成 0 跳過，遇到 use＝0 就換掉它，換完指針前進一格。參考串 4 1 2 4 5 1 2 2 3 2 1 2，一開始 frame 都是空的、指針在第 0 格。page fault 幾次？同一串用 FIFO 是幾次？
+== 6,7
+?? clock,FIFO
+---
+照規則模擬，clock 共 6 次、FIFO 共 7 次。clock 是 FIFO 加上「最近用過就給第二次機會」，近似 LRU 但只要一個位元；這串裡第二次機會讓常用的頁留下來，所以比 FIFO 少。
+
+
+@q vm2-44 | os-vm#2 | 3 | 追蹤
+3 個 frame，用 clock（second chance）頁替換：載入或用到某頁時把它的 use bit 設成 1；要換頁時指針從目前位置繞，遇到 use＝1 就清成 0 跳過，遇到 use＝0 就換掉它，換完指針前進一格。參考串 3 4 5 5 1 3 2 4 3 1 1 3，一開始 frame 都是空的、指針在第 0 格。page fault 幾次？同一串用 FIFO 是幾次？
+== 8,9
+?? clock,FIFO
+---
+照規則模擬，clock 共 8 次、FIFO 共 9 次。clock 是 FIFO 加上「最近用過就給第二次機會」，近似 LRU 但只要一個位元；這串裡第二次機會讓常用的頁留下來，所以比 FIFO 少。
+
+
+@q vm2-45 | os-vm#2 | 3 | 追蹤
+3 個 frame，用 clock（second chance）頁替換：載入或用到某頁時把它的 use bit 設成 1；要換頁時指針從目前位置繞，遇到 use＝1 就清成 0 跳過，遇到 use＝0 就換掉它，換完指針前進一格。參考串 4 2 2 5 3 2 1 2 5 3 1 4，一開始 frame 都是空的、指針在第 0 格。page fault 幾次？同一串用 FIFO 是幾次？
+== 8,10
+?? clock,FIFO
+---
+照規則模擬，clock 共 8 次、FIFO 共 10 次。clock 是 FIFO 加上「最近用過就給第二次機會」，近似 LRU 但只要一個位元；這串裡第二次機會讓常用的頁留下來，所以比 FIFO 少。
+
+
+@q vm4-33 | os-vm#4 | 3 | 追蹤
+Buddy system，一開始有一整塊 1024 KB（位址 0 起）。依序請求 70 KB, 100 KB, 70 KB, 250 KB：每次把需求向上取到 2 的次方，找最小夠用的空閒塊（同大小取位址最小的），太大就一直對半切，左半繼續切、右半放回空閒。各請求分到的起始位址（KB）依序是？總內部碎片是多少 KB？
+== 0,128,256,512,150
+?? 起始位址（逗號隔開）,內部碎片
+---
+70 KB→128 KB，位址 0；100 KB→128 KB，位址 128；70 KB→128 KB，位址 256；250 KB→256 KB，位址 512。內部碎片＝58＋28＋58＋6＝150 KB。Buddy 的好處是合併快（夥伴的位址只差一個位元），代價是向上取到 2 的次方造成的內部碎片。
+
+
+@q vm4-34 | os-vm#4 | 3 | 追蹤
+Buddy system，一開始有一整塊 1024 KB（位址 0 起）。依序請求 20 KB, 250 KB, 35 KB, 100 KB：每次把需求向上取到 2 的次方，找最小夠用的空閒塊（同大小取位址最小的），太大就一直對半切，左半繼續切、右半放回空閒。各請求分到的起始位址（KB）依序是？總內部碎片是多少 KB？
+== 0,256,64,128,75
+?? 起始位址（逗號隔開）,內部碎片
+---
+20 KB→32 KB，位址 0；250 KB→256 KB，位址 256；35 KB→64 KB，位址 64；100 KB→128 KB，位址 128。內部碎片＝12＋6＋29＋28＝75 KB。Buddy 的好處是合併快（夥伴的位址只差一個位元），代價是向上取到 2 的次方造成的內部碎片。
+
+
+@q vm4-35 | os-vm#4 | 3 | 追蹤
+Buddy system，一開始有一整塊 1024 KB（位址 0 起）。依序請求 35 KB, 90 KB, 70 KB, 60 KB：每次把需求向上取到 2 的次方，找最小夠用的空閒塊（同大小取位址最小的），太大就一直對半切，左半繼續切、右半放回空閒。各請求分到的起始位址（KB）依序是？總內部碎片是多少 KB？
+== 0,128,256,64,129
+?? 起始位址（逗號隔開）,內部碎片
+---
+35 KB→64 KB，位址 0；90 KB→128 KB，位址 128；70 KB→128 KB，位址 256；60 KB→64 KB，位址 64。內部碎片＝29＋38＋58＋4＝129 KB。Buddy 的好處是合併快（夥伴的位址只差一個位元），代價是向上取到 2 的次方造成的內部碎片。
+
+
+@q me1-36 | os-memory#1 | 2 | 計算
+執行時期繫結：relocation（base）暫存器 3000、limit 暫存器 4096。程式的邏輯位址 4307, 1636, 343 轉換成實體位址依序是？越界的寫 trap。
+== trap,4636,3343
+---
+先檢查邏輯位址 $<$ limit（4096），合法才加上 base：4307≥4096，越界 trap；1636<4096，3000+1636=4636；343<4096，3000+343=3343。程式本身只看到從 0 開始的邏輯位址，被搬到別處只要改 base，不用改程式。
+
+
+@q pr4-33 | os-process#4 | 3 | 計算
+讀一個 16 MB（$1\text{ MB}=2^{20}$ bytes）的檔案。每次 `read` 系統呼叫光是切到核心模式再回來就要 2 µs（不含真正搬資料的時間）。每次讀 64 bytes 和每次讀 4096 bytes，這部分額外開銷各是多少毫秒？（四捨五入到小數第二位）
+== 524.29,8.19
+?? 每次 64 B,每次 4096 B
+---
+呼叫次數：$16\times2^{20}/64=262144$ 次、$16\times2^{20}/4096=4096$ 次。乘上每次 2 µs：約 524.29 ms vs 8.19 ms，差 64 倍。系統呼叫要切換模式、檢查參數，固定成本不小；所以標準函式庫（例如 `fread`）會先在使用者空間開緩衝區，一次讀一大塊再慢慢給程式用。
+
+
+
+@q vm4-36 | os-vm#4 | 2 | 計算
+共有 62 個 frame，三個行程的大小依序是 150、10、20 頁。用比例配置（$a_i=\lfloor s_i/S\times m\rfloor$）各分到幾個 frame？
+== 51,3,6
+---
+$S=180$。$a_1=\lfloor150/180\times62\rfloor=51$、$a_2=\lfloor10/180\times62\rfloor=3$、$a_3=\lfloor20/180\times62\rfloor=6$，剩下 2 個可以當作空閒池。比平均分配合理：大的行程拿多一點；也可以再依優先權加權。
+
+
+@q vm4-37 | os-vm#4 | 2 | 計算
+共有 62 個 frame，三個行程的大小依序是 10、80、60 頁。用比例配置（$a_i=\lfloor s_i/S\times m\rfloor$）各分到幾個 frame？
+== 4,33,24
+---
+$S=150$。$a_1=\lfloor10/150\times62\rfloor=4$、$a_2=\lfloor80/150\times62\rfloor=33$、$a_3=\lfloor60/150\times62\rfloor=24$，剩下 1 個可以當作空閒池。比平均分配合理：大的行程拿多一點；也可以再依優先權加權。
+
+
+@q sc2-50 | os-sched#2 | 3 | 計算
+搶占式優先權排程（數字小＝優先權高）：P1（到達 0、需要 7、優先權 2）、P2（到達 4、需要 7、優先權 1）、P3（到達 6、需要 2、優先權 3）、P4（到達 7、需要 5、優先權 4）。平均等待時間是多少？（可用分數）
+== 6
+---
+甘特圖：P1(0–4) P2(4–11) P1(11–14) P3(14–16) P4(16–21)。等待＝完成−到達−執行：P1 7、P2 0、P3 8、P4 9，平均 6。優先權低的行程可能一直被插隊（飢餓），實務上用 aging 慢慢提高它的優先權。
+
+
+@q sc2-51 | os-sched#2 | 3 | 計算
+搶占式優先權排程（數字小＝優先權高）：P1（到達 0、需要 3、優先權 4）、P2（到達 1、需要 6、優先權 1）、P3（到達 2、需要 7、優先權 2）、P4（到達 7、需要 4、優先權 3）。平均等待時間是多少？（可用分數）
+== 29/4
+---
+甘特圖：P1(0–1) P2(1–7) P3(7–14) P4(14–18) P1(18–20)。等待＝完成−到達−執行：P1 17、P2 0、P3 5、P4 7，平均 29/4。優先權低的行程可能一直被插隊（飢餓），實務上用 aging 慢慢提高它的優先權。
+
+
+@q st1-41 | os-storage#1 | 3 | 計算
+磁軌 0～199，磁頭在 78、正往大的方向移動。請求：51, 137, 79, 55, 28, 166, 49。C-SCAN（走到 199、跳回 0 再往上）和 C-LOOK（走到最大的請求、跳回最小的請求再往上）的總移動距離各是多少？（跳回去那一趟也算距離）
+== 375,253
+?? C-SCAN,C-LOOK
+---
+往上服務 79, 137, 166；C-SCAN 走到 199（121）、跳回 0（199）、再服務 28, 49, 51, 55（55），共 375。C-LOOK 只走到 166（88）、跳到 28（138）、再走到 55（27），共 253。兩者都只單方向服務，讓每個請求的等待時間比較平均；LOOK 系列不走到盡頭，省下空跑。
+
+
+@q st1-42 | os-storage#1 | 3 | 計算
+磁軌 0～199，磁頭在 41、正往大的方向移動。請求：130, 20, 144, 23, 69, 160, 100。C-SCAN（走到 199、跳回 0 再往上）和 C-LOOK（走到最大的請求、跳回最小的請求再往上）的總移動距離各是多少？（跳回去那一趟也算距離）
+== 380,262
+?? C-SCAN,C-LOOK
+---
+往上服務 69, 100, 130, 144, 160；C-SCAN 走到 199（158）、跳回 0（199）、再服務 20, 23（23），共 380。C-LOOK 只走到 160（119）、跳到 20（140）、再走到 23（3），共 262。兩者都只單方向服務，讓每個請求的等待時間比較平均；LOOK 系列不走到盡頭，省下空跑。
+
+
+@q vm2-46 | os-vm#2 | 3 | 追蹤
+3 個 frame，用 clock（second chance）頁替換：載入或用到某頁時把它的 use bit 設成 1；要換頁時指針從目前位置繞，遇到 use＝1 就清成 0 跳過，遇到 use＝0 就換掉它，換完指針前進一格。參考串 1 1 3 2 3 3 5 3 4 2 5 3，一開始 frame 都是空的、指針在第 0 格。page fault 幾次？同一串用 FIFO 是幾次？
+== 7,6
+?? clock,FIFO
+---
+照規則模擬，clock 共 7 次、FIFO 共 6 次。clock 是 FIFO 加上「最近用過就給第二次機會」，近似 LRU 但只要一個位元；這串剛好讓第二次機會留錯頁，反而比 FIFO 多——近似演算法不保證每次都比較好。
+
+
+@q vm2-47 | os-vm#2 | 3 | 追蹤
+3 個 frame，用 clock（second chance）頁替換：載入或用到某頁時把它的 use bit 設成 1；要換頁時指針從目前位置繞，遇到 use＝1 就清成 0 跳過，遇到 use＝0 就換掉它，換完指針前進一格。參考串 2 5 1 1 3 3 5 4 4 3 3 1，一開始 frame 都是空的、指針在第 0 格。page fault 幾次？同一串用 FIFO 是幾次？
+== 6,5
+?? clock,FIFO
+---
+照規則模擬，clock 共 6 次、FIFO 共 5 次。clock 是 FIFO 加上「最近用過就給第二次機會」，近似 LRU 但只要一個位元；這串剛好讓第二次機會留錯頁，反而比 FIFO 多——近似演算法不保證每次都比較好。
+
+
+@q vm4-38 | os-vm#4 | 3 | 追蹤
+Buddy system，一開始有一整塊 1024 KB（位址 0 起）。依序請求 70 KB, 200 KB, 20 KB, 70 KB：每次把需求向上取到 2 的次方，找最小夠用的空閒塊（同大小取位址最小的），太大就一直對半切，左半繼續切、右半放回空閒。各請求分到的起始位址（KB）依序是？總內部碎片是多少 KB？
+== 0,256,128,512,184
+?? 起始位址（逗號隔開）,內部碎片
+---
+70 KB→128 KB，位址 0；200 KB→256 KB，位址 256；20 KB→32 KB，位址 128；70 KB→128 KB，位址 512。內部碎片＝58＋56＋12＋58＝184 KB。Buddy 的好處是合併快（夥伴的位址只差一個位元），代價是向上取到 2 的次方造成的內部碎片。
+
+
+@q vm4-39 | os-vm#4 | 3 | 追蹤
+Buddy system，一開始有一整塊 1024 KB（位址 0 起）。依序請求 200 KB, 20 KB, 130 KB, 100 KB：每次把需求向上取到 2 的次方，找最小夠用的空閒塊（同大小取位址最小的），太大就一直對半切，左半繼續切、右半放回空閒。各請求分到的起始位址（KB）依序是？總內部碎片是多少 KB？
+== 0,256,512,384,222
+?? 起始位址（逗號隔開）,內部碎片
+---
+200 KB→256 KB，位址 0；20 KB→32 KB，位址 256；130 KB→256 KB，位址 512；100 KB→128 KB，位址 384。內部碎片＝56＋12＋126＋28＝222 KB。Buddy 的好處是合併快（夥伴的位址只差一個位元），代價是向上取到 2 的次方造成的內部碎片。
+
+
+
+@q pr2-35 | os-process#2 | 3 | 陷阱
+Consider: `int x = 5; pid_t p = fork(); x++; printf("%d\n", x);` (fork succeeds). Which of the following statements are correct? (Select all that apply.)
+[x] Two lines are printed, and both are 6.
+[x] The parent and the child each have their own copy of `x` after `fork()`.
+[ ] The child's `x++` is visible to the parent, so one of the lines prints 7.
+[x] In the child, `p` is 0; in the parent, `p` is the child's PID.
+[ ] The child starts executing from the beginning of `main`.
+---
+`fork()` 之後兩個行程各有一份位址空間（實作上用 copy-on-write，但語意上互不影響），各自把自己的 x 從 5 加到 6，所以印兩次 6，不會有 7。子行程從 `fork()` 回傳的地方接著跑，不會從 main 開頭重來；`fork()` 在子行程回傳 0、在父行程回傳子行程的 PID。
+
+
+@q sc2-52 | os-sched#2 | 3 | 觀念
+Which of the following statements about CPU scheduling are correct? (Select all that apply.)
+[x] If burst times are known, SRTF gives the minimum average waiting time among all preemptive schedules.
+[x] Round-robin with a very large time quantum behaves like FCFS.
+[x] Non-preemptive SJF can cause starvation of long jobs.
+[ ] Round-robin always gives a lower average turnaround time than FCFS.
+[ ] Making the RR quantum smaller always improves throughput.
+---
+SRTF 是 SJF 的搶占版，在 burst 已知時平均等待最小；SJF 讓短工作一直插隊，長工作可能餓死。RR 的 quantum 大到每個工作一次跑完，就變 FCFS。RR 的周轉時間不一定比 FCFS 好（工作長度差不多時，RR 讓大家都拖到最後才完成）；quantum 太小，context switch 開銷會吃掉 throughput。
+
+

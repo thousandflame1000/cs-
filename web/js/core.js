@@ -225,18 +225,20 @@ const TeX = (() => {
 
 /* ---------- Markdown (subset + study extensions) ---------- */
 const CALLOUT = {
-  key: '考點', trap: '陷阱', proof: '證明', ex: '例題', def: '定義', thm: '定理', tip: '技巧', ntu: '台大考法', why: '為什麼', feyn: '費曼自問', gist: '先記住',
+  key: '考點', trap: '陷阱', proof: '證明', ex: '例題', def: '定義', thm: '定理', tip: '技巧', ntu: '台大考法', why: '為什麼', feyn: '費曼自問', gist: '要點',
 };
-const CALLOUT_ICON = { key: '🎯', trap: '⚠️', proof: '🔍', ex: '✏️', def: '📘', thm: '📐', tip: '💡', ntu: '🏛️', why: '❓', feyn: '🧠', gist: '👉' };
 const CALLOUT_ZH = { 考點: 'key', 重點: 'key', 陷阱: 'trap', 注意: 'trap', 證明: 'proof', 例題: 'ex', 例: 'ex', 定義: 'def', 定理: 'thm', 引理: 'thm', 技巧: 'tip', 台大考法: 'ntu', 台大: 'ntu', 為什麼: 'why', 觀念: 'why', 費曼: 'feyn', 費曼自問: 'feyn', 先記住: 'gist' };
 function mdInline(s, math) {
   s = esc(s);
-  s = s.replace(/`([^`]+)`/g, (m, x) => `<code>${x}</code>`);
+  // 行內程式碼先收起來，最後才放回：裡面的 *、**、==、[](...) 不能被當成斜體、粗體、螢光筆、連結（`*p = *q` 的星號以前會被吃掉）
+  const code = [];
+  s = s.replace(/`([^`]+)`/g, (m, x) => { code.push(`<code>${x}</code>`); return '\u0007' + (code.length - 1) + '\u0007'; });
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/==([^=]+)==/g, '<mark class="hl">$1</mark>');
   s = s.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
   s = s.replace(/\[([^\]]+)\]\((#[\w-]+|https?:\/\/[^)\s]+)\)/g, (m, t, u) => `<a href="${u}"${u.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${t}</a>`);
   s = s.replace(/\u0000(\d+)\u0000/g, (m, i) => math[+i]);
+  s = s.replace(/\u0007(\d+)\u0007/g, (m, i) => code[+i]);
   return s;
 }
 // 一般文字裡沒包 $ 的算式：23 × 47、r ≤ 6、2^h、lg 64 = 6、a4 = 5 × 46 − 6 × 14、Aᵀ、K₅ → 排成數學式
@@ -365,7 +367,7 @@ function md(src, opt) {
       const km = body[0] && body[0].match(/^\[!([^\]]+)\]\s*(.*)$/);
       let label = '';
       if (km) { kind = CALLOUT_ZH[km[1]] || km[1]; label = CALLOUT[kind] || km[1]; title = km[2]; body.shift(); if (title.length > 26) { body.unshift(title); title = ''; } }
-      out.push(`<aside class="callout c-${kind}">${label ? `<div class="c-label">${CALLOUT_ICON[kind] ? `<span class="c-ic" aria-hidden="true">${CALLOUT_ICON[kind]}</span>` : ''}${label}${title ? '｜' + inline(title) : ''}</div>` : ''}${mdBody(body.join('\n'), math, codeBlocks)}</aside>`);
+      out.push(`<aside class="callout c-${kind}">${label ? `<div class="c-label">${label}${title ? '｜' + inline(title) : ''}</div>` : ''}${mdBody(body.join('\n'), math, codeBlocks)}</aside>`);
       continue;
     }
     if (t.startsWith('|') && i + 1 < lines.length && /^\|?\s*:?-{2,}/.test(lines[i + 1].trim())) {
@@ -431,6 +433,54 @@ function renderList(items, start, inline) {
 }
 
 /* ---------- data access ---------- */
+/* 線條圖示：24 格、線寬 1.75、跟著文字顏色。只用在選單 5 區與媒體控制（見 content/DESIGN.md） */
+/* Agent／督導訊息：日期 11/12、1/30 不要被排成分數（md 會把 a/b 變成分數）。只動 $…$ 以外的部分 */
+function mdMsg(t) {
+  const parts = String(t || '').split(/(\$\$[\s\S]*?\$\$|\$[^$\n]*\$)/);
+  for (let i = 0; i < parts.length; i += 2) parts[i] = parts[i].replace(/(^|[^\d\/.])(1[0-2]\/(?:[12]\d|3[01]|0?[1-9])|1\/(?:[12]\d|3[01]))(?![\d\/.])/g, (m, pre, d) => pre + d.replace('/', '\u2215'));
+  return md(parts.join(''));
+}
+const ICON_P = {
+  today: '<rect x="3.5" y="5" width="17" height="15" rx="2.2"/><path d="M3.5 9.5h17M8 3v4M16 3v4M9 14.6l2.1 2.1 4.1-4.2"/>',
+  course: '<path d="M12 6.6C10.1 5.2 7.6 4.5 4.5 4.5v13c3.1 0 5.6.7 7.5 2.1 1.9-1.4 4.4-2.1 7.5-2.1v-13c-3.1 0-5.6.7-7.5 2.1zM12 6.6v13"/>',
+  practice: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
+  records: '<path d="M4 20h16M7.5 16.5v-5M12 16.5V7M16.5 16.5v-8"/>',
+  palace: '<path d="M4 20V10l3-2v3l3-2v3l2-1.3 2 1.3V9l3 2V8l3 2v10z"/><path d="M10 20v-4h4v4"/>',
+  settings: '<path d="M4 7h9.5M18.5 7H20M4 17h3.5M12.5 17H20"/><circle cx="16" cy="7" r="2.4"/><circle cx="10" cy="17" r="2.4"/>',
+  star: '<path d="M12 3.9l2.5 5.1 5.6.8-4.05 3.95.95 5.6L12 16.7l-5 2.65.95-5.6L3.9 9.8l5.6-.8z"/>',
+  sound: '<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6M18.3 6.6a8 8 0 0 1 0 10.8"/>', mute: '<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>', expand: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', timer: '<circle cx="12" cy="13" r="7.5"/><path d="M12 13V9.5M9.5 2.8h5"/>', menu: '<path d="M4 7h16M4 12h16M4 17h16"/>', play: '<path d="M8 5.6v12.8L18.4 12z" fill="currentColor"/>',
+  close: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  /* 卡片用的小圖示（同一套 24 格、1.75 線寬） */
+  review: '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.6 4.5v3.9h-3.9"/>',
+  pen: '<path d="M14.8 5.2l4 4L9 19H5v-4z"/><path d="M12.8 7.2l4 4"/>',
+  book: '<path d="M5 4.5h10.5A3.5 3.5 0 0 1 19 8v11.5H8.5A3.5 3.5 0 0 1 5 16z"/><path d="M5 16a3.5 3.5 0 0 1 3.5-3.5H19"/>',
+  cards: '<rect x="6.5" y="4" width="12" height="15" rx="2"/><path d="M4.5 7.5v11a2 2 0 0 0 2 2h9"/>',
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l6.5-6.5M16 5.5h2.5V8"/>',
+  chat: '<path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8.5A1.5 1.5 0 0 1 19 17h-8l-4.5 3.5V17H5a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 5 5.5z"/>',
+  lock: '<rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
+  bolt: '<path d="M13 3L5.5 13.5H11L10 21l7.5-10.5H12z"/>',
+  sword: '<path d="M14.5 4.5H19.5V9.5L9.5 19.5 4.5 14.5z"/><path d="M7 12l5 5M4 20l2.5-2.5"/>',
+  crown: '<path d="M4 17.5L3 7.5l5 4 4-6.5 4 6.5 5-4-1 10z"/><path d="M4.5 20.5h15"/>',
+  cup: '<path d="M6 7.5h12l-1.4 11.2a2 2 0 0 1-2 1.8H9.4a2 2 0 0 1-2-1.8z"/><path d="M5 7.5h14M12.5 7.5l1.5-4.5"/>',
+  screen: '<rect x="3.5" y="5" width="17" height="11.5" rx="2"/><path d="M8.5 20h7M12 16.5V20"/>',
+  game: '<path d="M7.5 8h9a4.5 4.5 0 0 1 4.3 5.8l-.9 3a2.5 2.5 0 0 1-4.3.9L14 16H10l-1.6 1.7a2.5 2.5 0 0 1-4.3-.9l-.9-3A4.5 4.5 0 0 1 7.5 8z"/><path d="M8 11v3M6.5 12.5h3M15.5 12h.01M17.5 13.5h.01"/>',
+  moon: '<path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a7.5 7.5 0 1 0 10 10z"/>',
+  gift: '<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3.5 9h17M12 9v11M12 9c-2-4-6-4-6-1.5S9 9 12 9zM12 9c2-4 6-4 6-1.5S15 9 12 9z"/>',
+  first: '<path d="M6.5 5.5v13M18 6l-7.5 6 7.5 6z"/>',
+  prev: '<path d="M15 5.5L8.5 12l6.5 6.5"/>',
+  next: '<path d="M9 5.5l6.5 6.5L9 18.5"/>',
+  last: '<path d="M17.5 5.5v13M6 6l7.5 6L6 18z"/>',
+  pause: '<path d="M8.5 5.5v13M15.5 5.5v13"/>',
+  chev: '<path d="M9.5 5.5L16 12l-6.5 6.5"/>',
+  trophy: '<path d="M8 4.5h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13.5V17M8.5 20h7M9.5 17h5v3h-5z"/>',
+};
+/** 卡片圖示：是圖示名就畫線條圖示，否則（例如使用者自己打的字）照原樣顯示 */
+const icHtml = (ic, cls = '') => ICON_P[ic] ? ICON(ic, cls) : esc(String(ic ?? ''));
+const ICON = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_P[name] || ''}</svg>`;
+const COIN = '<svg class="coin" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9.6" fill="var(--star)" stroke="color-mix(in srgb, var(--star) 60%, #000)" stroke-width="1.2"/><circle cx="12" cy="12" r="6.1" fill="none" stroke="#fff7d6" stroke-width="1.5" opacity=".85"/><path d="M10.2 8.6h3.6M12 8.6v6.8" stroke="#fff7d6" stroke-width="1.5" stroke-linecap="round" opacity=".85"/></svg>';
+document.addEventListener('pointerdown', e => { if (typeof Rewards !== 'undefined') Rewards.lastPt = [e.clientX, e.clientY]; }, true);
 const DATA = window.CSDATA || { subjects: [], lessons: [], quiz: [], plan: [] };
 const SUBJ = Object.fromEntries(DATA.subjects.map(s => [s.id, s]));
 const LESSON = Object.fromEntries(DATA.lessons.map(l => [l.id, l]));
@@ -441,8 +491,9 @@ const STORE_KEY = window.SELFTEST ? 'csgrad.selftest' : 'csgrad.v1';
 function defaultState() {
   return {
     v: 1,
-    settings: { examDate: '2027-02-06', startDate: D.today(), dailyMinutes: 360, dailyQuestions: 30, name: '', pomo: 50, brk: 10, notifyWrong: true, retention: .9, newCards: 20 },
-    answers: {}, lessons: {}, log: {}, srs: null, elo: null, wrappers: [], msgs: [], seen: {}, agentQuiz: [], agentTasks: {}, timer: { running: false, start: 0 }, wrongNotes: {}, recall: false,
+    settings: { examDate: '2027-01-30', startDate: D.today(), dailyMinutes: 360, dailyQuestions: 30, name: '', pomo: 50, brk: 10, notifyWrong: true, retention: .9, newCards: 20 },
+    answers: {}, notes: {}, lessons: {}, log: {}, srs: null, elo: null, wrappers: [], msgs: [], seen: {}, agentQuiz: [], agentTasks: {}, timer: { running: false, start: 0 }, wrongNotes: {}, recall: false,
+    papers114: { runs: [] }, practiceDraft: { updated: 0, sessionId: null, session: null },
   };
 }
 const S = {
@@ -451,11 +502,31 @@ const S = {
     let raw = null;
     try { raw = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { raw = null; }
     S.st = Object.assign(defaultState(), raw || {});
+    // 舊版把這兩項分開存放，只在主進度尚未包含它們時讀回。
+    try {
+      if (!raw?.papers114) {
+        const papers = JSON.parse(localStorage.getItem(STORE_KEY + '.papers.114') || 'null');
+        if (papers && Array.isArray(papers.runs)) S.st.papers114 = papers;
+      }
+    } catch (error) { /* 損毀的舊原卷紀錄不影響主進度 */ }
+    try {
+      if (!raw?.practiceDraft) {
+        const session = JSON.parse(localStorage.getItem(STORE_KEY + '.practice') || 'null');
+        if (session && Array.isArray(session.ids) && Array.isArray(session.results) && session.opts && Number.isInteger(session.i)) {
+          S.st.practiceDraft = { updated: session.t0 || 0, sessionId: session.t0, session };
+        }
+      }
+    } catch (error) { /* 損毀的舊草稿不影響主進度 */ }
     S.st.settings = Object.assign(defaultState().settings, S.st.settings || {});
+    if (S.st.settings.examDate === '2027-01-31' && !S.st.settings.examDateCustom) {
+      S.st.settings.examDate = '2027-01-30';
+    }
   },
   saveNow() {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(S.st)); } catch (e) { /* storage unavailable */ }
+    let saved = true;
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(S.st)); } catch (e) { saved = false; }
     if (window.Bridge) Bridge.queueSync();
+    return saved;
   },
   save: null,
   day(date = D.today()) {
@@ -480,7 +551,8 @@ const S = {
     a.n++; if (ok) a.c++;
     a.last = today; a.ok = ok;
     a.conf = extra.conf ?? a.conf;
-    a.hist = (a.hist || []).concat([{ d: today, ok, conf: extra.conf ?? null }]).slice(-8);
+    a.source = extra.source || 'answer';
+    a.hist = (a.hist || []).concat([{ d: today, ok, conf: extra.conf ?? null, source: a.source }]).slice(-8);
     if (!ok) { a.everWrong = true; if (extra.conf === 3) a.hcw = (a.hcw || 0) + 1; }
     if (ok && extra.conf === 1) a.everWrong = true;
     const c = Learn.review(Learn.keyOf(qid), Learn.gradeOf(ok, extra.conf));
@@ -491,9 +563,13 @@ const S = {
     S.save();
     return a;
   },
-  /* 今天該複習的題目（FSRS 到期）＋到期的計算題型（每次給一題新的） */
+  /* 今天該複習的題目（FSRS 到期）＋到期的計算題型（每次給一題新的）。
+     到期題目照考古題考頻（DATA.examFreq，章節占比）由高到低排，同考頻維持 FSRS 給的順序；
+     到期太多、只做前幾題時，先複習台大最常考的章節。 */
   dueReviews(date = D.today()) {
-    return Learn.dueQuestions(date).concat(Learn.dueGens(date).map(g => Learn.freshGen(g)));
+    const F = DATA.examFreq || {}, qs = Learn.dueQuestions(date);
+    const sorted = qs.map((id, i) => [id, i, F[qChapter(id)] || 0]).sort((x, y) => y[2] - x[2] || x[1] - y[1]).map(x => x[0]);
+    return sorted.concat(Learn.dueGens(date).map(g => Learn.freshGen(g)));
   },
 };
 S.save = debounce(S.saveNow, 250);

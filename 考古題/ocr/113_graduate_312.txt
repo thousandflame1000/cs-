@@ -1,0 +1,395 @@
+=== PAGE p-1.pgm
+ 
+
+MR: 312 RereRrKE 113 $2 RALHBASRRA
+AA: PHSAARR MR: 312
+fick: 1 : 2 G R28 /
+
+ 
+
+ARBUEA 12 GPM (GE 1-12) ° 83 BRS 6 MAME ROSBRE- BRM 5
+D: SHAM 1 REABES 9 PRASHRAERD > RASH SRE? oR BAS
+BSAA + 2M AERERERESH > BH 0 > RRRARSRE LES: REE
+SERA (GE 13) > TAPE LIES °
+
+1. (5 points) Consider the following variation of the Selection Problem: Given a sequence S$ = (a1, Q2,...,an)
+of n distinct integers and two positive integers x and y, where cach number in $ falls between 1 and
+y, the goal is to report the smallest z numbers in $ in ascending order. This scenario assumes the
+conventional single-processor, random access machine (RAM) model, with a machine word size of at
+
+least [logy] bits. To tackle this problem, five algorithms have been proposed. Please select the correct
+description(s) below.
+
+A. Algorithm A: The algorithm initializes an empty max-heap and sequentially inserts numbers
+from S. During insertion, if the size of the max-heap exceeds xx, it removes the maximum
+element from the heap. Finally, the remaining numbers in the heap are sorted by heapsort
+and reported. If 2 < n/logn, Algorithm A runs in O(n) time in the worst case.
+
+. Algorithm B: The algorithm initially constructs a min-heap and proceeds to extract the mini-
+mum element z times. If « < n/logn, Algorithm B runs in O(n) time in the worst case.
+
+?» Algorithm C: The algorithm begins by performing a base-n. radix sort, followed by reporting
+the smallest x values. If y < n?, Algorithm C runs in O(n) time in the worst case.
+
+. Algorithm D: The algorithm performs a counting sort by allocating an array C of length y.
+traversing through S and incrementing C[(a;] for each a;. It finally reports the smallest values
+
+by scanning through the counter array. If y < n?, Algorithm D runs in O(n) time in the worst
+» case. :
+
+. Algorithm E: The algorithm first applies quickselect, i.e., Randomized-Select, to determine
+the x-th smallest number in S. Subsequently, it traverses S for extracting all numbers smaller
+than or equal to the «-th smallest number. Finally, these x numbers are sorted by quicksort
+and reported. The time complexity of Algorithm E is O(n + x log x) in expectation.
+
+2. (5 points) A Maximum Binary Tree (abbreviated as MaxBT) is defined as a binary tree that adheres
+to the max-heap property without the necessity of following the complete binary tree property. Ina
+MaxBT, each node p consists of a value (p.data) and two links (p.left and p.right) pointing to the left
+and right children, respectively. A link to nil indicates the absence of further children.
+
+The provided pseudocode, although incomplete, implements a recursive function for merging two MaxBTs
+into a single MaxBT. This function takes the root nodes of the two MaxBTs (rootl and foot2) as input
+and returns the root node of the merged MaxBT.
+
+1: function MergeMaxBinaryTtees(rvot1 , root2)
+
+2: if root1 = nil then return (a) end if
+
+3: if root2 = nil then return b end if
+
+4: if rootd data > root?.data then
+5: ._ (ce) < MergeMaxBinaryTrees( (d)
+6: return (f)
+7 else
+8: (g) < MergeMaxBinaryTrees( (h) :
+9: return (i)
+10: end if
+li: end function
+
+Assuming all the blanks in the above function have been appropriately filled to ensure its proper func-
+tioning, please select the correct description(s) below.
+
+A. (b) and (f) are the same.
+
+B. (c), (d), and (e) are all distinct.
+
+L# a
+=== PAGE p-2.pgm
+MRR: 312 QureRKE 1138 $2 RE GLHMLFRRA
+FIA > RRSP MH: 312
+1 x GO W2R 2K
+
+ 
+
+C. In the cases of (c) and (g), each has only one correct answer.
+D. Exchanging the filled content of (h) and (i) leads to a correct implementation.
+
+E. The function works correctly even when the two arguments passed into it refer to the same
+tree.
+
+3. (5 points) A Dynamic Array (abbreviated as DArray) is a type of array that permits the insertion
+and deletion of elements at the end to dynamically adjust its size. DArray D maintains three crucial
+attributes, including the underlying array D.data, the logical data size D.size, and the actual array
+capacity D.capacity. The invariant D.size < D.capacity holds at any given moment. The Insert(D, x)
+operation appends the element z to the end of D.data. In case D.size = D.capacity, it triggers a call to
+Resize(D) before appending x, where Resize(D) allocates a new and larger array, moves all the data to it,
+increases the value of D.capacity, sets up D.data, and finally frees the old array. Two implementations
+of Resize(D) are provided: ResizeA(D) increases D.capacity by a constant (e.g., 10) while ResizeB(D)
+doubles D.capacity each time.
+
+To initialize DArray D, we set D.size to 0, D.capacity to 1, and allocate a size 1 array to D.data.
+
+Assuming that both allocating and freeing arrays of length n take O(n) time, and moving a single
+element takes O(1) time, please select the correct description(s) below.
+
+A. DArray is not suitable for random access hecause its memory may be relocated.
+B. DArray can only be allocated in the heap memory due to its dynamic memory nature.
+C. If ResizeA(D) is considered, the amortized time complexity of Insert(D, x) is O(1).
+D. If ResizeB(D) is considered, the amortized time complexity of Insert(D, x) is O(1).
+. In the Delete(D) operation, if D.size > 0, D.size is decreased by one. If, at this stage,
+D.size < [D.capacity/2], we create a new array d’ with a size of [D.capacity/2], transfer the
+data to d', set up d’ as the new data array for D.data, and subsequently free the old array.
+
+Then, the amortized time complexity of mixed Insort and Delete operations can be O(1), where
+Resize(D) can be either ResizeA(D) or ResizeB(D). ,
+
+. (10 points) Consider a hash function h that maps numerous keys into an array A, indexed from 0 to n—1.
+The concern is that excessive collisions arising from the hashed keys can potentially cause inefficiency
+within the hash table. The following pseudocode, while not complete, implements a function that utilizes
+the divide-and-conquer strategy to identify the case where strictly more than half of the keys share the
+same hash value. The function takes the hash function h and the subarray A with the index range from
+low to high as input and returns the majority hash value shared by over | (high — low + 1)/2] keys. If the
+keys stored in the subarray A[low..high] do not have such a majority hash value, the function returns
+~1.
+
+1: function FindMajorityHashValue(h, A, low, high)
+if low = high then return h(Al[low]) end if
+
+mid < | (low + high) /2]
+leftMajority <— FindMajorityHashValue(h, A, low, mid)
+rightMojority < FindMajorityHashValue(h, A, mid +1, high)
+
+leftCount <—- CountElement(A, low, high, leftMajority)
+: rightCount «- CountElement(A, low, high, rightMajority)
+9: end function
+In the pseudocode, CountElement(A, low, high, val) calculates and returns the count of keys in the sub-
+
+array A[low..high] whose hashed values are equal to the given val. Please select the correct description(s)
+below,
+
+HRA
+=== PAGE p-3.pgm
+FAH: 312 Ques OQrKE 1138 BER GLHWAFARRA
+#18: BARR RI MAH: 312
+fp =! :
+
+x 6 H2R 2K
+
+ 
+
+- If leftMojority = rightMajority = —1, A[low..high] may still have a majority hash value.
+
+. If Allow..high] has a majority hash value and rightMajority = —1, the function should return
+leftMajority.
+
+. Tf leftCount = rightCount, the function should return —1.
+
+. Suppose that an implementation of CountElement runs within Q(é) time, where £ = high —
+low +1. The time complexity of FindMajorityHashValue can be O(n logn).
+
+E. Suppose that a magical implementation of CountElement runs within O(2/ log £) time, where
+£ = high — low +1. The time complexity of FindMajorityHashValue can be O(n).
+
+5. (10 points) A Binary Search Tree (abbreviated as BST) is a tree structure comprised of nodes that
+maintain a specific order among their keys. Given a single node x and two BSTs L and R, in which
+Lkey < w.key < rkey for all nodes 1 € L and r € R, the objective is to design a Join(L, x, R) function
+that integrates the given input into a unified BST T with the nodes LU {xz} UR. Be aware that AVL
+and Red-Black trees are specific types of BSTs. Given the constraint that T, L, and R must share the
+same type, they are required to be either all BSTs, all AVL trees, or all Red-Black trees.
+
+The Join(L, x, R) function is implemented with the steps: (1) selecting a subtree T’ from either L or
+R, where a subtree is defined as potentially being empty, a portion, or the entire tree, (2) detaching 7’,
+(3) attaching T’ under the node a, (4) attaching the other tree (which does not contain J’) under =,
+and (5) re-attaching the tree rooted at x to the former parent of T’. The modified tree is then returned
+as T. If T’ has no former parent, the tree rooted at 2 is simply returned as T. The following figure
+
+demonstrates an example result of Join(Zi,21, Ri), where the letters a, 8, 7, 6, and 7 denote arbitrary
+subtrees. Inside a circle, the value represents the key of a node. :
+
+Ly ©} .
+DQ @ Join(Z1,21, Ri ) (0)
+a B (4)
+(2) 8)
+
+a BY 6
+
+Ri
+
+ 
+
+Please note that almost all steps, except for (1), have been finalized — there could be multiple ways to
+choose J” in (1). The tree returned from Join(L, x, R) may not be unique. Additionally, unlike AVL
+or Red-Black trees, Join(L, x, 2) does not perform re-coloring and re-balancing. Consider the following
+arguments passed into Join(Le, x2, Rz). All nil nodes (considered as leaves in red-black trees) are omitted
+for brevity.
+
+Lp
+
+@) @
+QO ©
+
+Please select the correct description(s) below.
+
+A. If no additional balance is required for Lz and Ro, i.e., both Lz and Re are BSTs, there are 6
+possible tree shapes that could be returned from Join(L2, 22, Ra).
+
+i
+=== PAGE p-4.pgm
+MAH: 312 QUSR@AS 113 $F 8 Gt Hews stRRe
+as : RASTER RIE RS 812
+nok. .
+
+# G R22
+
+     
+
+- If both Lz and Rg are AVL trees as observed, among all possible tree shapes returning from
+Join(Le, 2, Re), there is a unique tree that is an AVL tree.
+
+- There are multiple ways to assign colors to the nodes in Rz to make Rg a red-black tree.
+
+. There exists a color assignment to all nodes in Lo U {x2} U Re such that: (1) both Lz and
+Rp are red-black trees, (2) a red-black tree can be returned from Join(L2, x2, Re), and (3) the
+node with the key 4 is BLACK.
+
+- There exists a unique color assignment to all nodes in Le U {x2} U Re such that: (1) both Lg
+and Rg are red-black trees, (2) a red-black tree can be returned from Join( Le, x2, R2), and (3)
+the node with the key 1 is BLACK.
+
+6. (5 points) We want to multiply a sequence of matrices Mi,... > ™M,, with the minimum number of multi-
+plications. Since the matrix multiplication is associative, we can parenthesize the matrix multiplication
+in all possible orders. Let m4, be the minimum number of multiplications to multiply M;,...,14;. We
+
+can derive a recursion of mi,j, where r; and c; are the numbers of rows and columns of the matrix M;
+respectively.
+
+mig = jiyin (ones + egg + Ticeej) (1)
+
+Now consider my,n4%, 1<s <s+k <n. For given s and k, let x be the number of m;,;’s that have
+Ms,a+h at the right hand side of Equation 1, and let y be the number of different m’s that are at the
+right-hand side of Equation 1 when i = s and j = s +k. What is the approximate value of x + y?
+
+A. ("7")
+
+Bantk
+
+C. (n—s)(n —s—k)
+
+D. (3) + (3)
+
+E. ("3") + ()
+
+. (5 points) When we compute all m;,;’s with Equation 1, we must follow an order of i and j so that the
+
+m’s on the right-hand side are all known when we compute m;,;. Please select all the correct orders in
+the following choices.
+
+A. decreasing order of i +7
+B. increasing order of i+ 7
+C. increasing order of (2 — j)?
+D. decreasing order of (i — 7)*
+E. increasing order of |(i + 7)(¢ — j)|
+. (5 points) We define the height of a tree to be the maximum number of edges from the root to a leaf.
+
+We also define the level of a node v, denoted as I(v) to be the height of the subtree rooted at v. Which
+of the following descriptions is correct?
+
+A. If v is a leaf, then I(v) = 1.
+B. If v is an internal node, [(v) = maxes /(s), where S is the set of children of v.
+
+C. We can compute I(v) by starting a breadth-first-search (BFS) from », traversing all nodes of
+the subtree rooted at v, and computing the maximum distance to a leaf as I{v). Since there
+are no more than n v’s and each BFS takes O(n) time, the total time complexity is O(n?)
+
+. We can compute the levels for all nodes by a depth-first-search (DFS) starting from the root
+of T. That is, we can compute the level of an internal node v after we compute the / values of
+all children of v.
+
+. Since there are n tree nodes to visit, the DFS from the root takes O(n) time.
+
+HARA
+=== PAGE p-5.pgm
+MH: 312 RuUrseRB@rKS 1138 SF RAL EFRRA
+Aa: RASRRREE Mie: 312
+ek: 1 xO R2eR OR
+
+9. (5 points) We have a binary tree T and for every node v € T, we want to compute the new height if we
+select 7 as the new root.
+
+We consider the effect of making v the new rvot. First, the height of the subtree of v is still I(v). Second,
+since v is now the new root, it could go up to its parent and then to the farthest leaf. We define this
+distance as r(v).
+
+A. The new tree after selecting a new root is always a binary tree.
+
+B. The height of the tree after making v the new root is max(I(v),r(v)).
+
+C. We can compute r(w) for all tree node v’s in a top-down manner. We assume that the r value
+of v’s parent in T' is known, so v only needs to consider the 7 value of its parent and the /
+value of its sibling in T, in order to compute its own 7.
+
+D. The r value of the root of T is 1.
+E. We can compute the 7 values for all nodes in O(n) time.
+. (5 points) Consider a sequence of numbers (v,.-.,Un). Now we remove & numbers from the sequence
+
+so that we have k+ 1 non-empty segments of numbers. For example, consider (2,3,8,1,4). If we remove
+8 then we have two segments (2,3) and (1,4).
+
+Now we want to minimize the maximum sum of numbers of a segment. Let m(1,n,k) he the answer,
+then what is the correct recursion form when 1 <i<j<nand0<k<(j—1)/2?
+
+A. m(i, j,k) = min3_, max(S yn Vy: mi, 2, k — 1)
+B. m(é, j,k) = mindZj,, max(S) 41 My: m(i.a—1,k-1))
+C. m(i,j,k) = mindZ} ., max(m(z + 1, j,k — 1), 077} vy)
+D. m(i, j,k) = mings wek—1,x.u>0 mindz}, , (max(m(i, x — 1,2), m(a+1,5,v))
+E. m(i, j,k) = mingsw=n-1,v,w>0 min? _,(max(m(i, #0), m(x, j,w))
+. (5 points) Which of the following descriptions is true for the previous problem?
+A. We can always find an optimal solution that removes one of the largest 7.
+B. We can always find an optimal solution that docs not remove one of the smallest v.
+C. The initial value for m(i,¢, 0) is 7.
+D. The initial value for m(i, j,k) when k > (j — #)/2 is 0.
+E. The initial value for m(i,i+ 2.1), 1<i<n—2 is max(vj, vi42).
+. (5 points) Consider a directed acylic graph G = (V,E) of n tasks whore every nodc is a task and every
+edge is a dependency. If there is an edge from a task v to another task w, that means we need to finish
+
+v before starting w. We have p processors of the same capability and every processor can finish any task
+in one unit of time.
+
+We define a schedule function s to map a task v to a positive integer time step s(v). Since we have only
+P processors, so the system can only process at most. p tasks in one time step. Also, a schedule needs to
+respect the dependency of edges.
+
+A. For every positive integer i, |{r|s(v) < z}| <p.
+B. If there is a path (2,,...,7,) in G, then 8(%:;) <s(v,) for l< jk.
+
+C. The number of time steps required is at least min([n/p],Z), where Z is the number of tasks
+along the longest path in G.
+
+. Without loss of generality, we can always assume s(2') = 1 for all v's without incoming edges.
+
+. If the number of processors is infinite, then we can finish all tasks in L time steps, where L is
+the number of tasks along the longest path in G.
+
+it @
+
+ 
+=== PAGE p-6.pgm
+MB: 312 RreOAS 1138 SF ERALHEMEFRRR
+gq: TARR MAR: 312
+
+x6 Ree OE
+
+     
+
+13. (30 points) A vertex cover of an undirected graph G = (V, F) is a subset V’ C V such that if (u,v) € BE,
+then either u € V’ or v € V’ (or both). The size of a vertex cover is defined as the number of vertices in
+it. The vertex-cover problem is to find a vertex cover of minimum size in a given undirected graph. It
+has been shown to be NP-hard, thus we cannot find a polynomial-time algorithm for solving it exactly
+unless NP = P. Fortunately, some polynomial-time approximation algorithms have been proposed for
+solving the vertex-cover problem.
+
+The following two approximation algorithms take as input an undirected graph and compute a vertex
+cover for it. Initially, all edges in the graph are uncovered for both Algorithm VC-Arbitrary and Algo-
+
+rithm VC-Max-Degree. Once a vertex v is put into the cover, all edges incident on v are covered and
+removed.
+
+Algorithm VC-Arbitrary picks an arbitrary uncovered edge (u,v), puts both u and v into the cover,
+
+throws out all edges incident on either u or v, and repeats the process until there are no uncovered edges
+left.
+
+Algorithm VC-Max-Degree picks a vertex v that covers the most number of uncovered edges, puts v into
+
+the cover, throws out all edges incident on v, and repeats the process until there are no uncovered edges
+left.
+
+{a) (10 points) Give an example for which Algorithm VC-Arbitrary yields a solution that is at least
+double the size of a minimum-size vertex cover. Give another example for which Algorithm VC-
+Max-Degree will definitely yield a solution with the size more than that of a minimum-size vertex
+cover no matter how it breaks the tie. Each example should contain no more than ten vertices.
+
+You have to justify your solution by showing the vertex cover found by the algorithm and its
+corresponding minimum-size vertex cover.
+
+(b) (10 points) Prove or disprove that Algorithm VC-Arbitrary has a smaller ratio bound than Algo-
+rithm VC-Max-Degree. The ratio bounds in your proof or disproof should be as tight as possible.
+
+(c) (10 points) In the weighted vertex-cover problem, you are given an undirected graph G = (V,E)
+-and a weight w(v) for each vertex v € V, and the objective is to find a vertex cover (covering all
+edges in F) of minimum total weight. In other words, the goal is to find a vertex cover C of G such
+that cco w(v) is minimized among all possible vertex covers of G. You ave required to formulate
+the weighted vertex cover problem as an integer linear program.
+
+REM AME
+

@@ -1,0 +1,1339 @@
+@q sp1-01 | al-sp#1 | 1 | 計算
+鬆弛邊 $(u,v)$，權重 3。目前 $u.d=5$、$v.d=10$。鬆弛後 $v.d$ 是多少？
+== 8
+---
+$u.d+w=8<10$，更新成 8，並把 $v$ 的前驅設成 $u$。
+
+@q sp1-02 | al-sp#1 | 2 | 計算
+鬆弛邊 $(u,v)$，權重 4。$u.d=7$、$v.d=9$。鬆弛後 $v.d$ 是多少？
+== 9
+---
+$7+4=11>9$，不更新。鬆弛只會讓 $v.d$ 變小或不變。
+
+@q sp1-03 | al-sp#1 | 2 | 觀念
+$\delta(s,v)$ 和 $v.d$ 的差別是？
+[x] $\delta(s,v)$ 是真正的最短距離；$v.d$ 是演算法目前的估計，永遠 $\ge\delta(s,v)$，最後才會相等
+[ ] 兩個一樣
+[ ] $v.d$ 永遠比 $\delta(s,v)$ 小
+[ ] $\delta(s,v)$ 是邊數，$v.d$ 是權重和
+---
+這是「上界性質」：$v.d$ 一開始是 $\infty$，每次鬆弛都對應一條真的路徑，所以不會低於真正的最短距離。
+
+@q sp1-04 | al-sp#1 | 2 | 觀念
+A route planner computes shortest-path distances $\delta(s, v)$ from a depot $s$ in a directed road graph whose edge weights are travel costs. Some edges have negative weights, because the company receives a refund for using certain toll roads, but no negative-weight cycle is reachable from $s$. For example, with edges $s\to u$ (4), $u\to v$ ($-1$), and $s\to v$ (5), $\delta(s,v) = 3$. An engineer relies on the triangle inequality $\delta(s,v)\le\delta(s,u)+w(u,v)$ for every edge $(u,v)$ and wants to explain why it holds and how it relates to relaxation. Which of the following statements about the triangle inequality are correct? Select all that apply.
+[x] A shortest path to $u$ followed by $(u,v)$ is a path to $v$, which bounds $\delta(s,v)$.
+[x] Relaxing $(u,v)$ checks whether $v.d$ violates this inequality with respect to the current estimate $u.d$.
+[x] The inequality remains valid with negative edge weights under the stated absence of reachable negative cycles.
+[ ] The inequality says that every shortest path to $v$ passes through $u$.
+[x] Equality holds when $(u,v)$ is the last edge of some shortest path to $v$.
+---
+「先到 u 再走邊給上界」對：接成一條走到 v 的路，最短距離不會更長；沒有可達負環可避免任意降低。「鬆弛檢查估計值」對：若 v.d 大於 u.d 加邊權便改善。「負邊不妨礙」對：論證不要求每條邊正數。「每條最短路都經 u」錯：也可能有更短的別條路。「最短路最後一邊取等號」對：最短路前綴也為最短，故恰等於兩段和。
+
+@q sp1-05 | al-sp#1 | 3 | 觀念
+Let $s=v_0,v_1,\dots,v_k$ be a shortest path to $v_k$ in a weighted directed graph with no negative-weight cycle reachable from $s$. The path-relaxation property says what happens when the edges $(v_0,v_1),(v_1,v_2),\dots,(v_{k-1},v_k)$ are relaxed in this order, starting from $s.d = 0$ and $v.d = \infty$ for every other vertex. For example, on the path $s\to a\to b\to t$ with weights 2, $-1$, and 4, a program relaxes $(s,a)$, then several unrelated edges, then $(a,b)$, then $(s,a)$ again, then $(b,t)$, and ends with $t.d = 5$. A student wants to state the property precisely: how often each path edge must be relaxed, whether other relaxations may come in between, whether negative weights are allowed, and how the property justifies relaxing every edge in each of $V-1$ rounds. Which of the following statements are correct? Select all that apply.
+[x] After $(v_{k-1},v_k)$ has been relaxed, $v_k.d=\delta(s,v_k)$.
+[ ] Each edge on the path must be relaxed $k$ times.
+[ ] No other relaxations may happen in between.
+[ ] The property holds only when all edge weights are nonnegative.
+[x] It explains why relaxing every edge in each of $V-1$ rounds is correct: round $i$ relaxes the $i$-th edge of every shortest path.
+---
+「最後一條鬆弛完就正確」對：用歸納法，每一步 $v_i.d$ 都已經正確。
+
+「每條鬆弛 $k$ 次」錯：每條依序一次就夠。
+
+「中間不能有別的」錯：別的鬆弛只會讓值更小，而值不會小於真正的距離。
+
+「只在非負權重成立」錯：負邊也成立（只要沒有負環）。
+
+「Bellman–Ford 的關鍵」對：每一輪鬆弛所有邊，第 $i$ 輪一定會鬆弛到最短路徑的第 $i$ 條邊。
+
+@q sp1-06 | al-sp#1 | 2 | 陷阱
+A directed graph has the edges below, and $\delta(s, v)$ denotes the shortest-path distance from $s$ to $v$, which is $-\infty$ when walks from $s$ to $v$ can be made arbitrarily cheap:
+
+| edge | $s \to a$ | $a \to b$ | $b \to a$ | $b \to t$ | $s \to c$ |
+|---|---|---|---|---|---|
+| weight | 1 | 2 | $-3$ | 4 | 5 |
+
+The cycle $a\to b\to a$ has total weight $2 + (-3) = -1$, and it can be reached from $s$. A student computes the distances to $a$, $b$, $t$, and $c$, first by following simple paths only, as a careless program would, and then by allowing walks that go around the cycle any number of times. A classmate argues that, because a negative cycle is reachable from $s$, every vertex reachable from $s$ has distance $-\infty$, including $c$, which is not on the cycle. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] $\delta(s,a)=1$ even after arbitrarily many traversals of the reachable cycle.
+[ ] $\delta(s,t)=7$ is the finite minimum over all walks.
+[x] $\delta(s, c) = 5$.
+[ ] $\delta(s, a) = -1$, the total weight of the cycle.
+[ ] Since a negative cycle is reachable from $s$, every vertex reachable from $s$ has distance $-\infty$.
+---
+「a 距離固定一」錯：a→b→a 一圈 2−3＝−1，可任意多繞。「t 最小七」錯：到 b 前先多繞負環，再走 b→t，成本無下界。「c 距離五」對：只有直接邊，且環走不到 c。「a 等於環權負一」錯：負一只是每圈增量，並非有限最短距離。「所有可達點都負無窮」錯：必須從負環也能走到該點，c 不符合。
+
+@q sp1-07 | al-sp#1 | 2 | 計算
+有 $V$ 個點的圖，沒有負環。最短路徑最多有幾條邊？
+== V-1
+---
+最短路徑不會重複經過點（重複就有環，去掉非負的環不會變長），所以最多 $V$ 個點、$V-1$ 條邊。這就是 Bellman-Ford 跑 $V-1$ 輪的原因。
+
+@q sp1-08 | al-sp#1 | 3 | 證明
+證明：若 $s$ 到 $v$ 的最短路徑經過 $u$，則路徑上 $s$ 到 $u$ 那一段也是 $s$ 到 $u$ 的最短路徑。
+---
+剪下貼上：若 $s\leadsto u$ 有更短的路 $p'$，把原路徑的前段換成 $p'$，得到更短的 $s\leadsto v$，矛盾。（沒有負環時，換完若有重複點，去掉環只會更短。）
+
+@q sp1-09 | al-sp#1 | 2 | 計算
+一開始 $s.d=0$、其他 $\infty$。依序鬆弛 $(s,a)$ 權重 5、$(a,b)$ 權重 $-2$、$(s,b)$ 權重 4。最後 $b.d$ 是？
+== 3
+---
+$a.d=5$；$b.d=5-2=3$；$(s,b)$：$0+4=4>3$，不更新。
+
+@q sp1-10 | al-sp#1 | 2 | 觀念
+A logistics graph has edge weights that may be negative, for example $-2$ for a delivery that pays a bonus, and it contains a negative-weight cycle of total weight $-5$ among 3 warehouses that cannot be reached from the main depot $s$. A junior analyst wonders how the unreachable cycle and the negative edges affect the distances from $s$, which algorithms still give correct answers, and whether a single negative edge already makes the problem meaningless, before choosing an algorithm for the nightly route computation. Which of the following statements about negative weights in single-source shortest paths are correct? Select all that apply.
+?? 複選
+[ ] Every negative-weight cycle changes every source distance, even if the cycle is unreachable from the source.
+[ ] Relaxing every edge for V minus one rounds requires all weights to be positive, even when no negative cycle is reachable.
+[ ] Any negative edge weight makes shortest paths undefined.
+[x] A negative-weight cycle that cannot be reached from the source does not affect the distances from the source.
+[ ] Negative edge weights can make some algorithms slower but never make any of them wrong.
+---
+「連走不到的負環也改全部距離」錯：從來源出發根本無法進入它。「逐邊鬆弛也要求正權」錯：Bellman–Ford 允許負邊，沒有可達負環時 V−1 輪足夠。「任一負邊就沒最短路」錯：一條 s→t 權負一已有有限最短路。「走不到的負環不影響」對：不存在經它的來源路徑。「負邊只會變慢不會錯」錯：定案後不更新的 Dijkstra 可因負邊給錯值。
+
+@q sp2-01 | al-sp#2 | 2 | 追蹤
+有向圖：s→a 3、s→b 5、a→b 1、a→c 6、b→c 2、b→d 7、c→d 1、c→e 5、d→e 2。從 s 跑 Dijkstra，點被取出（確定）的順序和 e 的距離？
+== s a b c d e,9
+?? 順序,e的距離
+---
+s 0；a 3；b 經 a 是 4；c 經 b 是 6；d 經 c 是 7；e 經 d 是 9。每次取出目前 $d$ 最小、還沒確定的點。
+
+@q sp2-02 | al-sp#2 | 2 | 追蹤
+同一張圖，Dijkstra 取出 a 之後（還沒取出 b），b 和 c 的 $d$ 值各是？
+== 4,9
+?? b,c
+---
+取出 s 時 a=3、b=5；取出 a 時鬆弛 a→b：$3+1=4<5$，b=4；a→c：$3+6=9$，c=9。之後 b 會把 c 改成 6。
+
+@q sp2-03 | al-sp#2 | 3 | 反例
+有向圖 s→a 2、s→b 3、b→a −2、a→c 1。Dijkstra（點一旦取出就不再更新它的鄰居）算出的 c 是多少？正確是多少？
+== 3,2
+?? Dijkstra,正確
+---
+取出 s、a（2）時用 a 把 c 設成 3；之後 b（3）用負邊把 a 改成 1，但 a 已經處理過，不會再去更新 c。正確路徑 s→b→a→c＝2。
+
+@q sp2-04 | al-sp#2 | 2 | 比較
+The graph is simple: at most one directed edge exists for each ordered pair of vertices.
+Dijkstra's algorithm removes the vertex with the smallest $d$ value $V$ times and decreases some $d$ value up to $E$ times. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] Keeping the $d$ values in an unsorted array gives $O(V^2)$ time.
+[ ] A binary heap guarantees total time $O(V+E)$ for these operations on every graph.
+[ ] On every dense graph, a binary heap has an asymptotically smaller worst-case bound than the unsorted-array implementation.
+[ ] Both choices give $O(E\lg V)$ time.
+[ ] The unsorted array gives $O(V\lg V)$ time.
+---
+「陣列平方」對：V 次線性找最小，加上每邊常數改善，簡單圖 邊數≤V²，總 O(V²)。「二元堆必線性」錯：取最小與減鍵的一般界是對數，標準總界 O((V＋邊數)lg V)。「稠密時堆界必更小」錯：陣列已有 O(V²)，通常的二元堆界是 O(V²lg V)。「兩者一般都 邊數 lg V」錯：極稀疏含孤點時不能省去 V 次選取的成本。「陣列 V lg V」錯：指定逐次全掃描要平方次比較。
+
+@q sp2-05 | al-sp#2 | 2 | 情境
+Dijkstra's algorithm is run on a dense graph with $V$ vertices and $E \approx V^2$ edges. Version 1 keeps the tentative distances in a plain array and scans it to find the minimum; version 2 uses a binary min-heap and updates a vertex's key in the heap whenever its distance improves. Which of the following statements are correct? Select all that apply.
+[x] Version 1 runs in $O(V^2)$ time.
+[x] Version 2 runs in $O((V + E) \lg V)$ time, which is $O(V^2 \lg V)$ on this graph.
+[ ] Version 2 is asymptotically faster than version 1 on every graph.
+[x] On a sparse graph with $E = O(V)$, version 2 runs in $O(V \lg V)$ time and beats version 1.
+[x] On the dense graph, $O(V^3)$ is a valid looser upper bound for both versions.
+---
+「陣列平方」對：V 次掃描加 邊數 次鬆弛，總 O(V²＋邊數)。「堆版一般界與稠密代入」對：O((V＋邊數)lg V)，稠密時 O(V²lg V)。「堆版每圖都更快」錯：稠密時此一般界比陣列界多對數。「稀疏時 V lg V」對：邊數＝O(V) 代入，而指定陣列仍全掃描。「立方是較鬆上界」對：平方與平方乘對數都屬 O(V³)，但不能說因此需要立方緊界。
+
+@q sp2-06 | al-sp#2 | 2 | 觀念
+Dijkstra 為什麼需要所有權重非負？
+[x] 它假設「取出的點距離已經確定」，之後的路只會更長；有權重是負的邊時，後面繞一圈可能更短
+[ ] 因為堆積不能存負數
+[ ] 因為權重是負的邊會造成無限迴圈
+[ ] 其實不需要
+---
+這個「一旦確定就不改」的貪婪選擇，只有在邊非負時成立。
+
+@q sp5-91 | al-sp#5 | 2 | 情境
+以下情況各該用哪個演算法？（1）單一起點、權重非負；（2）單一起點、有負邊；（3）所有點對、稠密圖。
+[x] Dijkstra；Bellman-Ford；Floyd–Warshall
+[ ] Bellman-Ford；Dijkstra；Johnson
+[ ] Floyd–Warshall；Bellman-Ford；Dijkstra
+[ ] Dijkstra；Dijkstra；Dijkstra
+---
+所有點對、稀疏圖、可能有負邊時用 Johnson。無權圖用 BFS 最快。
+
+@q sp2-08 | al-sp#2 | 3 | 陷阱
+「Dijkstra 遇到權重是負的邊時，把每條邊都加上同一個常數變成非負，再跑 Dijkstra 就好」對嗎？
+[ ] 對
+[x] 不對
+---
+不同路徑的邊數不同，加的總量也不同，會偏好邊少的路。例：s→t 1、s→a 2、a→t −2，最短 s→a→t＝0；每條加 2 後 s→t＝3、s→a→t＝4，Dijkstra 會選錯。
+
+@q sp5-92 | al-sp#5 | 2 | 計算
+無權圖（每條邊權重都是 1）求單一起點最短路徑，最快用什麼？
+[x] BFS，$O(V+E)$
+[ ] Dijkstra，$O(E\lg V)$
+[ ] Bellman-Ford，$O(VE)$
+[ ] Floyd–Warshall，$O(V^3)$
+---
+權重都一樣時，「邊數最少」就是「最短」。Dijkstra 也對，但多了堆積的 $\lg V$。
+
+@q sp2-10 | al-sp#2 | 3 | 證明
+說明 Dijkstra 取出點 $u$ 時 $u.d=\delta(s,u)$ 的關鍵論證（權重非負）。
+---
+假設 $u$ 是第一個取出時 $u.d>\delta(s,u)$ 的點。看 $s$ 到 $u$ 的最短路徑上第一個還沒取出的點 $y$，它前一個點 $x$ 已取出、$x.d$ 正確，取出 $x$ 時鬆弛過 $(x,y)$，所以 $y.d=\delta(s,y)$。權重非負，$\delta(s,y)\le\delta(s,u)<u.d$。但演算法選 $u$ 代表 $u.d\le y.d$，矛盾。
+
+@q sp2-11 | al-sp#2 | 2 | 計算
+Dijkstra 用二元堆積，$V=10^4$、$E=10^5$，大約要做幾次基本步驟？
+[x] 約 $(V+E)\lg V\approx1.1\times10^5\times13\approx1.5\times10^6$
+[ ] 約 $V^2=10^8$
+[ ] 約 $VE=10^9$
+[ ] 約 $E=10^5$
+---
+陣列版要 $V^2=10^8$，堆積版快很多。稀疏圖用堆積。
+
+@q sp3-01 | al-sp#3 | 2 | 計算
+Bellman-Ford 要跑幾輪（每輪鬆弛所有邊）？之後再多跑一輪是為了什麼？
+[x] $V-1$ 輪；第 $V$ 輪還能更新，就代表有負環
+[ ] $E$ 輪；檢查連通
+[ ] $V$ 輪；確認答案
+[ ] $\lg V$ 輪；沒有用
+---
+沒有負環時最短路徑最多 $V-1$ 條邊，$V-1$ 輪一定收斂。
+
+@q sp3-02 | al-sp#3 | 2 | 計算
+Bellman-Ford 的時間是？
+[x] $O(VE)$
+[ ] $O(E\lg V)$
+[ ] $O(V^2)$
+[ ] $O(V+E)$
+---
+$V-1$ 輪、每輪 $E$ 條邊。比 Dijkstra 慢，但能處理負邊、偵測負環。
+
+@q sp3-03 | al-sp#3 | 3 | 追蹤
+圖：s→a 4、s→b 2、b→a −1、a→c 3、b→c 6、c→d −2、a→d 5。Bellman-Ford 照這個順序鬆弛邊，第 1 輪結束後每個點的 $d$ 是？
+== 0 1 2 4 2
+?? s a b c d
+---
+s→a：4；s→b：2；b→a：1；a→c：4；b→c：8 不更新；c→d：2；a→d：6 不更新。剛好第 1 輪就全對，第 2 輪不會再變。
+
+@q sp3-04 | al-sp#3 | 3 | 追蹤
+同一張圖，鬆弛順序改成**倒過來**（a→d、c→d、b→c、a→c、b→a、s→b、s→a）。要幾輪才收斂？
+== 4
+---
+第 1 輪只有 s 的鄰居被更新（a=4、b=2）；第 2 輪 a=1、c=7、d=9；第 3 輪 c=4、d=5；第 4 輪 d=2。程式模擬確認：邊的順序不好時要跑滿 $V-1=4$ 輪。
+
+@q sp3-05 | al-sp#3 | 2 | 追蹤
+Bellman–Ford is run from $s$ on the graph with edges $s\to a$ (weight 1), $a\to b$ (2), $b\to c$ ($-4$), and $c\to a$ (1). Which of the following statements are correct? Select all that apply.
+[x] The cycle $a\to b\to c\to a$ has total weight $-1$.
+[x] After $V-1=3$ rounds, one more round can still relax some edge.
+[ ] After 3 rounds, all the distance estimates are correct.
+[x] The shortest-path distance from $s$ to $a$ is not defined, because it can be made arbitrarily small.
+[x] The estimate at the source stays zero, since no edge enters the source.
+---
+「環權負一」對：2−4＋1＝−1。「額外輪可再更新」對：從來源可達此負環，循環成本可繼續降低。「三輪已全正確」錯：環上沒有有限最小值。「a 無有限最短距離」對：每圈再降一。「來源仍零」對：沒有任何邊寫入來源估計；變小的是環上的 a、b、c，不能把負環影響錯傳到所有點。
+
+@q sp3-06 | al-sp#3 | 3 | 情境
+The difference constraints $x_2-x_1\le3$, $x_3-x_2\le-2$, and $x_3-x_1\le2$ are solved with shortest paths. Which of the following statements are correct? Select all that apply.
+[x] Each constraint $x_j-x_i\le c$ becomes an edge $i\to j$ of weight $c$.
+[x] An extra source vertex gets a weight-0 edge to every variable's vertex.
+[x] The system has a solution if and only if the resulting graph has no negative-weight cycle.
+[x] $x_1=0$, $x_2=0$, $x_3=-2$ is a solution of this system.
+[ ] Each constraint $x_j-x_i\le c$ should instead become an edge $j\to i$ of weight $-c$.
+---
+「$x_j-x_i\le c$ 建 $i\to j$ 權重 $c$」對：最短距離滿足 $d(j)\le d(i)+c$，正是這個約束。
+
+「加起點、權重 0」對：保證每個點都走得到。
+
+「有解 ⇔ 沒有負環」對：Bellman–Ford 算出的 $d$ 就是一組解。
+
+「$0,0,-2$ 是解」對：三條邊 1→2(3)、2→3($-2$)、1→3(2)，從起點算出 $d=(0,0,-2)$；代回去 $0\le3$、$-2\le-2$、$-2\le2$ 都成立。
+
+「建 $j\to i$ 權重 $-c$」錯：那表示的是 $x_i-x_j\le-c$，也就是 $x_j-x_i\ge c$，方向反了。
+
+@q sp3-07 | al-sp#3 | 3 | 證明
+說明為什麼差分約束的系統無解 ⇔ 約束圖有負環。
+---
+（⇐）負環 $v_1\to v_2\to\cdots\to v_1$：把對應的約束 $x_{v_2}-x_{v_1}\le w_1$、… 全部加起來，左邊抵消成 0，右邊是環的權重和 $<0$，得到 $0<0$ 矛盾。（⇒）沒有負環時，從新起點跑最短路徑，三角不等式 $\delta(v_j)\le\delta(v_i)+w_{ij}$ 正好就是 $x_j-x_i\le w_{ij}$，所以 $x_i=\delta(v_i)$ 是解。
+
+@q sp3-08 | al-sp#3 | 2 | 比較
+Consider the directed graph with edges $s \to a$ (2), $s \to b$ (3), and $b \to a$ ($-2$), and single-source shortest paths from $s$. Dijkstra's algorithm finalizes a vertex when it is extracted and never updates it afterward. Which of the following statements are correct? Select all that apply.
+[x] Dijkstra's algorithm reports the distance to $a$ as 2, but the true shortest distance is 1.
+[x] Bellman-Ford finds the correct distances on this graph.
+[x] Bellman-Ford runs in $O(VE)$ time and can detect a negative cycle reachable from $s$.
+[x] The displayed graph is acyclic despite containing a negative edge.
+[ ] Adding the same constant to every edge weight so that all weights become nonnegative, and then running Dijkstra's algorithm, always gives the correct shortest paths.
+---
+「Dijkstra 二但真值一」對：a 在 b 前以二定案，後來經 b 得到一卻被禁止更新。「Bellman–Ford 正確」對：此圖無環，兩輪充分。「O(VE) 可偵測可達負環」對：V−1 輪後另查可否改善。「本圖無環」對：三條邊只能向 a、b 前進，沒有回邊。「每邊同加常數必保路徑」錯：加二後直接到 a 為四，經 b 為五，原來經 b 才最短；不同邊數增加的總量不同。
+
+@q sp3-09 | al-sp#3 | 2 | 陷阱
+「Bellman-Ford 一定要跑滿 $V-1$ 輪才能停」對嗎？
+[ ] 對
+[x] 不對
+---
+某一輪完全沒有更新就可以提早停（之後也不會再變）。最壞仍要 $V-1$ 輪。
+
+@q sp4-01 | al-sp#4 | 2 | 計算
+Johnson 演算法：$h(a)=0$、$h(b)=-2$，原本 $w(a,b)=-2$。重新加權後 $\hat w(a,b)=w(a,b)+h(a)-h(b)$ 是多少？
+== 0
+---
+$-2+0-(-2)=0$。負的邊被「拉平」成 0，而且任何 $a\leadsto b$ 的路徑都加了同樣的 $h(a)-h(b)=2$。
+
+@q sp4-02 | al-sp#4 | 3 | 計算
+圖：a→b −2、b→c 3、a→c 2、c→a 1。Johnson 加一個新點 q 連到每個點權重 0，跑 Bellman-Ford 得 $h$。$h(a),h(b),h(c)$ 各是？
+== 0,-2,0
+?? h(a),h(b),h(c)
+---
+q 到 a、c 直接是 0；q→a→b 是 −2，比直接 0 小。c 經 b 是 $-2+3=1$，不如直接 0。
+
+@q sp4-03 | al-sp#4 | 3 | 計算
+接上題，重新加權後 b→c 和 a→c 的新權重各是？
+== 1,2
+?? b→c,a→c
+---
+$\hat w(b,c)=3+(-2)-0=1$；$\hat w(a,c)=2+0-0=2$。全部非負，可以跑 Dijkstra。
+
+@q sp4-04 | al-sp#4 | 2 | 觀念
+重新加權為什麼不會改變哪一條是最短路徑？
+[x] 任何 $u\leadsto v$ 路徑的新長度＝舊長度 $+h(u)-h(v)$，中間的 $h$ 全部抵消，所有 $u\to v$ 的路徑加的量都一樣
+[ ] 因為每條邊加同一個常數
+[ ] 因為 $h$ 都是 0
+[ ] 其實會改變
+---
+跟「每條邊加常數」不同：那個加的量跟邊數有關。
+
+@q sp4-05 | al-sp#4 | 2 | 觀念
+Assume the graph has no negative-weight cycle.
+Johnson's algorithm adds a vertex $q$ with weight-0 edges to every vertex, sets $h(v)=\delta(q,v)$, and reweights $\hat w(u,v)=w(u,v)+h(u)-h(v)$. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] $\hat w(u,v)\ge0$, because $h(v)\le h(u)+w(u,v)$.
+[ ] $\hat w(u,v)\ge0$, because absolute values are taken.
+[ ] Every value $h(v)$ is positive.
+[ ] Every value h(v) must be nonnegative, even if the original graph contains negative edges.
+[ ] Every edge on a shortest path from q has strictly positive reweighted weight.
+---
+「三角不等式給非負新邊權」對：h(v)≤h(u)＋w 移項即新權重≥0。「取絕對值」錯：公式沒有絕對值。「h 全正」錯：直接零邊給 h≤0。「h 必非負」錯：若 u→v 權負一，q→u→v 已使 h(v)≤−1。「最短路邊嚴格正」錯：最短路前綴取等號，其新邊權恰零；非負不等於嚴格正。
+
+@q sp4-06 | al-sp#4 | 2 | 計算
+Johnson 演算法的時間（Dijkstra 用 decrease-key 攤銷 $O(1)$ 的堆積）是？
+[x] $O(VE+V^2\lg V)$
+[ ] $O(V^3)$
+[ ] $O(VE)$
+[ ] $O(E\lg V)$
+---
+一次 Bellman-Ford $O(VE)$，加上 $V$ 次 Dijkstra 各 $O(E+V\lg V)$。
+
+@q sp5-93 | al-sp#5 | 3 | 情境
+All-pairs shortest paths are needed on a sparse graph with $V=1000$ vertices and $E=5000$ edges, with some negative edges but no negative-weight cycle. Use $\lg V=10$ for the following operation-count proxies: Floyd $F=V^3$, Johnson $J=V^2\lg V+2VE$, and its Bellman–Ford phase $B=VE$. These are comparison models, not measured instruction counts. Which of the following statements are correct? Select all that apply.
+[x] Floyd–Warshall takes about $V^3=10^9$ steps.
+[x] The specified Johnson comparison proxy is $2\times10^7$.
+[x] The Floyd proxy is fifty times the Johnson proxy.
+[x] The Bellman–Ford step of Johnson's algorithm takes about $VE=5\times10^6$ steps.
+[x] Floyd–Warshall can handle the given negative edges because the graph has no negative cycle.
+---
+「Floyd 十億」對：1000³＝10⁹。「Johnson 模型兩千萬」對：1000²×10＋2×1000×5000＝2×10⁷，模型明列前處理與各來源工作，不能把 O 記號當精確步數。「模型比值五十」對：10⁹/(2×10⁷)＝50。「前處理五百萬」對：1000×5000＝5×10⁶。「Floyd 可負邊」對：題設沒有負環，負邊本身不破壞其遞迴。
+
+@q sp4-08 | al-sp#4 | 2 | 計算
+Johnson 重新加權後，算出 $\hat\delta(u,v)=7$，已知 $h(u)=-3$、$h(v)=2$。原本的最短距離 $\delta(u,v)$ 是多少？
+== 12
+---
+$\hat\delta(u,v)=\delta(u,v)+h(u)-h(v)$，所以 $\delta=\hat\delta-h(u)+h(v)=7+3+2=12$。最後要記得換回來。
+
+@q sp5-01 | al-sp#5 | 2 | 觀念
+Floyd–Warshall uses $d^{(k)}_{ij} = \min\bigl(d^{(k-1)}_{ij},\ d^{(k-1)}_{ik} + d^{(k-1)}_{kj}\bigr)$. Run it on the directed graph with vertices 1, 2, 3 and edges $1 \to 2$ (4), $2 \to 3$ (1), $1 \to 3$ (7), and $3 \to 1$ (2). Which of the following statements are correct? Select all that apply.
+[x] $d^{(k)}_{ij}$ is the length of a shortest path from $i$ to $j$ whose intermediate vertices all lie in $\{1, \ldots, k\}$.
+[x] $d^{(1)}_{32} = 6$.
+[x] $d^{(2)}_{13} = 5$.
+[x] $d^{(1)}_{13}=7$.
+[ ] $d^{(k)}_{ij}$ is the length of a shortest path from $i$ to $j$ that uses at most $k$ edges.
+---
+「中繼只准一至 k」對：端點不受此集合限制，僅限制內部點。「第一輪三到二為六」對：3→1→2，成本二加四。「第二輪一到三為五」對：1→2→3，成本四加一。「第一輪一到三七」對：點二尚不可當中繼，仍走直接邊七。「最多 k 條邊」錯：這是另一種狀態定義，不能代替可用中繼點的限制。
+
+@q sp5-02 | al-sp#5 | 3 | 追蹤
+圖：1→2 3、1→3 8、2→3 2、2→4 5、3→4 1、4→1 2。Floyd–Warshall 做完 $k=1$（允許經過點 1）後，$d_{42}$ 和 $d_{43}$ 各是？
+== 5,10
+?? d42,d43
+---
+4 原本到不了 2、3；經過 1：$d_{41}+d_{12}=2+3=5$、$d_{41}+d_{13}=2+8=10$。
+
+@q sp5-03 | al-sp#5 | 3 | 追蹤
+同一張圖，Floyd–Warshall 全部做完後，$d_{13}$、$d_{14}$、$d_{31}$ 各是？
+== 5,6,3
+?? d13,d14,d31
+---
+1→2→3＝5；1→2→3→4＝6；3→4→1＝3。
+
+@q sp5-04 | al-sp#5 | 2 | 陷阱
+Floyd–Warshall 三層迴圈，$k$ 放在最內層（$i,j$ 在外）會怎樣？
+[x] 錯：算 $d_{ij}$ 時用到的 $d_{ik}$、$d_{kj}$ 還沒考慮完所有中間點
+[ ] 一樣正確
+[ ] 只是比較慢
+[ ] 只有在有負邊時才錯
+---
+$k$ 必須在最外層，確保做第 $k$ 輪時，所有「只經過 $1..k-1$」的距離都已算好。
+
+@q sp5-05 | al-sp#5 | 2 | 計算
+Which of the following statements about the cost of Floyd–Warshall on a graph with $V$ vertices and $E$ edges are correct? Select all that apply.
+?? 複選
+[x] The standard complete three-loop implementation takes $\Theta(V^3)$ arithmetic comparisons.
+[ ] Its full single-matrix distance matrix occupies only $O(V)$ entries.
+[ ] Every implementation must keep all rounds and occupy $\Theta(V^3)$ entries.
+[ ] The standard full three-loop implementation performs fewer loop iterations whenever the edge count decreases.
+[ ] Its running time is $O(VE)$.
+---
+「三重完整迴圈立方」對：每個中繼點掃所有端點配對，不因圖稀疏省迭代。「單矩陣只線性格」錯：V×V 共平方格。「必存所有輪立方格」錯：沒有負環時可原地更新，只需平方格。「邊少迴圈就少」錯：指定版本仍 V³ 次。「一般 O(VE)」錯：邊數 很小時 V³ 並不受 VE 控制，不能拿 Bellman–Ford 的界套來。
+
+@q sp5-06 | al-sp#5 | 2 | 觀念
+Floyd–Warshall starts each diagonal at the smaller of zero and its self-edge weight, treating a missing self-edge as infinity. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] A negative final diagonal entry at i certifies a negative-weight closed walk from i back to i.
+[ ] If some $d_{ij}=\infty$ at the end, the graph has a negative-weight cycle.
+[ ] All final diagonal entries can remain zero even though the graph contains a negative-weight cycle.
+[ ] When a negative cycle can be reached from i and can return to i, the finite final diagonal entry is the minimum weight over all closed walks from i.
+[ ] Floyd–Warshall cannot detect negative-weight cycles.
+---
+「負對角見證負閉合走訪」對：每次更新都連接實際走訪，負值證明可回到自身且總權負，其中含某個負環。「無窮表示負環」錯：無窮只表示不可達。「有負環仍全部零」錯：正確初始化含負自環後，負環會讓某個對角變負。「有限末值是任意閉合走訪最小」錯：可多繞負環任意降低，根本沒有有限最小值；Floyd 的有限更新值只用於偵測。「不能偵測」錯：檢查是否存在負對角即可。
+
+@q sp5-07 | al-sp#5 | 2 | 比較
+We only want to know whether vertex $i$ can reach vertex $j$ (true or false), not the distance. Which of the following statements about adapting Floyd–Warshall are correct? Select all that apply.
+[x] Keep the three loops, replacing min by logical or and + by logical and: $t_{ij}$ becomes true if $t_{ij}$ is true, or both $t_{ik}$ and $t_{kj}$ are true.
+[x] The adapted algorithm still takes $O(V^3)$ time.
+[ ] Reachability cannot be computed with these loops; BFS must be used instead.
+[x] Running ordinary Floyd–Warshall with every weight set to 1 and checking which $d_{ij}$ are finite also works.
+[x] A direct Boolean-matrix implementation stores $V^2$ reachability entries.
+---
+「或與且替代最小與加」對：可不經 k，或同時能到 k 且由 k 到目標。「仍 O(V³)」對：同樣三重迴圈。「不能用這些迴圈」錯：這就是傳遞閉包的 Warshall 遞迴。「邊權一看有限」對：有限距離恰表示存在路徑。「平方真假矩陣」對：每個有序端點配對存一格，是否自達取決於初始對角約定。
+
+@q sp5-08 | al-sp#5 | 3 | 情境
+There are about 200 cities and many one-way direct flights, each with a nonnegative fare. We want a table of the cheapest total fare between every pair of cities. Which of the following statements are correct? Select all that apply.
+[x] Floyd–Warshall takes about $200^3=8\times10^6$ steps and is just three nested loops.
+[ ] Running BFS from each city gives the cheapest fares.
+[ ] A single run of Dijkstra's algorithm gives the whole table.
+[x] Running Dijkstra's algorithm from each of the 200 cities also works, since all fares are nonnegative.
+[ ] A topological sort of the cities solves the problem.
+---
+「Floyd–Warshall 約 $8\times10^6$」對：點少、邊多、要全部點對時，Floyd 最簡單。
+
+「BFS」錯：BFS 只算轉機次數，不管票價。
+
+「一次 Dijkstra」錯：只得到一個起點。
+
+「每個城市跑一次 Dijkstra」對：結果一樣，只是程式比較長。
+
+「拓樸排序」錯：航線可能有環，也不是在算距離。
+
+@q sp5-09 | al-sp#5 | 3 | 證明
+說明 Floyd–Warshall 遞迴式的正確性：只用 $1..k$ 當中間點的最短路徑，要嘛不經過 $k$、要嘛經過 $k$ 一次。
+---
+沒有負環時最短路徑不重複經過點。若不經過 $k$，中間點都在 $1..k-1$，長度 $d^{(k-1)}_{ij}$。若經過 $k$，拆成 $i\leadsto k$ 和 $k\leadsto j$ 兩段，各自中間點都在 $1..k-1$（$k$ 只出現一次），兩段各取最短：$d^{(k-1)}_{ik}+d^{(k-1)}_{kj}$。兩者取小。
+
+@q sp6-01 | al-sp#6 | 2 | 計算
+DAG：s→a 2、s→b 6、a→b −3、a→c 4、b→c 1、b→d 5、c→d −2。從 s 出發（拓撲順序 s a b c d）的最短距離各是？
+== 0 2 -1 0 -2
+?? s a b c d
+---
+照拓撲順序鬆弛：a=2；b=min(6, 2−3)=−1；c=min(2+4, −1+1)=0；d=min(−1+5, 0−2)=−2。DAG 可以有負邊。
+
+@q sp6-02 | al-sp#6 | 2 | 計算
+Single-source shortest paths are computed in a DAG with $V$ vertices and $E$ edges by first sorting the vertices topologically and then relaxing the outgoing edges of each vertex in that order. Which of the following statements are correct? Select all that apply.
+[x] The running time is $O(V + E)$.
+[x] Each edge is relaxed exactly once.
+[x] No priority queue is needed once a topological order has been obtained.
+[x] The method works even when some edge weights are negative.
+[x] Acyclicity rules out negative-weight cycles regardless of the edge weights.
+---
+「O(V＋邊數)」對：拓撲排序加逐邊一次處理。「每邊一次」對：依題設對每個點的所有出邊各鬆弛一次。「不需優先佇列」對：相依順序由拓撲序確定，不用反覆找最小估計。「負邊可行」對：前驅處理完即取得正確候選，論證不用正權。「不可能負環」對：連有向環都不存在，權重取何值都無法造出環。
+
+@q sp6-03 | al-sp#6 | 2 | 觀念
+In a DAG, single-source shortest paths are computed by relaxing the outgoing edges of each vertex once, in topological order. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] When a vertex is processed in topological order, none of its incoming edges has yet been relaxed.
+[ ] Even after all predecessors have been processed, a later predecessor must still improve this vertex.
+[ ] The method works only because the edge weights are nonnegative.
+[x] A directed graph that contains a cycle has no topological order.
+[ ] Relaxing the vertices in reverse topological order works just as well.
+---
+「入邊都還沒鬆弛」錯：每個前驅都排前面，已處理出邊。「之後還必有前驅改善」錯：拓撲序已排除晚到的前驅，所以此時可定案。「因非負才行」錯：相依順序論證不使用權重正負。「有向環沒有拓撲序」對：環上嚴格先後要求相互矛盾。「反向也一樣」錯：來源 s→a→b 若按 b、a、s，只在最後更新 a，b 就漏掉經 a 的候選。
+
+@q sp6-04 | al-sp#6 | 2 | 觀念
+Which of the following statements about longest paths are correct? Select all that apply.
+?? 複選
+[ ] Negating edge weights in a DAG can create a directed cycle that did not previously exist.
+[ ] For longest paths from a fixed source, initializing every vertex to zero always distinguishes unreachable vertices correctly.
+[ ] Running Dijkstra's algorithm with $\max$ in place of $\min$ gives longest simple paths in any directed graph with positive weights.
+[x] Negating the weights of a DAG cannot create a negative-weight cycle.
+[ ] Every directed graph, including one with a directed cycle, has a topological order for this method.
+---
+「改權重會造新環」錯：邊與方向都未變，有無環不受權重影響。「全設零必辨不可達」錯：沒有路徑者應保留不可達標記；最長路徑常初始化為負無窮，只有來源零，負權路徑也不能被假零壓過。「Dijkstra 改 max 普遍可行」錯：目前最大估計之後仍可能改善，不能據此貪婪定案。「DAG 取負仍無負環」對：沒有任何有向環。「每圖都有拓撲序」錯：有向環就是反例，DAG 的順序證明不能直接用於一般圖。
+
+@q sp6-05 | al-sp#6 | 3 | 計算
+專案的工作順序是 DAG：A→B 3、A→C 2、B→D 4、C→D 6、D→E 1（邊的權重是前一個工作完成後到下一個可以開始要的時間）。A 開始到 E 最早什麼時候？關鍵路徑是？
+== 9,A C D E
+?? 最早時間,關鍵路徑
+---
+最長路徑：A→B→D＝7、A→C→D＝8，D 取 8；E＝9。關鍵路徑 A→C→D→E，上面任何一項延誤都會延後整個專案。
+
+@q sp6-06 | al-sp#6 | 3 | 陷阱
+「一般有向圖的最長簡單路徑，也可以把權重取負後用 Bellman-Ford 求」對嗎？
+[ ] 對
+[x] 不對
+---
+有環時取負可能出現負環，最短路徑沒有定義；而且最長簡單路徑是難題（沒有已知的多項式演算法）。只有 DAG 才能這樣做。
+
+@q sp6-07 | al-sp#6 | 2 | 情境
+Courses and their prerequisites form a DAG. Each course takes one semester, and any number of courses may be taken in the same semester once all of their prerequisites are done. Which of the following statements are correct? Select all that apply.
+[x] The minimum number of semesters equals the number of courses on a longest prerequisite chain.
+[ ] The minimum number of semesters equals the number of courses.
+[x] Taking, every semester, all courses whose prerequisites are finished achieves the minimum.
+[ ] If the prerequisites formed a cycle, finishing all courses would take just one extra semester.
+[x] The minimum can be computed in $O(V+E)$ time by processing the courses in topological order, giving each course one more than the largest value among its prerequisites.
+---
+「最長先修鏈的課數」對：鏈上的課只能一學期一門，所以至少這麼多學期；下一條說明也做得到。
+
+「等於課程數」錯：沒有先修關係的課可以同時修。
+
+「每學期把能修的都修」對：每門課在「它的最長先修鏈長度」那個學期就能修完，最後一門在最長鏈的長度修完。
+
+「有環只多一學期」錯：環上的課互為先修，永遠修不了。
+
+「拓樸順序 $O(V+E)$」對：這就是 DAG 上的最長路徑（以點數計）。
+
+@q sp6-08 | al-sp#6 | 3 | 追蹤
+在 sp6-01 的 DAG（s→a 2、s→b 6、a→b −3、a→c 4、b→c 1、b→d 5、c→d −2）中，如果不照拓撲順序，而是照 s、c、b、a、d 的順序處理每個點的出邊（每個點只處理一次），算出 d 的距離是多少？正確是多少？
+== 11,-2
+?? 錯的順序,正確
+---
+s：a=2、b=6。c：還是 ∞，沒作用。b：c=7、d=11。a：b 改成 −1、c 改成 6，但 b、c 的出邊已經處理過，不會再往下傳。d 停在 11（程式模擬確認），正確是 −2。順序錯了，路徑鬆弛性質就不成立。
+
+@q mf1-01 | al-mst-flow#1 | 2 | 追蹤
+無向圖：a–b 4、a–c 3、b–c 1、b–d 2、c–d 4、d–e 2、c–e 5、e–f 3、d–f 6。Kruskal 依序選了哪些邊？MST 總權重？
+== b–c b–d d–e a–c e–f,11
+?? 選的邊,總權重
+== bc bd de ac ef,11
+---
+照權重：b–c(1) 選；b–d(2) 選；d–e(2) 選；a–c(3) 選；e–f(3) 選，已經 5 條＝$V-1$。總和 $1+2+2+3+3=11$。
+
+@q mf1-02 | al-mst-flow#1 | 2 | 追蹤
+同一張圖，從 a 開始跑 Prim。加入的邊依序是？
+== a–c c–b b–d d–e e–f
+== ac cb bd de ef
+---
+a 的邊最小是 a–c(3)；接著 c–b(1)；b–d(2)；d–e(2)；e–f(3)。總權重同樣 11。
+
+@q mf1-03 | al-mst-flow#1 | 2 | 觀念
+A network team must connect 6 offices with leased lines at the smallest total monthly cost, and it reasons with cuts. A cut of a connected weighted graph splits its vertices into two nonempty sides, and an edge crosses the cut if its endpoints are on different sides. The line costs range from 3 to 12 thousand dollars, and several lines share the same cost. During a design review, the team writes down some general rules about which lines can or must appear in a cheapest design, and it wants to know which of them hold for every connected weighted graph. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Every lightest edge crossing a cut must belong to every minimum spanning tree, even when several edges tie.
+[ ] A unique lightest crossing edge can be absent from some minimum spanning tree of the connected graph.
+[ ] The heaviest edge of the whole graph never belongs to a minimum spanning tree.
+[ ] Taking, for each vertex, its lightest incident edge always yields a minimum spanning tree.
+[x] The correctness of Prim's algorithm follows from the cut property.
+---
+「並列最輕仍每棵必含」錯：全等權三角形可刪去任一邊得到 MST。「唯一最輕可缺」錯：缺它的生成樹可用切交換成更輕，矛盾。「全圖最重永不在」錯：最重若是橋仍必用。「每點各取最輕必成樹」錯：兩個輕邊配對之間只用一條較重橋相連時，局部選邊可能不連通；有平手時個別安全也不保證全部可同時使用。「Prim 的正確性來自切割性質」對：每一步都加樹內外之間最輕的跨切邊，由切割性質保持某個 MST 的延伸。
+
+@q mf1-04 | al-mst-flow#1 | 2 | 觀念
+A planner removes redundant links from a connected road network with 5 towns and 8 roads, each with a construction cost, so that the remaining roads still connect every town at the smallest total cost. The planner considers the reverse-delete method: go through the roads from the most to the least expensive, and delete a road whenever the remaining roads still connect all towns. To check the cycle rule on a small case, the planner also draws a triangle with edges $a$–$b$ (1), $b$–$c$ (2), and $a$–$c$ (3), where the number in parentheses is the cost. Which of the following statements are correct? Select all that apply.
+[x] If an edge is strictly the heaviest edge on some cycle, then no minimum spanning tree contains it.
+[x] The algorithm that repeatedly deletes the heaviest remaining edge whose removal keeps the graph connected produces a minimum spanning tree.
+[x] A globally heaviest edge can be required for connectivity when deleting it disconnects the graph.
+[x] In the triangle with edges $a$–$b$ (1), $b$–$c$ (2), and $a$–$c$ (3), the edge $a$–$c$ belongs to no minimum spanning tree.
+[ ] If two edges of a cycle are tied for the heaviest weight on that cycle, then neither of them can belong to any minimum spanning tree.
+---
+「環上嚴格最重不可用」對：移除後可用同環更輕跨切邊替換。「反向刪除正確」對：始終保留連通性，刪去環上可捨棄的最重邊。「全圖最重橋仍必用」對：刪掉便不連通，權重多大都無法避開。「三角形權三不可用」對：另一條由一與二構成的路可取代它。「平手最重都不可用」錯：1、3、3 三角形的 MST 需要其中一條權三，任一條都能選。
+
+@q mf1-05 | al-mst-flow#1 | 2 | 比較
+A library offers two minimum-spanning-tree routines, and a user must choose one for road graphs with $V = 10^5$ vertices and about $E = 3\times10^5$ edges, and also for dense graphs with $V = 2000$ and $E$ close to $2\times10^6$. Kruskal's routine sorts all edges with a comparison sort and then scans them with a Union-Find structure. Prim's routine grows one tree and keeps the candidate vertices in a binary heap, decreasing a key whenever a cheaper connecting edge is found. All graphs are connected, simple, and undirected, with at least three vertices. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] Kruskal's algorithm runs in $O(E \lg E)$ time, dominated by sorting the edges.
+[ ] Prim with a binary heap runs in $O(V\lg V)$ time regardless of how many edges must be examined.
+[ ] For every connected simple graph, $\lg E\ge2\lg V$.
+[ ] Kruskal's algorithm runs in $O(E)$ time, because each edge is examined only once.
+[ ] Using a binary heap removes the need to inspect the graph edges at all.
+---
+「Kruskal 排邊界」對：一般比較排序 O(邊數 lg 邊數)，其餘集合操作不超過此主界。「Prim 不管邊數都 V lg V」錯：還要檢查邊並可能減鍵，標準總界 O(邊數 lg V)。「lg 邊數至少兩倍 lg 點數」錯：簡單圖邊數小於 V²，方向反了；連通且 V≥3 也使兩種對數同階。「Kruskal 線性」錯：一般排序不能只靠掃一次消除。「堆免查所有邊」錯：堆只管理候選，邊仍提供必要更新資訊。
+
+@q mf1-06 | al-mst-flow#1 | 2 | 陷阱
+所有邊的權重都加 10，MST 一定不會變。對嗎？
+[x] 對
+[ ] 不對
+---
+每棵生成樹都剛好 $V-1$ 條邊，總權重都加 $10(V-1)$，排名不變。（對比：最短路徑加常數會變，因為路徑邊數不同。）
+
+@q mf1-07 | al-mst-flow#1 | 2 | 觀念
+A grader generates random test graphs for a minimum-spanning-tree assignment. Each graph is connected, simple, and undirected, with at least three edges; the generator usually draws distinct integer weights from 1 to 1000, but sometimes repeats a weight on purpose. To give partial credit, the grader wants to know which edges every correct program must output, and when the expected output is unique. For instance, in one test graph the three lightest edges, of weights 4, 7, and 9, form a triangle, and all other edges are heavier than 9. Which of the following statements are correct? Select all that apply.
+[x] If all edge weights are distinct, the minimum spanning tree is unique.
+[x] A unique minimum spanning tree can exist even when some edge weights are equal.
+[x] If all edge weights are distinct, the lightest edge belongs to the minimum spanning tree.
+[x] If all edge weights are distinct, the second lightest edge also belongs to the minimum spanning tree.
+[x] The third lightest edge need not belong to the MST even when all weights are distinct.
+---
+「全異權則唯一」對：兩棵不同 MST 的交換會迫使某個較重邊被更輕者取代。「唯一仍可平手」對：圖本身是樹時即使所有邊同權仍只有一棵生成樹。「最輕必在」對：全異權下取其端點切可找唯一最小，或看 Kruskal 首步。「第二輕必在」對：簡單無向圖的兩條不同邊不能構成環，Kruskal 也會收。「第三輕未必」對：前三輕剛好成三角形時，第三條會被跳過。
+
+@q mf1-08 | al-mst-flow#1 | 3 | 陷阱
+「MST 上兩點之間的路徑，就是原圖中兩點之間權重和最小的路」對嗎？
+[ ] 對
+[x] 不對
+---
+三角形 a–b 3、b–c 3、a–c 5：MST 是 a–b、b–c，a 到 c 在 MST 上要 6，但直接 a–c 只要 5。MST 讓「總和」最小，不是每對點的距離最小。
+
+@q mf1-09 | al-mst-flow#1 | 3 | 證明
+用 cut property 說明 Kruskal 加的每條邊都在某個 MST 裡。
+---
+Kruskal 考慮邊 $(u,v)$ 時，若 $u$、$v$ 在不同的組（不會形成環），取切 $(S,V-S)$，$S$＝$u$ 所在的組。之前看過、比較輕的邊都不跨這個切（否則早就把兩組連起來了），所以 $(u,v)$ 是跨這個切的最輕邊，由 cut property，它在某個 MST 裡。
+
+@q mf1-10 | al-mst-flow#1 | 2 | 情境
+Four buildings 1, 2, 3, 4 on a campus must all be connected with fiber, and every cable carries traffic in both directions. The possible cables and their costs, in thousands of dollars, are:
+
+| cable | 1–2 | 1–3 | 2–3 | 2–4 | 3–4 | 1–4 |
+|---|---|---|---|---|---|---|
+| cost | 4 | 1 | 2 | 5 | 8 | 7 |
+
+The IT office first suggests a different plan: building 1 hosts the servers, so connect every building to building 1 along its cheapest route, using the cable costs as route lengths, and install only the cables on those routes. Which of the following statements are correct? Select all that apply.
+[x] Finding the cheapest set of cables that connects all buildings is the minimum spanning tree problem.
+[x] The minimum total cost is 8.
+[x] The shortest-path tree rooted at building one has total cable cost ten, which exceeds the minimum spanning-tree cost.
+[x] Kruskal's algorithm chooses 1–3, then 2–3, skips 1–2, and then chooses 2–4.
+[ ] Every minimum spanning tree of this graph contains the cable 1–2.
+---
+「最便宜全連是 MST」對：此題邊成本皆正，含環可刪邊降低總成本。「最低八」對：選 1–3、2–3、2–4，成本一加二加五。「來源最短樹成本十」對：到二經三，到四則直接七比繞行八小，所用邊總成本一加二加七為十。「Kruskal 跳過 1–2」對：權四時已與前兩邊成環，再收權五接四。「每棵都含 1–2」錯：全異權的唯一 MST 已不含該邊。
+
+@q mf2-01 | al-mst-flow#2 | 2 | 計算
+流量網路：s→a 3、s→b 2、a→b 1、a→t 2、b→t 3。最大流是多少？
+== 5
+---
+s→a→t 2、s→b→t 2、s→a→b→t 1：共 5。最小割是 $\{s\}$：$3+2=5$。
+
+@q mf2-02 | al-mst-flow#2 | 3 | 計算
+流量網路：s→a 10、s→b 5、a→b 4、a→c 8、b→d 9、c→t 10、d→c 6、d→t 7、c→b 2。最大流是多少？最小割的 s 那一邊有哪些點？
+== 15,s
+?? 最大流,s那邊
+---
+程式用 Edmonds–Karp：s→a→c→t 8、s→b→d→t 5、s→a→b→d→t 2，共 15。殘餘網路中 s 已經出不去，最小割 $\{s\}$：$10+5=15$。
+
+@q mf2-03 | al-mst-flow#2 | 2 | 觀念
+A network carries data from a source $s$ to a sink $t$ through two routers, $a$ and $b$; each link carries data in one direction only, and its limit is the most flow it can carry, in Gbit/s:
+
+| edge | $s\to a$ | $s\to b$ | $a\to t$ | $b\to t$ | $a\to b$ |
+|---|---|---|---|---|---|
+| limit | 3 | 2 | 2 | 3 | 1 |
+
+An operator writes down several assignments of amounts to the edges and asks which of them are valid flows; the routers neither create nor store data, and every amount must be a whole number. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] In a valid flow, the amount on every edge is between 0 and that edge's limit.
+[ ] A valid flow may have more total flow leaving an intermediate vertex than entering it, without any source there.
+[ ] In a valid flow, the amount on every edge equals that edge's limit.
+[ ] The assignment with edge amounts 2,2,2,2,0 in the stated order has flow value five.
+[ ] The assignment $s \to a$: 3, $a \to t$: 3, and 0 on every other edge is a valid flow of value 3.
+---
+「每邊介於零與上限」對：這是容量約束。「中間點可無故產流」錯：非源匯點須流入等於流出。「每邊必飽和」錯：例如全零流就合法。「二二二二零值五」錯：來源送出二加二為四，雖合法但不是五。「a 到匯送三合法」錯：那條上限只有二，已超容量。
+
+@q mf2-04 | al-mst-flow#2 | 2 | 觀念
+There is no original edge from $v$ to $u$. In a flow network for shipping goods, the edge $u \to v$ can carry at most 5 units and currently carries 3, as part of a flow of value 9 from $s$ to $t$. Ford–Fulkerson builds the residual network: for each edge, a forward residual edge shows how much more the edge can carry, and a reverse residual edge shows how much of its current flow could be sent back. A student traces one augmenting path that uses the reverse edge $v\to u$ with bottleneck 1, and asks how the residual amounts on this edge change. Which of the following statements are correct? Select all that apply.
+[x] In the residual network, the edge $u \to v$ has residual amount 2 and the reverse edge $v \to u$ has residual amount 3.
+[x] Sending flow along the reverse edge $v \to u$ means cancelling some of the flow currently on $u \to v$.
+[ ] Reverse edges let the network carry more than the limits of its original edges allow.
+[x] An augmenting path may use reverse edges, and pushing flow along it increases the flow value by the smallest residual amount on the path.
+[x] After cancelling one unit on this edge, its forward residual amount becomes three and its reverse residual amount becomes two.
+---
+「正向二反向三」對：上限五減流三是二，反向可取消三。「反向表示取消」對：不是真的突破原始單向邊限制。「反向可超原容量」錯：只能退回已送量，仍維持流量可行。「擴增量取路徑瓶頸」對：正反殘餘邊皆按可改變量限制。「取消一後三與二」對：原邊流從三降二，所以正向五減二為三，反向可取消二。題設排除了原本另有反向邊的情況。
+
+@q mf2-05 | al-mst-flow#2 | 2 | 觀念
+In a flow network, a cut $(S, T)$ splits the vertices with $s \in S$ and $t \in T$, and its weight is the total limit of the edges going from $S$ to $T$; edges from $T$ back to $S$ do not count. For example, in the network with edges $s\to a$ (limit 3), $a\to t$ (2), and $s\to t$ (4), the cut with $S=\{s\}$ has weight 7 and the cut with $S=\{s,a\}$ has weight 6. A student studies how cut weights relate to flow values and to what Ford–Fulkerson leaves behind when it stops. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] The minimum cut weight is always strictly larger than the maximum flow value.
+[x] The value of every flow is at most the weight of every cut.
+[ ] The maximum flow value equals the maximum weight of a cut.
+[ ] At termination with no augmenting path, the vertices unreachable from s in the residual graph form the source side of a minimum cut.
+[ ] A network always has exactly one minimum cut.
+---
+「最小割嚴格大於最大流」錯：定理給相等。「任一流不超任一割」對：淨跨割流量等於流值，正向流不超容量，反向流只會減去。「等於最大割」錯：最小割才是共同最佳值，別的割可更大。「不可達點是來源側」錯：來源側必含來源，應取從來源可達的點；不可達側含匯點。「最小割唯一」錯：單一路徑兩條同容量邊，分別切其中一條便有兩個同值最小割。
+
+@q mf2-06 | al-mst-flow#2 | 2 | 比較
+Start with zero flow and assume the maximum flow value is positive. For the unlucky-path example use edges s-to-a, a-to-t, s-to-b, b-to-t each of limit 1000000, and a-to-b of limit 1, so the maximum flow value is 2000000.
+Compare Ford–Fulkerson, which uses any augmenting path, with Edmonds–Karp, which always uses a shortest augmenting path found by BFS. All edge limits are integers, and $|f^*|$ is the maximum flow value. Which of the following statements are correct? Select all that apply.
+[x] Ford–Fulkerson runs in $O(E \cdot |f^*|)$ time.
+[x] Edmonds–Karp runs in $O(VE^2)$ time, which does not depend on the edge limits.
+[ ] Both run in $O(VE^2)$ time.
+[x] On a network with two parallel routes of limit $10^6$ joined by a middle edge of limit 1, an unlucky Ford–Fulkerson may need $2 \times 10^6$ augmentations.
+[x] Edmonds–Karp uses BFS to choose a residual source-to-sink path with the fewest edges.
+---
+「任意路徑 O(邊數|f*|)」對：整數容量與零起始流，每次至少增一，非零最大流值限制擴增次數。「最短邊數路徑 O(VE²)」對：BFS 擴增次數 O(VE)，每次 O(邊數)，不依容量數值。「兩者都此界」錯：任意路徑可受容量值拖慢。「細橋可迫兩百萬次」對：在指定四點網路交替走經橋正向與殘餘反向的路，每次只加一，總可達兩百萬。「BFS 取最少邊」對：依邊數分層，與堆疊先深入不同。
+
+@q mf2-07 | al-mst-flow#2 | 3 | 反例
+經典的壞例子：s→a、s→b、a→t、b→t 容量都是 1000，中間 a→b 容量 1。Ford–Fulkerson 如果每次都選經過 a→b（或它的反向邊）的路徑，要幾次擴增？
+== 2000
+---
+每次只能推 1（受 a→b 或反向邊限制），最大流 2000 就要 2000 次。Edmonds–Karp 用 BFS 先找最短的 s→a→t、s→b→t，2 次就結束。
+
+@q mf2-08 | al-mst-flow#2 | 2 | 計算
+一個 s-t 割 $(S,T)$，$S=\{s,a\}$。邊：s→a 5、s→b 3、a→b 2、a→t 4、b→a 6、b→t 7。這個割的容量是多少？
+== 9
+---
+只算從 $S$ 指向 $T$ 的邊：s→b 3、a→b 2、a→t 4，共 9。b→a 是從 $T$ 指回 $S$，不算。
+
+@q mf2-09 | al-mst-flow#2 | 2 | 情境
+A water company carries water from a treatment plant to a city through a network of 40 channels joined at 25 pumping stations; each channel carries water in one direction and has a maximum rate, an integer number of cubic meters per second. Water can be split and merged at stations, but no station stores or loses water; the plant can supply up to 900 cubic meters per second. The company wants the largest amount of water per second that can reach the city, and an engineer also plans to add a new channel between two stations in a part of the network that the plant cannot reach. Which of the following statements are correct? Select all that apply.
+[x] This is a maximum-flow problem from the plant to the city.
+[x] The answer equals the minimum total limit of a set of channels whose removal separates the plant from the city.
+[ ] This is a shortest-path problem.
+[x] If every channel's limit is an integer, there is a maximum flow that sends an integer amount through every channel.
+[x] Adding a channel entirely inside a component unreachable from the plant cannot increase the maximum plant-to-city flow.
+---
+「最大流模型」對：每通道容量限制且中間接點守恆。「等於最小割」對：切斷所有源匯路徑的最小總容量與最大流相等。「最短路徑」錯：距離最短不是輸送總量最大。「整數容量有整數最佳流」對：從零用整數瓶頸擴增，可保持每邊整數並達最優。「不可達分量內加邊不增流」對：新邊兩端都不能從源抵達，也沒有建立從源進入該分量的新通道。
+
+@q mf2-10 | al-mst-flow#2 | 3 | 證明
+說明為什麼「任何流的值 ≤ 任何割的容量」。
+---
+任取割 $(S,T)$。流的值＝從 $S$ 流到 $T$ 的總量減掉從 $T$ 流回 $S$ 的總量（流量守恆讓 $S$ 內部互相抵消）。前者 ≤ 跨割邊的容量總和，後者 ≥ 0。所以流 ≤ 割容量。最大流＝最小割說的是這個不等式可以取等號。
+
+@q mf3-01 | al-mst-flow#3 | 2 | 計算
+工人 1、2、3，工作 A、B、C。1 會 A、B；2 只會 A；3 會 B、C。最多能同時安排幾組（一人一份工作）？
+== 3
+---
+2 只能做 A，所以 2–A；1 做 B；3 做 C。轉成最大流：s 到每個工人容量 1、工人到會做的工作容量 1、工作到 t 容量 1。
+
+@q mf3-02 | al-mst-flow#3 | 2 | 反例
+Workers 1 and 2 can do only job $x$; worker 3 can do jobs $x$, $y$, and $z$. Each worker must get a different job. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Every worker can be assigned a distinct job in the displayed graph.
+[ ] Three workers can simultaneously receive distinct jobs without adding any new eligibility edge.
+[ ] An assignment for all workers exists, because every worker can do at least one job.
+[x] If worker 2 could also do job $y$, every worker could get a job.
+[ ] Hall's condition holds for the workers in this graph.
+---
+「人人可配不同工作」錯：一與二都只能用 x，至少一人無工作。「不加邊也可三人」錯：同一障礙限制最多二。「各有鄰居就足夠」錯：還需每群工人的可用工作總數足夠。「二再會 y 就可全配」對：一配 x、二配 y、三配 z。「Hall 成立」錯：工人集合 {1,2} 的鄰居只有一個，違反至少兩個的要求。
+
+@q mf3-03 | al-mst-flow#3 | 2 | 觀念
+To find a maximum matching in a bipartite graph with vertex sides $L$ and $R$, we add a source $s$ and a sink $t$, add an edge $s\to u$ for every $u\in L$, direct every original edge from $L$ to $R$, and add an edge $v\to t$ for every $v\in R$. For example, with $L=\{1,2,3\}$, $R=\{4,5\}$, and original edges 1–4, 2–4, and 3–5, the network has $3+3+2=8$ edges. Which of the following statements are correct? Select all that apply.
+[x] Letting every edge carry at most 1 unit makes the maximum flow value equal to the size of a maximum matching.
+[x] Because all these edge limits are integers, some maximum flow sends 0 or 1 unit on every edge, and the $L\to R$ edges carrying one unit form a maximum matching.
+[x] Removing the limit on the $L\to R$ edges, so that they may carry any amount while the other edges still carry at most 1, does not change the maximum flow value.
+[ ] Raising the limit of each edge $s\to u$ from 1 to the degree of $u$ still gives the size of a maximum matching.
+[x] Residual reverse edges can cancel an earlier matched edge while an augmenting path finds a larger matching.
+---
+「全容量一給匹配數」對：來源到左點與右點到匯都至多一，阻止端點重用。「整數最大流取零一」對：中間帶一的邊正好選出匹配。「中間不限仍同值」對：左點總流入與右點總流出各被一限制，中間不可能用超過一。「源到左放寬仍是匹配」錯：一左點連三右點時可流三，但匹配最多一。「殘餘反向能換配」對：取消先前配對後重接，讓增廣路徑把匹配數加一，不需在原圖另加反向資格邊。
+
+@q mf3-04 | al-mst-flow#3 | 2 | 觀念
+Which of the following statements about maximum matchings and minimum vertex covers are correct? Select all that apply.
+[x] In a bipartite graph, the size of a maximum matching equals the size of a minimum vertex cover.
+[x] In every graph, any vertex cover has at least as many vertices as any matching has edges.
+[x] A triangle has a maximum matching of size 1 and a minimum vertex cover of size 2.
+[x] In every graph, the size of a maximum matching is at most the size of a minimum vertex cover.
+[x] A three-edge star is bipartite and has maximum matching size one.
+---
+「二分圖最大匹配等最小點覆蓋」對：König 定理。「任意覆蓋不小於任意匹配」對：匹配邊互不共端，覆蓋每條至少要一個不同頂點。「三角形一與二」對：任兩邊共端，匹配最多一；單點蓋不住其對邊，需兩點。「任意圖最大匹配不超最小覆蓋」對：把前述普遍界用在兩個最優解。「三邊星形匹配一」對：三邊共中心但圖仍為二分圖，等於邊數並不成立。
+
+@q mf3-05 | al-mst-flow#3 | 3 | 情境
+A network has sources $s_1,s_2$ and sinks $t_1,t_2$, and we want the largest total amount that can be sent from the sources to the sinks. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] Unlimited source supplies are always modeled correctly by assigning limit one to every edge from the super source.
+[ ] Computing a maximum flow for each pair $(s_i,t_j)$ separately and adding the results gives the answer.
+[ ] The standard super-source and super-sink construction always gives a strictly greater value than the original maximum total flow.
+[ ] It is enough to compute the maximum flow from $s_1$ to $t_1$.
+[x] If source $s_i$ can supply at most $c_i$ units, the edge from the super source to $s_i$ should get limit $c_i$.
+---
+「無限供給用容量一」錯：原來源若可送十，接一就不當限制供給。「逐對分算再加」錯：多對路徑可共用容量，分算會重複使用。「標準轉換必嚴格更大」錯：它與原問題可互相轉換同值可行流，最大值應相等。「只算一對就夠」錯：可能漏掉其他來源可送的流。「供給上限接 cᵢ」對：超源進入該來源的邊直接限制它能注入的總量。
+
+@q mf3-06 | al-mst-flow#3 | 3 | 情境
+Some vertices also have a limit on how much flow may pass through them (for example, a router forwards at most 10 units per second). Which of the following statements about turning this into an ordinary maximum-flow problem are correct? Select all that apply.
+[x] Split each such vertex $v$ into $v_{\text{in}}$ and $v_{\text{out}}$, joined by an edge whose limit equals the limit of $v$.
+[x] Every edge that entered $v$ now enters $v_{\text{in}}$, and every edge that left $v$ now leaves $v_{\text{out}}$.
+[x] The added internal edge bounds the total flow through the split vertex, rather than separately limiting each incident edge.
+[ ] Deleting such vertices from the network works.
+[x] The new network has at most $2V$ vertices and $E+V$ edges.
+---
+「拆點內邊容量等點上限」對：所有通過原點的流都必經此邊。「入接 in、出接 out」對：避免繞過內部瓶頸。「限制總通過量」對：守恆把各入邊之和導入同一內邊，不是讓每條入邊各享一份額度。「刪點可替代」錯：會連原本允許的小流量也切掉。「至多兩倍點、邊數加點數」對：每個原點最多增加一個點與一條內邊，原邊只改端點。
+
+@q mf3-07 | al-mst-flow#3 | 2 | 觀念
+Menger 定理說：$s$ 到 $t$ 的「邊不相交路徑」最多幾條？
+[x] 等於把 $s$、$t$ 分開最少要刪幾條邊
+[ ] 等於 $s$ 的度數
+[ ] 等於最短路徑長度
+[ ] 等於圖的邊數
+---
+把每條邊容量設 1 跑最大流，就是最大流＝最小割的特例。
+
+@q mf3-08 | al-mst-flow#3 | 3 | 計算
+二分圖：左邊 1、2、3、4，右邊 A、B、C。邊 1–A、2–A、2–B、3–C、4–C。最大匹配是多少？
+== 3
+---
+1–A、2–B、3–C（或 4–C）。右邊只有 3 個點，最多 3。3、4 都只會 C，必定有一人配不到。
+
+@q pb1-01 | al-prob#1 | 2 | 計算
+雇用問題：4 個應徵者隨機順序來面試，每次遇到比目前最好的還好就雇用。期望雇用幾次？（寫分數）
+== 25/12
+---
+第 $i$ 個是前 $i$ 個中最好的機率 $\frac1i$。$E=1+\frac12+\frac13+\frac14=\frac{25}{12}$。
+
+@q pb1-02 | al-prob#1 | 2 | 計算
+A company interviews $n$ candidates for one position, one per day, in an order that is uniformly random. After each interview, it compares the candidate with everyone interviewed so far and immediately hires the candidate, replacing the current employee, if the new candidate is the best so far; every hire costs a fixed fee. All candidates have distinct quality. For example, with $n = 4$ and candidate qualities arriving as 2, 4, 1, 3, the company hires twice, on days 1 and 2. The manager wants the expected number of hires for $n = 100$, which turns out to be about 5.19, and wonders which arrival orders cost the most and how the answer grows with $n$, for example for $n = 1000$ applicants. Let $X_i$ be the indicator that the candidate interviewed on day $i$ is hired. Which of the following statements are correct? Select all that apply.
+[x] The $i$-th candidate is hired with probability $\frac1i$.
+[x] The expected number of hires is $\ln n+O(1)$.
+[ ] The expected number of hires is about $n/2$, since each candidate beats the current hire half the time.
+[ ] Candidates arriving in decreasing order of quality give the worst case of $n$ hires.
+[ ] The expected number of hires is about $\sqrt n$.
+---
+第 $i$ 位是前 $i$ 位中最好的機率是「$\frac1i$」，用指示變數加起來是 $H_n$，「$\ln n+O(1)$」。後來的人越來越難勝過目前最好的，不是一半一半。照能力遞減來時只雇第一位；最壞情況是遞增，才會雇 $n$ 次。
+
+@q pb1-03 | al-prob#1 | 1 | 觀念
+A probability analysis of an algorithm uses indicator random variables: for an event $A$, the indicator $I_A$ equals 1 if $A$ occurs and 0 otherwise. For example, if $A$ is the event that a fair die shows 6, then $I_A = 1$ with probability $\frac16$ and $I_A = 0$ with probability $\frac56$. A student who is new to the technique writes several formulas for $E[I_A]$, and also tries to extend them to the expected number of events among $A_1, \ldots, A_k$ that occur, such as the number of 6s in 10 rolls. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] $E[I_A]=\Pr[A]$.
+[ ] $E[I_A]=1\cdot\Pr[\bar A]+0\cdot\Pr[A]$ for every event.
+[ ] For every collection of events, the expectation of their occurrence count is the product of their probabilities.
+[ ] $E[I_A]=1$ whenever $A$ can happen at all, since $I_A$ then takes the value 1 for some outcomes.
+[ ] $E[I_A]=1-\Pr[A]$, the probability that the indicator equals 0.
+---
+「指示變數期望等發生機率」對：發生取一、不發生取零，期望為一乘發生機率。「反事件乘一」錯：它算的是不發生指示變數的期望，當機率不等一半即不同。「次數期望取機率乘積」錯：次數是各指示變數的和，期望線性給機率之和，不需獨立。「只要可能就期望一」錯：可能不等於必然。「等一減發生機率」錯：同樣是反事件機率，不是此指示變數的期望。
+
+@q pb1-04 | al-prob#1 | 2 | 計算
+A class has 30 students, and each student's birthday is independent and uniform over 365 days; leap years are ignored. The teacher wants the expected number of pairs of students who share a birthday, and lets $X_{ij}$ be the indicator that students $i$ and $j$ share one, for each pair $i < j$. A student objects that the events for different pairs are not independent: if Amy shares a birthday with Ben and Ben shares one with Chen, then Amy and Chen must share one too. A survey of 20 such classes found an average of 1.2 shared pairs per class. Which of the following statements are correct? Select all that apply.
+[x] There are $\frac{30\cdot29}{2}=435$ pairs of people.
+[x] Each pair shares a birthday with probability $\frac1{365}$.
+[x] The expected number of pairs sharing a birthday is about 1.19.
+[x] Linearity applies even though the events for different pairs are not independent.
+[ ] The expected number of such pairs is exactly 1, since 30 people is about the break-even point.
+---
+每一對用一個指示變數：「435 對」，每對同天的機率「$\frac1{365}$」，加起來 $435/365\approx1.19$。各對的事件不獨立，但「線性照樣成立」。期望 1.19 不是剛好 1；「約一半機率有人同天」的人數是 23，和期望對數是不同的問題。
+
+@q pb1-05 | al-prob#1 | 2 | 陷阱
+「期望值的線性性 $E[X+Y]=E[X]+E[Y]$ 只有在 $X$、$Y$ 獨立時成立」對嗎？
+[ ] 對
+[x] 不對
+---
+線性性永遠成立；需要獨立的是 $E[XY]=E[X]E[Y]$。這就是為什麼生日問題的配對可以直接加。
+
+@q pb1-06 | al-prob#1 | 3 | 計算
+A load balancer sends $n$ jobs to $n$ servers, choosing a server for each job independently and uniformly at random, and an idle server wastes power. For each server $j$, let $I_j$ be the indicator that server $j$ receives no job, so the number of idle servers is $X = \sum_j I_j$. The operations team simulates the assignment 1000 times for each of several sizes:
+
+| $n$ | 10 | 100 | 1000 |
+|---|---|---|---|
+| average number of idle servers | 3.49 | 36.6 | 367.7 |
+
+The team wants to explain these numbers exactly and to predict what happens as $n$ grows. A new engineer guesses that for large $n$, only about $0.37$ servers stay idle, and another wants to know the probability that one particular server is idle in a single run. Which of the following statements are correct? Select all that apply.
+[x] A fixed bin is empty with probability $(1-\frac1n)^n$.
+[x] The expected number of empty bins is $n(1-\frac1n)^n$.
+[x] For $n=100$, the expected number of empty bins is about 36.6.
+[x] As $n$ grows, the expected fraction of empty bins approaches $\frac1e$.
+[ ] For large $n$, the expected number of empty bins is about $\frac1e\approx0.37$.
+---
+每顆球都沒落進某箱的機率相乘，「某箱空的機率 $(1-\frac1n)^n$」；用指示變數加起來，「期望 $n(1-\frac1n)^n$」，$n=100$ 時約 36.6，比例趨近 $\frac1e$。$\frac1e$ 是比例（單一箱子空的機率），不是空箱子的個數。
+
+@q pb1-07 | al-prob#1 | 2 | 計算
+把 $n$ 個數隨機打亂（每種順序機率相同），期望有幾個「固定點」（第 $i$ 個位置剛好是 $i$）？
+== 1
+---
+每個位置是固定點的機率 $\frac1n$，加 $n$ 個：1。跟 $n$ 無關。
+
+@q pb1-08 | al-prob#1 | 3 | 計算
+把 $n$ 個相異的數隨機打亂（每種順序機率相同），期望有幾個「前面比後面大」的配對？$n=10$ 時是多少？
+== 22.5
+---
+每一對 $(i,j)$ 是逆序的機率 $\frac12$，共 $\binom n2$ 對：$\frac{n(n-1)}4$。$n=10$：$\frac{90}4=22.5$。所以插入排序平均也是 $\Theta(n^2)$。
+
+@q pb1-09 | al-prob#1 | 3 | 計算
+集點：有 5 種卡片，每次隨機拿到一種（機率相同）。期望要拿幾次才集滿？（寫分數或小數）
+== 137/12
+== 11.42
+---
+已經有 $k$ 種時，拿到新種類的機率 $\frac{5-k}5$，期望等 $\frac5{5-k}$ 次。$5(\frac15+\frac14+\frac13+\frac12+1)=5H_5=\frac{137}{12}\approx11.42$。
+
+@q pb1-10 | al-prob#1 | 2 | 證明
+用指示隨機變數說明：把 $n$ 個數隨機打亂（每種順序機率相同）後，期望的固定點數是 1。
+---
+令 $I_i=1$ 若位置 $i$ 放的是 $i$。隨機排列中任何數出現在位置 $i$ 的機率相同，$\Pr[I_i=1]=\frac1n$。固定點數 $X=\sum I_i$，$E[X]=\sum E[I_i]=n\cdot\frac1n=1$。$I_i$ 之間不獨立，但線性性不需要獨立。
+
+@q pb2-01 | al-prob#2 | 2 | 觀念
+Las Vegas 和 Monte Carlo 演算法的差別？
+[x] Las Vegas 答案一定對、時間隨機；Monte Carlo 時間固定（有上限）、答案可能錯
+[ ] Las Vegas 可能錯
+[ ] 兩者都一定對
+[ ] Monte Carlo 時間隨機
+---
+隨機選 pivot 的 quicksort 是 Las Vegas；隨機測試質數（可能誤判）是 Monte Carlo。
+
+@q pb2-02 | al-prob#2 | 2 | 計算
+A Monte Carlo algorithm errs with probability $\frac14$ on each run, independently of other runs. Which of the following statements are correct?
+?? 複選
+[x] The probability that 5 runs are all wrong is $\frac1{1024}$.
+[ ] The probability that 5 runs are all wrong is $\frac54$, by adding the five error probabilities.
+[ ] The probability that at least one of 5 runs is wrong is $\frac1{1024}$.
+[ ] If wrong answers can be detected, rerunning until a run is correct takes 4 runs on average.
+[x] The probability that exactly one of 5 runs is correct is $\frac{15}{1024}$.
+---
+「5 次都錯 $\frac1{1024}$」對：各次獨立，相乘 $(\frac14)^5$。
+
+「相加成 $\frac54$」錯：機率超過 1 就知道錯了；獨立事件同時發生要相乘。
+
+「至少一次錯 $\frac1{1024}$」錯：是 $1-(\frac34)^5\approx0.76$。
+
+「平均重跑 4 次」錯：每次成功機率 $\frac34$，平均 $\frac43$ 次。
+
+「恰好一次對 $\frac{15}{1024}$」對：選哪一次對有 5 種，$5\times\frac34\times(\frac14)^4=\frac{15}{1024}$。
+
+@q pb2-03 | al-prob#2 | 2 | 觀念
+The Fisher–Yates shuffle runs $i$ from $n$ down to 2 and swaps position $i$ with a position chosen uniformly at random from $1,\dots,i$. Which of the following statements are correct?
+[x] There are $n\cdot(n-1)\cdots2=n!$ equally likely executions.
+[x] Different executions produce different orderings, so each ordering has probability $\frac1{n!}$.
+[ ] Each ordering has probability $\frac1{n!}$ simply because every element is swapped at least once.
+[ ] Each ordering has probability $\frac1{n!}$ simply because $n-1$ swaps are made.
+[ ] Choosing from positions $1,\dots,n$ at every step would give the same distribution.
+---
+選擇數「$n\cdot(n-1)\cdots2=n!$」，而且「不同過程得到不同排法」，所以每種排法剛好 $\frac1{n!}$。元素可能和自己交換；交換次數本身證明不了均勻；每步都從全部 $n$ 格挑有 $n^n$ 種過程，一般不是 $n!$ 的倍數，不可能均勻。
+
+@q pb2-04 | al-prob#2 | 3 | 反例
+A faulty shuffle of $n$ cards swaps each position $i$ with a position chosen uniformly at random from $1,\dots,n$ (instead of from $1,\dots,i$). Which of the following statements are correct?
+[x] It has $n^n$ equally likely executions.
+[x] For $n=3$, each ordering has probability $\frac{k}{27}$ for some integer $k$, which can never equal $\frac16$.
+[x] For $n=3$, three orderings have probability $\frac5{27}$ and three have $\frac4{27}$.
+[x] For n equal to three, the original order has probability $4/27$.
+[ ] It is fair for every $n$, because every position takes part in at least one swap with a random partner.
+---
+「n 的 n 次方種等可能執行」對：每輪 n 個選擇，合計 n 輪。「三張時機率為整數除二十七」對：每個排列對應某些執行，而 27 無法平均分成六份。「三種五次三種四次」對：列舉全部 27 組交換位置得到此分布。「原順序二十七分之四」對：它屬四次那組，實際機率是 4/27，並不是最常見。「每位置參與就公平」錯：參與交換不保證每個最終排列有相同執行數。
+
+@q pb2-05 | al-prob#2 | 2 | 情境
+A randomized primality test runs in polynomial time. When it says "composite", it is always correct; when it says "probably prime" for a composite number, it is wrong with probability at most $\frac14$. Which of the following statements are correct?
+?? 複選
+[x] It is a Monte Carlo algorithm with one-sided error.
+[ ] A single probably-prime result certifies that the input is prime with no possibility of error.
+[ ] For every positive k, k independent runs on a composite input are guaranteed to all say probably prime with probability exactly one quarter.
+[ ] It is a Las Vegas algorithm, since its "composite" answers are always correct.
+[ ] Reusing exactly the same random choices in every repetition guarantees independent outcomes.
+---
+「單邊錯誤 Monte Carlo」對：多項式時間但某類輸出可能錯。「一次可能質數即保真」錯：合數仍最多四分之一機率被誤報。「重複後仍恰四分之一」錯：題設只有每次至多四分之一，獨立重複全誤機率至多 4⁻ᵏ，既非固定也未保證取等號。「Las Vegas」錯：它要求輸出永遠正確，本題不符。「重用相同隨機選擇必獨立」錯：結果可能完全相同；降低錯誤界所需的是獨立的新隨機選擇。
+
+@q pb2-06 | al-prob#2 | 2 | 計算
+一個 Las Vegas 演算法每次嘗試成功的機率是 $\frac13$（失敗就重來）。期望要嘗試幾次？
+== 3
+---
+幾何分布：成功機率 $p$ 時期望 $\frac1p$ 次。
+
+@q pb2-07 | al-prob#2 | 3 | 情境
+A Monte Carlo algorithm for a yes/no question is correct with probability $\frac23$ on each run, independently of other runs. Which of the following statements are correct?
+[x] Taking the majority answer of several runs reduces the error probability.
+[x] With 3 runs, the majority answer is correct with probability $\frac{20}{27}$.
+[x] The majority's error probability falls exponentially with the number of runs.
+[x] This works because each run is correct with probability strictly above $\frac12$.
+[ ] Taking the answer of the last run is as good as the majority, since all runs are equally reliable.
+---
+「正確率嚴格大於一半」時「多數決有用」：3 次中至少 2 次對的機率 $(\frac23)^3+3(\frac23)^2\cdot\frac13=\frac{20}{27}\approx0.74$，比 $\frac23$ 高；次數越多「錯誤率指數下降」（Chernoff 界）。只取一次的答案，正確率還是 $\frac23$。
+
+@q pb2-08 | al-prob#2 | 2 | 陷阱
+「隨機演算法的期望時間是對隨機輸入取平均」對嗎？
+[ ] 對
+[x] 不對
+---
+期望是對演算法自己的亂數取平均，對**每一個**輸入都成立。「對輸入取平均」是平均情況分析，要假設輸入分布。
+
+@q pb3-01 | al-prob#3 | 2 | 計算
+KMP 的 prefix function（$\pi[q]$＝$P[1..q]$ 中既是真前綴又是後綴的最長長度）。$P=$ aabaaab 的 $\pi$ 是？
+== 0 1 0 1 2 2 3
+== 0,1,0,1,2,2,3
+---
+a:0；aa:1；aab:0；aaba:1；aabaa:2；aabaaa:2（aa）；aabaaab:3（aab）。
+
+@q pb3-02 | al-prob#3 | 2 | 計算
+$P=$ abcabcd 的 prefix function 是？
+== 0 0 0 1 2 3 0
+== 0,0,0,1,2,3,0
+---
+abca 的 a、abcab 的 ab、abcabc 的 abc；最後的 d 讓什麼都對不上，歸 0。
+
+@q pb3-03 | al-prob#3 | 2 | 計算
+$P=$ abacabab 的 prefix function 是？
+== 0 0 1 0 1 2 3 2
+== 0,0,1,0,1,2,3,2
+---
+到 abacaba 是 3（aba）；下一個 b：aba 後面接的是 c 不是 b，退到 $\pi[3]=1$（a），a 後面是 b，得 2。
+
+@q pb3-04 | al-prob#3 | 2 | 比較
+For a text of length $n$ and a pattern of length $m$, which of the following worst-case running times are correct?
+[x] Naive search: $O(nm)$.
+[x] Rabin–Karp: $O(nm)$.
+[x] KMP: $O(n+m)$.
+[ ] Rabin–Karp: $O(n+m)$ even in the worst case.
+[x] KMP also has an $O(nm)$ upper bound for positive lengths, although $O(n+m)$ is tighter.
+---
+「樸素最壞 O(nm)」對：許多起點各比到接近 m 字元。「Rabin–Karp 最壞 O(nm)」對：大量候選都需逐字驗證時可退化。「KMP O(n＋m)」對：失敗函數避免主字串反覆回退。「Rabin–Karp 最壞仍線性」錯：不能把平均或期望情況當最壞保證。「KMP 的鬆 O(nm) 界」對：正整數長度有 n＋m≤2nm，線性總長度界也屬此較鬆上界；不能把 O(nm) 當作錯誤敘述。
+
+@q pb3-05 | al-prob#3 | 3 | 追蹤
+Rabin–Karp is run on the text 31415926535 with the pattern 26, treating each length-2 window as a decimal number and using $h(x)=x\bmod 13$. Which of the following statements are correct?
+?? 複選
+[x] The window 26 starting at position 7 has the same $h$ value as the pattern.
+[ ] The window 65 starting at position 8 has h value five under the stated modulus.
+[ ] An equal h value is sufficient to accept a window as an exact occurrence without comparing its characters.
+[ ] Exactly one window has the same $h$ value as the pattern.
+[ ] No window has the same $h$ value as the pattern.
+---
+「位置七的二十六同雜湊」對：26 mod 13＝0，與模式相同。「六十五雜湊五」錯：65 mod 13 也是零。「雜湊相同可直接接受」錯：六十五與二十六不同，這就是假警報，需逐字核對。「恰一個同雜湊」錯：位置七與八共兩個。「沒有同雜湊」錯：真匹配本身已給一個，還另有假警報。
+
+@q pb3-06 | al-prob#3 | 2 | 觀念
+In Rabin–Karp on decimal digits with a pattern of length 4, the window moves one position to the right, from 3141 to 1415. Which of the following statements are correct?
+?? 複選
+[x] The new value can be computed from the old one in $O(1)$ time.
+[ ] $(3141-3\cdot1000)\cdot10+1=1415$.
+[ ] For modulus thirteen, the new window 1415 has remainder five.
+[ ] Each window's value must be recomputed from scratch, which takes $O(m)$ time per window.
+[ ] The update must divide the old value by 10, which is impossible to do modulo $q$.
+---
+「舊值常數時間更新」對：扣最高位權重、乘十、加新字元。「最後加一仍等 1415」錯：應加新數字五，加一只會得 1411。「模十三餘五」錯：1415＝13×108＋11，餘十一。「必整窗重算」錯：保留舊雜湊即可固定次算術更新。「必除十」錯：此右移視窗公式使用減、乘、加，不需要對模數做除法。
+
+@q pb3-07 | al-prob#3 | 3 | 觀念
+In KMP, after $q$ characters of the pattern $P$ have matched, the next text character does not match, and the search continues from $q=\pi[q]$. Which of the following statements are correct?
+?? 複選
+[x] The longest proper prefix of $P[1..q]$ that is also its suffix is already known to agree with the text.
+[ ] This shortcut is valid only when the text contains no repeated characters.
+[ ] The array $\pi$ is computed from the text, so it records where the pattern might restart.
+[ ] After the mismatch, the position in the text moves back by $q-\pi[q]$ characters.
+[ ] An alignment between the current one and the one given by $\pi[q]$ may still lead to an occurrence.
+---
+已經對上的 $P[1..q]$ 中，「最長的真前綴＝後綴」部分已知和文字相符，不用重比。$\pi$ 只由模式算出，和文字無關，文字有沒有重複都適用；文字指標永遠不往回走；$\pi[q]$ 取的是最長的，比它更近的對齊都不可能成功。
+
+@q pb3-08 | al-prob#3 | 2 | 計算
+在文字 abababcab 裡找 abab，會在哪些位置出現（從 0 開始）？
+== 0,2
+---
+位置 0 的 abab，以及位置 2 的 abab（跟前一個重疊）。KMP 找到一次後跳到 $\pi[4]=2$ 繼續，就能找到重疊的出現。
+
+@q pb3-09 | al-prob#3 | 2 | 計算
+$P=$ aaaa 的 prefix function 是？
+== 0 1 2 3
+== 0,1,2,3
+---
+每多一個 a，最長的相同前後綴就多 1。
+
+@q np1-01 | al-np#1 | 2 | 觀念
+A warehouse has 50 packages with positive integer weights $w_1, \ldots, w_{50}$, each at most 1000. The decision problem EVEN-SPLIT asks whether the packages can be divided between two trucks so that both trucks carry exactly the same total weight. For a yes-instance, a proposed certificate is the list of package numbers placed on the first truck. Which of the following statements are correct? Select all that apply.
+[x] Given such a list, the two totals can be found with at most 50 additions and then compared, so EVEN-SPLIT is in NP.
+[x] The name NP stands for "nondeterministic polynomial time".
+[x] A polynomial-time algorithm that decides EVEN-SPLIT would also show that EVEN-SPLIT is in NP.
+[x] Showing that EVEN-SPLIT is in NP does not show that it needs more than polynomial time.
+[ ] For a no-instance, a list of package numbers whose two totals differ is a valid certificate that no equal division exists.
+---
+「50 次加法再比較，所以在 NP」對：NP 的定義是「是」的答案有能在多項式時間驗證的證據；這裡驗證只要線性時間。
+
+「NP 是 nondeterministic polynomial」對：不是 Not Polynomial。
+
+「多項式解法也表示在 NP」對：P 的問題驗證時自己解一次就好，所以 P ⊆ NP。
+
+「在 NP 不代表需要超過多項式時間」對：目前沒有證明任何 NP 問題需要超過多項式時間。
+
+「一種不相等的分法證明沒有相等的分法」錯：一種分法不相等，別的分法仍可能相等；要證明「否」得排除全部 $2^{50}$ 種分法。NP 只要求「是」的答案有短證據。
+
+@q np1-02 | al-np#1 | 2 | 觀念
+$A\le_pB$ means that every instance of $A$ can be transformed in polynomial time into an instance of $B$ with the same answer. Suppose a transformation $f$ from $A$ to $B$ runs in $3n^2$ steps on instances of size $n$ and always produces an instance of size at most $2n$, and an algorithm solves $B$ in $m^3$ steps on instances of size $m$. Which of the following statements are correct? Select all that apply.
+[x] Running $f$ and then the algorithm for $B$ solves $A$ in $O(n^3)$ steps.
+[x] $B$ is at least as hard as $A$.
+[ ] $A$ is at least as hard as $B$, since every instance of $A$ becomes an instance of $B$.
+[ ] To show that a new problem $X$ is hard, one shows $X\le_pY$ for some problem $Y$ known to be hard.
+[ ] $A\le_pB$ implies $B\le_pA$, since the transformation keeps every answer the same.
+---
+「先轉換再解 $B$，$O(n^3)$」對：$3n^2+(2n)^3=8n^3+3n^2$。注意 $B$ 的演算法吃的是轉換後的大小 $2n$。
+
+「$B$ 至少跟 $A$ 一樣難」對：會解 $B$ 就會解 $A$。
+
+「$A$ 至少跟 $B$ 一樣難」錯：方向反了。
+
+「證明 X 難要把 X 轉到已知難的問題」錯：要把已知難的問題轉換**到** $X$（$Y\le_pX$）。$X\le_pY$ 只說明 $X$ 不比 $Y$ 難。
+
+「$A\le_pB$ 就有 $B\le_pA$」錯：轉換是單向的，不代表反方向也能轉。
+
+@q np1-03 | al-np#1 | 2 | 陷阱
+Problem SCHED asks whether $n$ jobs with given integer durations can be assigned to 2 machines so that both machines finish by time $T$; for example, durations 3, 5, 4, 4 with $T = 8$ form a yes-instance. To show that SCHED is NP-hard, a student gives a polynomial-time transformation from SCHED to formula satisfiability, which is known to be NP-complete. Which of the following statements are correct? Select all that apply.
+?? 複選
+[ ] The student's transformation proves that SCHED is NP-hard, because it connects SCHED to a known NP-complete problem.
+[x] A polynomial-time transformation from a known NP-complete problem to SCHED would prove that SCHED is NP-hard.
+[ ] Showing that SCHED is in NP would prove that SCHED is NP-hard, since every problem in NP is NP-hard.
+[ ] An algorithm that solves SCHED in $2^n$ steps would prove that SCHED is NP-hard.
+[ ] The student's transformation shows that SCHED is at least as hard as formula satisfiability.
+---
+「學生的轉換證明 NP-hard」錯、「SCHED 至少跟它一樣難」錯：從 SCHED 轉到公式可滿足性，只說明 SCHED 不比它難，方向反了。
+
+「從已知 NP-complete 問題轉到 SCHED」對：SCHED 會解就代表那個問題會解，難度傳給 SCHED。
+
+「在 NP 就是 NP-hard」錯：在 NP 是 NP-complete 的另一半條件；P 的問題也都在 NP，卻不是 NP-hard（除非 P＝NP）。
+
+「有 $2^n$ 的演算法」錯：有慢的演算法證明不了沒有快的。例子中 3＋5 和 4＋4 都是 8，所以是「是」的實例。
+
+@q np1-04 | al-np#1 | 2 | 觀念
+Consider three decision problems. SORTED: is a given list of $n$ integers in increasing order? For a list of 1000 integers it can be decided with 999 comparisons. HALT: given the source code of a program and an input, does the program eventually stop? No algorithm decides HALT, and every problem in NP transforms to HALT in polynomial time. EVEN-SPLIT: can 50 given weights, each at most 100, be divided into two halves of equal total? It is in NP and every problem in NP transforms to it in polynomial time. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] EVEN-SPLIT is NP-complete.
+[ ] HALT is NP-hard, so it can be decided in polynomial time.
+[ ] HALT is decidable, because it is NP-hard.
+[ ] HALT is not in P, so it is NP-complete.
+[ ] SORTED is in NP, so it is NP-hard.
+---
+「EVEN-SPLIT 是 NP-complete」對：在 NP 且 NP-hard，兩個條件合起來才是定義。
+
+「HALT 是 NP-hard 所以能多項式判定」錯：NP-hard 是難度的下界，不提供演算法。
+
+「HALT 因為 NP-hard 所以可判定」錯：題目已說沒有演算法能判定它；NP-hard 不要求可判定。
+
+「HALT 不在 P 所以是 NP-complete」錯：它不在 NP（連判定都做不到），不能稱 NP-complete。
+
+「SORTED 在 NP 所以是 NP-hard」錯：$n-1$ 次比較就能判定，它在 P，所以也在 NP；只在 NP 證明不了難。
+
+@q np1-05 | al-np#1 | 3 | 陷阱
+A research team studies ROUTE: given 30 towns, the integer length of the road between every two towns, and a number $k$, is there a tour visiting every town exactly once with total length at most $k$? The team gives a polynomial-time transformation from EVEN-SPLIT, which is known to be NP-complete, into ROUTE, and shows that a proposed tour can be checked in $O(n^2)$ steps. They also solve a related problem, CLOSEST-PAIR, in $O(n^3)$ steps. Which of the following statements are valid consequences? Select all that apply.
+[x] ROUTE is NP-complete.
+[x] If ROUTE could be solved in polynomial time, then P = NP.
+[x] CLOSEST-PAIR is in NP.
+[x] The team's results do not prove that every algorithm for ROUTE needs exponential time.
+[ ] The team's results show that every NP-hard problem is in NP.
+---
+「ROUTE 是 NP-complete」對：已知 NP-complete 的問題轉到它，所以 NP-hard；能在 $O(n^2)$ 驗證路線，所以在 NP。
+
+「ROUTE 多項式可解則 P＝NP」對：任一 NP 問題都能先轉成 ROUTE 再解。
+
+「CLOSEST-PAIR 在 NP」對：$O(n^3)$ 能解就在 P，而 P ⊆ NP。
+
+「沒有證明需要指數時間」對：NP-complete 說的是相對難度；即使假設 P≠NP，也不等於指數時間下界。
+
+「每個 NP-hard 都在 NP」錯：停機問題是 NP-hard 卻不在 NP。
+
+@q np1-06 | al-np#1 | 2 | 觀念
+Problem SORTED asks whether a list of $n$ integers is in increasing order; for a list of 1000 integers it can be decided with 999 comparisons. Problem EVEN-SPLIT asks whether $n$ given weights can be divided into two parts of equal total; a proposed division can be checked with at most $n$ additions, so 100 weights need at most 100 additions, but no polynomial-time algorithm for it is known. Which of the following statements are correct? Select all that apply.
+[x] SORTED is in both P and NP.
+[x] Whether EVEN-SPLIT, and with it every problem in NP, is in P is unknown.
+[ ] Whether P ⊆ NP holds is still an open question.
+[ ] P and NP are known to have no problem in common.
+[ ] SORTED can be in NP only if P = NP, because NP is meant for problems without fast algorithms.
+---
+「SORTED 同時在 P 和 NP」對：多項式時間能解，驗證時自己解一次就好，所以 P ⊆ NP 是已知的。
+
+「EVEN-SPLIT 是否在 P 未知」對：它是 NP-complete，在 P 等於 P＝NP，這正是還沒解決的問題。
+
+「P ⊆ NP 還沒解決」錯：這個方向早已知道；不知道的是 NP ⊆ P。
+
+「P 和 NP 沒有交集」錯：P 裡的問題都在 NP。
+
+「SORTED 在 NP 需要 P＝NP」錯：任何 P 的問題都在 NP，跟 P 是否等於 NP 無關。
+
+@q np1-07 | al-np#1 | 3 | 陷阱
+已知 $A$ 是 NP-complete，而 $A\le_pB$、$B\in$ NP。可以推出什麼？
+[x] $B$ 是 NP-complete
+[ ] $B$ 在 P
+[ ] $A$ 在 P
+[ ] 什麼都推不出來
+---
+$A\le_pB$ 讓 $B$ 是 NP-hard，再加上 $B\in$ NP，就是 NP-complete。
+
+@q np1-08 | al-np#1 | 3 | 陷阱
+已知 $B$ 在 P，而 $A\le_pB$。可以推出什麼？
+[x] $A$ 也在 P
+[ ] $B$ 是 NP-complete
+[ ] $A$ 是 NP-complete
+[ ] 什麼都推不出來
+---
+解 $A$：先花多項式時間轉成 $B$，再用 $B$ 的多項式演算法。多項式加多項式還是多項式。
+
+@q np1-09 | al-np#1 | 2 | 計算
+布林公式可滿足問題（給一個 CNF 公式，問有沒有讓它為真的賦值）的「證據」是一組變數賦值。有 $n$ 個變數、$m$ 個子句、每個子句最多 $k$ 個字面。驗證一組賦值要多久？
+[x] $O(mk)$，多項式
+[ ] $O(2^n)$
+[ ] $O(n!)$
+[ ] 驗證不了
+---
+把每個子句代入檢查一次。所以這個問題在 NP。找賦值可能要試 $2^n$ 種，那是「解」的難度。
+
+@q np1-10 | al-np#1 | 2 | 情境
+老闆要你寫一個「保證最佳、而且很快」的排班程式，你發現某個 NP-complete 問題可以在多項式時間轉換成這個排班問題。合理的回應是？
+[x] 說明目前沒有已知的多項式時間保證最佳解，改用近似、啟發式或限制問題規模
+[ ] 繼續找多項式時間的最佳解演算法，一定找得到
+[ ] 直接用暴力法，說資料不大
+[ ] 說這個問題無解
+---
+NP-complete 不是「無解」，而是「沒有已知的快速保證最佳的方法」。
+
+@q np2-01 | al-np#2 | 2 | 觀念
+A student redraws, from memory, the chain of reductions that CLRS uses to prove NP-completeness, for a review sheet. In the drawing, an arrow $P \to Q$ means that $P$ is reduced to $Q$ in polynomial time, so the hardness of $P$ carries over to $Q$. The sheet covers 8 problems: circuit satisfiability, SAT, 3-CNF-SAT, CLIQUE, VERTEX-COVER, HAM-CYCLE, TRAVELING-SALESMAN, and SUBSET-SUM. Since each of the 8 problems except the first is reached by exactly one arrow, a correct drawing has 7 arrows. A classmate checks the directions of the arrows, where the chain begins, and how the problems split into branches. Which of the following statements are correct? Select all that apply.
+[x] One branch runs SAT → 3-CNF-SAT → CLIQUE → VERTEX-COVER → HAM-CYCLE → TRAVELING-SALESMAN.
+[x] Another branch goes from 3-CNF-SAT to SUBSET-SUM.
+[x] Each step reduces a problem already known to be hard to the next one.
+[x] The chain starts from circuit satisfiability, which is proved NP-complete directly.
+[ ] The chain runs TRAVELING-SALESMAN → HAM-CYCLE → SAT, from the hardest problem down.
+---
+CLRS 的鏈：「SAT → 3-CNF-SAT → CLIQUE → VERTEX-COVER → HAM-CYCLE → 旅行推銷員」，「3-CNF 另一支到 SUBSET-SUM」，起點是「直接證明的 Circuit-SAT」。「每一步都把已知難的歸約到下一個」，難度一路往後傳；反方向的鏈證明不了任何東西。
+
+@q np2-02 | al-np#2 | 2 | 觀念
+Let $G=(V,E)$ be a graph and $S\subseteq V$. Call $S$ *edge-free* if no edge of $G$ has both endpoints in $S$. For example, in the path with vertices 1, 2, 3, 4 and edges 12, 23, and 34, the sets $\{1,3\}$ and $\{2,4\}$ are edge-free, while $\{1,2\}$ is not. A student wants to relate edge-free sets to vertex covers, which touch every edge, and to cliques of the complement graph $\bar G$, which has an edge exactly where $G$ does not, using this path as a first example. Which of the following statements are correct? Select all that apply.
+[x] $S$ is edge-free exactly when $V-S$ is a vertex cover.
+[x] $G$ has an edge-free set of size $k$ exactly when it has a vertex cover of size $|V|-k$.
+[x] $S$ is edge-free in $G$ exactly when $S$ is a clique of the complement graph $\bar G$.
+[x] The complement of a maximum edge-free vertex set is a minimum vertex cover.
+[ ] $G$ has an edge-free set of size $k$ exactly when it has a clique of size $k$.
+---
+「獨立集補集為點覆蓋」對：內部沒有邊，表示每條邊都碰到外部。「大小 k 對 n−k」對：取補集改變的正是此數量。「補圖內是團」對：原圖每一對沒邊，在補圖每一對都有邊。「最大集對最小覆蓋」對：大小加起來固定 n，最大化一側等價最小化另一側。「原圖團大小同 k」錯：三個互不相連的點有大小三獨立集，原圖最大團卻只有一。
+
+@q np2-03 | al-np#2 | 2 | 觀念
+$G$ 有大小 $k$ 的團（clique）⇔ ？
+[x] $G$ 的補圖有大小 $k$ 的獨立集
+[ ] $G$ 有大小 $k$ 的獨立集
+[ ] $G$ 的補圖有大小 $k$ 的團
+[ ] $G$ 有大小 $k$ 的點覆蓋
+---
+團裡兩兩有邊；在補圖裡就是兩兩沒邊。
+
+@q np2-04 | al-np#2 | 2 | 計算
+圖有 10 個點，最大獨立集大小 4。最小點覆蓋大小是多少？
+== 6
+---
+獨立集的補集是點覆蓋：$10-4=6$。最大獨立集對應最小點覆蓋。
+
+@q np2-05 | al-np#2 | 3 | 陷阱
+Someone says: "I reduced CLIQUE to SAT: from each CLIQUE instance, a graph with $n$ vertices and a number $k$, I build in $O(n^3)$ time a SAT formula with about $nk$ variables that is satisfiable exactly when the graph has a clique of size $k$. Since SAT is NP-hard, CLIQUE is NP-hard." The construction was checked on 20 random graphs with up to 50 vertices each, and the formula's answer always matched a brute-force search for cliques, so the speaker is confident that the construction itself has no bug. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] The direction is reversed: this shows only that CLIQUE is no harder than SAT.
+[ ] The argument is correct, since SAT is NP-hard and the reduction preserves answers.
+[ ] The argument fails only because SAT is not known to be NP-complete.
+[ ] The argument fails only because CLIQUE is not in NP.
+[ ] The argument would be correct if the reduction ran in linear rather than polynomial time.
+---
+「歸約到」誰，誰就至少一樣難：CLIQUE $\le_p$ SAT 只說明「CLIQUE 不比 SAT 難」，方向反了；要把 SAT 歸約到 CLIQUE 才行。SAT 是 NP-complete、CLIQUE 也在 NP，都不是錯誤所在；轉換再快，方向錯了還是錯。
+
+@q np2-06 | al-np#2 | 3 | 觀念
+In the standard reduction from 3-CNF-SAT to CLIQUE, a formula with $k$ clauses becomes a graph with one vertex per literal occurrence, and two vertices are adjacent when they lie in different clauses and are not $x$ and $\bar x$. For example, the formula $(x_1\lor \bar x_2\lor x_3)\land(\bar x_1\lor x_2\lor x_3)$ has 2 clauses and 3 variables, so its graph has 6 vertices. A student builds this graph by hand and then asks what size of clique to look for, and which edges the graph contains. Which of the following statements are correct? Select all that apply.
+?? 複選
+[x] The formula is satisfiable exactly when the graph has a clique of size $k$.
+[ ] All literal occurrences within the same clause are joined to one another.
+[ ] Every clique of size k must contain a variable and its negation together.
+[ ] The target clique size is always 3.
+[ ] The target clique size is the number of variables.
+---
+「可滿足等價大小 k 團」對：每子句選一個為真的字面，可得互相相容的跨句團；反向由團取一致的真值配置。「同句全相連」錯：標準轉換刻意不連同句，限制每句最多取一點。「必含互相否定」錯：相反字面之間沒有邊，團反而排除此衝突。「目標總是三」錯：三是每句字面數，不是子句數。「目標是變數數」錯：每句選一個，目標為子句數 k。
+
+@q np2-07 | al-np#2 | 2 | 情境
+Among $n$ people at a conference, we want the largest set of people in which no two know each other, for example to form a discussion panel of strangers. Let $G$ be the graph whose vertices are the people and whose edges join people who know each other. In a small test with 6 people and 7 acquaintance pairs, a brute-force search over all 64 subsets finds that the largest such set has 3 people. The organizers also consider a quick rule of thumb and want to relate the task to cliques and vertex covers. Which of the following statements are correct? Select all that apply.
+[x] The task is to find a maximum clique of the complement of $G$.
+[x] The answer equals the number of vertices of $G$ minus the size of a minimum vertex cover of $G$.
+[x] If no pair of people knows each other, all n people can be selected.
+[x] A set $S$ of vertices has no edge between any two of its members if and only if the remaining vertices form a vertex cover of $G$.
+[ ] Repeatedly picking the person who knows the fewest of the remaining people, then removing everyone that person knows, always finds the largest such set.
+---
+「補圖最大團」對：原圖沒邊的兩人，在補圖相連。「n 減最小覆蓋」對：獨立集與點覆蓋互補。「完全不認識可全選」對：空邊集合沒有衝突。「選集外部為點覆蓋」對：每條關係邊至少有一端在外面，等價於選集內無邊。「最少鄰居貪婪必最佳」錯：六點零至五，邊為 02、03、04、05、14、15、23；先選最小度的點一，刪去一、四、五後剩零二三的三角形，只能再選一人共二；但二、四、五可同選共三。
+
+@q np2-08 | al-np#2 | 3 | 證明
+證明：點覆蓋 $\le_p$ 獨立集。
+---
+給點覆蓋的實例 $(G,k)$，輸出獨立集的實例 $(G,|V|-k)$，轉換是多項式時間。正確性：$C$ 是大小 $k$ 的點覆蓋 ⇔ 每條邊至少一端在 $C$ ⇔ 沒有邊兩端都在 $V-C$ ⇔ $V-C$ 是大小 $|V|-k$ 的獨立集。
+
+@q np3-01 | al-np#3 | 2 | 比較
+Assume P ≠ NP. A study guide lists pairs of decision problems, each pair giving a problem claimed to be in P followed by a problem claimed to be NP-complete. Some pairs come from textbook contrasts that look similar on the surface: shortest versus longest simple paths in a graph with 1000 vertices, 2-SAT versus 3-SAT, a closed walk using every edge exactly once versus a cycle visiting every vertex exactly once, and coloring with 2 versus 3 colors. A student must find the pairs that are classified correctly, in both positions of each pair. Which pairs are correctly classified? Select all that apply.
+?? 複選
+[ ] Longest simple path vs. shortest path
+[ ] 3-SAT vs. 2-SAT
+[x] Euler circuit vs. Hamiltonian cycle
+[ ] Euler circuit vs. shortest path
+[ ] 2-coloring vs. shortest path
+---
+「最長簡單路徑在前」錯：一般決策版本 NP-complete；最短路徑才在 P。「3-SAT 在前」錯：順序反了，2-SAT 在 P，3-SAT 完全。「歐拉對漢米頓」對：依題設決策問題，前者多項式可解，後者完全。「歐拉對最短路徑」錯：兩者都在 P。「二著色對最短路徑」錯：也都在 P。題設 P≠NP，避免把兩個分類混同。
+
+@q np3-02 | al-np#3 | 2 | 觀念
+2-SAT 和 3-SAT，哪個在 P？
+[x] 2-SAT 在 P（有線性時間的圖演算法），3-SAT 是 NP-complete
+[ ] 都在 P
+[ ] 都是 NP-complete
+[ ] 3-SAT 在 P
+---
+每個子句只多一個字面，難度就從多項式跳到 NP-complete。
+
+@q np3-03 | al-np#3 | 2 | 觀念
+Assume P ≠ NP. A school must match 200 students to 200 projects so that every student gets a project they listed as acceptable, and the planner models the task as a matching in a bipartite graph. The next year, the task becomes harder: each team must consist of one student, one advisor, and one project, chosen from allowed triples, so the planner now faces 3-dimensional matching. The planner wonders whether the same network-flow method still works, and how matching in general, non-bipartite graphs behaves, for example when 200 students pair up into teams of two. Which of the following statements are correct? Select all that apply.
+[x] Bipartite maximum matching can be solved in polynomial time.
+[x] 3-dimensional matching is NP-complete.
+[ ] 3-dimensional matching can be solved by the same network-flow method in polynomial time.
+[ ] Bipartite maximum matching is NP-complete, because it is a special case of 3-dimensional matching.
+[ ] Maximum matching in general, non-bipartite graphs is NP-complete.
+---
+二分圖匹配加上源點、匯點就是網路流，「多項式時間」；「三維匹配」是 NP-complete，網路流處理不了。一般圖的最大匹配也有多項式時間演算法（Edmonds），不是 NP-complete。是特例也不代表就一樣難，特例往往比較容易。
+
+@q np3-04 | al-np#3 | 2 | 觀念
+SUBSET-SUM asks whether some of $n$ given integers add up exactly to a target $T$, and the 0/1 knapsack problem asks for a set of items with total weight at most $W$ and total value at least $V$; both can be solved by dynamic programming in $O(nT)$ or $O(nW)$ time. 3-PARTITION asks whether $3m$ integers can be split into $m$ groups of 3 with equal sums. A student must explain the terms weakly and strongly NP-complete: for example, a SUBSET-SUM instance with 100 numbers below $10^4$ is easy in practice, while one with 100 numbers of 60 bits each may need about $10^{20}$ steps. The student also wonders what happens when the numbers are written in binary, as they usually are in the input, using about 60 bits each. Which of the following statements about weakly and strongly NP-complete problems are correct? Select all that apply.
+[x] A weakly NP-complete problem has a pseudo-polynomial-time algorithm.
+[x] SUBSET-SUM and 0/1 knapsack are weakly NP-complete.
+[x] 3-PARTITION stays NP-complete even when all numbers are bounded by a polynomial in the input size.
+[x] A pseudo-polynomial algorithm can be exponential in the number of bits of the input numbers.
+[ ] A weakly NP-complete problem has a polynomial-time algorithm when the numbers are written in binary.
+---
+「弱」是指「有偽多項式時間演算法」，例如背包、SUBSET-SUM 的 DP；時間是數值大小的多項式，「對位元數是指數」。「3-PARTITION」數字都很小也還是難，是強 NP-complete。用二進位寫數字時，偽多項式演算法正好不是多項式。
+
+@q np3-05 | al-np#3 | 3 | 陷阱
+SUBSET-SUM 有 $O(nW)$ 的 DP，這跟它是 NP-complete 矛盾嗎？
+[x] 不矛盾：$O(nW)$ 對輸入的位元數是指數（偽多項式）
+[ ] 矛盾，所以 P＝NP
+[ ] 矛盾，所以 SUBSET-SUM 不是 NPC
+[ ] DP 是錯的
+---
+$W$ 用 $\lg W$ 個位元表示。這也是弱 NPC 的典型。
+
+@q np3-06 | al-np#3 | 2 | 比較
+下列哪一個問題是 NP-complete？
+[x] 判斷一張圖能不能用 3 種顏色著色
+[ ] 判斷一張圖能不能用 2 種顏色著色
+[ ] 判斷有沒有歐拉迴路
+[ ] 找兩點之間的最短路徑
+---
+2 色就是判斷二分圖（BFS 即可）；3 色是 NPC。又是「2 在 P、3 是 NPC」。
+
+@q np3-07 | al-np#3 | 2 | 比較
+最短簡單路徑和最長簡單路徑，各是？
+[x] 在 P；NP-hard
+[ ] 都在 P
+[ ] 都是 NP-hard
+[ ] NP-hard；在 P
+---
+最長簡單路徑可以拿來判斷漢米頓路徑（長度 $V-1$），所以很難。DAG 上的最長路徑則在 P。
+
+@q np4-01 | al-np#4 | 2 | 觀念
+A minimization algorithm always returns a feasible solution and has approximation ratio 2 for nonnegative objective values. On one instance the optimum is 10, and candidate returned costs are 10,15,20,25. Apply the ratio guarantee to these values without treating it as an execution-time ratio or a probability of finding the exact optimum. For the corresponding maximization convention, the ratio compares optimum divided by returned value. Which statements are correct? Select all that apply.
+[x] The solution it returns costs at most twice the optimal cost.
+[x] On some inputs it may return an optimal solution.
+[x] For a maximization problem, ratio 2 would mean the returned value is at least half of the optimal value.
+[ ] Its running time is at most twice that of the fastest exact algorithm for the problem.
+[x] For a minimization instance with optimum ten, any feasible returned cost between ten and twenty meets the ratio-two guarantee.
+---
+「成本至多兩倍最佳」對：這是最小化的品質保證。「有時恰好最佳」對：上界允許相等。「最大化至少一半」對：採通常對稱近似比定義時，最佳值除回傳值至多二。「執行時間比」錯：近似比比較目標值，不比較時間。「最佳十則十至二十合格」對：可行解不低於最優十，二倍上界為二十；它不表示恰有一半輸入被精確解出。
+
+@q np4-02 | al-np#4 | 2 | 追蹤
+點覆蓋的 2-近似：每次挑一條還沒被覆蓋的邊，把兩端都加進來。圖是一條路徑 1–2–3–4，依序挑邊 (1,2)、然後還沒被覆蓋的 (3,4)。得到的覆蓋大小？最佳是多少？
+== 4,2
+?? 近似,最佳
+---
+挑 (1,2) 加入 1、2；(2,3) 已被覆蓋；挑 (3,4) 加入 3、4。共 4。最佳 {2,3}，大小 2，剛好 2 倍。
+
+@q np4-03 | al-np#4 | 3 | 證明
+證明點覆蓋「挑邊加兩端」的近似比是 2。
+---
+設挑出的邊集合是 $A$。$A$ 中的邊兩兩沒有共同端點（挑了一條就把兩端加入，之後不會再挑碰到它們的邊）。任何點覆蓋都要覆蓋 $A$ 的每條邊，又不能用一個點覆蓋兩條，所以最佳解 $\ge|A|$。演算法輸出 $2|A|\le2\cdot$最佳。
+
+@q np4-04 | al-np#4 | 2 | 觀念
+滿足三角不等式的 TSP（metric TSP）有 2-近似。做法是？
+[x] 找最小生成樹，照前序走訪順序拜訪各點（跳過重複的）
+[ ] 每次走到最近的沒去過的點
+[ ] 找最短路徑
+[ ] 照隨便一個順序走
+---
+MST 權重 ≤ 最佳環（拿掉一條邊就是生成樹）；繞 MST 一圈是 2 倍；用三角不等式跳過重複點不會變長。
+
+@q np4-05 | al-np#4 | 3 | 陷阱
+「一般的 TSP（不保證三角不等式）也有常數近似比的多項式演算法」對嗎？
+[ ] 對
+[x] 不對
+---
+除非 P＝NP。如果有，就能用來判斷漢米頓迴路：原圖的邊權重 1、沒有的邊權重設得非常大，近似解能分辨有沒有漢米頓迴路。
+
+@q np4-06 | al-np#4 | 2 | 觀念
+Set cover 的貪婪近似：每次挑「蓋住最多還沒被蓋的元素」的集合。近似比是？
+[x] 約 $\ln n$（$H(\max|S|)$）
+[ ] 2
+[ ] 1，總是最佳
+[ ] $n$
+---
+不是常數，但已經證明（在合理假設下）幾乎不可能做得更好。
+
+@q np4-07 | al-np#4 | 2 | 計算
+某個最小化問題的最佳解是 50，近似比 1.5 的演算法最多會給出多少？
+== 75
+---
+$1.5\times50=75$。近似比是最壞情況的保證，實際常常更好。
+
+@q np4-08 | al-np#4 | 3 | 情境
+物流公司有 200 個送貨點，要規劃一條走遍所有點的路線（道路距離滿足三角不等式），老闆要「保證不超過最佳的兩倍」，而且今天就要算出來。怎麼做？
+[x] 用 MST 加前序走訪的 2-近似，$O(V^2)$ 左右就跑完
+[ ] 暴力試所有路線
+[ ] 從起點算出到每個點的最短路徑就好
+[ ] 這種保證做不到
+---
+200 個點暴力是 $199!$，不可能。metric TSP 的 2-近似有保證、又快。（還有更好的 1.5 近似。）

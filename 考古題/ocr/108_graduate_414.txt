@@ -1,0 +1,115 @@
+=== PAGE p-1.pgm
+4%
+
+age: 414 AveeAS 108 RE RRL ERR
+HA: RF MH: 414
+a: A # 32 H2m / EK
+
+       
+
+MEER T ERD OF — ATR PAF Rib TF ERASMHER
+
+1. (5%) Consider the following undirected graph. Write down 4 nodes which form an
+independent set.
+
+2. (5%) A palindrome is a sequence of symbols that reads the same left to right as right
+to left. What is the number of palindromic binary numbers of length n?
+
+3. (5%) Derive
+
+(72,)+(2)-@.
+
+4. (10%) Derive
+
+A
+B
+
+leet) (3)
+=== PAGE p-2.pgm
+MAR: 414 HxvePAS 108 2 RG tHe eRe
+ta: RF MR: 414
+Bick: 4 #3 R2R 2
+
+ 
+
+5. (10%) The solution to the recurrence equation
+
+G12 = Any +2X Ay
+
+is of the form:
+A, = A(—-X)" + BY".
+
+Derive
+
+———’
+
+)
+
+in terms of (the arbitrary initial conditions) a) and a.
+
+. (10%) Consider —
+Xt Xo te +X,= 7,
+
+where x; > n; for 1<i<n. The number of positive integer solutions is :
+
+. (5%) Is the following a tautology:
+
+[(p > q)A7p]—7q
+Why?
+. (10%) How many of the following five statements are correct?
+
+e Let V bea vector space. Let S be a subset of V. Let U be asubspace of V. IfS CU,
+then span(S) ¢ U.
+
+e If R is a linearly dependent subset of a vector space, then x € span(R \ {x}) holds
+for each vector x € R.
+
+¢ Based on any consistent axiom set for set theory, any vector space admits a basis.
+
+e Based on the standard ZFC axioms for set theory, each inner-product space admits
+an orthonormal basis.
+
+e For any complex vector spaces V and W with dim(W) < 00, if T is a linear surjec-
+tion from V to W, then dim(V) = nullity(7)+rank(T).
+=== PAGE p-3.pgm
+"ee 414 AxeOAS 108 SERGE
+Aa: RS . MAR: 414
+fick: 4 _ #3 H2% 3 OK
+
+. (10%) How many of the following five statements are correct?
+e The solution set for a system of homogeneous linear equations having an m x n
+rational coefficient matrix is a rational vector space.
+e¢ An m xn complex matrix A is invertible if and only if A* is invertible.
+e If Ais an m x n rational matrix, then rank(A) = rank(A’).
+e If Ais an m x n invertible real matrix, then nullity(A) = nullity(A~).
+e If Ais an n x n complex matrix, then det(A*) = det(A).
+. (10%) How many of the following five statements are correct?
+e Let A be an 7 x n rational matrix. If the rational n-tuple vector space Qr is the
+direct sum of the eigenspaces of A, then A can be diagonalized.
+
+e If Ais an n x n complex matrix with A*A = AA", then the eigenspaces of A* equal
+the eigenspaces of A.
+
+e If Ais an nx n real matrix with A‘ = A, then the characteristic polynomial of A can
+be written as a product of degree-one polynomials with real coefficients.
+
+e If Ais an nm x m complex matrix with A‘ = A, then all eigenvalues of A are real.
+
+e If A and B are unitarily equivalent n x n complex matrices, then the trace of AtA
+
+equals the ‘trace of B*B.
+. (10%) How many zero entries are there in the inverse of the following matrix?
+
+-15 -6 5 9
+
+-12 9 4 -2
+20 8 1 -12
+18 -2 -6 3
+
+. (10%) Give a basis for the vector space of the linear transformations from the vector
+space R’ of real triples to the vector space R? of real pairs:
+
+RE ER
+
+ 
+

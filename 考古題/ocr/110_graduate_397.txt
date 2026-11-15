@@ -1,0 +1,312 @@
+=== PAGE p-1.pgm
+RAH: «6397 QULeSAS 110 S42 RAHM ASRRA
+PLE > Bap See ow RECA) SG: 397
+BA: 1 wtaze |
+
+RIRBH 0 QM HSM > HASH SP > FEBD > SB sljo 2.5 Ho
+
+I When CAN the worst case of Quicksort occur? (1)
+Cy: Quick Sort where leftmost (or rightmost) element is always chosen as pivot
+C4: leftmost element is chosen as pivot and array is already sorted in SAME order
+C3: leftmost element is chosen as pivot and array is already sorted in REVERSE order
+
+ 
+
+(AG TB) G [(@ Gand CS (DB) Cy and C5
+
+ 
+
+IL A typical dynamic programming example is the snake sequence. Given a grid of numbers, find
+maximum length snake sequence and print. it. A snake sequence is made up of adjacent numbers in
+the grid such that for each number, the number on the right or the number below it is +1 or -1 its
+value. For example, if you are at location (x, y) in the grid, you can either move right ie. (x+1,
+y) if that number is + 1 or move down ie. (x, y+1) if that number is + 1. The length of a snake
+sequence is defined as the number of moves. Given the following grid (A matrix with M rows and
+NV columns),
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+9, 6, 5,2
+8, 7, 6,5
+7, 3,1,6
+1,1,1,7
+(a} The maximum LENGTH of snake sequence is (2)
+(A) 6 (B) 7 (C) 5 (Dy 4
+(b) Time complexity of above solution is (3)
+(A) OI x NV B) OR) Tey ows (D) O(AT)
+(c) The last number of the maximum-length snake sequence is (4)
+(A) 9(0,0) (B) 6(3,2) (&) 7(3,3) (D) 12,3) | (E) 7(6,2)
+(d) The third number of the maximum-length snake sequence is (5)
+(A) 70) (B) 7(0,2) (C) 31,2) (D) 6(2,1) | (E) 80,1)
+
+ 
+
+IIE For questions with sequences, we constantly split the problem into a number of sub-problems that
+are smaller instances of the same problem, and we try to solve the smaller problems recursively. We
+called this type of algorithm (6)
+
+ 
+
+(A) Dynamic | (B) Divide and | (C) Greedy al- | (D) Quicksort
+programming conquer gorithms
+
+ 
+
+IV There is a large enough array A with indices p and q which are initialized by 0, and functions f (z)
+and g() are defined as follows. Array A and indices p and g can only be accessed in the functions
+f(z) and g().
+
+F(x)
+e ptptl
+° Ap] ca
+9)
+° ae Alp
+* pti p-l
+
+* return ©
+
+iL |
+
+ 
+=== PAGE p-2.pgm
+BH
+#8
+ffi
+
+.
+
+397 QUSSAS 110 SH RALHBAFeRR
+RRS ECA) + “8 AS | 397
+
+e4e gee DR
+
+ 
+
+ 
+
+ 
+
+(a) Which data structure is operated by those functions? (7)
+(A) Queue (B) Stack (C) Hash (D) Heap
+(b) If functions f() and g() are changed as following:
+F(z)
+° Ald) ia
+o qtgqti
+a)
+« gt Alp]
+* pe ptl
+« return £
+Which data structure is operated by those functions? (8)
+(A) Queue (B) Stack (C) Hash (D) Heap
+
+ 
+
+V There is a binary tree stored in an array as:
+Tl] = {+,4,*, null, null, —,d, null, null, null, null, b,c},
+
+in which T'i] is the parent of T[2i+ 1] and T[2i + 2], where i is an index and null means there is no
+element in the slot.
+
+(a) What is its postorder traversal. result? (9)
+
+ 
+
+(A) +a%—dbe | (B) a+b—cxd | (C) abc— d+ | (D) +a * —bed
+
+ 
+
+(b) What is its BFS traversal result? (10)
+
+ 
+
+(A) +a% —dbe | (B)a+b—cx#d | (C) abe—de+ | (D) +a * —bed
+
+ 
+
+VI There are 10 hexadecimal data, 53, 3B, 66, 43, 60, 5B, 7C, 14, 30, 37, inserted in the given order
+into an empty hash table. The table is implemented using a circular array of 10 slots, and one slot
+can only have one item. The hash function for the table is h(k) =k mod 9.
+
+ 
+
+ 
+
+ 
+
+(a) Which data is the first one that occurs a collision? (11)
+(A) 43 (B) 5B () 14 (D) a7
+(b) Ifthe hash table uses linear probing to resolve collisions and has no resizing mechanism, which
+position in the array is 37 inserted? (12)
+(A) 3 (B) 8 (C) 4 (D) 0
+
+ 
+
+VII There is a linked-list with n elements, which are 21, %,...,2,. Let f(n) be the time complexity of
+inserting a new element 2741 to the tail of the list, and g(n) be that of deleting the last element <,. If
+there is only one pointer pointed to the head of the list, we know to access the list is time-consuming,
+and functions f(n) and g(n) are denoted as fi(n) and gi(n) in this case. To improve it, we may
+also add another pointer pointed to the tail of it, so the functions f(n) and g(n) become f2(m) and
+go{n). Which of the following option is false if n becomes large. (13)
+
+ 
+
+7 nm) 2 iD)
+(a) Be =) [@) 2g =2 [OR=" 10) a=!
+
+ 
+
+ 
+
+ 
+
+BRA |
+
+ 
+
+ 
+=== PAGE p-3.pgm
+a: 307 ie eBAS 110 SERRALHMESARA
+OB: Bop eee Som PRCA) HERE: 397
+fick: 1 #4 H2e4 8
+
+ 
+
+VIII Given the following graph, try to find its minimum spanning tree.
+
+oS (B)
+
+(a) What is the sixth edge that Kruskal’s algorithm includes (the numbering of the inclusion order
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+starts from 1, not 0)? (14)
+(A) 6 (B) 7 (C} 8 (D) 9
+(b) What is the sixth vertex that Prim’s algorithm includes if starting from vertex A (the numbering
+of the inclusion order starts from 1, not 0)? (15)
+(A) C (B) E (C) H (D) I
+IX What is the value of the maximum: flow for the following st-flow network? (16)
+[ (A) 16 [ () 17 [ (Cc) 18 (D) 19
+
+ 
+
+ 
+
+ 
+
+X The Knuth-Morris-Pratt (KMP) algorithm is an string-matching algorithm. Its core is the pre-
+fix function. Given a pattern P[l..m], the prefix function for the pattern P is the function 7 :
+{1,2,...,m} > {0,1,...,7—~1}. What is [7] for the following pattern P? (17)
+
+ 
+
+(A) 4 (B) 5 | (C)6 (D) 7
+
+ 
+
+i |[1{2]}3}4|5|6]|7| 8 | 9/10
+Phij fa Pape pete eyete a
+md |
+
+ 
+
+ 
+
+Lt
+
+ 
+=== PAGE p-4.pgm
+Riz, : 397 HUreSQrAS 110 S$ RRL BASRA
+Pe: Bae eee wow BRAD Hee: 397
+fick: 1 ath gem 4 gg
+
+XI Many string-matching algorithms build a finite automata. Below is a partially-completed state
+transition function for a string s of length 10 over the alphabet {A, B, C}. It is possible to reconstruct
+s from the partial table. How many A’s does the string s have’ (18)
+
+ 
+
+[4 (B) 5 [(C) 6 (D)7
+
+ 
+
+45 6 7 8 9
+
+     
+
+XII What can you infer from the facts that ProptemA is NP-complete and ProsLemA linear-time reduces
+to PRopLEMB? (19)
+
+Cy: If there exists an O(N) algorithm for ProstemB, then P = NP.
+
+Co: Tf there does not exist an O(N) algorithm for ProstemB, then P #4 NP.
+
+C3: If there exists an O(N*) algorithm for ProstemB, then there exists an O(N 3) algorithm for
+PROBLEMA.
+
+Cz: If there exists an O(N*) algorithm for ProstemA, then there exists an O(N) algorithm for
+PROBLEMB.
+
+ 
+
+(A) C; and C3 | (B) Cand C, | (C) Cz and Cs [(D) Cz and Cy
+
+ 
+
+XIII The VERTEX-COVER problem is to find a vertex cover of the size k in a given graph G. In the
+SUBSET-SUM problem, given a finite set S C N and a target t € N, we ask whether there is
+a subset 5S’ C S$ whose elements sum to t. The VERTEX-COVER problem is polynomial-time
+reducible to the SUBSET-SUM problem. Given an instance < G,k > of the VERTEX-COVER
+problem, one can construct a corresponding instance < S,t > of the SUBSET-SUM problem. Given
+the following graph G and k = 3, {v, 3, v4} is the vertex cover of size k = 3. The corresponding
+set 3 = {1, 4, 16, 64, 256, 1040, 1041, 1093, 1284, 1344} is constructed as the following table. What: is
+
+ 
+
+ 
+
+ 
+
+ 
+
+the target 1? (20)
+[ (A) 2389 [ (By 3417 (Cy 3754 (D) 3758
+modified based 4 decimal
+es es > €) ey
+
+X%y = 1 ]0 +O 1 O i f= 1041
+x, = 1 I 0 0 1 0 f= 1284
+x = 1] 2 0 0 oO f= 4344
+xy = 1/0 0 1 0 0 f= — 1040
+Xe = 1 0 1 0 1 1 f# 1093
+vy = 0 0 0 0 0 lo o= 1
+y = 0 0 0 6 1 060 = 4
+vy = 0 80 0 tf 0 0 = 16
+y = 0 O 1 0 0 0 = 64
+wy = 0 Ft 0 680 0 0 = 256
+
+ 
+
+ 
+
+ 
+

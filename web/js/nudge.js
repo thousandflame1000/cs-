@@ -22,7 +22,7 @@ const Nudge = {
     const t = S.st.timer; if (!t.running || document.hidden || this.idleShown) return false;
     if (this.idleMin() < this.IDLE_MIN) return false;
     this.idleShown = true;
-    this.overlay(`<div class="nd-ic">👀</div><h2>還在嗎？</h2><p class="muted">計時已暫停</p>`,
+    this.overlay(`<div class="nd-ic"></div><h2>還在嗎？</h2><p class="muted">計時已暫停</p>`,
       [['繼續', () => { this.idleShown = false; this.last = Date.now(); S.st.timer.last = Date.now(); }, 'primary'], ['休息 10 分', () => { this.idleShown = false; this.last = Date.now(); Timer.reset('break'); }]]);
     return true;
   },
@@ -39,7 +39,7 @@ const Nudge = {
     if (cd) startCards({ noNew: true, title: '5 分鐘：到期必背卡', max: 15 });
     else if (S.dueReviews().length) Practice.start(S.dueReviews().slice(0, 4), { title: '5 分鐘：到期複習', review: true });
     else if (Learn.newCards().length && Learn.newLeft()) startCards({ title: '5 分鐘：新的必背卡', max: 12 });
-    else { Practice.startAdaptive(); Practice.sess.opts.limit = 4; Practice.sess.opts.title = '5 分鐘：自適應 4 題'; }
+    else Practice.startAdaptive(undefined, { limit: 4, title: '5 分鐘：自適應 4 題' });
 
   },
   overlay(html, btns) {

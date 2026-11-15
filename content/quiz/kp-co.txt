@@ -1,0 +1,577 @@
+@q kco-ad1 | co-arith#2 | 1
+Ripple carry 加法器的延遲大約跟位元數 $n$ 是什麼關係？
+[x] 跟 $n$ 成正比
+[ ] 跟 $n^2$ 成正比
+[ ] 固定不變
+---
+進位要一位一位傳過去。
+
+@q kco-ad2 | co-arith#2 | 2
+Carry lookahead 中 propagate 訊號 $p_i$ 的定義是？
+[ ] $a_ib_i$
+[x] $a_i+b_i$
+[ ] $a_i\oplus b_i\oplus c_i$
+---
+有進位來時這一位會傳下去：至少一個是 1。（也有課本用 $a_i\oplus b_i$，效果一樣。）
+
+@q kco-ad3 | co-arith#2 | 2
+全加器 $a=1,b=0,c_{in}=1$，進位 $c_{out}$ 是？
+== 1
+---
+$1+0+1=10_2$，進位 1、和 0。
+
+@q kco-ml1 | co-arith#3 | 1
+Booth 演算法看到 $(q_0,q_{-1})=(0,1)$ 時做什麼？
+[ ] $A\leftarrow A-M$
+[x] $A\leftarrow A+M$
+[ ] 不動
+---
+一串 1 結束，加回 $M$。
+
+@q kco-pf1 | co-perf#1 | 1
+CPU 時間的公式是？
+[x] 指令數 × CPI × 時脈週期
+[ ] 指令數 × 時脈頻率
+[ ] CPI ÷ 時脈週期
+---
+IC × CPI × T，或 IC × CPI ÷ f。
+
+@q kco-pf2 | co-perf#1 | 2
+程式有 $2\times10^9$ 條指令、CPI 1.5、時脈 3 GHz，CPU 時間幾秒？
+== 1
+---
+$2\times10^9\times1.5/(3\times10^9)=1$。
+
+@q kco-av1 | co-perf#2 | 1
+SPEC ratio 合起來用哪一種平均？
+[ ] 算術平均
+[x] 幾何平均
+[ ] 調和平均
+---
+幾何平均讓比較結果跟參考機器無關。
+
+@q kco-av2 | co-perf#2 | 2
+比較多個程式的「速率」（例如 MIPS，工作量相同），用哪一種平均？
+[ ] 算術平均
+[ ] 幾何平均
+[x] 調和平均
+---
+速率的平均要用調和平均，才等於總工作量除以總時間。
+
+@q kco-av3 | co-perf#2 | 2
+SPEC ratio 是 1、4、16，幾何平均是多少？
+== 4
+---
+$\sqrt[3]{64}=4$。
+
+@q kco-am1 | co-perf#3 | 1
+80% 的時間可以加速，加速再多倍，整體最多快幾倍？
+== 5
+---
+$\frac{1}{1-0.8}=5$。
+
+@q kco-am2 | co-perf#3 | 2
+25% 的時間加速 5 倍，整體加速幾倍？
+== 1.25
+---
+$\frac{1}{0.75+0.05}=1.25$。
+
+@q kco-pw1 | co-perf#4 | 1
+動態功耗 $P\propto CV^2f$，電壓變一半、其他不變，功耗變成？
+[x] $\frac14$
+[ ] $\frac12$
+[ ] 不變
+---
+電壓的影響是平方。
+
+@q kco-pw2 | co-perf#4 | 2
+power wall 指的是？
+[x] 電壓降不下去，提高時脈會讓功耗與散熱無法負擔
+[ ] 記憶體太慢
+[ ] 晶圓太貴
+---
+所以業界轉向多核。
+
+@q kco-pw3 | co-perf#4 | 2
+晶粒面積變大，良率會？
+[x] 下降
+[ ] 上升
+[ ] 不變
+---
+面積越大越容易碰到缺陷。
+
+@q kco-isa1 | co-datapath#1 | 1
+MIPS 的 `lw` 是哪一種指令格式？
+[ ] R 型
+[x] I 型
+[ ] J 型
+---
+有 16 位元的立即值（位移）。
+
+@q kco-isa2 | co-datapath#1 | 2
+`beq` 在位址 200，立即值 −2。目標位址是？
+== 196
+---
+$200+4+(-2)\times4=196$。
+
+@q kco-sc1 | co-datapath#2 | 1
+單週期處理器的時脈長度由什麼決定？
+[x] 最慢的那種指令
+[ ] 最快的那種指令
+[ ] 平均
+---
+所有指令共用同一個時脈，要容得下最慢的 lw。
+
+@q kco-sc2 | co-datapath#2 | 2
+R 型指令的 RegDst 是多少？
+== 1
+---
+R 型寫回 rd，RegDst=1。
+
+@q kco-sc3 | co-datapath#2 | 2
+哪一個指令的 MemWrite 是 1？
+[x] sw
+[ ] lw
+[ ] beq
+---
+只有 store 會寫記憶體。
+
+@q kco-mc1 | co-datapath#3 | 1
+多週期處理器中，lw 需要幾個週期？
+== 5
+---
+IF、ID、EX、MEM、WB。
+
+@q kco-mc2 | co-datapath#3 | 2
+多週期處理器中，beq 需要幾個週期？
+== 3
+---
+IF、ID、EX（比較完就決定）。
+
+@q kco-pl1 | co-pipeline#1 | 1
+管線提高的是什麼？
+[x] throughput（每秒完成幾條）
+[ ] 單一指令的速度
+[ ] 時脈的長度
+---
+單一指令反而稍慢。
+
+@q kco-pl2 | co-pipeline#1 | 2
+6 級管線跑 50 條指令（沒有任何等待），需要幾個週期？
+== 55
+---
+$6+50-1$。
+
+@q kco-pl3 | co-pipeline#2 | 2
+5 級順序管線中，資料危障只會有哪一種？
+[x] RAW
+[ ] WAR
+[ ] WAW
+---
+寫都在 WB、讀都在 ID。
+
+@q kco-fw1 | co-pipeline#2 | 1
+有 forwarding 時，哪一種相依還是要 stall？
+[x] lw 後面緊接著用它的結果
+[ ] add 後面緊接著用它的結果
+[ ] 隔一條才用 lw 的結果
+---
+load-use 要 1 拍。
+
+@q kco-fw2 | co-pipeline#2 | 2
+有 forwarding 時，lw 後面緊接著使用結果，要 stall 幾拍？
+== 1
+---
+資料要到 MEM 結束才有。
+
+@q kco-fw3 | co-pipeline#2 | 2
+偵測到 load-use 時，硬體怎麼做？
+[x] 控制訊號清成 0，PC 和 IF/ID 不更新
+[ ] 清空整條管線
+[ ] 跳到 OS
+---
+插一個 bubble。
+
+@q kco-br1 | co-pipeline#3 | 1
+「延遲分支」的 delay slot 裡的指令什麼時候會執行？
+[x] 不管跳不跳都執行
+[ ] 只有跳的時候
+[ ] 只有不跳的時候
+---
+由編譯器挑有用的指令填進去。
+
+@q kco-br2 | co-pipeline#3 | 2
+迴圈的分支每遍跳 9 次、不跳 1 次，整個迴圈執行很多遍。1-bit 預測每遍錯幾次？
+== 2
+---
+離開時錯一次，下次進來又錯一次。
+
+@q kco-br3 | co-pipeline#3 | 2
+基本 CPI 1，分支 25%，猜錯率 20%，懲罰 1 拍。CPI 是？
+== 1.05
+---
+$1+0.25\times0.2\times1$。
+
+@q kco-ex1 | co-pipeline#4 | 1
+發生例外時，出事指令的位址存在哪裡？
+[x] EPC
+[ ] PC
+[ ] 記憶體位址 0
+---
+Exception PC。
+
+@q kco-ex2 | co-pipeline#4 | 2
+精確例外要求什麼？
+[x] 出事那條之前的都完成，之後的都不影響狀態
+[ ] 所有指令都完成
+[ ] 所有指令都取消
+---
+這樣才能乾淨地回去。
+
+@q kco-ex3 | co-pipeline#4 | 2
+add 溢位屬於？
+[x] 例外
+[ ] 中斷
+---
+指令自己造成的。
+
+@q kco-pl4 | co-pipeline#1 | 2
+指令和資料共用同一個記憶體，IF 和 MEM 同一拍都要用。這是哪一種危障？
+[x] 結構危障
+[ ] 控制危障
+---
+硬體資源不夠。分開指令、資料快取就解決。
+
+@q kco-ca1 | co-cache#1 | 1
+「剛用過的資料很快會再被用到」叫做？
+[x] 時間區域性
+[ ] 空間區域性
+---
+迴圈裡的變數。
+
+@q kco-ca2 | co-cache#1 | 2
+32 位元位址、直接映射 1024 格、每塊 16 位元組。tag 有幾位元？
+== 18
+---
+$32-10-4$。
+
+@q kco-ca3 | co-cache#1 | 2
+16 KB、4-way、每塊 32 位元組，有幾個 set？
+== 128
+---
+$16384/(32\times4)$。
+
+@q kco-wb1 | co-cache#2 | 1
+只寫 cache，換出時才寫回記憶體的策略是？
+[x] write-back
+[ ] write-through
+---
+要用 dirty 位元記錄。
+
+@q kco-wb2 | co-cache#2 | 2
+write-through 常搭配哪一種寫入失誤策略？
+[x] no-write-allocate
+[ ] write-allocate
+---
+反正每次都要寫下一層。
+
+@q kco-wb3 | co-cache#2 | 2
+write buffer 主要是為了？
+[x] 讓 write-through 的 CPU 不用等記憶體寫完
+[ ] 增加 cache 容量
+[ ] 減少讀取失誤
+---
+先放進 buffer，CPU 繼續跑。
+
+@q kco-3c1 | co-cache#3 | 1
+第一次存取某一塊時一定會發生的失誤是？
+[x] Compulsory
+[ ] Conflict
+[ ] Capacity
+---
+cache 再大也一樣。
+
+@q kco-3c2 | co-cache#3 | 2
+提高關聯度主要降低哪一種失誤？
+[x] Conflict
+[ ] Compulsory
+[ ] Capacity
+---
+代價是 hit time 變長。
+
+@q kco-3c3 | co-cache#3 | 2
+8-way 的 set，用 pseudo-LRU（樹狀）需要幾個位元？
+== 7
+---
+$k-1$。
+
+@q kco-amt1 | co-cache#4 | 1
+AMAT 的公式是？
+[x] hit time ＋ miss rate × miss penalty
+[ ] miss rate × hit time
+[ ] hit time × miss penalty
+---
+平均記憶體存取時間。
+
+@q kco-amt2 | co-cache#4 | 2
+hit time 2、miss rate 10%、miss penalty 50。AMAT 是？
+== 7
+---
+$2+0.1\times50$。
+
+@q kco-amt3 | co-cache#4 | 2
+L1 miss rate 4%、L2 local miss rate 25%。L2 的 global miss rate？（用小數）
+== 0.01
+---
+$0.04\times0.25$。
+
+@q kco-mm1 | co-cache#5 | 1
+交錯記憶體（多個 bank）主要省下哪一段時間？
+[x] 多個字的 DRAM 存取可以同時進行
+[ ] 送位址的時間
+[ ] 匯流排傳輸
+---
+傳輸還是一次一個字。
+
+@q kco-mm2 | co-cache#5 | 2
+送位址 1、DRAM 存取 10、傳一字 1 週期；一塊 4 字。一個字寬的 miss penalty？
+== 45
+---
+$1+4\times10+4$。
+
+@q kco-mm3 | co-cache#5 | 2
+同上的參數，4 個 bank 交錯的 miss penalty？
+== 15
+---
+$1+10+4$。
+
+@q kco-op1 | co-cache#6 | 1
+C 的二維陣列 `x[i][j]`，內層迴圈應該跑哪個索引比較好？
+[x] j（同一列連續）
+[ ] i
+---
+列優先，同一列的元素相鄰。
+
+@q kco-op2 | co-cache#6 | 2
+放「剛被踢出去的塊」的小型全關聯 cache 叫？
+[x] victim cache
+[ ] write buffer
+[ ] 暫存器檔
+---
+減少衝突失誤。
+
+@q kco-op3 | co-cache#6 | 2
+non-blocking cache 允許什麼？
+[x] 有失誤在處理時，其他命中的存取照常服務
+[ ] 不需要 tag
+[ ] 每次都命中
+---
+hit under miss。
+
+@q kco-ila1 | co-ilp#1 | 1
+`add r1,r2,r3` 接 `sub r4,r1,r5`，這是哪一種相依？
+[x] RAW（真相依）
+[ ] WAR
+[ ] WAW
+---
+sub 要用 add 算出的 r1。
+
+@q kco-ila2 | co-ilp#1 | 2
+暫存器換名可以消除哪些相依？
+[x] WAR 和 WAW
+[ ] 只有 RAW
+[ ] 全部
+---
+名稱相依。
+
+@q kco-ila3 | co-ilp#1 | 2
+迴圈展開的好處**不**包括？
+[x] 程式碼變小
+[ ] 分支變少
+[ ] 更容易排程填滿 stall
+---
+程式碼會變大。
+
+@q kco-ilb1 | co-ilp#2 | 1
+Scoreboard 怎麼處理 WAR？
+[x] 延後寫入結果
+[ ] 暫存器換名
+[ ] 不處理
+---
+沒有換名，只能等。
+
+@q kco-ilb2 | co-ilp#2 | 2
+Scoreboard 在 Issue 階段會因為什麼而卡住？
+[x] 功能單元沒空，或有人要寫同一個目的暫存器
+[ ] 運算元還沒好
+[ ] 結果還沒寫回
+---
+結構危障和 WAW。
+
+@q kco-ilb3 | co-ilp#2 | 2
+Scoreboard 有 forwarding 嗎？
+[ ] 有
+[x] 沒有
+---
+結果先寫進暫存器檔才讀。
+
+@q kco-ilc1 | co-ilp#3 | 1
+Tomasulo 中結果透過什麼廣播給所有等待者？
+[x] CDB
+[ ] 指令記憶體
+[ ] 暫存器狀態表
+---
+共同資料匯流排。
+
+@q kco-ilc2 | co-ilp#3 | 2
+Tomasulo 在哪個階段完成暫存器換名？
+[x] Issue
+[ ] Execute
+[ ] Write result
+---
+讀值或記標籤。
+
+@q kco-ilc3 | co-ilp#3 | 2
+保留站的 Qk 欄位存的是？
+[x] 會算出第二個運算元的保留站標籤
+[ ] 第二個運算元的值
+[ ] 目的暫存器
+---
+Vk 才是值。
+
+@q kco-ild1 | co-ilp#4 | 1
+ROB 讓指令依什麼順序 commit？
+[x] 程式順序
+[ ] 完成順序
+[ ] 隨機
+---
+亂序執行、照順序完成。
+
+@q kco-ild2 | co-ilp#4 | 2
+加了 ROB 之後，Tomasulo 多了哪個階段？
+[x] Commit
+[ ] Issue
+[ ] Execute
+---
+四個階段。
+
+@q kco-ild3 | co-ilp#4 | 2
+推測執行猜錯分支時，有 ROB 的處理器要做什麼？
+[x] 清掉 ROB 中分支後面的項目
+[ ] 恢復暫存器檔的備份
+[ ] 什麼都不用做
+---
+它們還沒 commit。
+
+@q kco-ile1 | co-ilp#5 | 1
+由編譯器把幾個運算包成一條長指令的是？
+[x] VLIW
+[ ] 動態超純量
+[ ] SMT
+---
+硬體簡單。
+
+@q kco-ile2 | co-ilp#5 | 2
+同一個週期從多個執行緒發射指令的是？
+[x] SMT
+[ ] Fine-grained 多執行緒
+[ ] Coarse-grained 多執行緒
+---
+填滿空的發射槽。
+
+@q kco-ile3 | co-ilp#5 | 2
+GPU 屬於 Flynn 分類的哪一種？
+[x] SIMD
+[ ] MISD
+[ ] SISD
+---
+同一個指令作用在很多資料上。
+
+@q kco-vca1 | co-vm-coherence#1 | 1
+下面哪一種情況**不可能**發生？
+[x] TLB 沒中、頁表沒中、cache 命中
+[ ] TLB 沒中、頁表命中、cache 命中
+[ ] TLB 命中、cache 沒中
+---
+頁不在記憶體，資料不會在 cache。
+
+@q kco-vca2 | co-vm-coherence#1 | 2
+頁大小 4 KB，VIPT cache 8-way，最大可以做多大（KB）而沒有別名？
+== 32
+---
+$4\times8$。
+
+@q kco-vca3 | co-vm-coherence#1 | 2
+VIPT cache 的 index 取自位址的哪一部分？
+[x] 頁內位移
+[ ] 虛擬頁號
+[ ] 實體頁框號
+---
+所以能跟 TLB 同時查。
+
+@q kco-vcb1 | co-vm-coherence#2 | 1
+MESI 中「只有我有、我改過」是哪個狀態？
+[x] M
+[ ] E
+[ ] S
+---
+Modified。
+
+@q kco-vcb2 | co-vm-coherence#2 | 2
+不用廣播、可以擴展到很多核心的一致性做法是？
+[x] Directory
+[ ] Snooping
+---
+記錄誰有這一塊。
+
+@q kco-vcb3 | co-vm-coherence#2 | 2
+兩個核心各自寫同一區塊裡不同的變數，造成區塊來回被作廢，這叫？
+[x] false sharing
+[ ] 記憶體洩漏
+[ ] 寫穿
+---
+用 padding 分開。
+
+@q kco-vcc1 | co-vm-coherence#3 | 1
+x86 使用的記憶體一致性模型是？
+[x] TSO
+[ ] SC
+---
+允許 store 之後的 load 先完成。
+
+@q kco-vcc2 | co-vm-coherence#3 | 2
+TSO 允許 load 比前面的 store 先完成，主要是因為？
+[x] store 先放在 store buffer
+[ ] cache 太小
+[ ] 指令太長
+---
+不用等 store 寫進 cache。
+
+@q kco-vcc3 | co-vm-coherence#3 | 2
+在 SC 下，P1：`x=1; r1=y;`、P2：`y=1; r2=x;`（初值 0），$r1=r2=0$ 可能嗎？
+[ ] 可能
+[x] 不可能
+---
+TSO 下才可能。
+
+@q kco-vcd1 | co-vm-coherence#4 | 1
+LL/SC 中，如果 LL 之後有人寫了那個位址，SC 會？
+[x] 失敗
+[ ] 成功
+---
+要重試。
+
+@q kco-vcd2 | co-vm-coherence#4 | 2
+存取遠端節點的記憶體比本地慢的架構叫？
+[x] NUMA
+[ ] UMA
+---
+Non-uniform。
+
+@q kco-vcd3 | co-vm-coherence#4 | 2
+test-and-test-and-set 先做「讀」的目的是？
+[x] 在自己的 cache 空轉，減少一致性流量
+[ ] 讓程式比較短
+[ ] 不用原子指令
+---
+鎖空了才做原子操作。

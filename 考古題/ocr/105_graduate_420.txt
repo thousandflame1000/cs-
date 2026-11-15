@@ -1,0 +1,126 @@
+=== PAGE p-1.pgm
+題 號
+科目
+
+節 次 :
+
+420 國 立 臺 灣 大 學 105 學 年 度 碩士 班 招生 考試 試題
+
+次
+1
+
+沾 結 構 與 演算 法 題 號 : 420
+共 及 頁 之 第 1 頁
+
+※ 注意 : 請 於 試卷 內 之 「 非 選擇 題 作答 區 」 依 序 作答 , 並 應 註明 作答 之 大 題 及 小 題 題 號 。
+
+1, (12 points) For each of the following algorithm, what is the tightest asymptotic upper bound for its worst-
+case running time? Use the following table for your answers. You need not justify your answers.
+
+x B 同 F | 8
+kates | Of) | O(nign) | O(n’) | OG? Ign) | On) | OE | OG)
+
+(a) Insertion sort for n numbers
+
+(b) Strassen’s algorithm for multiplying two n x n matrices
+(c) Graham scan for 7 points
+
+(d) BUILD-HEAP for n numbers
+
+(e) Merge sort for n numbers
+
+(f) Floyd-Warshall algorithm for a graph of n vertices
+
+2. (18 points) Give tight asymptotic bounds for the following recurrences. You need not justify your answers.
+
+(a) @ points) T(n) = {3 37 (n/8)+ Va ifn >1
+
+ifn = 1,
+. T 1 ifn >2
+(b) (6 points) T(n) = {i (vn) + tne,
+(c) (6 points) T(n) = {ii 8 (n/2) + O(1) ine > ay where M is a variable independent from n.
+
+3. (15 points) Various collision resolution strategies have been explored to tackle the problem of hash colli-
+sions. Given a hash table with m slots that store n elements, please answer the following questions under
+the assumption of simple uniform hashing.
+
+(a) (5 points) What is the expected time complexity of searching in H if
+i. H resolves collisions by chaining and each chain is stored in an AVL tree.
+
+ii. another hash table H’ is used to hash all the elements with the same hash value in H’. Collisions
+in H’ are resolved recursively. Assume that each H’ also has m slots.
+
+(b) (5 points) Determine m (in terms of n) such that the expected number of pairwise collisions can be
+reduced to O(1). Show your calculation.
+
+(c) (5 points) Suppose H maps elements to values from 0 to 6, ie m=7. Draw H that results from
+inserting 8, 22, 16, 28, 11 (in order) into an initially empty H by double hashing, where the primary
+hash function is defined as hy(k) = k mod 7 and the secondary hash function is defined as h2(k) =
+1+ (k mod 5).
+
+4. (15 points) Different tree-based data structures such as min-heap, binary search tree (BST) and red-black
+tree (RB-tree) satisfy different properties.
+
+(a) (5 points) Give a recursive algorithm for determining whether a binary tree satisfies the BST proper-
+ties. The input is the root of a binary tree. The algorithm returns TRUE if the binary tree is a BST and
+FALSE if it isn’t. Your algorithm must use at most a constant amount of extra space and its running
+time must be O(n), where n denotes the number of the nodes in the binary tree.
+
+(b) (5 points) Give a recursive algorithm for determining the number of different BSTs with n nodes,
+where n is the input.
+
+(c) (5 points) Draw a smallest AVL tree of height 3 (number of edges from the root to the leaves) and then
+label its nodes with either B (black) or R (red) to make it satisfy the RB-tree properties.
+
+5. (12 points) Given a weighted directed graph Gy = (Vg, Eg), as shown in Figure 1, where the weight of an
+edge we,(e) is given by the number next to the edge, please determine the following:
+
+見 背面
+=== PAGE p-2.pgm
+題 號 : 420 國 立 臺灣 大 學 105 學 年 度 碩士 班 招生 考試 試題
+AB: 資料 結構 與 演算 法 題 號 : 420
+HR 1 #2 頁 之 第 2 員
+
+(a) (6 points) Using at most 4 edges, what is the minimum cost path from vertex A to vertex H? Please
+put down the sequence of vertices in the path in the order of visiting. In the case that there are multiple
+such minimum cost paths, you only need to put down one.
+
+(b) (6 points) Convert Ga = (Va, a) to a weighted undirected graph Ga = (Vz, E,,) as follows. An edge
+e = (i, 7) € Ev iff (,9) € Egor (j,i) € Ey. Ve = (i,j) € Ey, wa,(e) = we, ((i,5)) + wa, (j,i)
+if both (i, 7) € By and (7,2) € Ey. Otherwise, we, (e) = we,((i,3)) if G9) € Eg, and we,(e) =
+we, ((j, 7) if i, 7) € Eu. Please give the cost of G,,’s minimum spanning tree(s).
+
+Figure 1: Directed graph G
+
+6. (10 points) Consider an ordinary binary min-heap data structure H with n elements supporting the instruc-
+tions INSERT and EXTRACT-MIN in O(log 7) worst-case time. Give a potential function ®(#) such that
+the amortized cost of INSERT is O(log 2) and the amortized cost of EXTRACT-MIN is O(1). The potential
+function should be zero when the heap is empty, and has positive value otherwise. Show that it works for
+both instructions.
+
+7, (18 points) A palindrome is a string that reads the same from the left and from the right. For example,
+REDDER, I, ROTATOR, MOM, are palindromes. From a non-palindrome string, you can always remove
+an arbitrary number of characters from it to make it a palindrome. For example, from both ADAM and
+ADMA, you can remove ‘M’ to obtain a palindrome, ADA. In both cases, we say that ADA is the longest
+palindrome subsequence in the original strings, ADAM and ADMA.
+
+We would like to derive a dynamic programming algorithm to determine the length of the longest palin-
+drome subsequence in a string. You are given the string S' of length n in the form of a character array
+S = 8{], where s/{i] is the i-th character in the string, 1 <i <n.
+
+(a) (12 points) As the first step, please complete the following equation to represent the length of the
+longest palindrome subsequence in the given string S by filling out the blanks. L(i, 7) represents
+the length of the longest palindrome subsequence in s{t..j], a substring of 9 that starts from the i-th
+character and ends at the j-th character of S.
+
+L(i, j) is defined for 1 <i<n,l<j<n,j >i—1,and
+
+QQ) gifi=jtl
+ee ee
+G9) = 8) , ifi <j and sfi] == s[j}
+ae , otherwise.
+
+(b) (6 points) Calculate the length of the longest palindrome sequence in the string CABDAACBADFA.
+
+試題 隨 卷 繳 回
+
